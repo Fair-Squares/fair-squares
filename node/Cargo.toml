@@ -1,7 +1,7 @@
 [package]
-name = 'node-template'
+name = 'fs-node'
 version = '3.0.0-monthly-2021-10'
-description = 'A fresh FRAME-based Substrate node, ready for hacking.'
+description = 'Fair housing for all blockchain'
 authors = ['Substrate DevHub <https://github.com/substrate-developer-hub>']
 homepage = 'https://substrate.io/'
 edition = '2018'
@@ -11,7 +11,7 @@ repository = 'https://github.com/substrate-developer-hub/substrate-node-template
 build = 'build.rs'
 
 [[bin]]
-name = 'node-template'
+name = 'fs-node'
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
