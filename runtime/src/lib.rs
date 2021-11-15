@@ -48,7 +48,7 @@ pub use currency::*;
 
 
 pub use node_primitives::{AccountId, Signature};
-use node_primitives::{AccountIndex, Balance, BlockNumber, Hash, Index, Moment};
+pub use node_primitives::{AccountIndex, Balance, BlockNumber, Hash, Index, Moment};
 
 /// Import the template pallet.
 pub use pallet_template;
@@ -383,7 +383,7 @@ construct_runtime!(
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Event<T>},
-		// Council: pallet_collective::{Pallet, Call, Event<T>},
+		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>},
 
 	}
 );
