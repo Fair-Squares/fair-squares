@@ -16,11 +16,15 @@ mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::{dispatch::DispatchResult, pallet_prelude::*,
-	traits::{Currency, LockIdentifier, LockableCurrency, WithdrawReasons},
+	use frame_support::{dispatch::DispatchResult, ensure, pallet_prelude::*, storage::child,
+	traits::{Currency, LockIdentifier, LockableCurrency, WithdrawReasons,ExistenceRequirement, Get, ReservableCurrency,},
+	sp_runtime::{traits::{AccountIdConversion, Saturating, Zero, Hash},
+	ModuleId}
 	};
-	use frame_system::pallet_prelude::*;
+	use frame_system::{pallet_prelude::*, ensure_signed};
+	use super::*;
 
+	const PALLET_ID: ModuleId = ModuleId(*b"ex/cfund");
 	const EXAMPLE_ID: LockIdentifier = *b"example ";
 
 	type BalanceOf<T> =
@@ -33,19 +37,62 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Bondcurrency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
+		type Currency: ReservableCurrency<Self::AccountId>;
+		type SubmissionDeposit: Get<BalanceOf<Self>>;
+		type MinContribution: Get<BalanceOf<Self>>;
+		type RetirementPeriod: Get<Self::BlockNumber>;
 	}
+
+	#[derive(Encode, Decode, Default, PartialEq, Eq)]
+	#[cfg_attr(feature = "std", derive(Debug))]
+	pub struct FundInfo<AccountId, Balance, BlockNumber> {
+		/// The account that will recieve the funds if the campaign is successful.
+		beneficiary: AccountId,
+		/// The amount of deposit placed.
+		deposit: Balance,
+		/// The total amount raised.
+		raised: Balance,
+		/// Block number after which funding must have succeeded.
+		end: BlockNumber,
+		/// Upper bound on `raised`.
+		goal: Balance,
+	}	
+
+	pub type FundIndex = u32;
+	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+	type FundInfoOf<T> = FundInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
+
+
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/v3/runtime/storage
 	#[pallet::storage]
 	#[pallet::getter(fn something)]
+
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn funds)]
+	/// Info on all of the funds.
+	pub(super) type Funds<T: Config> = StorageMap<
+	  _,
+	  Blake2_128Concat,
+	  FundIndex,
+	  FundInfoOf<T>,
+	  OptionQuery,
+	>;
+	
+	#[pallet::storage]
+	#[pallet::getter(fn fund_count)]
+	/// The total number of funds that have so far been allocated.
+	pub(super) type FundCount<T: Config> = StorageValue<_, FundIndex, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events
