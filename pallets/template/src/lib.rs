@@ -16,14 +16,23 @@ mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
+	use frame_support::{dispatch::DispatchResult, pallet_prelude::*,
+	traits::{Currency, LockIdentifier, LockableCurrency, WithdrawReasons},
+	};
 	use frame_system::pallet_prelude::*;
+
+	const EXAMPLE_ID: LockIdentifier = *b"example ";
+
+	type BalanceOf<T> =
+	<<T as Config>::Bondcurrency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Bondcurrency: LockableCurrency<Self::AccountId, Moment = Self::BlockNumber>;
 	}
 
 	#[pallet::pallet]
@@ -46,6 +55,9 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+		Locked(T::AccountId, BalanceOf<T>),
+        Unlocked(T::AccountId),
+        LockExtended(T::AccountId, BalanceOf<T>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -98,5 +110,52 @@ pub mod pallet {
 				},
 			}
 		}
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		pub fn lock_capital(
+			origin: OriginFor<T>,
+			#[pallet::compact] amount: BalanceOf<T>
+		) -> DispatchResultWithPostInfo {
+	
+			let user = ensure_signed(origin)?;
+	
+			T::Bondcurrency::set_lock(
+				EXAMPLE_ID,
+				&user,
+				amount,
+				WithdrawReasons::all(),
+			);
+	
+			Self::deposit_event(Event::Locked(user, amount));
+			Ok(().into())
+		}
+
+		#[pallet::weight(1_000)]
+		pub fn extend_lock(
+			origin: OriginFor<T>,
+			#[pallet::compact] amount: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			let user = ensure_signed(origin)?;
+	
+			T::Bondcurrency::extend_lock(
+				EXAMPLE_ID,
+				&user,
+				amount,
+				WithdrawReasons::all(),
+			);
+	
+			Self::deposit_event(Event::LockExtended(user, amount));
+			Ok(().into())
+		}
+		#[pallet::weight(1_000)]
+		pub fn unlock_all(
+			origin: OriginFor<T>,
+		) -> DispatchResultWithPostInfo {
+			let user = ensure_signed(origin)?;
+	
+			T::Bondcurrency::remove_lock(EXAMPLE_ID, &user);
+	
+			Self::deposit_event(Event::Unlocked(user));
+			Ok(().into())
+		}	
 	}
 }
