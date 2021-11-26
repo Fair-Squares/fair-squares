@@ -20,7 +20,6 @@ pub mod pallet {
 	traits::{Currency, LockIdentifier, LockableCurrency, WithdrawReasons},
 	};
 	use frame_system::pallet_prelude::*;
-	use sp_runtime::DispatchResultWithInfo;
 
 	const EXAMPLE_ID: LockIdentifier = *b"example ";
 
@@ -112,7 +111,7 @@ pub mod pallet {
 			}
 		}
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		pub(super) fn lock_capital(
+		pub fn lock_capital(
 			origin: OriginFor<T>,
 			#[pallet::compact] amount: BalanceOf<T>
 		) -> DispatchResultWithPostInfo {
@@ -131,7 +130,7 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(1_000)]
-		pub(super) fn extend_lock(
+		pub fn extend_lock(
 			origin: OriginFor<T>,
 			#[pallet::compact] amount: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
@@ -144,11 +143,11 @@ pub mod pallet {
 				WithdrawReasons::all(),
 			);
 	
-			Self::deposit_event(Event::ExtendedLock(user, amount));
+			Self::deposit_event(Event::LockExtended(user, amount));
 			Ok(().into())
 		}
 		#[pallet::weight(1_000)]
-		pub(super) fn unlock_all(
+		pub fn unlock_all(
 			origin: OriginFor<T>,
 		) -> DispatchResultWithPostInfo {
 			let user = ensure_signed(origin)?;
