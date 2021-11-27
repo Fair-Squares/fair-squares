@@ -67,8 +67,6 @@ pub mod pallet {
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
-
-
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/v3/runtime/storage
 	#[pallet::storage]
@@ -157,6 +155,49 @@ pub mod pallet {
 				},
 			}
 		}
+		
+		pub fn fund_account_id(index: FundIndex) -> T::AccountId {
+			PALLET_ID.into_sub_account(index)
+		}
+
+		pub fn id_from_index(index: FundIndex) -> child::ChildInfo {
+			let mut buf = Vec::new();
+			buf.extend_from_slice(b"crowdfnd");
+			buf.extend_from_slice(&index.to_le_bytes()[..]);
+		  
+			child::ChildInfo::new_default(T::Hashing::hash(&buf[..]).as_ref())
+		}
+	
+
+		/// Record a contribution in the associated child trie.
+		pub fn contribution_put(index: FundIndex, who: &T::AccountId, balance: &BalanceOf<T>) {
+			let id = Self::id_from_index(index);
+			who.using_encoded(|b| child::put(&id, b, &balance));
+		}
+
+		/// Lookup a contribution in the associated child trie.
+		pub fn contribution_get(index: FundIndex, who: &T::AccountId) -> BalanceOf<T> {
+			let id = Self::id_from_index(index);
+			who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
+		}
+
+		/// Remove a contribution from an associated child trie.
+		pub fn contribution_kill(index: FundIndex, who: &T::AccountId) {
+			let id = Self::id_from_index(index);
+			who.using_encoded(|b| child::kill(&id, b));
+		}
+
+		/// Remove the entire record of contributions in the associated child trie in a single
+		/// storage write.
+		pub fn crowdfund_kill(index: FundIndex) {
+			let id = Self::id_from_index(index);
+			// The None here means we aren't setting a limit to how many keys to delete.
+			// Limiting can be useful, but is beyond the scope of this recipe. For more info, see
+			// https://crates.parity.io/frame_support/storage/child/fn.kill_storage.html
+			child::kill_storage(&id, None);
+		}
+
+
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn lock_capital(
 			origin: OriginFor<T>,
