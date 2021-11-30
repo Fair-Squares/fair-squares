@@ -114,6 +114,48 @@ pub mod pallet {
 		StorageOverflow,
 	}
 
+	#[pallet::call]
+    impl<T: Config> Pallet<T> {
+		/// Create a new fund
+		#[pallet::weight(10_000)]
+		fn create(
+			origin: OriginFor<T>,
+			beneficiary: AccountIdOf<T>,
+			goal: BalanceOf<T>,
+			end: T::BlockNumber,
+		)-> DispatchResultWithPostInfo {
+			let creator = ensure_signed(origin)?;
+			let now = <frame_system::Module<T>>::block_number();
+				ensure!(end > now, Error::<T>::EndTooEarly);
+				let deposit = T::SubmissionDeposit::get();
+			let imb = T::Currency::withdraw(
+				&creator,
+				deposit,
+				WithdrawReasons::TRANSFER,
+				ExistenceRequirement::AllowDeath,
+			)?;
+				
+			let index = <FundCount<T>>::get();
+			// not protected against overflow, see safemath section
+			<FundCount<T>>::put(index + 1);
+			// No fees are paid here if we need to create this account; that's why we don't just
+			// use the stock `transfer`.
+			T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
+
+			<Funds<T>>::insert(index, FundInfo{
+				beneficiary,
+				deposit,
+				raised: Zero::zero(),
+				end,
+				goal,
+			});
+
+			Self::deposit_event(Event::Created(index, now));
+			Ok(().into())
+		}
+	
+	}
+
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
@@ -155,6 +197,7 @@ pub mod pallet {
 				},
 			}
 		}
+
 		
 		pub fn fund_account_id(index: FundIndex) -> T::AccountId {
 			PALLET_ID.into_sub_account(index)
@@ -197,6 +240,7 @@ pub mod pallet {
 			child::kill_storage(&id, None);
 		}
 
+	
 
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn lock_capital(
