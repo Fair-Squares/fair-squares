@@ -3,7 +3,6 @@
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
-pub use pallet::*;
 
 #[cfg(test)]
 mod mock;
@@ -114,53 +113,152 @@ pub mod pallet {
 		StorageOverflow,
 	}
 
-	#[pallet::call]
-    impl<T: Config> Pallet<T> {
-		/// Create a new fund
-		#[pallet::weight(10_000)]
-		fn create(
-			origin: OriginFor<T>,
-			beneficiary: AccountIdOf<T>,
-			goal: BalanceOf<T>,
-			end: T::BlockNumber,
-		)-> DispatchResultWithPostInfo {
-			let creator = ensure_signed(origin)?;
-			let now = <frame_system::Module<T>>::block_number();
-				ensure!(end > now, Error::<T>::EndTooEarly);
-				let deposit = T::SubmissionDeposit::get();
-			let imb = T::Currency::withdraw(
-				&creator,
-				deposit,
-				WithdrawReasons::TRANSFER,
-				ExistenceRequirement::AllowDeath,
-			)?;
-				
-			let index = <FundCount<T>>::get();
-			// not protected against overflow, see safemath section
-			<FundCount<T>>::put(index + 1);
-			// No fees are paid here if we need to create this account; that's why we don't just
-			// use the stock `transfer`.
-			T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
-
-			<Funds<T>>::insert(index, FundInfo{
-				beneficiary,
-				deposit,
-				raised: Zero::zero(),
-				end,
-				goal,
-			});
-
-			Self::deposit_event(Event::Created(index, now));
-			Ok(().into())
-		}
-	
-	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+
+	/// Create a new fund
+	#[pallet::weight(10_000)]
+	pub fn create(
+		origin: OriginFor<T>,
+		beneficiary: AccountIdOf<T>,
+		goal: BalanceOf<T>,
+		end: T::BlockNumber,
+	)-> DispatchResultWithPostInfo {
+		let creator = ensure_signed(origin)?;
+		let now = <frame_system::Module<T>>::block_number();
+			ensure!(end > now, Error::<T>::EndTooEarly);
+			let deposit = T::SubmissionDeposit::get();
+		let imb = T::Currency::withdraw(
+			&creator,
+			deposit,
+			WithdrawReasons::TRANSFER,
+			ExistenceRequirement::AllowDeath,
+		)?;
+			
+		let index = <FundCount<T>>::get();
+		// not protected against overflow, see safemath section
+		<FundCount<T>>::put(index + 1);
+		// No fees are paid here if we need to create this account; that's why we don't just
+		// use the stock `transfer`.
+		T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
+
+		<Funds<T>>::insert(index, FundInfo{
+			beneficiary,
+			deposit,
+			raised: Zero::zero(),
+			end,
+			goal,
+		});
+
+		/// Contribute funds to an existing fund
+		#[pallet::weight(10_000)]
+		fn contribute(
+			origin: OriginFor<T>, 
+			index: FundIndex, 
+			value: BalanceOf<T>) -> DispatchResultWithPostInfo {
+
+			let who = ensure_signed(origin)?;
+
+			ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
+
+			// Make sure crowdfund has not ended
+			let now = <frame_system::Module<T>>::block_number();
+			ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
+
+			// Add contribution to the fund
+			T::Currency::transfer(
+				&who,
+				&Self::fund_account_id(index),
+				value,
+				ExistenceRequirement::AllowDeath
+			)?;
+			fund.raised += value;
+			Funds::<T>::insert(index, &fund);
+
+			let balance = Self::contribution_get(index, &who);
+			let balance = balance.saturating_add(value);
+			Self::contribution_put(index, &who, &balance);
+
+			Self::deposit_event(Event::Contributed(who, index, balance, now));
+
+			Ok(().into())
+		}
+{				/// Withdraw full balance of a contributor to a fund
+		#[pallet::weight(10_000)]
+		fn withdraw(
+			origin: OriginFor<T>,
+			#[pallet::compact] index: FundIndex) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+
+			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
+			let now = <frame_system::Module<T>>::block_number();
+			ensure!(fund.end < now, Error::<T>::FundStillActive);
+
+			let balance = Self::contribution_get(index, &who);
+			ensure!(balance > Zero::zero(), Error::<T>::NoContribution);
+
+			// Return funds to caller without charging a transfer fee
+			let _ = T::Currency::resolve_into_existing(&who, T::Currency::withdraw(
+				&Self::fund_account_id(index),
+				balance,
+				WithdrawReasons::TRANSFER,
+				ExistenceRequirement::AllowDeath
+			)?);
+
+			// Update storage
+			Self::contribution_kill(index, &who);
+			fund.raised = fund.raised.saturating_sub(balance);
+			<Funds<T>>::insert(index, &fund);
+
+			Self::deposit_event(Event::Withdrew(who, index, balance, now));
+
+			Ok(().into())
+		}
+
+		/// Dissolve an entire crowdfund after its retirement period has expired.
+		/// Anyone can call this function, and they are incentivized to do so because
+		/// they inherit the deposit.
+		#[pallet::weight(10_000)]
+		fn dissolve(
+			origin: OriginFor<T>, 
+			index: FundIndex) -> DispatchResultWithPostInfo {
+			let reporter = ensure_signed(origin)?;
+
+			let fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
+
+			// Check that enough time has passed to remove from storage
+			let now = <frame_system::Module<T>>::block_number();
+			ensure!(now >= fund.end + T::RetirementPeriod::get(), Error::<T>::FundNotRetired);
+
+			let account = Self::fund_account_id(index);
+
+			// Dissolver collects the deposit and any remaining funds
+			let _ = T::Currency::resolve_creating(&reporter, T::Currency::withdraw(
+				&account,
+				fund.deposit + fund.raised,
+				WithdrawReasons::TRANSFER,
+				ExistenceRequirement::AllowDeath,
+			)?);
+
+			// Remove the fund info from storage
+			<Funds<T>>::remove(index);
+			// Remove all the contributor info from storage in a single write.
+			// This is possible thanks to the use of a child tree.
+			Self::crowdfund_kill(index);
+
+			Self::deposit_event(Event::Dissolved(index, now, reporter));
+
+			Ok(().into())
+		}
+	}
+		Self::deposit_event(Event::Created(index, now));
+		Ok(().into())
+	}
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
@@ -274,10 +372,10 @@ pub mod pallet {
 				amount,
 				WithdrawReasons::all(),
 			);
-	
 			Self::deposit_event(Event::LockExtended(user, amount));
 			Ok(().into())
 		}
+		
 		#[pallet::weight(1_000)]
 		pub fn unlock_all(
 			origin: OriginFor<T>,
