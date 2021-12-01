@@ -283,7 +283,6 @@ impl pallet_sudo::Config for Runtime {
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type Event = Event;
-	type Bondcurrency = Balances; // <- add this line
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
