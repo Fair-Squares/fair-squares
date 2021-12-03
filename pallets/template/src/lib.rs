@@ -3,7 +3,7 @@
 /// Edit this file to define custom logic or remove it if it is not needed.
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
-// pub use pallet::*;
+pub use pallet::*;
 
 #[cfg(test)]
 mod mock;
@@ -28,6 +28,7 @@ pub mod pallet {
 	};
 	use frame_system::{ensure_signed, pallet_prelude::*};
 use scale_info::TypeInfo;
+use frame_support::inherent::Vec;
 
 	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
 
