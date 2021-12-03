@@ -24,7 +24,7 @@ pub mod pallet {
 		sp_runtime::traits::{AccountIdConversion, Hash, Saturating, Zero},
 		storage::child,
 		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons},
-		PalletId, RuntimeDebug,
+		PalletId
 	};
 	use frame_system::{ensure_signed, pallet_prelude::*};
 use scale_info::TypeInfo;
@@ -42,7 +42,7 @@ use scale_info::TypeInfo;
 		type RetirementPeriod: Get<Self::BlockNumber>;
 	}
 
-	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, RuntimeDebug)]
+	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 	#[cfg_attr(feature = "std", derive(Debug))]
 	pub struct FundInfo<AccountId, Balance, BlockNumber> {
 		/// The account that will recieve the funds if the campaign is successful.
@@ -90,8 +90,8 @@ use scale_info::TypeInfo;
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events
 	#[pallet::event]
+	// #[pallet::metadata(T::AccountId = "AccountId", T::Balance = "Balance",T::BlockNumber = "BlockNumber")]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
-	#[pallet::metadata(BalanceOf<T> = "Balance", AccountId<T> = "AccountId", BlockNumber<T> = "BlockNumber")]
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
