@@ -24,9 +24,10 @@ pub mod pallet {
 		sp_runtime::traits::{AccountIdConversion, Hash, Saturating, Zero},
 		storage::child,
 		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons},
-		PalletId,
+		PalletId, RuntimeDebug,
 	};
 	use frame_system::{ensure_signed, pallet_prelude::*};
+use scale_info::TypeInfo;
 
 	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
 
@@ -41,7 +42,7 @@ pub mod pallet {
 		type RetirementPeriod: Get<Self::BlockNumber>;
 	}
 
-	#[derive(Encode, Decode, Default, PartialEq, Eq)]
+	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, RuntimeDebug)]
 	#[cfg_attr(feature = "std", derive(Debug))]
 	pub struct FundInfo<AccountId, Balance, BlockNumber> {
 		/// The account that will recieve the funds if the campaign is successful.
