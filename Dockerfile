@@ -1,8 +1,8 @@
-FROM docker.io/paritytech/ci-linux:latest as builder
+FROM docker.io/paritytech/ci-linux:staging as builder
 
 WORKDIR /substrate
 COPY . /substrate
-RUN cargo build --release
+RUN cargo build --release --locked
 
 FROM docker.io/library/ubuntu:20.04
 LABEL org.opencontainers.image.source = "https://github.com/Fair-Squares/fair-squares"

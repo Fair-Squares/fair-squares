@@ -3,7 +3,7 @@ version: "3.2"
 services:
   dev:
     container_name: fs-node
-    image: paritytech/ci-linux:lastest
+    image: paritytech/ci-linux:staging
     working_dir: /var/www/fs-node
     ports:
       - "9944:9944"
