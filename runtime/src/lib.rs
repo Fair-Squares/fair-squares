@@ -12,6 +12,7 @@ use pallet_grandpa::{
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, u32_trait::{_1, _2, _3, _4, _5}, OpaqueMetadata};
+pub use orml_nft;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys, 
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
@@ -305,6 +306,21 @@ impl pallet_template::Config for Runtime {
 	type SubmissionDeposit = SubmissionDeposit;
 	type MinContribution = MinContribution;
 	type RetirementPeriod = RetirementPeriod;
+	
+}
+
+parameter_types!{
+	pub const MaxClassMetadata: u32=10;
+	pub const MaxTokenMetadata: u32=10;
+}
+
+impl orml_nft::Config for Runtime {
+	type ClassId = u64;
+	type TokenId = u64;
+	type ClassData = u32;
+	type TokenData = u32;
+	type MaxClassMetadata = MaxClassMetadata;
+	type MaxTokenMetadata =MaxTokenMetadata;
 }
 
 parameter_types! {
@@ -396,6 +412,7 @@ construct_runtime!(
 		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Event<T>},
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		NFT: orml_nft::{Pallet, Storage, Config<T>},
 
 	}
 );

@@ -151,5 +151,6 @@ fn testnet_genesis(
 			members: vec![],
 			phantom: Default::default(),
 		},
+		nft: Default::default(),
 	}
 }
