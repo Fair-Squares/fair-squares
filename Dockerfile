@@ -1,4 +1,4 @@
-FROM docker.io/paritytech/ci-linux:production as builder
+FROM docker.io/paritytech/ci-linux:latest as builder
 
 WORKDIR /substrate
 COPY . /substrate
