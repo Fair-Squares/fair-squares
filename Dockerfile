@@ -1,16 +1,12 @@
-FROM rust:latest as builder
+FROM docker.io/paritytech/ci-linux:production as builder
 
-RUN apt update && apt install -y git clang curl libssl-dev llvm libudev-dev
-
-WORKDIR /build
-
-COPY . /build
-
+WORKDIR /substrate
+COPY . /substrate
 RUN cargo build --release
 
-FROM debian:buster-slim
+FROM docker.io/library/ubuntu:20.04
 LABEL org.opencontainers.image.source = "https://github.com/Fair-Squares/fair-squares"
-COPY --from=builder /build/target/release/fs-node /usr/local/bin
+COPY --from=builder /substrate/target/release/fs-node /usr/local/bin
 
 RUN useradd -m -u 1000 -U -s /bin/sh -d /fs fs && \
 	mkdir -p /fs/.local/share && \
