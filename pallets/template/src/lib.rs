@@ -31,6 +31,7 @@ use scale_info::TypeInfo;
 use frame_support::inherent::Vec;
 
 	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
+	const TreasurePalletId: PalletId = PalletId(*b"py/trsry");
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -157,7 +158,7 @@ use frame_support::inherent::Vec;
 		#[pallet::weight(10_000)]
 		pub fn create(
 			origin: OriginFor<T>,
-			beneficiary: AccountIdOf<T>,
+			// beneficiary: AccountIdOf<T>,
 			goal: BalanceOf<T>,
 			end: T::BlockNumber,
 		) -> DispatchResultWithPostInfo {
@@ -165,6 +166,7 @@ use frame_support::inherent::Vec;
 			let now = <frame_system::Pallet<T>>::block_number();
 			ensure!(end > now, Error::<T>::EndTooEarly);
 			let deposit = T::SubmissionDeposit::get();
+			let beneficiary = TreasurePalletId.into_account();
 			let imb = T::Currency::withdraw(
 				&creator,
 				deposit,
