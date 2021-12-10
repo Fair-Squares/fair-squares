@@ -46,7 +46,7 @@ use frame_support::inherent::Vec;
 
 	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 	#[cfg_attr(feature = "std", derive(Debug))]
-	pub struct FundInfo<AccountId, Balance, BlockNumber> {
+	pub struct FundInfo<AccountId, Balance> {
 		/// The account that will recieve the funds if the campaign is successful.
 		beneficiary: AccountId,
 		/// The amount of deposit placed.
@@ -63,7 +63,7 @@ use frame_support::inherent::Vec;
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 	type FundInfoOf<T> =
-		FundInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+		FundInfo<AccountIdOf<T>, BalanceOf<T>>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]

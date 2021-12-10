@@ -304,7 +304,6 @@ impl pallet_template::Config for Runtime {
 	type Currency = Balances;
 	type SubmissionDeposit = SubmissionDeposit;
 	type MinContribution = MinContribution;
-	type RetirementPeriod = RetirementPeriod;
 }
 
 parameter_types! {
