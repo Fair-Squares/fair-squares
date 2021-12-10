@@ -315,6 +315,7 @@ parameter_types!{
 }
 
 impl orml_nft::Config for Runtime {
+	type Event = Event;
 	type ClassId = u64;
 	type TokenId = u64;
 	type ClassData = u32;
@@ -412,7 +413,7 @@ construct_runtime!(
 		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Event<T>},
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>},
-		NFT: orml_nft::{Pallet, Storage, Config<T>},
+		NFT: orml_nft::{Pallet, Call,Storage, Config<T>,Event<T>},
 
 	}
 );

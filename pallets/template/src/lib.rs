@@ -5,6 +5,7 @@
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 type ClassData<T> = <T as orml_nft::Config>::ClassData;
+type TokenData<T> = <T as orml_nft::Config>::TokenData;
 
 #[cfg(test)]
 mod mock;
@@ -162,7 +163,8 @@ use frame_support::inherent::Vec;
 			beneficiary: AccountIdOf<T>,
 			goal: BalanceOf<T>,
 			end: <T as frame_system::Config>::BlockNumber,
-			datas:ClassData<T> //Kazu: Added ClassData parameter from orml_nft pallet
+			Cdatas:ClassData<T>, //Kazu: Added ClassData parameter from orml_nft pallet
+			Tdatas:TokenData<T>
 		) -> DispatchResultWithPostInfo {
 			let creator = ensure_signed(origin)?;
 			let now = <frame_system::Pallet<T>>::block_number();
@@ -176,8 +178,8 @@ use frame_support::inherent::Vec;
 			)?;
 			//Kazu: I need to understand what goes in metadata and data parameters. For now I use a dummy vector for metada, and I create a NFT
 			let vv= vec![3,5];
-			let nft_id = orml_nft::Pallet::<T>::create_class(&beneficiary,vv,datas);
-
+			let nft_id = orml_nft::Pallet::<T>::create_class(&beneficiary,vv,Cdatas);
+			//let nft_mint = orml_nft::Pallet::<T>::mint(&beneficiary,???,vv,Tdatas);
 			let index = <FundCount<T>>::get();
 			// not protected against overflow, see safemath section
 			<FundCount<T>>::put(index + 1);
