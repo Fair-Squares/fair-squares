@@ -24,10 +24,12 @@ We wrote a part in the [wiki](https://github.com/Fair-Squares/fair-squares/wiki/
 
 1. Fund which people can deposit their capital.
 2. Onboarding houses on the platform
-3. An engine that would select the best possible investors based on inqlusivity and distributed holders.
-4. bidding and approving the spend.
+3. An engine that would select the best possible investors based on inqlusivity and distributed holders for investing in an asset. 
+4. Bidding and approving the spend.
 5. Renting out the house. 
 
+What was achieved?
+{WIP}
 
 
 ## How to run & build
