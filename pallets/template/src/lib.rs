@@ -32,7 +32,7 @@ use frame_support::inherent::Vec;
 
 	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
 	const TreasurePalletId: PalletId = PalletId(*b"py/trsry");
-
+	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -41,7 +41,7 @@ use frame_support::inherent::Vec;
 		type Currency: ReservableCurrency<Self::AccountId>;
 		type SubmissionDeposit: Get<BalanceOf<Self>>;
 		type MinContribution: Get<BalanceOf<Self>>;
-		type RetirementPeriod: Get<Self::BlockNumber>;
+		// type RetirementPeriod: Get<Self::BlockNumber>;
 	}
 
 	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
@@ -53,10 +53,10 @@ use frame_support::inherent::Vec;
 		deposit: Balance,
 		/// The total amount raised.
 		raised: Balance,
-		/// Block number after which funding must have succeeded.
-		end: BlockNumber,
-		/// Upper bound on `raised`.
-		goal: Balance,
+		// /// Block number after which funding must have succeeded.
+		// end: BlockNumber,
+		// /// Upper bound on `raised`.
+		// goal: Balance,
 	}
 
 	pub type FundIndex = u32;
@@ -159,12 +159,12 @@ use frame_support::inherent::Vec;
 		pub fn create(
 			origin: OriginFor<T>,
 			// beneficiary: AccountIdOf<T>,
-			goal: BalanceOf<T>,
-			end: T::BlockNumber,
+			// goal: BalanceOf<T>,
+			// end: T::BlockNumber,
 		) -> DispatchResultWithPostInfo {
 			let creator = ensure_signed(origin)?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(end > now, Error::<T>::EndTooEarly);
+			// ensure!(end > now, Error::<T>::EndTooEarly);
 			let deposit = T::SubmissionDeposit::get();
 			let beneficiary = TreasurePalletId.into_account();
 			let imb = T::Currency::withdraw(
@@ -183,7 +183,7 @@ use frame_support::inherent::Vec;
 
 			<Funds<T>>::insert(
 				index,
-				FundInfo { beneficiary, deposit, raised: Zero::zero(), end, goal },
+				FundInfo { beneficiary, deposit, raised: Zero::zero() },
 			);
 
 			Self::deposit_event(Event::Created(index, now));
@@ -204,7 +204,7 @@ use frame_support::inherent::Vec;
 
 			// Make sure crowdfund has not ended
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
+			// ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
 
 			// Add contribution to the fund
 			T::Currency::transfer(
@@ -235,7 +235,7 @@ use frame_support::inherent::Vec;
 
 			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(fund.end < now, Error::<T>::FundStillActive);
+			// ensure!(fund.end < now, Error::<T>::FundStillActive);
 
 			let balance = Self::contribution_get(index, &who);
 			ensure!(balance > Zero::zero(), Error::<T>::NoContribution);
@@ -272,7 +272,7 @@ use frame_support::inherent::Vec;
 
 			// Check that enough time has passed to remove from storage
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(now >= fund.end + T::RetirementPeriod::get(), Error::<T>::FundNotRetired);
+			// ensure!(now >= fund.end + T::RetirementPeriod::get(), Error::<T>::FundNotRetired);
 
 			let account = Self::fund_account_id(index);
 
@@ -310,10 +310,10 @@ use frame_support::inherent::Vec;
 			// Check that enough time has passed to remove from storage
 			let now = <frame_system::Pallet<T>>::block_number();
 
-			ensure!(now >= fund.end, Error::<T>::FundStillActive);
+			// ensure!(now >= fund.end, Error::<T>::FundStillActive);
 
-			// Check that the fund was actually successful
-			ensure!(fund.raised >= fund.goal, Error::<T>::UnsuccessfulFund);
+			// // Check that the fund was actually successful
+			// ensure!(fund.raised >= fund.goal, Error::<T>::UnsuccessfulFund);
 
 			let account = Self::fund_account_id(index);
 
