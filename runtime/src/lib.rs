@@ -12,7 +12,6 @@ use pallet_grandpa::{
 use sp_api::impl_runtime_apis;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, u32_trait::{_1, _2, _3, _4, _5}, OpaqueMetadata};
-pub use orml_nft;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys, 
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
@@ -305,14 +304,19 @@ impl pallet_template::Config for Runtime {
 	type Currency = Balances;
 	type SubmissionDeposit = SubmissionDeposit;
 	type MinContribution = MinContribution;
-	type RetirementPeriod = RetirementPeriod;
-	
+}
+
+parameter_types! {
+	pub const SubmissionDeposit: u128 = 10;
+	pub const MinContribution: u128 = 10;
+	pub const RetirementPeriod: u32 = 10;
 }
 
 parameter_types!{
 	pub const MaxClassMetadata: u32=10;
 	pub const MaxTokenMetadata: u32=10;
 }
+
 
 impl orml_nft::Config for Runtime {
 	type Event = Event;
@@ -323,13 +327,6 @@ impl orml_nft::Config for Runtime {
 	type MaxClassMetadata = MaxClassMetadata;
 	type MaxTokenMetadata =MaxTokenMetadata;
 }
-
-parameter_types! {
-	pub const SubmissionDeposit: u128 = 10;
-	pub const MinContribution: u128 = 10;
-	pub const RetirementPeriod: u32 = 10;
-}
-
 
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
@@ -351,7 +348,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 
 // Configure the pallet-treasury.
 parameter_types! {
-	pub const ProposalBond: Permill = Permill::from_percent(5);
+	pub const ProposalBond: Permill = Permill::from_percent(1);
 	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
 	pub const SpendPeriod: BlockNumber = 1 * DAYS;
 	pub const Burn: Permill = Permill::from_percent(50);
