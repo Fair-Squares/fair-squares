@@ -312,6 +312,21 @@ parameter_types! {
 	pub const RetirementPeriod: u32 = 10;
 }
 
+parameter_types!{
+	pub const MaxClassMetadata: u32=10;
+	pub const MaxTokenMetadata: u32=10;
+}
+
+
+impl orml_nft::Config for Runtime {
+	type Event = Event;
+	type ClassId = u64;
+	type TokenId = u64;
+	type ClassData = u32;
+	type TokenData = u32;
+	type MaxClassMetadata = MaxClassMetadata;
+	type MaxTokenMetadata =MaxTokenMetadata;
+}
 
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
@@ -395,6 +410,7 @@ construct_runtime!(
 		TemplateModule: pallet_template::{Pallet, Call, Storage, Event<T>},
 		Treasury: pallet_treasury::{Pallet, Call, Storage, Event<T>},
 		Council: pallet_collective::<Instance1>::{Pallet, Call, Storage, Origin<T>, Event<T>, Config<T>},
+		NFT: orml_nft::{Pallet, Call,Storage, Config<T>,Event<T>},
 
 	}
 );
