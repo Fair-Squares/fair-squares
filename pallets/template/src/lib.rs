@@ -4,8 +4,6 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
-type ClassData<T> = <T as orml_nft::Config>::ClassData;
-type TokenData<T> = <T as orml_nft::Config>::TokenData;
 
 #[cfg(test)]
 mod mock;
@@ -30,43 +28,42 @@ pub mod pallet {
 	};
 	use frame_system::{ensure_signed, pallet_prelude::*};
 use scale_info::TypeInfo;
-
-pub use scale_info::prelude::vec;
 use frame_support::inherent::Vec;
 
 	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
-
+	const TreasurePalletId: PalletId = PalletId(*b"py/trsry");
+	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + orml_nft::Config {
+	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type Currency: ReservableCurrency<<Self as frame_system::Config>::AccountId>;
+		type Currency: ReservableCurrency<Self::AccountId>;
 		type SubmissionDeposit: Get<BalanceOf<Self>>;
 		type MinContribution: Get<BalanceOf<Self>>;
-		type RetirementPeriod: Get<<Self as frame_system::Config>::BlockNumber>;
+		// type RetirementPeriod: Get<Self::BlockNumber>;
 	}
 
 	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 	#[cfg_attr(feature = "std", derive(Debug))]
-	pub struct FundInfo<AccountId, Balance, BlockNumber> {
+	pub struct FundInfo<AccountId, Balance> {
 		/// The account that will recieve the funds if the campaign is successful.
 		beneficiary: AccountId,
 		/// The amount of deposit placed.
 		deposit: Balance,
 		/// The total amount raised.
 		raised: Balance,
-		/// Block number after which funding must have succeeded.
-		end: BlockNumber,
-		/// Upper bound on `raised`.
-		goal: Balance,
+		// /// Block number after which funding must have succeeded.
+		// end: BlockNumber,
+		// /// Upper bound on `raised`.
+		// goal: Balance,
 	}
 
 	pub type FundIndex = u32;
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 	type FundInfoOf<T> =
-		FundInfo<AccountIdOf<T>, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+		FundInfo<AccountIdOf<T>, BalanceOf<T>>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -100,7 +97,7 @@ use frame_support::inherent::Vec;
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		SomethingStored(u32, <T as frame_system::Config>::AccountId),
+		SomethingStored(u32, T::AccountId),
 		Created(FundIndex, <T as frame_system::Config>::BlockNumber),
 		Contributed(
 			<T as frame_system::Config>::AccountId,
@@ -161,29 +158,22 @@ use frame_support::inherent::Vec;
 		#[pallet::weight(10_000)]
 		pub fn create(
 			origin: OriginFor<T>,
-			beneficiary: AccountIdOf<T>,
-			goal: BalanceOf<T>,
-			end: <T as frame_system::Config>::BlockNumber,
-			Cdatas:ClassData<T>, //Kazu: Added ClassData parameter from orml_nft pallet
-			Tdatas:TokenData<T>
+			// beneficiary: AccountIdOf<T>,
+			// goal: BalanceOf<T>,
+			// end: T::BlockNumber,
 		) -> DispatchResultWithPostInfo {
 			let creator = ensure_signed(origin)?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(end > now, Error::<T>::EndTooEarly);
+			// ensure!(end > now, Error::<T>::EndTooEarly);
 			let deposit = T::SubmissionDeposit::get();
+			let beneficiary = TreasurePalletId.into_account();
 			let imb = T::Currency::withdraw(
 				&creator,
 				deposit,
 				WithdrawReasons::TRANSFER,
 				ExistenceRequirement::AllowDeath,
 			)?;
-			//Kazu: I need to understand what goes in metadata and data parameters. For now I use a dummy vector for metada, and I create a NFT
-			let mut vv = vec![3,5];
-			let mut vv2 = vv.clone();
-			let nft_id = orml_nft::Pallet::<T>::create_class(&beneficiary,vv,Default::default())?;
 
-			let token_id= orml_nft::Pallet::<T>::mint(&beneficiary,nft_id,vv2,Default::default())?;
-			
 			let index = <FundCount<T>>::get();
 			// not protected against overflow, see safemath section
 			<FundCount<T>>::put(index + 1);
@@ -193,7 +183,7 @@ use frame_support::inherent::Vec;
 
 			<Funds<T>>::insert(
 				index,
-				FundInfo { beneficiary, deposit, raised: Zero::zero(), end, goal },
+				FundInfo { beneficiary, deposit, raised: Zero::zero() },
 			);
 
 			Self::deposit_event(Event::Created(index, now));
@@ -214,7 +204,7 @@ use frame_support::inherent::Vec;
 
 			// Make sure crowdfund has not ended
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
+			// ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
 
 			// Add contribution to the fund
 			T::Currency::transfer(
@@ -245,7 +235,7 @@ use frame_support::inherent::Vec;
 
 			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(fund.end < now, Error::<T>::FundStillActive);
+			// ensure!(fund.end < now, Error::<T>::FundStillActive);
 
 			let balance = Self::contribution_get(index, &who);
 			ensure!(balance > Zero::zero(), Error::<T>::NoContribution);
@@ -282,7 +272,7 @@ use frame_support::inherent::Vec;
 
 			// Check that enough time has passed to remove from storage
 			let now = <frame_system::Pallet<T>>::block_number();
-			ensure!(now >= fund.end + T::RetirementPeriod::get(), Error::<T>::FundNotRetired);
+			// ensure!(now >= fund.end + T::RetirementPeriod::get(), Error::<T>::FundNotRetired);
 
 			let account = Self::fund_account_id(index);
 
@@ -320,10 +310,10 @@ use frame_support::inherent::Vec;
 			// Check that enough time has passed to remove from storage
 			let now = <frame_system::Pallet<T>>::block_number();
 
-			ensure!(now >= fund.end, Error::<T>::FundStillActive);
+			// ensure!(now >= fund.end, Error::<T>::FundStillActive);
 
-			// Check that the fund was actually successful
-			ensure!(fund.raised >= fund.goal, Error::<T>::UnsuccessfulFund);
+			// // Check that the fund was actually successful
+			// ensure!(fund.raised >= fund.goal, Error::<T>::UnsuccessfulFund);
 
 			let account = Self::fund_account_id(index);
 
@@ -360,7 +350,7 @@ use frame_support::inherent::Vec;
 		}
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::weight(10_000 + <T as frame_system::Config>::DbWeight::get().writes(1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
@@ -377,7 +367,7 @@ use frame_support::inherent::Vec;
 		}
 
 		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + <T as frame_system::Config>::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
 			let _who = ensure_signed(origin)?;
 
@@ -401,7 +391,7 @@ use frame_support::inherent::Vec;
 		///
 		/// This actually does computation. If you need to keep using it, then make sure you cache the
 		/// value and only call this once.
-		pub fn fund_account_id(index: FundIndex) -> <T as frame_system::Config>::AccountId {
+		pub fn fund_account_id(index: FundIndex) -> T::AccountId {
 			PALLET_ID.into_sub_account(index)
 		}
 
@@ -414,23 +404,23 @@ use frame_support::inherent::Vec;
 			buf.extend_from_slice(b"crowdfnd");
 			buf.extend_from_slice(&index.to_le_bytes()[..]);
 
-			child::ChildInfo::new_default(<T as frame_system::Config>::Hashing::hash(&buf[..]).as_ref())
+			child::ChildInfo::new_default(T::Hashing::hash(&buf[..]).as_ref())
 		}
 
 		/// Record a contribution in the associated child trie.
-		pub fn contribution_put(index: FundIndex, who: &<T as frame_system::Config>::AccountId, balance: &BalanceOf<T>) {
+		pub fn contribution_put(index: FundIndex, who: &T::AccountId, balance: &BalanceOf<T>) {
 			let id = Self::id_from_index(index);
 			who.using_encoded(|b| child::put(&id, b, &balance));
 		}
 
 		/// Lookup a contribution in the associated child trie.
-		pub fn contribution_get(index: FundIndex, who: &<T as frame_system::Config>::AccountId) -> BalanceOf<T> {
+		pub fn contribution_get(index: FundIndex, who: &T::AccountId) -> BalanceOf<T> {
 			let id = Self::id_from_index(index);
 			who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
 		}
 
 		/// Remove a contribution from an associated child trie.
-		pub fn contribution_kill(index: FundIndex, who: &<T as frame_system::Config>::AccountId) {
+		pub fn contribution_kill(index: FundIndex, who: &T::AccountId) {
 			let id = Self::id_from_index(index);
 			who.using_encoded(|b| child::kill(&id, b));
 		}
