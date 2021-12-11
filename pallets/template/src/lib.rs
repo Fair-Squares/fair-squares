@@ -30,6 +30,7 @@ pub mod pallet {
 	};
 	use frame_system::{ensure_signed, pallet_prelude::*};
 use scale_info::TypeInfo;
+
 pub use scale_info::prelude::vec;
 use frame_support::inherent::Vec;
 
@@ -177,9 +178,12 @@ use frame_support::inherent::Vec;
 				ExistenceRequirement::AllowDeath,
 			)?;
 			//Kazu: I need to understand what goes in metadata and data parameters. For now I use a dummy vector for metada, and I create a NFT
-			let vv= vec![3,5];
-			let nft_id = orml_nft::Pallet::<T>::create_class(&beneficiary,vv,Cdatas);
-			//let nft_mint = orml_nft::Pallet::<T>::mint(&beneficiary,???,vv,Tdatas);
+			let mut vv = vec![3,5];
+			let mut vv2 = vv.clone();
+			let nft_id = orml_nft::Pallet::<T>::create_class(&beneficiary,vv,Default::default())?;
+
+			let token_id= orml_nft::Pallet::<T>::mint(&beneficiary,nft_id,vv2,Default::default())?;
+			
 			let index = <FundCount<T>>::get();
 			// not protected against overflow, see safemath section
 			<FundCount<T>>::put(index + 1);
