@@ -137,7 +137,7 @@ pub mod module {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config>{
         /// A new NFT class was successfully created. \[owner, NFT_id\]
-        CreatedId(T::AccountId, T::ClassId),
+        CreatedId(T::ClassId),
         /// A new NFT was successfully minted. \[owner, Token_id\]
         Minted(T::AccountId, T::TokenId),
         /// NFT tokens were successfully transferred. \[from, to, NFT_id_&_Token_id, percentage\]
@@ -256,7 +256,7 @@ impl<T: Config> Pallet<T> {
 		};
         // Logging to the console
         log::info!("A NFT was created with ID: {:?}.", class_id);
-        //Self::deposit_event(Event::CreatedId(owner,class_id));
+        Self::deposit_event(Event::CreatedId(class_id));
 		Classes::<T>::insert(class_id, info);
 
 		Ok(class_id)
