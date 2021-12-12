@@ -1,10 +1,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
-
+///Kazu:Importing needed types from the NFT pallet
+type ClassData<T> = <T as orml_nft::Config>::ClassData;
+type TokenData<T> = <T as orml_nft::Config>::TokenData;
+type TokenId<T> = <T as orml_nft::Config>::TokenId;
+type ClassId<T> = <T as orml_nft::Config>::ClassId;
+type index = u32;
 #[cfg(test)]
 mod mock;
 
@@ -27,15 +29,16 @@ pub mod pallet {
 		PalletId
 	};
 	use frame_system::{ensure_signed, pallet_prelude::*};
-use scale_info::TypeInfo;
-use frame_support::inherent::Vec;
+	use scale_info::TypeInfo;
+	use frame_support::inherent::Vec;
+	use scale_info::prelude::vec;
 
 	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
 	const TreasurePalletId: PalletId = PalletId(*b"py/trsry");
 	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + orml_nft::Config  {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
@@ -53,16 +56,36 @@ use frame_support::inherent::Vec;
 		deposit: Balance,
 		/// The total amount raised.
 		raised: Balance,
-		// /// Block number after which funding must have succeeded.
-		// end: BlockNumber,
-		// /// Upper bound on `raised`.
-		// goal: Balance,
+		
 	}
 
+	///Kazu:the struct below is used for project's proposal's: Houses, Business, land, etc..
+	///Kazu:the proposal is linked to a NFT which represents the proposal contract 
+	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+	#[cfg_attr(feature = "std", derive(Debug))]
+	pub struct Proposal<AccountId, Balance,ClassId, TokenId,index> {
+		/// Kazu:The account that will receive the funds if the proposal is accepted.
+		powner: AccountId,
+		price: Balance,
+		classId: ClassId,
+		tokenId: TokenId,
+		index:index,
+	}
+
+	///Kazu:The struct below is used to track contributors & contributions
+	#[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, Default)]
+	pub struct ContrIb<AccountId, Balance> {
+		contribution: Balance,
+		account: AccountId,
+		
+}
+
 	pub type FundIndex = u32;
+	pub type PropIndex = u32;//Kazu:for proposals
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-	type FundInfoOf<T> =
+	//type ProposalInfoOf<T> = Proposal<AccountIdOf<T>, BalanceOf<T>,ClassId<T>, TokenId<T>>; //Kazu:for proposals
+	type FundInfoOf<T> = 
 		FundInfo<AccountIdOf<T>, BalanceOf<T>>;
 
 	#[pallet::pallet]
@@ -73,10 +96,12 @@ use frame_support::inherent::Vec;
 	// https://docs.substrate.io/v3/runtime/storage
 	#[pallet::storage]
 	#[pallet::getter(fn something)]
-
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
+
+	///Kazu:Below is the definition of the storage used for contributions
+	#[pallet::storage]
+	#[pallet::getter(fn contr_ib)]
+	pub(super) type ContStore<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn funds)]
@@ -85,9 +110,20 @@ use frame_support::inherent::Vec;
 		StorageMap<_, Blake2_128Concat, FundIndex, FundInfoOf<T>, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn props)]
+	/// Kazu:Info on all of the proposals.
+	pub(super) type Props<T: Config> =
+		StorageValue<_, Proposal<AccountIdOf<T>, BalanceOf<T>,ClassId<T>, TokenId<T>,index>, ValueQuery>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn fund_count)]
 	/// The total number of funds that have so far been allocated.
 	pub(super) type FundCount<T: Config> = StorageValue<_, FundIndex, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn prop_count)]
+	/// Kazu:The total number of proposals that have so far been submitted.
+	pub(super) type PropCount<T: Config> = StorageValue<_, PropIndex, ValueQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events
@@ -99,6 +135,7 @@ use frame_support::inherent::Vec;
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
 		Created(FundIndex, <T as frame_system::Config>::BlockNumber),
+		Created2(PropIndex, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
 		Contributed(
 			<T as frame_system::Config>::AccountId,
 			FundIndex,
@@ -123,6 +160,8 @@ use frame_support::inherent::Vec;
 			<T as frame_system::Config>::AccountId,
 		),
 	}
+
+
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
@@ -186,6 +225,56 @@ use frame_support::inherent::Vec;
 				FundInfo { beneficiary, deposit, raised: Zero::zero() },
 			);
 
+			Self::deposit_event(Event::Created2(index, now));
+			Ok(().into())
+		}
+
+		/// Kazu:Create a new Proposal
+		#[pallet::weight(10_000)]
+		pub fn createProp(
+			origin: OriginFor<T>,
+			powner: AccountIdOf<T>,
+			price: BalanceOf<T>,
+			Cdatas:ClassData<T>, //Kazu: Added ClassData parameter from orml_nft pallet
+			Tdatas:TokenData<T> //Kazu: Added TokenData parameter from orml_nft pallet
+		) -> DispatchResultWithPostInfo {
+			let creator = ensure_signed(origin)?;
+			let now = <frame_system::Pallet<T>>::block_number();
+			
+			let deposit = T::SubmissionDeposit::get();
+			let imb = T::Currency::withdraw(
+				&creator,
+				deposit,
+				WithdrawReasons::TRANSFER,
+				ExistenceRequirement::AllowDeath,
+			)?;
+			//Kazu: I need to understand what goes in metadata and data parameters. For now I use a dummy vector for metada, and I create a NFT
+			let mut vv = vec![3,5];
+			let mut vv2 = vv.clone();
+			//Kazu:Creating the nftClassId and the tokenId(Minting)
+			let classId = orml_nft::Pallet::<T>::create_class(&powner,vv,Default::default())?;
+			let tokenId= orml_nft::Pallet::<T>::mint(&powner,classId,vv2,Default::default())?;
+			
+			let index = <PropCount<T>>::get();
+			// not protected against overflow, see safemath section
+			<PropCount<T>>::put(index + 1);
+			// No fees are paid here if we need to create this account; that's why we don't just
+			// use the stock `transfer`.
+			T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
+
+			//Kazu:Storing the created proposal informations inside the Props storage
+			//<Props<T>>::insert(
+			//	index,
+			//	Proposal { powner,price,classId,tokenId},
+			//);
+			
+			let mut pro=Props::<T>::get();
+			pro.powner=powner;
+			pro.price=price;
+			pro.classId=classId;
+			pro.tokenId=tokenId;
+			pro.index=index;
+
 			Self::deposit_event(Event::Created(index, now));
 			Ok(().into())
 		}
@@ -194,14 +283,30 @@ use frame_support::inherent::Vec;
 		#[pallet::weight(10_000)]
 		pub fn contribute(
 			origin: OriginFor<T>,
+			account: T::AccountId,//Kazu:Added this for compatibility with storageMap
 			index: FundIndex,
 			value: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
+
+		///Kazu:creating a new contribution object below with the current infos
+			let c1= self::ContrIb{
+				contribution: value,
+				account: &account,
+
+			};
 			let who = ensure_signed(origin)?;
 
+			///Kazu:if id is already in storage, update storage value by adding the new contribution, or else
+			///insert the new Id/contribution
+			if ContStore::<T>::contains_key(c1.account){
+				ContStore::<T>::mutate(c1.account,|value|{
+					*value += c1.contribution;
+				})
+			} else {ContStore::<T>::insert(account,value);}
+			
 			ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 			let mut fund = Self::funds(index).ok_or(Error::<T>::InvalidIndex)?;
-
+			
 			// Make sure crowdfund has not ended
 			let now = <frame_system::Pallet<T>>::block_number();
 			// ensure!(fund.end > now, Error::<T>::ContributionPeriodOver);
@@ -223,6 +328,45 @@ use frame_support::inherent::Vec;
 			Self::deposit_event(Event::Contributed(who, index, balance, now));
 
 			Ok(().into())
+		}
+
+
+		///Kazu:Proposal funding, and NFT transfer
+
+		#[pallet::weight(10_000)]
+		pub fn fundProp(
+			powner: OriginFor<T>,
+			account: T::AccountId,
+			index: PropIndex,
+			index2:FundIndex,
+						
+		)-> DispatchResultWithPostInfo{
+			let mut fund = Self::funds(index2).ok_or(Error::<T>::InvalidIndex)?;
+			let mut pro =Props::<T>::get();
+			let price =pro.price;
+			
+			//Pay the proposal owner From Treasurery
+			T::Currency::transfer(
+				&Self::fund_account_id(index),
+				&account,
+				price,
+				ExistenceRequirement::AllowDeath,
+			)?;	
+		
+			//Kazu:Determine which contributor is included into the proposal
+			//Kazu:nbr of participants
+
+			//let mut part=4;
+			//while part !=0{
+			//
+			//}
+		
+			//Kazu:calculate purcentage based on number of contributors
+			//let percentage = 1/part;
+		
+			//distribute NFTs to contributors
+			//let transf = rml_nft::Pallet::<T>::tranfer(account,contrib,token,percentage);
+		Ok(().into())
 		}
 
 		/// Withdraw full balance of a contributor to a fund
