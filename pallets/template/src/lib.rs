@@ -353,7 +353,7 @@ pub mod pallet {
 				});
 
 				
-				//let classId = orml_nft::Pallet::<T>::transfer(&powner,&i,(prop.classId,prop.tokenId),perc);
+				let classId = orml_nft::Pallet::<T>::transfer(&powner,&i,(prop.classId,prop.tokenId),perc);
 			}
 		
 			//calculate purcentage based on number of contributors
