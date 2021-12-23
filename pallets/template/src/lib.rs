@@ -33,8 +33,8 @@ pub mod pallet {
 	use frame_support::inherent::Vec;
 	use scale_info::prelude::vec;
 
-	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
-	const TreasurePalletId: PalletId = PalletId(*b"py/trsry");
+	//const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
+	const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -57,8 +57,8 @@ pub mod pallet {
 		/// Kazu:The account that will receive the funds if the proposal is accepted.
 		powner: AccountId,
 		price: Balance,
-		classId: ClassId,
-		tokenId: TokenId,
+		class_id: ClassId,
+		token_id: TokenId,
 	}
 
 	///Kazu:The struct below is used to track contributors & contributions
@@ -179,12 +179,12 @@ pub mod pallet {
 
 		/// Kazu:Create a new Proposal
 		#[pallet::weight(10_000)]
-		pub fn createProp(
+		pub fn create_prop(
 			origin: OriginFor<T>,
 			powner: AccountIdOf<T>,
 			price: BalanceOf<T>,
-			_Cdatas:ClassData<T>, //Kazu: Added ClassData parameter from orml_nft pallet
-			_Tdatas:TokenData<T> //Kazu: Added TokenData parameter from orml_nft pallet
+			_cdatas:ClassData<T>, //Kazu: Added ClassData parameter from orml_nft pallet
+			_tdatas:TokenData<T> //Kazu: Added TokenData parameter from orml_nft pallet
 		) -> DispatchResultWithPostInfo {
 			let creator = ensure_signed(origin)?;
 			let now = <frame_system::Pallet<T>>::block_number();
@@ -200,20 +200,20 @@ pub mod pallet {
 			let vv = vec![3,5];
 			let vv2 = vv.clone();
 			//Kazu:Creating the nftClassId and the tokenId(Minting)
-			let classId = orml_nft::Pallet::<T>::create_class(&powner,vv,Default::default())?;
-			let tokenId= orml_nft::Pallet::<T>::mint(&powner,classId,vv2,Default::default())?;
+			let class_id = orml_nft::Pallet::<T>::create_class(&powner,vv,Default::default())?;
+			let token_id= orml_nft::Pallet::<T>::mint(&powner,class_id,vv2,Default::default())?;
 			
 			let index = <PropCount<T>>::get();
 			// not protected against overflow, see safemath section
 			<PropCount<T>>::put(index + 1);
 			// No fees are paid here if we need to create this account; that's why we don't just
 			// use the stock `transfer`.
-			T::Currency::resolve_creating(&TreasurePalletId.into_account(), imb);
+			T::Currency::resolve_creating(&TREASURE_PALLET_ID.into_account(), imb);
 
 			//Kazu:Storing the created proposal informations inside the Props storage
 			<Props<T>>::insert(
 				index,
-				Proposal { powner,price,classId,tokenId},
+				Proposal { powner,price,class_id,token_id},
 			);
 
 			Self::deposit_event(Event::Created( now));
@@ -229,15 +229,15 @@ pub mod pallet {
 			value: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 
-		///Kazu:creating a new contribution object below with the current infos
+		//Kazu:creating a new contribution object below with the current infos
 			let c1= self::ContrIb{
 				contribution: value,
 				account: &account,
 			};
 			let who = ensure_signed(origin)?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			///Kazu:if id is already in storage, update storage value by adding the new contribution, or else
-			///insert the new Id/contribution
+			//Kazu:if id is already in storage, update storage value by adding the new contribution, or else
+			//insert the new Id/contribution
 			if ContStore::<T>::contains_key(c1.account){
 				ContStore::<T>::mutate(c1.account,|value|{
 					*value += c1.contribution;
@@ -257,7 +257,7 @@ pub mod pallet {
 			// Add contribution to the fund
 			T::Currency::transfer(
 				&who,
-				&TreasurePalletId.into_account(),
+				&TREASURE_PALLET_ID.into_account(),
 				value,
 				ExistenceRequirement::AllowDeath,
 			)?;
@@ -276,7 +276,7 @@ pub mod pallet {
 
 		///Proposal transactions
 		#[pallet::weight(10_000)]
-		pub fn fundProp(
+		pub fn fund_prop(
 		//Kazu: Origin is the account paying for transaction fees.
 			_origin: OriginFor<T>,
 			index1: PropIndex,
@@ -289,7 +289,7 @@ pub mod pallet {
 			
 			let price = prop.price;
 			let powner = prop.powner;
-			let ben = TreasurePalletId.into_account();
+			let ben = TREASURE_PALLET_ID.into_account();
 			
 			T::Currency::transfer(
 				&ben,
@@ -297,22 +297,30 @@ pub mod pallet {
 				price,
 				ExistenceRequirement::AllowDeath,
 			)?;
-			
+
+			let ve1=<ContAcc<T>>::get();
+			let mut total0 = 0;
+			for i in ve1.iter(){
+				let contrib = Self::contr_ib(i);
+				let contrib1 = TryInto::<u64>::try_into(contrib).ok();
+				let b0= match contrib1{
+					Some(x) => x,
+					None => 0,
+				};
+				total0+=b0
+			}
 			//Determine which contributor is included into the proposal
 			//Creating a vector containing contributor's IDs
-			let mut ve=<ContAcc<T>>::get();
+			let ve=<ContAcc<T>>::get();
 			//For each contributor ID
 			for i in ve.iter(){
-				//We get the total of [raised funds]~[Treasury]
-				
-				let total = Self::pot();
-
+		
 				//pick-up 1st contribution and convert it from type Balance to u64
 				let contrib = Self::contr_ib(i);
-				let mut contrib1 = TryInto::<u64>::try_into(contrib).ok();
+				let contrib1 = TryInto::<u64>::try_into(contrib).ok();
 
 				//pick-up proposal price and convert it from type Balance to u64
-				let mut pr = TryInto::<u64>::try_into(price).ok();
+				let pr = TryInto::<u64>::try_into(price).ok();
 				let pric= match pr{
 					Some(x) => x,
 					None => 0,
@@ -323,22 +331,14 @@ pub mod pallet {
 					None => 0,
 				};
 				
-				//convert the raised funds from Balance to u64,
-				//and then extract the value from the enum collection 
-				let mut total0 = TryInto::<u64>::try_into(total).ok();
-				let b1= match total0{
-					Some(x) => x,
-					None => 0,
-				};
+		
 				//In order to use divisions, we need both values to be floats
 				let price2 = pric as f64;
 				let b00= b0 as f64;
-				let b11= b1 as f64;
+				let b11= total0 as f64;
 				//contribution percentage calculation 
-				let mut per = 100.0*(b00/b11);
-				//amount removed from contributor share
+				let  per = 100.0*(b00/b11);
 				let newcon=(&per*price2/100.0) as u8;
-
 				let perc = per as u8;
 
 				let newb=TryInto::<BalanceOf<T>>::try_into(newcon).ok();
@@ -353,7 +353,7 @@ pub mod pallet {
 				});
 
 				
-				let classId = orml_nft::Pallet::<T>::transfer(&powner,&i,(prop.classId,prop.tokenId),perc);
+				let _class_id = orml_nft::Pallet::<T>::transfer(&powner,&i,(prop.class_id,prop.token_id),perc);
 			}
 		
 			//calculate purcentage based on number of contributors
@@ -370,7 +370,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
-			let mut fund = Self::props(index).ok_or(Error::<T>::InvalidIndex)?;
+			let _fund = Self::props(index).ok_or(Error::<T>::InvalidIndex)?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			// ensure!(fund.end < now, Error::<T>::FundStillActive);
 
@@ -381,7 +381,7 @@ pub mod pallet {
 			let _ = T::Currency::resolve_into_existing(
 				&who,
 				T::Currency::withdraw(
-					&TreasurePalletId.into_account(),
+					&TREASURE_PALLET_ID.into_account(),
 					balance,
 					WithdrawReasons::TRANSFER,
 					ExistenceRequirement::AllowDeath,
@@ -477,7 +477,7 @@ pub mod pallet {
 		}
 
 		pub fn pot() -> BalanceOf<T> {
-			T::Currency::free_balance(&TreasurePalletId.into_account())
+			T::Currency::free_balance(&TREASURE_PALLET_ID.into_account())
 			// Must never be less than 0 but better be safe.
 			.saturating_sub(T::Currency::minimum_balance())
 	}
