@@ -18,6 +18,7 @@ mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
+	//use std::mem;
 	use super::*;
 	use frame_support::{
 		dispatch::DispatchResult,
@@ -33,7 +34,7 @@ pub mod pallet {
 	use frame_support::inherent::Vec;
 	use scale_info::prelude::vec;
 
-	//const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
+	const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
 	const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -53,13 +54,18 @@ pub mod pallet {
 	///Kazu:the proposal is linked to a NFT which represents the proposal contract 
 	#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 	#[cfg_attr(feature = "std", derive(Debug))]
-	pub struct Proposal<AccountId, Balance,ClassId, TokenId> {
+	pub struct Proposal<ContIndex, Balance,ClassId, TokenId,Bool> {
 		/// Kazu:The account that will receive the funds if the proposal is accepted.
-		powner: AccountId,
-		price: Balance,
-		class_id: ClassId,
-		token_id: TokenId,
+		pub powner: ContIndex,
+		pub value: Balance,
+		pub class_id: ClassId,
+		pub token_id: TokenId,
+		pub balance: Balance,
+		pub funded: Bool,
+	
 	}
+
+	
 
 	///Kazu:The struct below is used to track contributors & contributions
 	#[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, Default)]
@@ -73,7 +79,9 @@ pub mod pallet {
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 	pub type ContIndex<T> = Vec<AccountIdOf<T>>;//Kazu:nbr of contributors
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-	type ProposalInfoOf<T> = Proposal<AccountIdOf<T>, BalanceOf<T>,ClassId<T>, TokenId<T>>; //Kazu:for proposals
+	type ProposalInfoOf<T> = Proposal<ContIndex<T>, BalanceOf<T>,ClassId<T>, TokenId<T>,Bool>; //Kazu:for proposals
+	type Bool = bool;
+	
 
 
 	#[pallet::pallet]
@@ -96,7 +104,7 @@ pub mod pallet {
 	#[pallet::getter(fn props)]
 	/// Kazu:Info on all of the proposals.
 	pub(super) type Props<T: Config> =
-		StorageMap<_, Blake2_128Concat,PropIndex, ProposalInfoOf<T>, OptionQuery>;
+		StorageMap<_, Blake2_128Concat,PropIndex, ProposalInfoOf<T>, ValueQuery>;
 
 	
 
@@ -169,6 +177,10 @@ pub mod pallet {
 		FundNotRetired,
 		/// Cannot dispense funds from an unsuccessful fund
 		UnsuccessfulFund,
+		/// Proposal already Funded
+		AlreadyFunded
+
+	
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -181,8 +193,8 @@ pub mod pallet {
 		#[pallet::weight(10_000)]
 		pub fn create_prop(
 			origin: OriginFor<T>,
-			powner: AccountIdOf<T>,
-			price: BalanceOf<T>,
+			powner0: AccountIdOf<T>,
+			value: BalanceOf<T>,			
 			_cdatas:ClassData<T>, //Kazu: Added ClassData parameter from orml_nft pallet
 			_tdatas:TokenData<T> //Kazu: Added TokenData parameter from orml_nft pallet
 		) -> DispatchResultWithPostInfo {
@@ -196,24 +208,31 @@ pub mod pallet {
 				WithdrawReasons::TRANSFER,
 				ExistenceRequirement::AllowDeath,
 			)?;
+
+
 			//Kazu: I need to understand what goes in metadata and data parameters. For now I use a dummy vector for metada, and I create a NFT
 			let vv = vec![3,5];
 			let vv2 = vv.clone();
 			//Kazu:Creating the nftClassId and the tokenId(Minting)
-			let class_id = orml_nft::Pallet::<T>::create_class(&powner,vv,Default::default())?;
-			let token_id= orml_nft::Pallet::<T>::mint(&powner,class_id,vv2,Default::default())?;
+			let mut powner= <ContIndex<T>>::new();
+			powner.push(powner0);
 			
+			let class_id = orml_nft::Pallet::<T>::create_class(&powner[0],vv,Default::default())?;
+			let token_id = orml_nft::Pallet::<T>::mint(&powner[0],class_id,vv2,Default::default())?;
+			let balance:BalanceOf<T> = Zero::zero();
+			let funded:Bool = false;
 			let index = <PropCount<T>>::get();
 			// not protected against overflow, see safemath section
 			<PropCount<T>>::put(index + 1);
 			// No fees are paid here if we need to create this account; that's why we don't just
 			// use the stock `transfer`.
-			T::Currency::resolve_creating(&TREASURE_PALLET_ID.into_account(), imb);
+			//T::Currency::resolve_creating(&TREASURE_PALLET_ID.into_account(), imb);
+			T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
 
 			//Kazu:Storing the created proposal informations inside the Props storage
 			<Props<T>>::insert(
 				index,
-				Proposal { powner,price,class_id,token_id},
+				Proposal { powner,value,class_id,token_id,balance,funded},
 			);
 
 			Self::deposit_event(Event::Created( now));
@@ -225,7 +244,6 @@ pub mod pallet {
 		pub fn contribute(
 			origin: OriginFor<T>,
 			account: T::AccountId,//Kazu:Added this for compatibility with storageMap
-			//to: T::AccountId,
 			value: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 
@@ -239,8 +257,8 @@ pub mod pallet {
 			//Kazu:if id is already in storage, update storage value by adding the new contribution, or else
 			//insert the new Id/contribution
 			if ContStore::<T>::contains_key(c1.account){
-				ContStore::<T>::mutate(c1.account,|value|{
-					*value += c1.contribution;
+				ContStore::<T>::mutate(c1.account,|val|{
+					*val += c1.contribution;
 				})
 
 			} else {
@@ -285,16 +303,18 @@ pub mod pallet {
 		)-> DispatchResultWithPostInfo{
 			//Kazu: Pay the proposal owner From Treasurery
 			
-			let prop = Props::<T>::get(index1).ok_or(Error::<T>::InvalidIndex)?;
+			let prop = Props::<T>::get(index1);
 			
-			let price = prop.price;
-			let powner = prop.powner;
-			let ben = TREASURE_PALLET_ID.into_account();
-			
+			let value = prop.value;
+			let powner = &prop.powner[0];
+			let ben = &TREASURE_PALLET_ID.into_account();
+
+			//Ensure that proposal has not been funded yet, or return an error 
+			ensure!(prop.funded==false, Error::<T>::AlreadyFunded);
 			T::Currency::transfer(
 				&ben,
 				&powner,
-				price,
+				value,
 				ExistenceRequirement::AllowDeath,
 			)?;
 
@@ -319,8 +339,8 @@ pub mod pallet {
 				let contrib = Self::contr_ib(i);
 				let contrib1 = TryInto::<u64>::try_into(contrib).ok();
 
-				//pick-up proposal price and convert it from type Balance to u64
-				let pr = TryInto::<u64>::try_into(price).ok();
+				//pick-up proposal value and convert it from type Balance to u64
+				let pr = TryInto::<u64>::try_into(value).ok();
 				let pric= match pr{
 					Some(x) => x,
 					None => 0,
@@ -347,16 +367,27 @@ pub mod pallet {
 					None => Zero::zero(),
 				};
 				//We need to update the contribution storage
-				ContStore::<T>::mutate(i,|value|{
+				ContStore::<T>::mutate(i,|val|{
 					
-					*value-= b;
+					*val-= b;
 				});
 
-				
+					
 				let _class_id = orml_nft::Pallet::<T>::transfer(&powner,&i,(prop.class_id,prop.token_id),perc);
 			}
+
+
 		
-			//calculate purcentage based on number of contributors
+			//change owner to new owners and proposal status
+			<Props<T>>::mutate(index1,|val| {
+				let  ve0= <ContAcc<T>>::get();
+				val.powner.pop();
+				for v in ve0.iter(){
+					let l=v.clone();
+					val.powner.push(l);
+				}
+				val.funded=true;
+			});
 		
 			//distribute NFTs to contributors
 			Ok(().into())		
@@ -370,7 +401,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
-			let _fund = Self::props(index).ok_or(Error::<T>::InvalidIndex)?;
+			let _fund = Self::props(index);
 			let now = <frame_system::Pallet<T>>::block_number();
 			// ensure!(fund.end < now, Error::<T>::FundStillActive);
 
@@ -436,8 +467,13 @@ pub mod pallet {
 
 	impl<T: Config> Pallet<T> {
 
-		/// Find the ID associated with the fund
+		/// Find the ID associated with the proposal fund
 		///
+		pub fn fund_account_id(index: PropIndex) -> T::AccountId {
+			PALLET_ID.into_sub_account(index)
+		}
+
+
 		/// Each fund stores information about its contributors and their contributions in a child trie
 		/// This helper function calculates the id of the associated child trie.
 		pub fn id_from_index() -> child::ChildInfo {
