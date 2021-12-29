@@ -118,11 +118,6 @@ pub mod pallet {
 	pub(super) type ContAcc<T: Config> = StorageValue<_, ContIndex<T>, ValueQuery>;
 
 
-	#[pallet::storage]
-	#[pallet::getter(fn prop_count)]
-	/// Kazu:The total number of proposals that have so far been submitted.
-	pub(super) type PropCount<T: Config> = StorageValue<_, PropIndex, ValueQuery>;
-
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events
 	#[pallet::event]
