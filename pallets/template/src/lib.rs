@@ -369,7 +369,8 @@ pub mod pallet {
 				let  per = 100.0*(b00/b11);
 				let newcon=(&per*price2/100.0) as u8;
 				let perc = per as u8;
-
+				
+				//Need to fix the line below 
 				let newb=TryInto::<BalanceOf<T>>::try_into(newcon).ok();
 				let b= match newb {
 					Some(x) => x,
