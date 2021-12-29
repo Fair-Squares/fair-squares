@@ -65,7 +65,6 @@ pub mod pallet {
 	
 	}
 
-	
 
 	///Kazu:The struct below is used to track contributors & contributions
 	#[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, Default)]
@@ -76,13 +75,13 @@ pub mod pallet {
 
 	
 	pub type PropIndex = u32;//Kazu:for proposals	
+
 	type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 	pub type ContIndex<T> = Vec<AccountIdOf<T>>;//Kazu:nbr of contributors
 	type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 	type ProposalInfoOf<T> = Proposal<ContIndex<T>, BalanceOf<T>,ClassId<T>, TokenId<T>,Bool>; //Kazu:for proposals
 	type Bool = bool;
 	
-
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -104,7 +103,7 @@ pub mod pallet {
 	#[pallet::getter(fn props)]
 	/// Kazu:Info on all of the proposals.
 	pub(super) type Props<T: Config> =
-		StorageMap<_, Blake2_128Concat,PropIndex, ProposalInfoOf<T>, ValueQuery>;
+	StorageMap<_, Blake2_128Concat,PropIndex, ProposalInfoOf<T>, ValueQuery>;
 
 	
 
@@ -118,6 +117,12 @@ pub mod pallet {
 	/// Kazu:The total number of proposals that have so far been submitted.
 	pub(super) type ContAcc<T: Config> = StorageValue<_, ContIndex<T>, ValueQuery>;
 
+
+	#[pallet::storage]
+	#[pallet::getter(fn prop_count)]
+	/// Kazu:The total number of proposals that have so far been submitted.
+	pub(super) type PropCount<T: Config> = StorageValue<_, PropIndex, ValueQuery>;
+
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events
 	#[pallet::event]
@@ -128,6 +133,7 @@ pub mod pallet {
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
 		Created( <T as frame_system::Config>::BlockNumber),
+
 		Created2(PropIndex, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
 		Contributed(
 			<T as frame_system::Config>::AccountId,
@@ -236,6 +242,7 @@ pub mod pallet {
 			);
 
 			Self::deposit_event(Event::Created( now));
+
 			Ok(().into())
 		}
 
@@ -251,6 +258,7 @@ pub mod pallet {
 			let c1= self::ContrIb{
 				contribution: value,
 				account: &account,
+
 			};
 			let who = ensure_signed(origin)?;
 			let now = <frame_system::Pallet<T>>::block_number();
@@ -271,6 +279,7 @@ pub mod pallet {
 				}
 			
 			ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+
 
 			// Add contribution to the fund
 			T::Currency::transfer(
@@ -394,6 +403,7 @@ pub mod pallet {
 		}
 
 		/// Withdraw full balance of a contributor to treasury
+
 		#[pallet::weight(10_000)]
 		pub fn withdraw(
 			origin: OriginFor<T>,

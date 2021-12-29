@@ -32,7 +32,7 @@ While trying to achieve the above, the FS protocol also needs to standardize the
 - Registering shareholders of entities in live registeries
 - Verified Roles & Governance
 
-We are zooming much more on the problem definition, stakeholders and the solution in our paper on our [website](https://fair-squares.nl/). To learn more and get in touch with us, please join our [discord channel FS](https://discord.gg/vTbYjtaWcy)
+We are zooming much more on the problem definition, stakeholders and the solution in our paper on our [website](https://fair-squares.nl/). To learn more and get in touch with us, please join our [discord channel FS](https://discord.gg/5u3dxE49V5)
 
 ## APAC Hackathon Goal:
 
