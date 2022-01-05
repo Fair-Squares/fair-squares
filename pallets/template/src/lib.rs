@@ -358,7 +358,7 @@ pub mod pallet {
 				let b11= total0 as f64;
 				//contribution percentage calculation 
 				let  per = 100.0*(b00/b11);
-				let newcon=(&per*price2) as u8;
+				let newcon=(&per*price2) as u32;
 				let perc = per as u8;
 
 				let newb=TryInto::<BalanceOf<T>>::try_into(newcon).ok();
