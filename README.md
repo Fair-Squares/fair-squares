@@ -28,8 +28,6 @@ We are zooming much more on the problem definition, stakeholders and the solutio
 1. complete the [basic Rust setup instructions](./docs/rust-setup.md).
 1. `cargo run  --release -- --dev --tmp` in the root of the fs-node repo.
 
-### Published image on docker-hub
-`docker run -p 9944:9944 ilhanu/fs-node-apac:latest fs-node --ws-external --dev --tmp`
 
 ### Build
 
