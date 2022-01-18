@@ -34,23 +34,7 @@ While trying to achieve the above, the FS protocol also needs to standardize the
 
 We are zooming much more on the problem definition, stakeholders and the solution in our paper on our [website](https://fair-squares.nl/). To learn more and get in touch with us, please join our [discord channel FS](https://discord.gg/5u3dxE49V5)
 
-## APAC Hackathon Goal:
 
-We wrote a part in the [wiki](https://github.com/Fair-Squares/fair-squares/wiki/Features-of-Fair-Squares) at the early stages what we wanted to achieve, aside from the production-ready software that we expect FS to be in the future. For the hackathon we had a well-rounded PoC in mind that had the following features.
-
-### Goal of the APAC hackathon.
-1. Have a big fund in which people can deposit their capital. This fund keeps track of contributions and time-of-contributions.
-2. Onboarding houses on the platform in a form of a fractionable nft. 
-3. An engine that would select the best possible investors based on inqlusivity and distributed holders for investing in an house.
-4. Bidding and approving the spend from the elected council
-5. Renting the house out. 
-
-
-### What was achieved?
-1. We implemented the treasury pallet to act as the fund, left all standard unused parameters in there. 
-1. We re-used and customized the simple crowdfund example from the substrate docs website, that the funds 
-1. added the orml-nft module, in which users can propose a house to mint, in which the price van be set in units. The metadata en token-id can be set, this is not finished functionality towards housing and assets. 
-<br>
 
 ## How to run & build
 ### Running locally
