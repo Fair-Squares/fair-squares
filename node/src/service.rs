@@ -11,6 +11,8 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 use std::{sync::Arc, time::Duration};
+use sc_finality_grandpa as grandpa;
+
 
 // Our native executor instance.
 pub struct ExecutorDispatch;
@@ -78,7 +80,7 @@ pub fn new_partial(
 		config.wasm_method,
 		config.default_heap_pages,
 		config.max_runtime_instances,
-		runtime_cache_size,
+		config.runtime_cache_size,
 	);
 
 	let (client, backend, keystore_container, task_manager) =
@@ -181,7 +183,12 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
 		};
 	}
 
-	config.network.extra_sets.push(sc_finality_grandpa::grandpa_peers_set_config());
+	let grandpa_protocol_name = grandpa::protocol_standard_name(
+		&client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
+		&config.chain_spec,
+	);
+
+	config.network.extra_sets.push(sc_finality_grandpa::grandpa_peers_set_config(grandpa_protocol_name.clone()));
 	let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
 		grandpa_link.shared_authority_set().clone(),
@@ -214,6 +221,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
 	let name = config.network.node_name.clone();
 	let enable_grandpa = !config.disable_grandpa;
 	let prometheus_registry = config.prometheus_registry().cloned();
+	
 
 	let rpc_extensions_builder = {
 		let client = client.clone();
@@ -306,6 +314,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
 		keystore,
 		local_role: role,
 		telemetry: telemetry.as_ref().map(|x| x.handle()),
+		protocol_name: grandpa_protocol_name,
 	};
 
 	if enable_grandpa {
