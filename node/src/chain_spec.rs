@@ -151,6 +151,7 @@ fn testnet_genesis(
 			// Assign network admin rights.
 			key: Some(root_key),
 		},
+		orml_nft: Default::default(),
 		transaction_payment: Default::default(),
 	}
 }

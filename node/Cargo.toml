@@ -36,6 +36,8 @@ sp-finality-grandpa = { git = "https://github.com/paritytech/substrate", branch 
 sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
 sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
 sp-timestamp = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
+sp-io = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.16" }
+
 
 # These dependencies are used for the node template's RPCs
 jsonrpc-core = "18.0.0"
