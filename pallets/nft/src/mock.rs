@@ -1,7 +1,7 @@
 use super::*;
 use crate as nft;
 use frame_support::{
-	assert_noop, assert_ok, parameter_types, parameter_types,
+	assert_noop, assert_ok, parameter_types,
 	traits::{OnFinalize, OnInitialize},
 };
 use frame_system as system;
