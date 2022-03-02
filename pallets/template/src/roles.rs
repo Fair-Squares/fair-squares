@@ -4,7 +4,7 @@ pub struct Investor<T,U>{
     nft:U,
 }
 impl<T,U> Investor<T,U>{
-    pub fn new(acc: T,nft:U)-> Investor<T,U>{
+    pub fn new(acc: T,nft:U)-> Self{
         Investor{
             account_id: acc,
             nft: nft,
