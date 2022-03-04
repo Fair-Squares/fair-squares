@@ -299,6 +299,11 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_template::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
+	type MinContribution = MinContribution;
+}
+
+parameter_types! {
+	pub const MinContribution: u128 = 10;
 }
 
 // Configure nft pallet in pallets/nft
