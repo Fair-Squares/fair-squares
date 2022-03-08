@@ -13,7 +13,6 @@ mod tests;
 mod roles;
 pub use crate::roles::*;
 
-pub use pallet_nft::pallet as NftL;
 
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -32,7 +31,6 @@ pub mod pallet {
    };
    use frame_system::{ensure_signed};
    use frame_support::inherent::Vec;
-   use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
    
 
    //const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
@@ -70,8 +68,8 @@ pub mod pallet {
    
 
    #[pallet::storage]
-	#[pallet::getter(fn contrib_log)]
-	pub(super) type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
+   #[pallet::getter(fn contrib_log)]
+   pub(super) type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
 
    
 
@@ -140,10 +138,11 @@ pub mod pallet {
    // Dispatchable functions must be annotated with a weight and must return a DispatchResult.
    #[pallet::call]
    impl<T: Config> Pallet<T> {
+      
       /// An example dispatchable that takes a singles value as a parameter, writes the value to
       /// storage and emits an event. This function must be dispatched by a signed extrinsic.
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T>,rent:BalanceOf<T>,cd:CID,prop:Properties,start:Option<BlockNumberOf<T>>,end:Option<BlockNumberOf<T>>,cl:ClassIdOf<T>) -> DispatchResult { // cl:ClassIdOf<T>
+      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T>,rent:BalanceOf<T>) -> DispatchResult { // cl:ClassIdOf<T>
          // Check that the extrinsic was signed and get the signer.
          // This function will return an error if the extrinsic is not signed.
          // https://docs.substrate.io/v3/runtime/origins
@@ -154,7 +153,7 @@ pub mod pallet {
          //let class0= NftL::Pallet::mint(&who,acc,cl,cd,1);
 
          // Update storage.
-         <Something<T>>::put(dev.nft+something);
+         //<Something<T>>::put(dev.nft+something);
 
          // Emit an event.
          Self::deposit_event(Event::SomethingStored(something, who));
@@ -199,21 +198,6 @@ pub mod pallet {
 	/// TODO : extract execution from following commented code
 	
 	let now = <frame_system::Pallet<T>>::block_number();
-	
-//	let _fund = Self::props(index);
-//	// ensure!(fund.end < now, Error::<T>::FundStillActive);
-
-
-	// Return funds to caller without charging a transfer fee
-//	let _ = T::Currency::resolve_into_existing(
-//		&who,
-//		T::Currency::withdraw(
-//			&TREASURE_PALLET_ID.into_account(),
-//			balance,
-//			WithdrawReasons::TRANSFER,
-//			ExistenceRequirement::AllowDeath,
-//		)?,
-//	);
 
 	// Update storage
 	Self::contribution_kill( &who);
@@ -222,6 +206,53 @@ pub mod pallet {
 	Self::deposit_event(Event::Withdrew(who, balance, now));
 	
 	// Exit
+	Ok(().into())
+      }
+      
+      /// a house owner mint a house
+      #[pallet::weight(10_000)]
+      pub fn mint_house(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+      
+        // Exit
+	Ok(().into())
+      }
+      
+      /// a house owner create a proposal for a house
+      #[pallet::weight(10_000)]
+      pub fn create_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+      
+        // Exit
+	Ok(().into())
+      }
+      
+      /// a investor vote for a proposal
+      #[pallet::weight(10_000)]
+      pub fn vote_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+      
+        // Exit
+	Ok(().into())
+      }
+      
+      #[pallet::weight(10_000)]
+      pub fn manage_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+      
+        // Exit
+	Ok(().into())
+      }
+      
+      /// Withdraw full balance of a contributor to treasury
+      #[pallet::weight(10_000)]
+      pub fn withdraw_house_contribution(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+      
+        // Exit
+	Ok(().into())
+      }
+      
+      /// a Investor contributes funds to an existing fund
+      #[pallet::weight(10_000)]
+      pub fn contribute_fund(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+      
+        // Exit
 	Ok(().into())
       }
    }
