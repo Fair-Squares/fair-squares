@@ -36,7 +36,7 @@ pub use frame_support::{
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
-use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenData, CREATION_FEE};
+
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -306,34 +306,7 @@ parameter_types! {
 	pub const MinContribution: u128 = 10;
 }
 
-// Configure nft pallet in pallets/nft
-parameter_types! {
-	pub const ClassCreationFee: u32 = CREATION_FEE;
-	pub const Pot: AccountId = AccountId::new([9u8; 32]);
-}
 
-impl pallet_nft::Config for Runtime {
-	type Currency = Balances;
-	type Event = Event;
-	type WeightInfo = ();
-	type ClassCreationFee = ClassCreationFee;
-	type Pot = Pot;
-}
-
-parameter_types! {
-	pub const MaxClassMetadata: u32 = 1024;
-	pub const MaxTokenMetadata: u32 = 1024;
-}
-
-// Configure orml nft pallet
-impl orml_nft::Config for Runtime {
-	type ClassId = u32;
-	type TokenId = u64;
-	type ClassData = ClassData<BlockNumberOf<Self>, ClassIdOf<Self>>;
-	type TokenData = TokenData;
-	type MaxClassMetadata = MaxClassMetadata;
-	type MaxTokenMetadata = MaxTokenMetadata;
-}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -352,8 +325,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
-		NFT: pallet_nft,
-		OrmlNFT: orml_nft,
+		
 	}
 );
 

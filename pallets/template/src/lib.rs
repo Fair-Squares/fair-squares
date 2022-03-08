@@ -13,6 +13,8 @@ mod tests;
 mod roles;
 pub use crate::roles::*;
 
+pub use pallet_nft::pallet as NftL;
+
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -30,6 +32,8 @@ pub mod pallet {
    };
    use frame_system::{ensure_signed};
    use frame_support::inherent::Vec;
+   use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
+   
 
    //const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
    //const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
@@ -43,11 +47,10 @@ pub mod pallet {
       type MinContribution: Get<BalanceOf<Self>>;
    }
 	
-   pub type PropIndex = u32;//Kazu:for proposals	
-   type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-   pub type ContIndex<T> = Vec<AccountIdOf<T>>;//Kazu:nbr of contributors
+   pub type HouseIndex = u32;
+   pub type Owners<T> = Vec<AccountIdOf<T>>;
+   type AccountIdOf<T> = <T as frame_system::Config>::AccountId;   
    type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-   //type ProposalInfoOf<T> = Proposal<ContIndex<T>, BalanceOf<T>,ClassId<T>, TokenId<T>,Bool>; //Kazu:for proposals
    type Bool = bool;
 
 
@@ -66,6 +69,12 @@ pub mod pallet {
    pub type Something<T> = StorageValue<_, u32>;
    
 
+   #[pallet::storage]
+	#[pallet::getter(fn contrib_log)]
+	pub(super) type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
+
+   
+
    // Pallets use events to inform users when important changes are made.
    // https://docs.substrate.io/v3/runtime/events-and-errors
    #[pallet::event]
@@ -75,7 +84,7 @@ pub mod pallet {
       /// parameters. [something, who]
       SomethingStored(u32, T::AccountId),
       Created( <T as frame_system::Config>::BlockNumber),
-      Created2(PropIndex, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
+      Created2(HouseIndex, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
       Contributed(
          <T as frame_system::Config>::AccountId,
          BalanceOf<T>,
@@ -134,13 +143,15 @@ pub mod pallet {
       /// An example dispatchable that takes a singles value as a parameter, writes the value to
       /// storage and emits an event. This function must be dispatched by a signed extrinsic.
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T>,rent:BalanceOf<T>) -> DispatchResult {
+      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T>,rent:BalanceOf<T>,cd:CID,prop:Properties,start:Option<BlockNumberOf<T>>,end:Option<BlockNumberOf<T>>) -> DispatchResult { // cl:ClassIdOf<T>
          // Check that the extrinsic was signed and get the signer.
          // This function will return an error if the extrinsic is not signed.
          // https://docs.substrate.io/v3/runtime/origins
          let who = ensure_signed(origin)?;
          let dev=Investor::new(&acc,something);
          let _tenant=Tenant::new(&acc,rent);
+         
+         //let class0= NftL::Pallet::mint(&who,acc,cl,cd,1);
 
          // Update storage.
          <Something<T>>::put(dev.nft+something);
@@ -170,236 +181,13 @@ pub mod pallet {
          }
       }
       
-      /// Kazu:Create a new Proposal
-      #[pallet::weight(10_000)]
-      pub fn create_prop(
-         origin: OriginFor<T>,
-         powner0: AccountIdOf<T>,
-         value: BalanceOf<T>,			
-//         _cdatas:ClassData<T>, //Kazu: Added ClassData parameter from orml_nft pallet
-//         _tdatas:TokenData<T> //Kazu: Added TokenData parameter from orml_nft pallet
-      ) -> DispatchResultWithPostInfo {
-      
-         // Check the inputs
-         let creator = ensure_signed(origin)?;
-         
-         // Execute treatment
-         /// TODO : extract execution from following commented code
-         
-         let now = <frame_system::Pallet<T>>::block_number();
-         
-//         let creator = ensure_signed(origin)?;
-		
-//         let deposit = T::SubmissionDeposit::get();
-//         let imb = T::Currency::withdraw(
-//            &creator,
-//            deposit,
-//            WithdrawReasons::TRANSFER,
-//            ExistenceRequirement::AllowDeath,
-//         )?;
-
-
-//         //Kazu: I need to understand what goes in metadata and data parameters. For now I use a dummy vector for metada, and I create a NFT
-//         let vv = vec![3,5];
-//         let vv2 = vv.clone();
-//         //Kazu:Creating the nftClassId and the tokenId(Minting)
-//         let mut powner= <ContIndex<T>>::new();
-//         powner.push(powner0);
-		
-//         let class_id = orml_nft::Pallet::<T>::create_class(&powner[0],vv,Default::default())?;
-//         let token_id = orml_nft::Pallet::<T>::mint(&powner[0],class_id,vv2,Default::default())?;
-//         let balance:BalanceOf<T> = Zero::zero();
-//         let funded:Bool = false;
-//         let index = <PropCount<T>>::get();
-//         // not protected against overflow, see safemath section
-//         <PropCount<T>>::put(index + 1);
-//         // No fees are paid here if we need to create this account; that's why we don't just
-//         // use the stock `transfer`.
-//         //T::Currency::resolve_creating(&TREASURE_PALLET_ID.into_account(), imb);
-//         T::Currency::resolve_creating(&Self::fund_account_id(index), imb);
-
-//         //Kazu:Storing the created proposal informations inside the Props storage
-//         <Props<T>>::insert(
-//            index,
-//            Proposal { powner,value,class_id,token_id,balance,funded},
-//         );
-         
-         // Raise event
-         Self::deposit_event(Event::Created( now));
-         
-         // Exit
-         Ok(().into())
-      }
-      
-      /// Contribute funds to an existing fund
-      #[pallet::weight(10_000)]
-      pub fn contribute(
-         origin: OriginFor<T>,
-         account: T::AccountId,//Kazu:Added this for compatibility with storageMap
-         value: BalanceOf<T>,
-      ) -> DispatchResultWithPostInfo {
-      
-         // Check the inputs
-         let who = ensure_signed(origin)?;
-         ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
-         
-         // Execute treatment
-         /// TODO : extract execution from following commented code
-         let now = <frame_system::Pallet<T>>::block_number();
-         
-//         //Kazu:creating a new contribution object below with the current infos
-//         let c1= self::ContrIb{
-//            contribution: value,
-//            account: &account,
-//         };
-         
-         //Kazu:if id is already in storage, update storage value by adding the new contribution, or else
-         //insert the new Id/contribution
-//         if ContStore::<T>::contains_key(c1.account){
-//            ContStore::<T>::mutate(c1.account,|val|{
-//               *val += c1.contribution;
-//            })
-//         } else {
-//            ContStore::<T>::insert(&account,value);
-//            //let mut ve=<ContAcc<T>>::get();
-//            ContAcc::<T>::mutate(|val|{
-//               val.push(account);
-//            })				
-//         }
-
-         // Add contribution to the fund
-//         T::Currency::transfer(
-//            &who,
-//            &TREASURE_PALLET_ID.into_account(),
-//            value,
-//            ExistenceRequirement::AllowDeath,
-//         )?;			
-
-//         let balance = Self::contribution_get(&who);
-//         let balance = balance.saturating_add(value);
-//         Self::contribution_put(&who, &balance);
-         
-         // Raise event
-         let balance = value; // TODO just for the prototype, to remove
-         Self::deposit_event(Event::Contributed(who, balance, now));
-         
-         // Exit
-         Ok(().into())
-      }
-      
-      ///Proposal transactions
-      #[pallet::weight(10_000)]
-      pub fn fund_prop(
-      //Kazu: Origin is the account paying for transaction fees.
-         _origin: OriginFor<T>,
-         index1: PropIndex				
-      )-> DispatchResultWithPostInfo{
-      
-         // Check the inputs TODO
-         //let prop = Props::<T>::get(index1);
-         //Ensure that proposal has not been funded yet, or return an error 
-         //ensure!(prop.funded==false, Error::<T>::AlreadyFunded);
-         
-         // Execute treatment
-         /// TODO : extract execution from following commented code
-         
-         //Kazu: Pay the proposal owner From Treasurery
-	
-//         let value = prop.value;
-//         let powner = &prop.powner[0];
-//         let ben = &TREASURE_PALLET_ID.into_account();
-
-//         T::Currency::transfer(
-//            &ben,
-//            &powner,
-//            value,
-//            ExistenceRequirement::AllowDeath,
-//         )?;
-
-//         let ve1=<ContAcc<T>>::get();
-//         let mut total0 = 0;
-//         for i in ve1.iter(){
-//            let contrib = Self::contr_ib(i);
-//            let contrib1 = TryInto::<u64>::try_into(contrib).ok();
-//            let b0= match contrib1{
-//               Some(x) => x,
-//               None => 0,
-//            };
-//            total0+=b0
-//         }
-//         //Determine which contributor is included into the proposal
-//         //Creating a vector containing contributor's IDs
-//         let ve=<ContAcc<T>>::get();
-//         //For each contributor ID
-//         for i in ve.iter(){
-
-            //pick-up 1st contribution and convert it from type Balance to u64
-//            let contrib = Self::contr_ib(i);
-//            let contrib1 = TryInto::<u64>::try_into(contrib).ok();
-
-//           //pick-up proposal value and convert it from type Balance to u64
-//            let pr = TryInto::<u64>::try_into(value).ok();
-//		let pric= match pr{
-//			Some(x) => x,
-//			None => 0,
-//		};
-//		//contrib1 is an enum collection, so we use match to extract the contribution
-//		let b0= match contrib1{
-//			Some(x) => x,
-//			None => 0,
-//		};
-		
-
-//		//In order to use divisions, we need both values to be floats
-//		let price2 = pric as f64;
-//		let b00= b0 as f64;
-//		let b11= total0 as f64;
-//		//contribution percentage calculation 
-//		let  per = 100.0*(b00/b11);
-//		let newcon=(&per*price2) as u32;
-//		let perc = per as u8;
-
-//		let newb=TryInto::<BalanceOf<T>>::try_into(newcon).ok();
-//		let b= match newb {
-//			Some(x) => x,
-//			None => Zero::zero(),
-//		};
-//		//We need to update the contribution storage
-//		ContStore::<T>::mutate(i,|val|{
-//			
-//			*val-= b;
-//		});
-//
-//			
-//		let _class_id = orml_nft::Pallet::<T>::transfer(&powner,&i,(prop.class_id,prop.token_id),perc);
-//         }
-//
-//
-//
-//	//change owner to new owners and proposal status
-//	<Props<T>>::mutate(index1,|val| {
-//		let  ve0= <ContAcc<T>>::get();
-//		val.powner.pop();
-//		for v in ve0.iter(){
-//			let l=v.clone();
-//			val.powner.push(l);
-//		}
-//		val.funded=true;
-//	});
-         
-         // Raise event
-         // TODO
-         
-         // Exit
-         //distribute NFTs to contributors
-	 Ok(().into()) 		
-      }
+ 
       
       /// Withdraw full balance of a contributor to treasury
       #[pallet::weight(10_000)]
       pub fn withdraw(
          origin: OriginFor<T>,
-         #[pallet::compact]index: PropIndex,
+         #[pallet::compact]index: HouseIndex,
       ) -> DispatchResultWithPostInfo {
 	
 	// Check the inputs
