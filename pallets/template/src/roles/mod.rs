@@ -1,9 +1,16 @@
 
 mod items;
+pub use super::*;
 pub use crate::roles::items::*;
-pub use frame_support::dispatch::DispatchResult;
-pub use frame_system::{pallet_prelude::*,ensure_signed};
+pub type BalanceOf<T> = <<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+pub type Contributors<T> = Vec<AccountIdOf<T>>;
+pub type HouseIndex = u32;
+pub type Bool = bool;
 
+
+
+#[derive(Debug, PartialEq, Encode, Decode)]
 pub struct Investor<T,U>{
     pub account_id:T,
     pub nft:U,
@@ -18,13 +25,23 @@ impl<T,U> Investor<T,U>{
 
 }
 
-impl<T:frame_system::Config,U> Investor<T,U>{
+impl<T:pallet::Config,U> Investor<T,U>{
     
-    pub fn contribute(origin:OriginFor<T>,acc:T,val:U) -> DispatchResult{
-        let _c1=Contribution::new(&acc,&val);
+    pub fn contribute(origin:OriginFor<T>,acc:AccountIdOf<T> ,value:BalanceOf<T>) -> DispatchResult{
+        let c1=Contribution::new(&acc,&value);
         let _who = ensure_signed(origin)?;
 		let _now = <frame_system::Pallet<T>>::block_number();
-
+        if ContributionsLog::<T>::contains_key(c1.account){
+            ContributionsLog::<T>::mutate(c1.account, |val|{
+                *val += *c1.amount;
+            })
+        } else {
+            ContributionsLog::<T>::insert(&acc,value);
+            ContAccounts::<T>::mutate(|val|{
+                val.push(acc);
+            })
+        }
+        
         //function taking contribution storage and amount as inputs here
         Ok(().into())
 

@@ -22,8 +22,8 @@ frame-system = { git = "https://github.com/paritytech/substrate", default-featur
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16", optional = true }
 pallet-nft = { default-features = false, path="../nft"}
 
-# Orml depdendencies
-orml-nft = { git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false, rev = "ec9a8d8521ca9b7b800dd36726bba7da7a169b9d" }
+
+
 
 
 [dev-dependencies]

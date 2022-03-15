@@ -13,7 +13,7 @@ mod tests;
 mod roles;
 pub use crate::roles::*;
 
-pub use pallet_nft::pallet as NftL;
+//pub use pallet_nft::pallet as NftL;
 
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -21,41 +21,28 @@ mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
-   use super::*;
-   use frame_support::{
-      dispatch::DispatchResult,
-      pallet_prelude::*,
-      sp_runtime::traits::{Hash, Zero},
-      storage::child,
-      traits::{Currency, Get, ReservableCurrency},
-      PalletId		
-   };
-   use frame_system::{ensure_signed};
-   use frame_support::inherent::Vec;
+   pub use super::*;  
    use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
-   
+
 
    //const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
    //const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 
    /// Configure the pallet by specifying the parameters and types on which it depends.
    #[pallet::config]
-   pub trait Config: frame_system::Config {
+   pub trait Config: frame_system::Config{
       /// Because this pallet emits events, it depends on the runtime's definition of an event.
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;
       type MinContribution: Get<BalanceOf<Self>>;
    }
 	
-   pub type HouseIndex = u32;
-   pub type Owners<T> = Vec<AccountIdOf<T>>;
-   type AccountIdOf<T> = <T as frame_system::Config>::AccountId;   
-   type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-   type Bool = bool;
+   
 
 
    #[pallet::pallet]
    #[pallet::generate_store(pub(super) trait Store)]
+   #[pallet::without_storage_info]
    pub struct Pallet<T>(_);
 
 
@@ -71,8 +58,11 @@ pub mod pallet {
 
    #[pallet::storage]
 	#[pallet::getter(fn contrib_log)]
-	pub(super) type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
+	pub type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
 
+   #[pallet::storage]
+	#[pallet::getter(fn cont_accounts)]
+	pub type ContAccounts<T: Config> = StorageValue<_, Contributors<T>, ValueQuery>;
    
 
    // Pallets use events to inform users when important changes are made.
@@ -143,14 +133,15 @@ pub mod pallet {
       /// An example dispatchable that takes a singles value as a parameter, writes the value to
       /// storage and emits an event. This function must be dispatched by a signed extrinsic.
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T>,rent:BalanceOf<T>,cd:CID,prop:Properties,start:Option<BlockNumberOf<T>>,end:Option<BlockNumberOf<T>>) -> DispatchResult { // cl:ClassIdOf<T>
+      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T>,rent:BalanceOf<T>,cd:CID,prop:Properties,start:Option<BlockNumberOf<T>>,end:Option<BlockNumberOf<T>>) -> DispatchResult 
+      { // cl:ClassIdOf<T>
          // Check that the extrinsic was signed and get the signer.
          // This function will return an error if the extrinsic is not signed.
          // https://docs.substrate.io/v3/runtime/origins
          let who = ensure_signed(origin)?;
          let dev=Investor::new(&acc,something);
-         let _tenant=Tenant::new(&acc,rent);
-         
+         let tenant=Tenant::new(&acc,rent);
+         //Investor::contribute(who,dev.account_id,rent);
          //let class0= NftL::Pallet::mint(&who,acc,cl,cd,1);
 
          // Update storage.
