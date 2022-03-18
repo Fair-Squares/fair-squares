@@ -11,12 +11,12 @@ pub type Bool = bool;
 
 
 #[derive(Debug, PartialEq, Encode, Decode)]
-pub struct Investor<T,U>{
-    pub account_id:T,
+pub struct Investor<T:Config,U>{
+    pub account_id:AccountIdOf<T>,
     pub nft:U,
 }
-impl<T,U> Investor<T,U>{
-    pub fn new(acc: T,nft:U)-> Self{
+impl<T:Config,U> Investor<T,U>{
+    pub fn new(acc:AccountIdOf<T>,nft:U)-> Self{
         Investor{
             account_id: acc,
             nft: nft,
@@ -25,7 +25,7 @@ impl<T,U> Investor<T,U>{
 
 }
 
-impl<T:pallet::Config,U> Investor<T,U>{
+impl<T:Config,U> Investor<T,U>{
     
     pub fn contribute(origin:OriginFor<T>,acc:AccountIdOf<T> ,value:BalanceOf<T>) -> DispatchResult{
         let c1=Contribution::new(&acc,&value);
@@ -67,4 +67,3 @@ impl<T,U> Tenant<T,U>{
         
     }
 }
-
