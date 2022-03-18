@@ -23,10 +23,11 @@ mod benchmarking;
 pub mod pallet {
    pub use super::*;  
    use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
+   pub const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
+   pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 
 
-   //const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
-   //const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
+   
 
    /// Configure the pallet by specifying the parameters and types on which it depends.
    #[pallet::config]
@@ -139,18 +140,17 @@ pub mod pallet {
          // This function will return an error if the extrinsic is not signed.
          // https://docs.substrate.io/v3/runtime/origins
          let who = ensure_signed(origin.clone())?;
-         let tenant=Tenant::new(&acc,rent);
-         let dev=Investor::<T,u32>::new(acc,something);
-         
+         let tenant=Tenant::<T,BalanceOf<T>>::new(acc.clone(),rent);
+         let dev=Investor::<T,u32>::new(acc,something);         
          Investor::<T,u32>::contribute(origin,dev.account_id,rent)?;
+         let now = <frame_system::Pallet<T>>::block_number();
+         Self::deposit_event(Event::Contributed(who, rent, now));
          //let class0= NftL::Pallet::mint(&who,acc,cl,cd,1);
 
          // Update storage.
          <Something<T>>::put(dev.nft+something);
 
-         // Emit an event.
-         Self::deposit_event(Event::SomethingStored(something, who));
-         // Return a successful DispatchResultWithPostInfo
+         
          Ok(())
       }
 

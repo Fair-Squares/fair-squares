@@ -3,14 +3,15 @@ pub use frame_support::{
     dispatch::DispatchResult,
     pallet_prelude::*,
     inherent::Vec,
-    sp_runtime::traits::{Hash, Zero},
+    sp_runtime::traits::{AccountIdConversion,Hash, Zero},
     storage::child,
-    traits::{Currency, Get, ReservableCurrency},
+    traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons},
     PalletId		
  };
 pub use frame_system::{pallet_prelude::*,ensure_signed};
 pub use frame_support::pallet_prelude::*;
 pub use scale_info::{prelude::vec,TypeInfo};
+
 
 pub struct House<T,U,V,W,X>{
     pub houseowner:T,
