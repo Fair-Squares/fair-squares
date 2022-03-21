@@ -20,10 +20,12 @@ scale-info = { version = "1.0", default-features = false, features = ["derive"] 
 frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16"}
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16" }
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16", optional = true }
-#pallet-nft = { default-features = false, path="../nft"}
+pallet-nft = { default-features = false, path="../nft"}
 
 # Orml depdendencies
 #orml-nft = { git = "https://github.com/open-web3-stack/open-runtime-module-library", default-features = false, rev = "ec9a8d8521ca9b7b800dd36726bba7da7a169b9d" }
+
+#pallet-nft = { git = "https://github.com/litentry/litentry-pallets", branch = "dev", default-features = false }
 
 
 [dev-dependencies]

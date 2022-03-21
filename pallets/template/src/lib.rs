@@ -13,6 +13,8 @@ mod tests;
 mod roles;
 pub use crate::roles::*;
 
+use pallet_nft::pallet as NftL;
+
 
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -26,11 +28,12 @@ pub mod pallet {
       pallet_prelude::*,
       sp_runtime::traits::{Hash, Zero},
       storage::child,
-      traits::{Currency, Get, ReservableCurrency},
+      traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
       PalletId		
    };
    use frame_system::{ensure_signed};
    use frame_support::inherent::Vec;
+   use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
    
 
    //const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
@@ -70,7 +73,14 @@ pub mod pallet {
    #[pallet::storage]
    #[pallet::getter(fn contrib_log)]
    pub(super) type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
+   
+   #[pallet::storage]
+   #[pallet::getter(fn contribution_store)]
+   pub(super) type ContributionStore<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
 
+   //#[pallet::storage]
+   //#[pallet::getter(fn proposal_store)]
+   //pub(super) type ProposalStore<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, House<U,T,u32>, ValueQuery>;
    
 
    // Pallets use events to inform users when important changes are made.
@@ -180,6 +190,23 @@ pub mod pallet {
          }
       }
       
+      
+      
+      
+      /// Withdraw full balance of a contributor to treasury
+      ///#[pallet::weight(10_000)]
+      ///pub fn test_nft_pallet_call_type(origin: OriginFor<T>, dataType: ClassIdOf<T>) -> DispatchResultWithPostInfo {
+      
+         // Check the inputs
+     ///    let who = ensure_signed(origin)?;
+         // Execute treatment
+         // Raise event
+         // Exit
+      /// Ok(().into())
+      ///}
+      
+      
+      
  
       
       /// Withdraw full balance of a contributor to treasury
@@ -213,47 +240,74 @@ pub mod pallet {
       #[pallet::weight(10_000)]
       pub fn mint_house(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
       
-        // Exit
-	Ok(().into())
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+         // Execute treatment
+         // Raise event
+         // Exit
+	 Ok(().into())
       }
       
       /// a house owner create a proposal for a house
       #[pallet::weight(10_000)]
       pub fn create_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
       
-        // Exit
-	Ok(().into())
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+         // Execute treatment
+         // Raise event
+         // Exit
+	 Ok(().into())
       }
       
       /// a investor vote for a proposal
       #[pallet::weight(10_000)]
       pub fn vote_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
       
-        // Exit
-	Ok(().into())
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+         // Execute treatment
+         // Raise event
+         // Exit
+	 Ok(().into())
       }
       
       #[pallet::weight(10_000)]
       pub fn manage_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
       
-        // Exit
-	Ok(().into())
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+         // Execute treatment
+         // Raise event
+         // Exit
+	 Ok(().into())
       }
       
       /// Withdraw full balance of a contributor to treasury
       #[pallet::weight(10_000)]
       pub fn withdraw_house_contribution(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
       
-        // Exit
-	Ok(().into())
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+         // Execute treatment
+         // Raise event
+         // Exit
+	 Ok(().into())
       }
       
       /// a Investor contributes funds to an existing fund
       #[pallet::weight(10_000)]
-      pub fn contribute_fund(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+      pub fn contribute_fund(origin: OriginFor<T>, account: AccountIdOf<T>, amount: u32) -> DispatchResultWithPostInfo {
       
-        // Exit
-	Ok(().into())
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+         
+         // Execute treatment
+         //ContributionStore::<T>::insert(&account, amount);
+         
+         // Raise event
+         // Exit
+	 Ok(().into())
       }
    }
    
