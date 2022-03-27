@@ -13,7 +13,7 @@ mod tests;
 mod roles;
 pub use crate::roles::*;
 
-//pub use pallet_nft::pallet as NftL;
+pub use pallet_nft::pallet as NftL;
 
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -22,7 +22,7 @@ mod benchmarking;
 #[frame_support::pallet]
 pub mod pallet {
    pub use super::*;  
-   use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
+   use pallet_nft::{Barak, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
    pub const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
    pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 
@@ -31,7 +31,7 @@ pub mod pallet {
 
    /// Configure the pallet by specifying the parameters and types on which it depends.
    #[pallet::config]
-   pub trait Config: frame_system::Config{
+   pub trait Config: frame_system::Config+NftL::Config{
       /// Because this pallet emits events, it depends on the runtime's definition of an event.
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;
@@ -134,7 +134,7 @@ pub mod pallet {
       /// An example dispatchable that takes a singles value as a parameter, writes the value to
       /// storage and emits an event. This function must be dispatched by a signed extrinsic.
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T> ,rent:BalanceOf<T>,cd:CID,prop:Properties,start:Option<BlockNumberOf<T>>,end:Option<BlockNumberOf<T>>) -> DispatchResult 
+      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T> ,rent:BalanceOf<T>,cd:CID,cl:ClassIdOf<T>,start:Barak<T>)-> DispatchResult 
       { // cl:ClassIdOf<T>
          // Check that the extrinsic was signed and get the signer.
          // This function will return an error if the extrinsic is not signed.
@@ -144,8 +144,8 @@ pub mod pallet {
          let dev=Investor::<T,u32>::new(acc,something);         
          Investor::<T,u32>::contribute(origin,dev.account_id,rent)?;
          let now = <frame_system::Pallet<T>>::block_number();
-         Self::deposit_event(Event::Contributed(who, rent, now));
-         //let class0= NftL::Pallet::mint(&who,acc,cl,cd,1);
+        
+         //Self::deposit_event(Event::Contributed(who, rent, now));
 
          // Update storage.
          <Something<T>>::put(dev.nft+something);

@@ -141,6 +141,7 @@ pub enum ClassType<ID> {
 pub type TokenIdOf<T> = <T as orml_nft::Config>::TokenId;
 pub type ClassIdOf<T> = <T as orml_nft::Config>::ClassId;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
+pub type Barak<T> = <T as frame_system::Config>::BlockNumber;
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 

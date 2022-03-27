@@ -12,9 +12,10 @@ pub use frame_system::{pallet_prelude::*,ensure_signed};
 pub use frame_support::pallet_prelude::*;
 pub use scale_info::{prelude::vec,TypeInfo};
 
-
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub struct House<T,U,V,W,X>{
-    pub houseowner:T,
+    pub houseowner:Vec<T>,
     pub valuation:U,
     pub rent:U,
     pub balance:U,

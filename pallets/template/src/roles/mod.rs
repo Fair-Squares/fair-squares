@@ -43,14 +43,13 @@ impl<T:Config,U> Investor<T,U>{
         }
         ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 
-        T::Currency::transfer(
+        <T as pallet::Config>::Currency::transfer(
             &who,
             &TREASURE_PALLET_ID.into_account(),
             value,
             ExistenceRequirement::AllowDeath,
         )?;
 
-        //function taking contribution storage and amount as inputs here
         Ok(().into())
 
 
