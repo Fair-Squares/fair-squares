@@ -32,6 +32,7 @@ pallet-nft = { default-features = false, path="../nft"}
 sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16" }
 sp-io = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16" }
 sp-runtime = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16" }
+sp-std = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.8", default-features = false }
 
 [features]
 default = ["std"]
