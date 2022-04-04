@@ -14,14 +14,13 @@ pub use scale_info::{prelude::vec,TypeInfo};
 
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct House<T,U,V,W,X>{
+pub struct House<T,U,V,W>{
     pub houseowner:Vec<T>,
     pub valuation:U,
     pub rent:U,
     pub balance:U,
-    pub class_id:V,
-    pub token_id:W,
-    pub funded:X,    
+    pub nft:V,
+    pub funded:W,    
 }
 
 
