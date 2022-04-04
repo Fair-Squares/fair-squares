@@ -33,9 +33,12 @@ impl<T:Config,U> Investor<T,U>{
 impl<T:Config,U> Investor<T,U>{
     
     pub fn contribute(origin:OriginFor<T>,acc:AccountIdOf<T> ,value:BalanceOf<T>) -> DispatchResult{
-        let c1=Contribution::new(&acc,&value);
+        
         let who = ensure_signed(origin)?;
+	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+	
 	let now = <frame_system::Pallet<T>>::block_number();
+	let c1=Contribution::new(&acc,&value);
         if ContributionsLog::<T>::contains_key(c1.account){
             ContributionsLog::<T>::mutate(c1.account, |val|{
                 *val += *c1.amount;
@@ -43,7 +46,7 @@ impl<T:Config,U> Investor<T,U>{
         } else {
             ContributionsLog::<T>::insert(&acc,value);
         }
-        ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+        
 
         <T as pallet::Config>::Currency::transfer(
             &who,
