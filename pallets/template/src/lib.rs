@@ -60,10 +60,6 @@ pub mod pallet {
    #[pallet::storage]
 	#[pallet::getter(fn contrib_log)]
 	pub type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
-
-   #[pallet::storage]
-	#[pallet::getter(fn cont_accounts)]
-	pub type ContAccounts<T: Config> = StorageValue<_, Contributors<T>, ValueQuery>;
    
 
    // Pallets use events to inform users when important changes are made.
