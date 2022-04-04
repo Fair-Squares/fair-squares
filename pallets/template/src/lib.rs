@@ -43,7 +43,7 @@ pub mod pallet {
 
    #[pallet::pallet]
    #[pallet::generate_store(pub(super) trait Store)]
-   #[pallet::without_storage_info]
+   //#[pallet::without_storage_info]
    pub struct Pallet<T>(_);
 
 
@@ -60,6 +60,13 @@ pub mod pallet {
    #[pallet::storage]
 	#[pallet::getter(fn contrib_log)]
 	pub type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
+
+   
+   #[pallet::storage]
+	#[pallet::getter(fn contr_count)]
+	/// Kazu:The total number of proposals that have so far been submitted.
+	pub(super) type ContCount<T: Config> = StorageValue<_, ContributionIndex, ValueQuery>;
+   
    
 
    // Pallets use events to inform users when important changes are made.

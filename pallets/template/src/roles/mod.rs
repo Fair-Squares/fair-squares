@@ -18,19 +18,18 @@ pub struct Investor<T:Config,U>{
     pub nft:U,
     pub age:BlockNumberOf<T>,
 }
+
 impl<T:Config,U> Investor<T,U>{
+
+
     pub fn new(acc:AccountIdOf<T>,nft:U)-> Self{
-	now = let now = <frame_system::Pallet<T>>::block_number();
-        Investor{
-            account_id: acc,
-            nft: nft,
-	    age: now,		
-        }        
-    }
-
-}
-
-impl<T:Config,U> Investor<T,U>{
+        let now = <frame_system::Pallet<T>>::block_number();
+            Investor{
+                account_id: acc,
+                nft: nft,
+                age: now,		
+            }        
+        }
     
     pub fn contribute(origin:OriginFor<T>,acc:AccountIdOf<T> ,value:BalanceOf<T>) -> DispatchResult{
         
@@ -65,18 +64,23 @@ impl<T:Config,U> Investor<T,U>{
 pub struct HouseOwner<T: Config,U>{
     pub account_id:T,
     pub nft:U,
+    pub age:BlockNumberOf<T>,
 }
 
 #[derive(Debug, PartialEq, Encode, Decode)]
 pub struct Tenant<T:Config,U>{
     pub account_id:AccountIdOf<T>,
     pub rent:U,
+    pub age:BlockNumberOf<T>,
 }
 impl<T:Config,U> Tenant<T,U>{
+    
     pub fn new(acc:AccountIdOf<T>,rent:U)-> Self{
+        let now = <frame_system::Pallet<T>>::block_number();
         Tenant{
             account_id: acc,
             rent: rent,
+            age:now,
         }
         
     }
