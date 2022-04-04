@@ -37,9 +37,6 @@ impl<T:Config,U> Investor<T,U>{
             })
         } else {
             ContributionsLog::<T>::insert(&acc,value);
-            ContAccounts::<T>::mutate(|val|{
-                val.push(acc);
-            })
         }
         ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 
