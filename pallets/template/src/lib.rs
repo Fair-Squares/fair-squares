@@ -41,13 +41,6 @@ pub mod pallet {
    }
 
 
-   enum User{
-      Investor,
-      Tenant,
-      HouseOwner,
-   }
-  
-
 
    #[pallet::pallet]
    #[pallet::generate_store(pub(super) trait Store)]
@@ -65,21 +58,15 @@ pub mod pallet {
    pub type Something<T> = StorageValue<_, u32>;
    
 
-   //#[pallet::storage]
-	//#[pallet::getter(fn user_log)]
-	//pub(super) type UsersLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, User, ValueQuery>;
+   #[pallet::storage]
+	#[pallet::getter(fn user_log)]
+	pub(super) type UsersLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<u8>, ValueQuery>;
 
    #[pallet::storage]
 	#[pallet::getter(fn contrib_log)]
 	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Blake2_128Concat,AccountIdOf<T>,(BlockNumberOf<T>,BalanceOf<T>,Vec<Investor::<T,u32>>), ValueQuery>;
 
 
-   
-   #[pallet::storage]
-	#[pallet::getter(fn contr_count)]
-	/// Kazu:The total number of proposals that have so far been submitted.
-	pub(super) type ContCount<T: Config> = StorageValue<_, ContributionIndex, ValueQuery>;
-   
    
 
    // Pallets use events to inform users when important changes are made.

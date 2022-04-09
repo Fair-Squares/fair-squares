@@ -9,6 +9,10 @@ pub type Contributors<T> = Vec<AccountIdOf<T>>;
 pub type HouseIndex = u32;
 pub type ContributionIndex = u32;
 pub type Bool = bool;
+pub const INVESTOR_ROLE: u8 = 1;
+pub const HOUSE_OWNER_ROLE: u8 = 2;
+pub const TENANT_ROLE: u8 = 3;
+
 
 
 
@@ -27,6 +31,14 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
 
     pub fn new(acc:T::AccountId,_nft:U)-> Self{
         let now = <frame_system::Pallet<T>>::block_number();
+        if UsersLog::<T>::contains_key(&acc)==false{
+            UsersLog::<T>::insert(&acc,vec![INVESTOR_ROLE]);
+        } else {
+            //We need to ensure that the Role is not already in the vector if the account exist
+            UsersLog::<T>::mutate(&acc,|val|{
+                val.push(INVESTOR_ROLE);
+            })
+        }
          
             Investor{
                 account_id: acc,
