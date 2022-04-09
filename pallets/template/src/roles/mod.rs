@@ -25,7 +25,7 @@ pub struct Investor<T:Config,U> {
 impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::Investor<T, u32>>{
 
 
-    pub fn new(acc:T::AccountId,nft:U)-> Self{
+    pub fn new(acc:T::AccountId,_nft:U)-> Self{
         let now = <frame_system::Pallet<T>>::block_number();
          
             Investor{
