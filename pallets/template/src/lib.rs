@@ -36,14 +36,22 @@ pub mod pallet {
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;
       type MinContribution: Get<BalanceOf<Self>>;
+      type MaxSize: Get<u32>;
+      type MinSize: Get<u32>;
    }
-	
+
    
+   enum User{
+      Investor,
+      Tenant,
+      HouseOwner,
+   }
+  
 
 
    #[pallet::pallet]
    #[pallet::generate_store(pub(super) trait Store)]
-   //#[pallet::without_storage_info]
+   #[pallet::without_storage_info]
    pub struct Pallet<T>(_);
 
 
@@ -57,9 +65,14 @@ pub mod pallet {
    pub type Something<T> = StorageValue<_, u32>;
    
 
+   //#[pallet::storage]
+	//#[pallet::getter(fn user_log)]
+	//pub(super) type UsersLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, User, ValueQuery>;
+
    #[pallet::storage]
 	#[pallet::getter(fn contrib_log)]
-	pub type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
+	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Blake2_128Concat,AccountIdOf<T>,(BlockNumberOf<T>,BalanceOf<T>,Vec<Investor::<T,u32>>), ValueQuery>;
+
 
    
    #[pallet::storage]
@@ -137,7 +150,7 @@ pub mod pallet {
       /// An example dispatchable that takes a singles value as a parameter, writes the value to
       /// storage and emits an event. This function must be dispatched by a signed extrinsic.
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      pub fn do_something(origin: OriginFor<T>, something: u32, acc:AccountIdOf<T> ,rent:BalanceOf<T>,cd:CID,cl:ClassIdOf<T>,start:Barak<T>)-> DispatchResult 
+      pub fn do_something(origin: OriginFor<T>, something: u32, acc:T::AccountId ,rent:BalanceOf<T>,cd:CID,cl:ClassIdOf<T>,start:Barak<T>)-> DispatchResult 
       { // cl:ClassIdOf<T>
          // Check that the extrinsic was signed and get the signer.
          // This function will return an error if the extrinsic is not signed.
@@ -145,13 +158,13 @@ pub mod pallet {
          let who = ensure_signed(origin.clone())?;
          let tenant=Tenant::<T,BalanceOf<T>>::new(acc.clone(),rent);
          let dev=Investor::<T,u32>::new(acc,something);         
-         Investor::<T,u32>::contribute(origin,dev.account_id,rent)?;
+         Investor::<T,u32>::contribute(dev,origin,rent)?;
          let now = <frame_system::Pallet<T>>::block_number();
         
          //Self::deposit_event(Event::Contributed(who, rent, now));
 
          // Update storage.
-         <Something<T>>::put(dev.nft+something);
+         //<Something<T>>::put(dev.nft+something);
 
          
          Ok(())
