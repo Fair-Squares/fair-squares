@@ -94,7 +94,7 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
 
 
 //--------------------------------------------------------------------------------------
-//-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
+//-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct HouseOwner<T: Config,U>{
@@ -109,7 +109,7 @@ pub struct HouseOwner<T: Config,U>{
 
 
 //--------------------------------------------------------------------------------------
-//-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
+//-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Tenant<T:Config,U>{
