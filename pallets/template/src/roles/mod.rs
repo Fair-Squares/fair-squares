@@ -51,12 +51,12 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
                 age: now,		
             }        
         }
-    //-------------NEW INVESTOR CREATION METHOD_END--------------------
+    //-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
     //-----------------------------------------------------------------
 
     //-------------------------------------------------------------------
     //-------------INVESTOR CONTRIBUTION METHOD_BEGIN--------------------
-    pub fn contribute(self, origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResultWithPostInfo{
+    pub fn contribute(self, origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResult{
         
         let who = ensure_signed(origin)?;
 	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
@@ -96,11 +96,36 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
 //--------------------------------------------------------------------------------------
 //-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct HouseOwner<T: Config,U>{
-    pub account_id:T,
-    pub nft:U,
+    pub account_id:T::AccountId,
+    pub nft:Vec<U>,
     pub age:BlockNumberOf<T>,
+}
+impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles::HouseOwner<T, u32>>{
+    pub fn new(acc:T::AccountId,_nft:U) -> Self{
+        let now = <frame_system::Pallet<T>>::block_number();
+        if UsersLog::<T>::contains_key(&acc)==false{
+            UsersLog::<T>::insert(&acc,vec![HOUSE_OWNER_ROLE]);
+        } else {
+            let a = UsersLog::<T>::get(&acc);
+            if a.iter().any(|&i| i==HOUSE_OWNER_ROLE){
+                let _message = "Role already attributed";
+                //return the above string in an event
+            } else{
+                UsersLog::<T>::mutate(&acc,|val|{
+                    val.push(HOUSE_OWNER_ROLE);
+                })
+            }           
+
+        }         
+        HouseOwner{
+                account_id: acc,
+                nft: Vec::new(),
+                age: now,		
+            }        
+        }
 }
 //-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
 //--------------------------------------------------------------------------------------
@@ -117,8 +142,7 @@ pub struct Tenant<T:Config,U>{
     pub rent:U,
     pub age:BlockNumberOf<T>,
 }
-impl<T:Config,U> Tenant<T,U>{
-    
+impl<T:Config,U> Tenant<T,U>{    
     pub fn new(acc:T::AccountId,rent:U)-> Self{
         let now = <frame_system::Pallet<T>>::block_number();
         Tenant{
@@ -131,3 +155,4 @@ impl<T:Config,U> Tenant<T,U>{
 }
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
 //--------------------------------------------------------------------------------------
+

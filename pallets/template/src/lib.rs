@@ -153,7 +153,7 @@ pub mod pallet {
          // Update storage.
          //<Something<T>>::put(dev.nft+something);
 
-         Investor::<T,u32>::contribute(dev,origin,rent);
+         Investor::<T,u32>::contribute(dev,origin,rent)?;
          Ok(().into())
       }
 
