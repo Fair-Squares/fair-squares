@@ -145,7 +145,7 @@ pub mod pallet {
          let _who = ensure_signed(origin.clone())?;
          let _tenant=Tenant::<T,BalanceOf<T>>::new(acc.clone(),rent);
          let dev=Investor::<T,u32>::new(acc,something);         
-         Investor::<T,u32>::contribute(dev,origin,rent)?;
+         
          let _now = <frame_system::Pallet<T>>::block_number();
         
          //Self::deposit_event(Event::Contributed(who, rent, now));
@@ -153,8 +153,8 @@ pub mod pallet {
          // Update storage.
          //<Something<T>>::put(dev.nft+something);
 
-         
-         Ok(())
+         Investor::<T,u32>::contribute(dev,origin,rent);
+         Ok(().into())
       }
 
       /// An example dispatchable that may throw a custom error.

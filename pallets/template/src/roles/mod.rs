@@ -14,8 +14,8 @@ pub const HOUSE_OWNER_ROLE: u8 = 2;
 pub const TENANT_ROLE: u8 = 3;
 
 
-
-
+//-------------------------------------------------------------------------------------
+//-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
@@ -25,29 +25,38 @@ pub struct Investor<T:Config,U> {
     pub age:BlockNumberOf<T>,
 }
 
-
 impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::Investor<T, u32>>{
 
-
+    //-------------------------------------------------------------------
+    //-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
     pub fn new(acc:T::AccountId,_nft:U)-> Self{
         let now = <frame_system::Pallet<T>>::block_number();
         if UsersLog::<T>::contains_key(&acc)==false{
             UsersLog::<T>::insert(&acc,vec![INVESTOR_ROLE]);
         } else {
-            //We need to ensure that the Role is not already in the vector if the account exist
-            UsersLog::<T>::mutate(&acc,|val|{
-                val.push(INVESTOR_ROLE);
-            })
-        }
-         
+            let a = UsersLog::<T>::get(&acc);
+            if a.iter().any(|&i| i==INVESTOR_ROLE){
+                let _message = "Role already attributed";
+                //return the above string in an event
+            } else{
+                UsersLog::<T>::mutate(&acc,|val|{
+                    val.push(INVESTOR_ROLE);
+                })
+            }           
+
+        }         
             Investor{
                 account_id: acc,
                 nft: Vec::new(),
                 age: now,		
             }        
         }
-    
-    pub fn contribute(self, origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResult{
+    //-------------NEW INVESTOR CREATION METHOD_END--------------------
+    //-----------------------------------------------------------------
+
+    //-------------------------------------------------------------------
+    //-------------INVESTOR CONTRIBUTION METHOD_BEGIN--------------------
+    pub fn contribute(self, origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResultWithPostInfo{
         
         let who = ensure_signed(origin)?;
 	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
@@ -73,11 +82,19 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
         )?;
 
         Ok(().into())
-
-
     }
+    //-------------INVESTOR CONTRIBUTION METHOD_END--------------------
+    //-----------------------------------------------------------------
 }
+//-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_END----------------------
+//-----------------------------------------------------------------------------------
 
+
+
+
+
+//--------------------------------------------------------------------------------------
+//-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct HouseOwner<T: Config,U>{
@@ -85,7 +102,14 @@ pub struct HouseOwner<T: Config,U>{
     pub nft:U,
     pub age:BlockNumberOf<T>,
 }
+//-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
+//--------------------------------------------------------------------------------------
 
+
+
+
+//--------------------------------------------------------------------------------------
+//-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Tenant<T:Config,U>{
@@ -105,3 +129,5 @@ impl<T:Config,U> Tenant<T,U>{
         
     }
 }
+//-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
+//--------------------------------------------------------------------------------------
