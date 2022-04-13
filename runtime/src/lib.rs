@@ -285,14 +285,14 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type MinContribution = MinContribution;
-	type MaxSize = MaxSize;
-	type MinSize = MinSize;
+	type SubmissionDeposit = SubmissionDeposit;
+	
 }
 
 parameter_types! {	
+	pub const SubmissionDeposit: u128 = 10;
 	pub const MinContribution: u128 = 10;
-	pub const MaxSize: u32 = 1;
-	pub const MinSize: u32 = 1;	
+	
 }
 // Configure nft pallet in pallets/nft
 parameter_types! {

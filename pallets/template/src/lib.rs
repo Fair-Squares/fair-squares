@@ -27,7 +27,6 @@ pub mod pallet {
    pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 
 
-   
 
    /// Configure the pallet by specifying the parameters and types on which it depends.
    #[pallet::config]
@@ -36,8 +35,8 @@ pub mod pallet {
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;
       type MinContribution: Get<BalanceOf<Self>>;
-      type MaxSize: Get<u32>;
-      type MinSize: Get<u32>;
+      type SubmissionDeposit: Get<BalanceOf<Self>>;
+
    }
 
 
@@ -59,12 +58,25 @@ pub mod pallet {
    
 
    #[pallet::storage]
-	#[pallet::getter(fn user_log)]
-	pub(super) type UsersLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<u8>, ValueQuery>;
+	pub(super) type InvLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Investor::<T,u32>>, ValueQuery>;
 
    #[pallet::storage]
-	#[pallet::getter(fn contrib_log)]
-	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Blake2_128Concat,AccountIdOf<T>,(BlockNumberOf<T>,BalanceOf<T>,Vec<Investor::<T,u32>>), ValueQuery>;
+	pub(super) type HwLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<HouseOwner::<T,u32>>, ValueQuery>;
+
+
+   #[pallet::storage]
+	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Blake2_128Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Vec<Investor::<T,u32>>), ValueQuery>;
+
+   #[pallet::storage]
+	/// Kazu:The total number of contributions that have so far been submitted.
+	pub(super) type ContInd<T: Config> = StorageValue<_, ContributionIndex, ValueQuery>;
+
+   #[pallet::storage]
+	/// Kazu:The total number of proposals that have so far been submitted.
+	pub(super) type HouseInd<T: Config> = StorageValue<_, HouseIndex, ValueQuery>;
+
+
+
 
 
    
@@ -144,7 +156,7 @@ pub mod pallet {
          // https://docs.substrate.io/v3/runtime/origins
          let _who = ensure_signed(origin.clone())?;
          let _tenant=Tenant::<T,BalanceOf<T>>::new(acc.clone(),rent);
-         let dev=Investor::<T,u32>::new(acc,something);         
+         //let dev=Investor::<T,u32>::new(acc,something);         
          
          let _now = <frame_system::Pallet<T>>::block_number();
         
@@ -153,7 +165,7 @@ pub mod pallet {
          // Update storage.
          //<Something<T>>::put(dev.nft+something);
 
-         Investor::<T,u32>::contribute(dev,origin,rent)?;
+         //Investor::<T,u32>::contribute(dev,origin,rent)?;
          Ok(().into())
       }
 
