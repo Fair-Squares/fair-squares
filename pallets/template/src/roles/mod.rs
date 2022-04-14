@@ -12,6 +12,19 @@ pub type Bool = bool;
 pub type NftOf<T> = Vec<T>;
 
 
+#[derive(Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct House<T:Config> {
+    pub owners:Vec<T::AccountId>,
+    pub nft:u32,
+    pub age:BlockNumberOf<T>,
+}
+impl<T:Config> Default for House<T>{
+    fn default() -> Self{
+        Self{owners: Vec::new(),nft:0,age:<frame_system::Pallet<T>>::block_number()}
+    }
+}
 
 //-------------------------------------------------------------------------------------
 //-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
@@ -100,6 +113,8 @@ pub struct HouseOwner<T: Config,U>{
 }
 impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles::HouseOwner<T, u32>>{
 
+    //--------------------------------------------------------------------
+    //-------------HOUSE OWNER CREATION METHOD_BEGIN----------------------
     pub fn new(acc:T::AccountId,_nft:U){
 
         let now = <frame_system::Pallet<T>>::block_number();        
@@ -118,6 +133,12 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
 
         } 
 
+    //-------------HOUSE OWNER CREATION METHOD_END----------------------
+    //------------------------------------------------------------------
+        
+
+    //-----------------------------------------------------------------
+    //-------------PROPOSAL CREATION METHOD_BEGIN----------------------
 
     pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>) -> DispatchResult{
         let creator = ensure_signed(origin)?;
@@ -129,10 +150,32 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
             WithdrawReasons::TRANSFER,
             ExistenceRequirement::AllowDeath,
         )?;
+        let idx = HouseInd::<T>::get()+1;
+        HouseInd::<T>::put(idx.clone());
+
+        if HouseLog::<T>::contains_key(idx.clone())==false{
+            let mut v = Vec::new();
+            <T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
+            v.push(self.account_id);
+            let now = <frame_system::Pallet<T>>::block_number();
+            let house = House::<T>{
+                owners: v,
+                nft: idx.clone(),
+                age: now.clone(),
+            };
+        //mint a nft with the same index as HouseInd here
+        let store = (now,value,house);
+        HouseLog::<T>::insert(idx,store);
+        
+        }
+
         Ok(().into())
 
 
     }
+    //-------------PROPOSAL CREATION METHOD_END----------------------
+    //-----------------------------------------------------------------
+    
 }
 //-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
 //--------------------------------------------------------------------------------------

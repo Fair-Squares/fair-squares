@@ -68,6 +68,10 @@ pub mod pallet {
 	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Blake2_128Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Vec<Investor::<T,u32>>), ValueQuery>;
 
    #[pallet::storage]
+	pub(super) type HouseLog<T: Config> = StorageMap<_, Blake2_128Concat,HouseIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>), ValueQuery>;
+
+
+   #[pallet::storage]
 	/// Kazu:The total number of contributions that have so far been submitted.
 	pub(super) type ContribIndex<T: Config> = StorageValue<_, ContributionIndex, ValueQuery>;
 
