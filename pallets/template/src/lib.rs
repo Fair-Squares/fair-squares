@@ -58,10 +58,10 @@ pub mod pallet {
    
 
    #[pallet::storage]
-	pub(super) type InvLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Investor::<T,u32>>, ValueQuery>;
+	pub(super) type InvestorLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Investor::<T,u32>>, ValueQuery>;
 
    #[pallet::storage]
-	pub(super) type HwLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<HouseOwner::<T,u32>>, ValueQuery>;
+	pub(super) type HouseOwnerLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<HouseOwner::<T,u32>>, ValueQuery>;
 
 
    #[pallet::storage]
@@ -69,7 +69,7 @@ pub mod pallet {
 
    #[pallet::storage]
 	/// Kazu:The total number of contributions that have so far been submitted.
-	pub(super) type ContInd<T: Config> = StorageValue<_, ContributionIndex, ValueQuery>;
+	pub(super) type ContribIndex<T: Config> = StorageValue<_, ContributionIndex, ValueQuery>;
 
    #[pallet::storage]
 	/// Kazu:The total number of proposals that have so far been submitted.

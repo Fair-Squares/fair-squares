@@ -31,23 +31,21 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
     pub fn new(acc:T::AccountId,_nft:U){
         let now = <frame_system::Pallet<T>>::block_number();
         
-        if InvLog::<T>::contains_key(&acc)==false{
+        if InvestorLog::<T>::contains_key(&acc)==false{
             let inv = Investor{
                 account_id: acc,
                 nft: Vec::new(),
                 age: now,		
             };
-            InvLog::<T>::insert(inv.account_id.clone(),vec![inv]);
+            InvestorLog::<T>::insert(inv.account_id.clone(),vec![inv]);
         } else {
             let _message = "Role already attributed";
                 //return the above string in an event          
 
-        }       
-        
-     
+        }          
 
         }
-    //-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
+    //-------------NEW INVESTOR CREATION METHOD_END--------------------
     //-----------------------------------------------------------------
 
     //-------------------------------------------------------------------
@@ -58,7 +56,7 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
 	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 	
 	let now = <frame_system::Pallet<T>>::block_number();
-    let idx = ContInd::<T>::get()+1;
+    let idx = ContribIndex::<T>::get()+1;
 	let c1=Contribution::new(&self.account_id,&value);
         if ContributionsLog::<T>::contains_key(&idx){
             ContributionsLog::<T>::mutate(&idx, |val|{
@@ -105,20 +103,18 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
     pub fn new(acc:T::AccountId,_nft:U){
 
         let now = <frame_system::Pallet<T>>::block_number();        
-        if HwLog::<T>::contains_key(&acc)==false{
+        if HouseOwnerLog::<T>::contains_key(&acc)==false{
             let hw = HouseOwner{
                 account_id: acc,
                 nft: Vec::new(),
                 age: now,		
             };
-            HwLog::<T>::insert(hw.account_id.clone(),vec![hw]);
+            HouseOwnerLog::<T>::insert(hw.account_id.clone(),vec![hw]);
         } else {
             let _message = "Role already attributed";
                 //return the above string in an event         
 
         }       
-       
-     
 
         } 
 
