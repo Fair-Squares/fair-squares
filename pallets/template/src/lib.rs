@@ -60,7 +60,33 @@ pub mod pallet {
    type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
    type Bool = bool;
    
-  
+   
+//   #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+//   #[scale_info(skip_type_params(T))]
+//   #[cfg_attr(feature = "std", derive(Debug))]
+//   pub struct ContributionBis<T: Config> {
+//      amount: BalanceOf<T>,
+//      time: u32
+//   }
+ //  impl MaxEncodedLen for ContributionBis {
+ //     fn max_encoded_len() -> usize {
+ //        10000
+ //     }
+ //  }
+   
+   //#[derive(Clone, Encode, Decode, Default, PartialEq, RuntimeDebug, TypeInfo)]
+   //#[scale_info(skip_type_params(T))]
+//   #[cfg_attr(feature = "std", derive(Debug))]
+   //pub struct ContributionList<T: Config> {
+   //   list: Vec<ContributionBis<T>>
+   //}
+   //impl<T: Config> MaxEncodedLen for ContributionList<T> {
+   //   fn max_encoded_len() -> usize {
+   //      10000
+   //   }
+   //}
+   
+   
 
 
    #[pallet::pallet]
@@ -68,6 +94,9 @@ pub mod pallet {
    //#[pallet::without_storage_info]
    pub struct Pallet<T>(_);
 
+   //#[pallet::storage]
+   //#[pallet::getter(fn contribributionbis_log)]
+   //pub(super) type ContributionBisLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, ContributionList::<T>, ValueQuery>;
 
 
    // The pallet's runtime storage items.
@@ -198,7 +227,9 @@ pub mod pallet {
       // A proposal is active for a house
       AlreadyActiveProposal,
       // The investor cannot vote twice
-      AlreadyVotedProposal
+      AlreadyVotedProposal,
+      // The proposal is no longer active
+      ProposalOutDated
    }
    
 
@@ -342,12 +373,12 @@ pub mod pallet {
          let proposal_index = <ProposalIndexLog<T>>::get();
          <ProposalIndexLog<T>>::put(proposal_index + 1);
          
-         let proposal = Proposal::new(house_id, _account_id, valuation, true);
+         let proposal = Proposal::new(house_id, _account_id, valuation);
          <ProposalsLogs<T>>::insert((house_id, _account_id), proposal_index, proposal);         
          
          // Raise event
          let now = <frame_system::Pallet<T>>::block_number();
-         Self::deposit_event(Event::Created2(house_id, now));
+         Self::deposit_event(Event::Created2(proposal_index, now));
          
          // Exit
 	 Ok(().into())
@@ -355,7 +386,7 @@ pub mod pallet {
       
       /// a investor vote for a proposal
       #[pallet::weight(10_000)]
-      pub fn vote_proposal(origin: OriginFor<T>, account: AccountIdOf<T>, proposal_id: u32, status: bool) -> DispatchResultWithPostInfo {
+      pub fn vote_proposal(origin: OriginFor<T>, account: AccountIdOf<T>, house_id: u32, owner_id: u32, proposal_id: u32, status: bool) -> DispatchResultWithPostInfo {
       
          // Check the inputs
          let who = ensure_signed(origin)?;
@@ -373,6 +404,14 @@ pub mod pallet {
          let exist_investor_role = role_iter.position(|&x| x == INVESTOR_ROLE);
 
          ensure!(exist_investor_role.is_none() == false, Error::<T>::IncorrectRole);
+         
+         // Check if the proposal exist
+         let proposal_exist = ProposalsLogs::<T>::contains_key((house_id, owner_id), proposal_id);
+         ensure!(proposal_exist == true, Error::<T>::InvalidIndex);
+         
+         // Check if the proposal is still active
+         let proposal = ProposalsLogs::<T>::get((house_id, owner_id), proposal_id);
+         ensure!(proposal.active == true, Error::<T>::ProposalOutDated);
          
          // Check if a vote already exist for this account in this proposal
          ensure!(VotesLog::<T>::contains_key(proposal_id, _account_id) == false, Error::<T>::AlreadyVotedProposal);

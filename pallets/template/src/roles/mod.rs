@@ -90,15 +90,17 @@ pub struct Proposal {
    pub house_id: u32,
    pub account_id: u32,
    pub valuation: u32,
-   pub active: bool
+   pub active: bool,
+   pub funded: bool
 }
 impl Proposal {
-   pub fn new(house_id: u32, account_id: u32, valuation: u32, active: bool) -> Self {
+   pub fn new(house_id: u32, account_id: u32, valuation: u32) -> Self {
       Self {
          house_id,
          account_id,
          valuation,
-         active
+         active: true,
+         funded: false
       }
    } 
 }
