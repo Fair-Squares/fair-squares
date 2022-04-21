@@ -68,7 +68,10 @@ pub mod pallet {
 	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Blake2_128Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Vec<Investor::<T,u32>>), ValueQuery>;
 
    #[pallet::storage]
-	pub(super) type HouseLog<T: Config> = StorageMap<_, Blake2_128Concat,HouseIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>), ValueQuery>;
+   pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Blake2_128Concat,HouseIndex,House<T>, ValueQuery>;
+
+   #[pallet::storage]
+	pub(super) type ProposalLog<T: Config> = StorageMap<_, Blake2_128Concat,ProposalIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>), ValueQuery>;
 
 
    #[pallet::storage]
@@ -78,6 +81,12 @@ pub mod pallet {
    #[pallet::storage]
 	/// Kazu:The total number of proposals that have so far been submitted.
 	pub(super) type HouseInd<T: Config> = StorageValue<_, HouseIndex, ValueQuery>;
+
+   #[pallet::storage]
+	/// Kazu:The total number of proposals that have so far been submitted.
+	pub(super) type ProposalInd<T: Config> = StorageValue<_, ProposalIndex, ValueQuery>;
+
+
 
 
 

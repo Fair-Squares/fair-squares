@@ -7,6 +7,7 @@ pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Contributors<T> = Vec<AccountIdOf<T>>;
 pub type HouseIndex = u32;
+pub type ProposalIndex = u32;
 pub type ContributionIndex = u32;
 pub type Bool = bool;
 pub type NftOf<T> = Vec<T>;
@@ -136,11 +137,28 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
     //-------------HOUSE OWNER CREATION METHOD_END----------------------
     //------------------------------------------------------------------
         
+    //-----------------------------------------------------------------
+    //-------------MINT HOUSE METHOD_BEGIN-----------------------------
+
+    pub fn mint_house(&self,origin:OriginFor<T>){
+        let creator = ensure_signed(origin);
+        let now = <frame_system::Pallet<T>>::block_number();
+        let idx = HouseInd::<T>::get()+1;
+        HouseInd::<T>::put(idx.clone());
+        let house = House{
+            owners: vec![self.account_id.clone()],
+            nft: idx,
+            age: now,
+        };
+        MintedHouseLog::<T>::insert(idx,house);
+    }
+    //-------------MINT HOUSE METHOD_END-------------------------------
+    //-----------------------------------------------------------------
 
     //-----------------------------------------------------------------
     //-------------PROPOSAL CREATION METHOD_BEGIN----------------------
 
-    pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>) -> DispatchResult{
+    pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32) -> DispatchResult{
         let creator = ensure_signed(origin)?;
         let now = <frame_system::Pallet<T>>::block_number();
         let deposit = <T as pallet::Config>::SubmissionDeposit::get();
@@ -150,24 +168,24 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
             WithdrawReasons::TRANSFER,
             ExistenceRequirement::AllowDeath,
         )?;
-        let idx = HouseInd::<T>::get()+1;
-        HouseInd::<T>::put(idx.clone());
+        let pindex = ProposalInd::<T>::get()+1;
+        ProposalInd::<T>::put(pindex.clone());
 
-        if HouseLog::<T>::contains_key(idx.clone())==false{
+        if MintedHouseLog::<T>::contains_key(hindex.clone()){
+        if ProposalLog::<T>::contains_key(pindex.clone())==false{
             let mut v = Vec::new();
             <T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
             v.push(self.account_id);
-            let now = <frame_system::Pallet<T>>::block_number();
-            let house = House::<T>{
-                owners: v,
-                nft: idx.clone(),
-                age: now.clone(),
-            };
-        //mint a nft with the same index as HouseInd here
-        let store = (now,value,house);
-        HouseLog::<T>::insert(idx,store);
-        
+            let house = MintedHouseLog::<T>::get(hindex);
+            //mint a nft with the same index as HouseInd here
+            let store = (now,value,house);
+            ProposalLog::<T>::insert(pindex,store);
+            }
         }
+        
+        
+        
+    
 
         Ok(().into())
 
