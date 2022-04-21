@@ -71,7 +71,7 @@ pub mod pallet {
    pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Blake2_128Concat,HouseIndex,House<T>, ValueQuery>;
 
    #[pallet::storage]
-	pub(super) type ProposalLog<T: Config> = StorageMap<_, Blake2_128Concat,ProposalIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>), ValueQuery>;
+	pub(super) type ProposalLog<T: Config> = StorageMap<_, Blake2_128Concat,ProposalIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>,Bool), ValueQuery>;
 
 
    #[pallet::storage]

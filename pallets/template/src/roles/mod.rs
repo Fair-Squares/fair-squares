@@ -178,19 +178,15 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
             v.push(self.account_id);
             let house = MintedHouseLog::<T>::get(hindex);
             //mint a nft with the same index as HouseInd here
-            let store = (now,value,house);
+            let store = (now,value,house,false);
             ProposalLog::<T>::insert(pindex,store);
             }
         }
-        
-        
-        
-    
 
         Ok(().into())
-
-
     }
+
+    pub fn destroy_proposal(){}
     //-------------PROPOSAL CREATION METHOD_END----------------------
     //-----------------------------------------------------------------
     
