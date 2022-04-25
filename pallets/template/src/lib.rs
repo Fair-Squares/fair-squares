@@ -11,7 +11,9 @@ mod mock;
 #[cfg(test)]
 mod tests;
 mod roles;
+
 pub use crate::roles::*;
+
 
 use pallet_nft::pallet as NftL;
 
@@ -35,7 +37,7 @@ pub mod pallet {
       traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
       PalletId		
    };
-   use frame_system::{ensure_signed};
+   use frame_system::{ensure_signed, Account};
    use frame_support::inherent::Vec;
    use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
    //use std::mem;
@@ -54,50 +56,16 @@ pub mod pallet {
    }
 	
    pub type HouseIndex = u32;
-   pub type OwnerIndex = u32;   
-   pub type Owners<T> = Vec<HouseOwner<T>>;
+   pub type NftIndex = u32; 
    type AccountIdOf<T> = <T as frame_system::Config>::AccountId;   
    type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-   type Bool = bool;
+   pub type StorageIndex = u32;
    
    
-//   #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
-//   #[scale_info(skip_type_params(T))]
-//   #[cfg_attr(feature = "std", derive(Debug))]
-//   pub struct ContributionBis<T: Config> {
-//      amount: BalanceOf<T>,
-//      time: u32
-//   }
- //  impl MaxEncodedLen for ContributionBis {
- //     fn max_encoded_len() -> usize {
- //        10000
- //     }
- //  }
-   
-   //#[derive(Clone, Encode, Decode, Default, PartialEq, RuntimeDebug, TypeInfo)]
-   //#[scale_info(skip_type_params(T))]
-//   #[cfg_attr(feature = "std", derive(Debug))]
-   //pub struct ContributionList<T: Config> {
-   //   list: Vec<ContributionBis<T>>
-   //}
-   //impl<T: Config> MaxEncodedLen for ContributionList<T> {
-   //   fn max_encoded_len() -> usize {
-   //      10000
-   //   }
-   //}
-   
-   
-
-
    #[pallet::pallet]
    #[pallet::generate_store(pub(super) trait Store)]
-   //#[pallet::without_storage_info]
+   #[pallet::without_storage_info]
    pub struct Pallet<T>(_);
-
-   //#[pallet::storage]
-   //#[pallet::getter(fn contribributionbis_log)]
-   //pub(super) type ContributionBisLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, ContributionList::<T>, ValueQuery>;
-
 
    // The pallet's runtime storage items.
    // https://docs.substrate.io/v3/runtime/storage
@@ -106,59 +74,59 @@ pub mod pallet {
    // Learn more about declaring storage items:
    // https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
    pub type Something<T> = StorageValue<_, u32>;
-   
 
    #[pallet::storage]
-   #[pallet::getter(fn contribribution_log)]
-   pub type ContributionsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, BalanceOf<T>, ValueQuery>;
+   #[pallet::getter(fn fund_amount)]
+   pub(super) type FundAmount<T> = StorageValue<_, BalanceOf<T>, ValueQuery>;
+
+   #[pallet::storage]
+   #[pallet::getter(fn contributions)]
+   // pub type Contributions<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<FundSharing<T>>, ValueQuery>;
+   pub type Contributions<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, (BalanceOf<T>, u32), ValueQuery>;
    
    #[pallet::storage]
-   #[pallet::getter(fn house_log)]
-   pub type HousesLog<T> = StorageMap<_, Blake2_128Concat, HouseIndex, House, ValueQuery>;
+   #[pallet::getter(fn contribution_log)]
+   pub type ContributionLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Contribution<T>>, ValueQuery>;
+
+   #[pallet::storage]
+   #[pallet::getter(fn roles)]
+   pub(super) type Roles<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Role>, ValueQuery>;
+
+   #[pallet::storage]
+   #[pallet::getter(fn ownership_index)]
+   pub(super) type OwnershipIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
+
+   #[pallet::storage]
+   #[pallet::getter(fn ownerships)]
+   pub(super) type Ownerships<T> = StorageDoubleMap<_, Blake2_128Concat, (StorageIndex, AccountIdOf<T>), Blake2_128Concat, StorageIndex, Vec<Ownership<T>>, ValueQuery>;
    
    #[pallet::storage]
    #[pallet::getter(fn house_index)]
-   pub type HouseIndexLog<T> = StorageValue<_, HouseIndex, ValueQuery>;
-   
+   pub(super) type HouseIndexBis<T> = StorageValue<_, StorageIndex, ValueQuery>;
+
    #[pallet::storage]
-   #[pallet::getter(fn account_log)]
-   pub type AccountsLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, u32, ValueQuery>;
-   
+   #[pallet::getter(fn minted_houses)]
+   pub(super) type MintedHouses<T> = StorageMap<_, Blake2_128Concat, StorageIndex, Vec<HouseMinted::<T,NftIndex>>, ValueQuery>;
+
    #[pallet::storage]
-   #[pallet::getter(fn ownership_logs)]
-   pub type OwnershipsLogs<T> = StorageDoubleMap<_, Blake2_128Concat, u32, Blake2_128Concat, u32, Ownership, ValueQuery>;
-   
-   #[pallet::storage]
-   #[pallet::getter(fn ownership_log)]
-   pub type OwnershipsLog<T> = StorageMap<_, Blake2_128Concat, u32, Ownership, ValueQuery>;
-   
-   #[pallet::storage]
-   #[pallet::getter(fn ownership_index)]
-   pub type OwnershipIndexLog<T> = StorageValue<_, u32, ValueQuery>;
-   
-   #[pallet::storage]
-   #[pallet::getter(fn proposal_logs)]
-   pub type ProposalsLogs<T> = StorageDoubleMap<_, Blake2_128Concat, (u32, u32), Blake2_128Concat, u32, Proposal, ValueQuery>;
-   
-   #[pallet::storage]
-   #[pallet::getter(fn proposal_log)]
-   pub type ProposalsLog<T> = StorageMap<_, Blake2_128Concat, u32, Proposal, ValueQuery>;
-   
+   #[pallet::getter(fn fs_houses)]
+   pub(super) type FSHouses<T> = StorageMap<_, Blake2_128Concat, StorageIndex, Vec<HouseMinted::<T,NftIndex>>, ValueQuery>;
+
    #[pallet::storage]
    #[pallet::getter(fn proposal_index)]
-   pub type ProposalIndexLog<T> = StorageValue<_, u32, ValueQuery>;
-   
+   pub type ProposalIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
+
    #[pallet::storage]
-   #[pallet::getter(fn vote_log)]
-   pub type VotesLog<T> = StorageDoubleMap<_, Blake2_128Concat, u32, Blake2_128Concat, u32, Vote, ValueQuery>;
+   #[pallet::getter(fn proposals)]
+   pub(super) type Proposals<T> = StorageDoubleMap<_, Blake2_128Concat, (StorageIndex, AccountIdOf<T>), Blake2_128Concat, StorageIndex, Vec<Proposal<T>>, ValueQuery>;
    
    #[pallet::storage]
    #[pallet::getter(fn vote_index)]
-   pub type VoteIndexLog<T> = StorageValue<_, u32, ValueQuery>;
-   
+   pub type VoteIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
+
    #[pallet::storage]
-   #[pallet::getter(fn role_log)]
-   pub(super) type RolesLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Role, ValueQuery>;
+   #[pallet::getter(fn votes)]
+   pub type Votes<T> = StorageDoubleMap<_, Blake2_128Concat, StorageIndex, Blake2_128Concat, AccountIdOf<T>, Vec<Vote<T>>, ValueQuery>;  
    
 
    // Pallets use events to inform users when important changes are made.
@@ -170,6 +138,10 @@ pub mod pallet {
       /// parameters. [something, who]
       SomethingStored(u32, T::AccountId),
       Created( <T as frame_system::Config>::BlockNumber),
+      MintedHouse(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
+      CreatedProposal(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
+      CreatedVote(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
+      RealizedDistribution(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
       Created2(u32, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
       Contributed(
          <T as frame_system::Config>::AccountId,
@@ -285,161 +257,30 @@ pub mod pallet {
 	Ok(().into())
       }
       
-      /// a house owner mint a house
+      // Process a proposal to distribute house share between investissor according to the votes
       #[pallet::weight(10_000)]
-      //#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]      
-      pub fn mint_house(origin: OriginFor<T>, account: AccountIdOf<T>) -> DispatchResultWithPostInfo {
-      
-         // Checks the inputs
-         let who = ensure_signed(origin)?;
-         
-         let _account = account.clone();
-         let exist_account = AccountsLog::<T>::contains_key(&_account);
-         
-         ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
-         
-         let _account_id = AccountsLog::<T>::get(&_account);
-            
-         // Checks if has the house owner role
-         let role = RolesLog::<T>::get(_account);
-         let mut role_iter = role.roles.iter();
-         let exist_house_owner_role = role_iter.position(|&x| x == HOUSE_OWNER_ROLE);
-
-         ensure!(exist_house_owner_role.is_none() == false, Error::<T>::IncorrectRole);
-         
-         /// TODO Call nft pallet to get ids
-         
-         // Create house
-         let house = House::new(1, 1);
-         let house_index = <HouseIndexLog<T>>::get();
-         <HouseIndexLog<T>>::put(house_index + 1);
-         
-         // Create ownership relation
-         let ownership = Ownership::new(_account_id, house_index, 100);
-         let ownership_index = <OwnershipIndexLog<T>>::get();
-         <OwnershipIndexLog<T>>::put(ownership_index + 1);
-         
-         // Add house to storage
-         <HousesLog<T>>::insert(house_index, house);
-         
-         // Add ownership to storage
-         //<OwnershipsLog<T>>::insert(ownership_index, ownership);
-         <OwnershipsLogs<T>>::insert(house_index, _account_id, ownership);
-         
-         // Raise event
-         let now = <frame_system::Pallet<T>>::block_number();
-         Self::deposit_event(Event::Created(now));
-         
-         // Exit
-	 Ok(().into())
-      }
-      
-      /// a house owner create a proposal for a house
-      #[pallet::weight(10_000)]
-      pub fn create_proposal(origin: OriginFor<T>, account: AccountIdOf<T>, house_id: HouseIndex, valuation: u32) -> DispatchResultWithPostInfo {
+      pub fn manage_proposal(origin: OriginFor<T>, 
+         house_id: StorageIndex,
+         house_owner_account: AccountIdOf<T>, 
+         proposal_id: StorageIndex
+      ) -> DispatchResultWithPostInfo {
       
          // Check the inputs
          let who = ensure_signed(origin)?;
-         
-         let _account = account.clone();
-         let exist_account = AccountsLog::<T>::contains_key(&_account);
-         
-         ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
-         
-         let _account_id = AccountsLog::<T>::get(&_account);
-            
-         // Checks if has the house owner role
-         let role = RolesLog::<T>::get(_account);
-         let mut role_iter = role.roles.iter();
-         let exist_house_owner_role = role_iter.position(|&x| x == HOUSE_OWNER_ROLE);
 
-         ensure!(exist_house_owner_role.is_none() == false, Error::<T>::IncorrectRole);
+         let engine_processor = EngineProcessor::<T>::new(who.clone());
+         let result = engine_processor.manage_proposal(house_id, house_owner_account.clone(), proposal_id);
          
-         // Check if the house id is correct
-         let exist_house = HousesLog::<T>::contains_key(&house_id);
-         ensure!(exist_house == true, Error::<T>::InvalidIndex);
-         
-         // Check if the house is owned by the account
-         let ownership_exist = OwnershipsLogs::<T>::contains_key(house_id, _account_id);
-         
-         ensure!(ownership_exist == true, Error::<T>::NotOwnedHouse);
-         
-         // Check if there is already a current proposal for this house
-         let mut proposal_iter = ProposalsLogs::<T>::iter_prefix_values((house_id, _account_id));
-         let exist_active_proposal = proposal_iter.position(|x| x.active == true);
-         ensure!(exist_active_proposal.is_none() == false, Error::<T>::AlreadyActiveProposal);
-         
-         // Execute treatment
-         let proposal_index = <ProposalIndexLog<T>>::get();
-         <ProposalIndexLog<T>>::put(proposal_index + 1);
-         
-         let proposal = Proposal::new(house_id, _account_id, valuation);
-         <ProposalsLogs<T>>::insert((house_id, _account_id), proposal_index, proposal);         
-         
-         // Raise event
-         let now = <frame_system::Pallet<T>>::block_number();
-         Self::deposit_event(Event::Created2(proposal_index, now));
-         
-         // Exit
-	 Ok(().into())
-      }
-      
-      /// a investor vote for a proposal
-      #[pallet::weight(10_000)]
-      pub fn vote_proposal(origin: OriginFor<T>, account: AccountIdOf<T>, house_id: u32, owner_id: u32, proposal_id: u32, status: bool) -> DispatchResultWithPostInfo {
-      
-         // Check the inputs
-         let who = ensure_signed(origin)?;
-         
-         let _account = account.clone();
-         let exist_account = AccountsLog::<T>::contains_key(&_account);
-         
-         ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
-         
-         let _account_id = AccountsLog::<T>::get(&_account);
-            
-         // Checks if has the investor role
-         let role = RolesLog::<T>::get(_account);
-         let mut role_iter = role.roles.iter();
-         let exist_investor_role = role_iter.position(|&x| x == INVESTOR_ROLE);
+         match result {
+            Ok(n)  => { 
 
-         ensure!(exist_investor_role.is_none() == false, Error::<T>::IncorrectRole);
-         
-         // Check if the proposal exist
-         let proposal_exist = ProposalsLogs::<T>::contains_key((house_id, owner_id), proposal_id);
-         ensure!(proposal_exist == true, Error::<T>::InvalidIndex);
-         
-         // Check if the proposal is still active
-         let proposal = ProposalsLogs::<T>::get((house_id, owner_id), proposal_id);
-         ensure!(proposal.active == true, Error::<T>::ProposalOutDated);
-         
-         // Check if a vote already exist for this account in this proposal
-         ensure!(VotesLog::<T>::contains_key(proposal_id, _account_id) == false, Error::<T>::AlreadyVotedProposal);
-         
-         // Execute treatment
-         let vote_index = <VoteIndexLog<T>>::get();
-         <VoteIndexLog<T>>::put(vote_index + 1);
-         
-         let vote = Vote::new(proposal_id, _account_id, status);
-         <VotesLog<T>>::insert(proposal_id, _account_id, vote);
-         
-         // Raise event
-         let now = <frame_system::Pallet<T>>::block_number();
-         Self::deposit_event(Event::Created2(vote_index, now));
-         
-         // Exit
-	 Ok(().into())
-      }
-      
-      #[pallet::weight(10_000)]
-      pub fn manage_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
-      
-         // Check the inputs
-         let who = ensure_signed(origin)?;
-         // Execute treatment
-         // Raise event
-         // Exit
-	 Ok(().into())
+               let block_number = <frame_system::Pallet<T>>::block_number();
+               // Raise event
+               Self::deposit_event(Event::RealizedDistribution(who.clone(), block_number));
+               Ok(().into()) 
+            },
+            Err(e) => Err(e),
+        }
       }
       
       /// Withdraw full balance of a contributor to treasury
@@ -451,60 +292,162 @@ pub mod pallet {
          // Execute treatment
          // Raise event
          // Exit
-	 Ok(().into())
+	      Ok(().into())
       }
-      
-      /// a Investor contributes funds to an existing fund
-      //#[pallet::weight(10_000)]
+
+      // Add a contribution to the common fund for thhe investissor
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      pub fn contribute_fund(origin: OriginFor<T>, account: AccountIdOf<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
-      
+      pub fn add_contribution_fund(origin: OriginFor<T>, account: AccountIdOf<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
-         
+
+         // Check that the account has a attributed investor role
          let _account = account.clone();
-         let exist_account = AccountsLog::<T>::contains_key(&_account);
-         
+         let exist_account = Roles::<T>::contains_key(&_account);
+
          ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
-         
-         let _account_id = AccountsLog::<T>::get(&_account);
-            
+
          // Checks if has the investor role
-         let role = RolesLog::<T>::get(_account);
+         let role_entry = Roles::<T>::get(_account);
+         let role = role_entry.get(0).unwrap();
          let mut role_iter = role.roles.iter();
          let exist_investor_role = role_iter.position(|&x| x == INVESTOR_ROLE);
 
          ensure!(exist_investor_role.is_none() == false, Error::<T>::IncorrectRole);
-         
+
          ensure!(amount >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
-         
-         // Execute treatment
-         let contributor_id = account.clone();
-         if ContributionsLog::<T>::contains_key(&contributor_id){
-            ContributionsLog::<T>::mutate(&contributor_id, |val|{
-                *val += amount;
-            })
-         } else {
-            ContributionsLog::<T>::insert(&contributor_id,amount);
-         }
-         
-         T::Currency::transfer(
-            &who,
-            &TREASURE_PALLET_ID.into_account(),
-            amount,
-            ExistenceRequirement::AllowDeath,
-         )?;
-         
-         //let balance = Self::contribution_get(&who);
-	 //let balance = balance.saturating_add(value);
-	 //Self::contribution_put(&who, &balance);
-         
-         // Raise event
-         let block_number = <frame_system::Pallet<T>>::block_number();
-         Self::deposit_event(Event::Contributed(contributor_id, amount, block_number));
-         
-         // Exit
-	 Ok(().into())
+
+         let investor = Investor::<T>::new(account.clone());
+
+         let result = investor.add_contribution_fund(amount);
+
+         match result {
+            Ok(n)  => { 
+
+               T::Currency::transfer(
+                  &who,
+                  &TREASURE_PALLET_ID.into_account(),
+                  amount,
+                  ExistenceRequirement::AllowDeath,
+               )?;
+
+               let block_number = <frame_system::Pallet<T>>::block_number();
+               Self::deposit_event(Event::Contributed(account.clone(), amount, block_number));
+               Ok(().into()) 
+            },
+            Err(e) => Err(e),
+        }
+
+        // Ok(().into())
+      }
+   
+      // A house owner can mint a new house
+      #[pallet::weight(10_000)]
+      pub fn mint_house_bis(origin: OriginFor<T>, account: AccountIdOf<T>) -> DispatchResultWithPostInfo {
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+
+         let _account = account.clone();
+         let exist_account = Roles::<T>::contains_key(&_account);
+
+         ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
+
+         // Checks if has the house owner role
+         let role_entry = Roles::<T>::get(_account);
+         let role = role_entry.get(0).unwrap();
+         let mut role_iter = role.roles.iter();
+         let exist_house_owner_role = role_iter.position(|&x| x == HOUSE_OWNER_ROLE);
+
+         ensure!(exist_house_owner_role.is_none() == false, Error::<T>::IncorrectRole);
+
+         /// TODO Call nft pallet to get ids
+         let house_owner = HouseOwnerBis::<T>::new(account.clone());
+         let result = house_owner.mint_house();
+
+         match result {
+            Ok(n)  => { 
+
+               let block_number = <frame_system::Pallet<T>>::block_number();
+               Self::deposit_event(Event::MintedHouse(account.clone(), block_number));
+               Ok(().into()) 
+            },
+            Err(e) => Err(e),
+        }
+      }
+
+      // Create a proposal from a house
+      #[pallet::weight(10_000)]
+      pub fn create_proposal_bis(origin: OriginFor<T>, account_id: AccountIdOf<T>, house_id: StorageIndex, valuation: u32) -> DispatchResultWithPostInfo {
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+
+         // Check that the account has a attributed investor role
+         let _account_id = account_id.clone();
+         let exist_account = Roles::<T>::contains_key(&_account_id);
+
+         ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
+
+         // Checks if has the house owner role
+         let role_entry = Roles::<T>::get(_account_id);
+         let role = role_entry.get(0).unwrap();
+         let mut role_iter = role.roles.iter();
+         let exist_house_owner_role = role_iter.position(|&x| x == HOUSE_OWNER_ROLE);
+
+         ensure!(exist_house_owner_role.is_none() == false, Error::<T>::IncorrectRole);
+
+         let _house_owner = HouseOwnerBis::<T>::new(account_id.clone());
+         let result = _house_owner.create_proposal(house_id, valuation);
+
+         match result {
+            Ok(n)  => { 
+
+               let block_number = <frame_system::Pallet<T>>::block_number();
+               Self::deposit_event(Event::CreatedProposal(account_id.clone(), block_number));
+               Ok(().into()) 
+            },
+            Err(e) => Err(e),
+        }
+      }
+
+      // An investissor can add a vote to a proposal
+      #[pallet::weight(10_000)]
+      pub fn vote_proposal_bis(
+         origin: OriginFor<T>, 
+         account_id: AccountIdOf<T>, 
+         house_id: StorageIndex, 
+         house_owner_account: AccountIdOf<T>, 
+         proposal_id: StorageIndex, 
+         status: bool) -> DispatchResultWithPostInfo {
+
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+
+         // Check that the account has a attributed investor role
+         let _account_id = account_id.clone();
+         let exist_account = Roles::<T>::contains_key(&_account_id);
+
+         ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
+
+         // Checks if has the investor role
+         let role_entry = Roles::<T>::get(_account_id);
+         let role = role_entry.get(0).unwrap();
+         let mut role_iter = role.roles.iter();
+         let exist_investor_role = role_iter.position(|&x| x == INVESTOR_ROLE);
+
+         ensure!(exist_investor_role.is_none() == false, Error::<T>::IncorrectRole);
+
+         let investor = Investor::<T>::new(account_id.clone());
+         let result = investor.vote_proposal(house_id, house_owner_account, proposal_id, status);
+
+         match result {
+            Ok(n)  => { 
+
+               let block_number = <frame_system::Pallet<T>>::block_number();
+               Self::deposit_event(Event::CreatedVote(account_id.clone(), block_number));
+               Ok(().into()) 
+            },
+            Err(e) => Err(e),
+        }
       }
    }
    
