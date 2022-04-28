@@ -1,28 +1,35 @@
 pub use super::*;
 
+pub use frame_support::{
+    pallet_prelude::*,
+    codec::{Encode, Decode},
+    traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons}
+ };
+use scale_info::TypeInfo;
+use frame_support::inherent::Vec;
+
 pub type StorageIndex = u32;
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 
-
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
-#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 pub struct Contribution<T: Config> {
    pub amount: BalanceOf<T>,
    pub timestamp: BlockNumberOf<T>
 }
 
-#[scale_info(skip_type_params(T))]
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
 pub struct FundSharing<T: Config> {
     pub amount: BalanceOf<T>,
     pub share: u32
 }
 
-#[scale_info(skip_type_params(T))]
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
 pub struct Role {
     pub roles: Vec<u16>
 }
@@ -35,8 +42,8 @@ impl Role {
  }
 
 
- #[scale_info(skip_type_params(T))]
- #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
  pub struct Ownership<T: Config> {
      pub id: u32,
      pub house_id: u32,
@@ -59,8 +66,8 @@ impl Role {
  }
 
 
- #[scale_info(skip_type_params(T))]
- #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
  pub struct HouseMinted<T: Config, U> {
      pub id: StorageIndex,
      pub nft: U,
@@ -78,8 +85,8 @@ impl<T: Config, U> HouseMinted<T, U> {
     }
 }
 
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
- #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
  pub struct Proposal<T: Config> {
      pub id: StorageIndex,
      pub house_id: StorageIndex,
@@ -109,8 +116,9 @@ impl<T: Config, U> HouseMinted<T, U> {
     //  }
  }
 
- #[scale_info(skip_type_params(T))]
- #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+//  #[derive(Clone, Encode, Decode, EPartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+ #[derive(Clone, Encode, Decode, Eq, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[scale_info(skip_type_params(T))]
  pub struct Vote<T: Config> {
     pub id: StorageIndex,
     pub account_id: AccountIdOf<T>,

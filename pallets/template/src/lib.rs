@@ -11,9 +11,10 @@ mod mock;
 #[cfg(test)]
 mod tests;
 mod roles;
+mod items;
 
 pub use crate::roles::*;
-
+pub use items::*;
 
 use pallet_nft::pallet as NftL;
 
@@ -77,20 +78,42 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn fund_amount)]
-   pub(super) type FundAmount<T> = StorageValue<_, BalanceOf<T>, ValueQuery>;
+   pub(super) type FundAmount<T> = StorageValue<
+      _, 
+      BalanceOf<T>, 
+      ValueQuery
+      >;
 
    #[pallet::storage]
    #[pallet::getter(fn contributions)]
    // pub type Contributions<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<FundSharing<T>>, ValueQuery>;
-   pub type Contributions<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, (BalanceOf<T>, u32), ValueQuery>;
+   pub type Contributions<T> = StorageMap<
+      _, 
+      Blake2_128Concat, 
+      AccountIdOf<T>, 
+      (BalanceOf<T>, u32), 
+      ValueQuery
+      >;
    
    #[pallet::storage]
    #[pallet::getter(fn contribution_log)]
-   pub type ContributionLog<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Contribution<T>>, ValueQuery>;
+   pub type ContributionLog<T> = StorageMap<
+      _, 
+      Blake2_128Concat, 
+      AccountIdOf<T>, 
+      Vec<Contribution<T>>, 
+      ValueQuery
+      >;
 
    #[pallet::storage]
    #[pallet::getter(fn roles)]
-   pub(super) type Roles<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Role>, ValueQuery>;
+   pub(super) type Roles<T> = StorageMap<
+      _, 
+      Blake2_128Concat, 
+      AccountIdOf<T>, 
+      Vec<Role>, 
+      ValueQuery
+      >;
 
    #[pallet::storage]
    #[pallet::getter(fn ownership_index)]
@@ -98,7 +121,15 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn ownerships)]
-   pub(super) type Ownerships<T> = StorageDoubleMap<_, Blake2_128Concat, (StorageIndex, AccountIdOf<T>), Blake2_128Concat, StorageIndex, Vec<Ownership<T>>, ValueQuery>;
+   pub(super) type Ownerships<T> = StorageDoubleMap<
+      _, 
+      Blake2_128Concat, 
+      (StorageIndex, AccountIdOf<T>), 
+      Blake2_128Concat, 
+      StorageIndex, 
+      Ownership<T>, 
+      OptionQuery
+      >;
    
    #[pallet::storage]
    #[pallet::getter(fn house_index)]
@@ -106,11 +137,23 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn minted_houses)]
-   pub(super) type MintedHouses<T> = StorageMap<_, Blake2_128Concat, StorageIndex, Vec<HouseMinted::<T,NftIndex>>, ValueQuery>;
+   pub(super) type MintedHouses<T> = StorageMap<
+      _, 
+      Blake2_128Concat, 
+      StorageIndex, 
+      HouseMinted::<T,NftIndex>, 
+      OptionQuery
+      >;
 
    #[pallet::storage]
    #[pallet::getter(fn fs_houses)]
-   pub(super) type FSHouses<T> = StorageMap<_, Blake2_128Concat, StorageIndex, Vec<HouseMinted::<T,NftIndex>>, ValueQuery>;
+   pub(super) type FSHouses<T> = StorageMap<
+      _, 
+      Blake2_128Concat, 
+      StorageIndex, 
+      HouseMinted::<T,NftIndex>, 
+      OptionQuery
+      >;
 
    #[pallet::storage]
    #[pallet::getter(fn proposal_index)]
@@ -118,15 +161,31 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn proposals)]
-   pub(super) type Proposals<T> = StorageDoubleMap<_, Blake2_128Concat, (StorageIndex, AccountIdOf<T>), Blake2_128Concat, StorageIndex, Vec<Proposal<T>>, ValueQuery>;
+   pub(super) type Proposals<T> = StorageDoubleMap<
+      _, 
+      Blake2_128Concat, 
+      (StorageIndex, AccountIdOf<T>), 
+      Blake2_128Concat, 
+      StorageIndex, 
+      Proposal<T>, 
+      OptionQuery
+      >;
    
    #[pallet::storage]
    #[pallet::getter(fn vote_index)]
    pub type VoteIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
 
    #[pallet::storage]
-   #[pallet::getter(fn votes)]
-   pub type Votes<T> = StorageDoubleMap<_, Blake2_128Concat, StorageIndex, Blake2_128Concat, AccountIdOf<T>, Vec<Vote<T>>, ValueQuery>;  
+   #[pallet::getter(fn votes)] 
+   pub type Votes<T> = StorageDoubleMap<
+      _, 
+      Blake2_128Concat, 
+      StorageIndex, 
+      Blake2_128Concat, 
+      AccountIdOf<T>, 
+      Vote<T>, 
+      OptionQuery
+      >;  
    
 
    // Pallets use events to inform users when important changes are made.
@@ -176,6 +235,8 @@ pub mod pallet {
       EndTooEarly,
       /// Must contribute at least the minimum amount of funds
       ContributionTooSmall,
+      /// No contribution exist for the account
+      ContributionNotExists,
       /// The fund index specified does not exist
       InvalidIndex,
       /// The crowdfund's contribution period has ended; no more contributions will be accepted
