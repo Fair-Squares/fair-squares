@@ -12,6 +12,7 @@ mod mock;
 mod tests;
 mod roles;
 mod items;
+mod functions;
 pub mod weights;
 
 pub use crate::roles::*;
@@ -35,14 +36,12 @@ pub mod pallet {
    use frame_support::{
       dispatch::DispatchResult,
       pallet_prelude::*,
-      sp_runtime::traits::{AccountIdConversion, Saturating, Hash, Zero},
-      storage::child,
+      sp_runtime::traits::{AccountIdConversion, Zero},
       traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
       PalletId		
    };
-   use frame_system::{ensure_signed, Account};
+   use frame_system::{ensure_signed};
    use frame_support::inherent::Vec;
-   use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
    //use std::mem;
    
 
@@ -60,12 +59,6 @@ pub mod pallet {
       /// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
    }
-	
-   pub type HouseIndex = u32;
-   pub type NftIndex = u32; 
-   type AccountIdOf<T> = <T as frame_system::Config>::AccountId;   
-   type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-   pub type StorageIndex = u32;
    
    
    #[pallet::pallet]
@@ -91,7 +84,6 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn contributions)]
-   // pub type Contributions<T> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<FundSharing<T>>, ValueQuery>;
    pub type Contributions<T> = StorageMap<
       _, 
       Blake2_128Concat, 
@@ -300,7 +292,7 @@ pub mod pallet {
       #[pallet::weight(T::WeightInfo::withdraw())]
       pub fn withdraw(
          origin: OriginFor<T>,
-         #[pallet::compact]index: HouseIndex,
+         #[pallet::compact]index: StorageIndex,
       ) -> DispatchResultWithPostInfo {
 	
 	// Check the inputs
@@ -514,37 +506,6 @@ pub mod pallet {
             },
             Err(e) => Err(e),
         }
-      }
-   }
-   
-   impl<T: Config> Pallet<T> {
-   
-      /// Each fund stores information about its contributors and their contributions in a child trie
-      // This helper function calculates the id of the associated child trie.
-      pub fn id_from_index() -> child::ChildInfo {
-         let mut buf = Vec::new();
-         buf.extend_from_slice(b"treasury");
-         //buf.extend_from_slice(&index.to_le_bytes()[..]);
-
-         child::ChildInfo::new_default(T::Hashing::hash(&buf[..]).as_ref())
-      }
-      
-      /// Record a contribution in the associated child trie.
-      pub fn contribution_put( who: &T::AccountId, balance: &BalanceOf<T>) {
-         let id = Self::id_from_index();
-         who.using_encoded(|b| child::put(&id, b, &balance));
-      }
-   
-      /// Lookup a contribution in the associated child trie.
-      pub fn contribution_get(who: &T::AccountId) -> BalanceOf<T> {
-         let id = Self::id_from_index();
-         who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
-      }
-      
-      /// Remove a contribution from an associated child trie.
-      pub fn contribution_kill(who: &T::AccountId) {
-         let id = Self::id_from_index();
-         who.using_encoded(|b| child::kill(&id, b));
       }
    }
 }

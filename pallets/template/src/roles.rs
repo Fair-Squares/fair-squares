@@ -1,8 +1,7 @@
 
 pub use super::*;
-// mod items;
 pub use crate::items::*;
-//pub use frame_support::dispatch::DispatchResult;
+
 pub use frame_support::{
    dispatch::DispatchResult,
    pallet_prelude::*,
@@ -12,13 +11,11 @@ pub use frame_support::{
 pub use frame_system::{pallet_prelude::*,ensure_signed};
 use frame_support::inherent::Vec;
 
-use scale_info::TypeInfo;
-
-pub type StorageIndex = u32;
-pub type NftIndex = u32;
-type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
-pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
+// pub type StorageIndex = u32;
+// pub type NftIndex = u32;
+// type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+// type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+// pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 
 

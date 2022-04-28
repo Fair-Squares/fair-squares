@@ -8,9 +8,10 @@ pub use frame_support::{
 use scale_info::TypeInfo;
 use frame_support::inherent::Vec;
 
+pub type NftIndex = u32;
 pub type StorageIndex = u32;
-type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+pub type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 
