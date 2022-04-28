@@ -12,12 +12,14 @@ mod mock;
 mod tests;
 mod roles;
 mod items;
+pub mod weights;
 
 pub use crate::roles::*;
 pub use items::*;
 
 use pallet_nft::pallet as NftL;
 
+pub use weights::WeightInfo;
 
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -54,6 +56,9 @@ pub mod pallet {
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;
       type MinContribution: Get<BalanceOf<Self>>;
+
+      /// Weight information for extrinsics in this pallet.
+		type WeightInfo: WeightInfo;
    }
 	
    pub type HouseIndex = u32;
@@ -273,7 +278,7 @@ pub mod pallet {
    impl<T: Config> Pallet<T> {
       
       /// An example dispatchable that may throw a custom error.
-      #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+      #[pallet::weight(T::WeightInfo::cause_error())]
       pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
          let _who = ensure_signed(origin)?;
 
@@ -292,7 +297,7 @@ pub mod pallet {
       }
       
       /// Withdraw full balance of a contributor to treasury
-      #[pallet::weight(10_000)]
+      #[pallet::weight(T::WeightInfo::withdraw())]
       pub fn withdraw(
          origin: OriginFor<T>,
          #[pallet::compact]index: HouseIndex,
@@ -319,7 +324,7 @@ pub mod pallet {
       }
       
       // Process a proposal to distribute house share between investissor according to the votes
-      #[pallet::weight(10_000)]
+      #[pallet::weight(T::WeightInfo::manage_proposal())]
       pub fn manage_proposal(origin: OriginFor<T>, 
          house_id: StorageIndex,
          house_owner_account: AccountIdOf<T>, 
@@ -345,7 +350,7 @@ pub mod pallet {
       }
       
       /// Withdraw full balance of a contributor to treasury
-      #[pallet::weight(10_000)]
+      #[pallet::weight(T::WeightInfo::withdraw_house_contribution())]
       pub fn withdraw_house_contribution(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
       
          // Check the inputs
@@ -357,7 +362,7 @@ pub mod pallet {
       }
 
       // Add a contribution to the common fund for thhe investissor
-      #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      #[pallet::weight(T::WeightInfo::add_contribution_fund())]
       pub fn add_contribution_fund(origin: OriginFor<T>, account: AccountIdOf<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
@@ -403,8 +408,8 @@ pub mod pallet {
       }
    
       // A house owner can mint a new house
-      #[pallet::weight(10_000)]
-      pub fn mint_house_bis(origin: OriginFor<T>, account: AccountIdOf<T>) -> DispatchResultWithPostInfo {
+      #[pallet::weight(T::WeightInfo::mint_house())]
+      pub fn mint_house(origin: OriginFor<T>, account: AccountIdOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
@@ -437,8 +442,8 @@ pub mod pallet {
       }
 
       // Create a proposal from a house
-      #[pallet::weight(10_000)]
-      pub fn create_proposal_bis(origin: OriginFor<T>, account_id: AccountIdOf<T>, house_id: StorageIndex, valuation: u32) -> DispatchResultWithPostInfo {
+      #[pallet::weight(T::WeightInfo::create_proposal())]
+      pub fn create_proposal(origin: OriginFor<T>, account_id: AccountIdOf<T>, house_id: StorageIndex, valuation: u32) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
@@ -471,8 +476,8 @@ pub mod pallet {
       }
 
       // An investissor can add a vote to a proposal
-      #[pallet::weight(10_000)]
-      pub fn vote_proposal_bis(
+      #[pallet::weight(T::WeightInfo::vote_proposal())]
+      pub fn vote_proposal(
          origin: OriginFor<T>, 
          account_id: AccountIdOf<T>, 
          house_id: StorageIndex, 
