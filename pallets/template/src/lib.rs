@@ -22,7 +22,7 @@ mod benchmarking;
 #[frame_support::pallet]
 pub mod pallet {
    pub use super::*;  
-   use pallet_nft::{Barak, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
+   //use pallet_nft::{Barak, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
    pub const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
    pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 
@@ -103,7 +103,7 @@ pub mod pallet {
       /// parameters. [something, who]
       SomethingStored(u32, T::AccountId),
       Created( <T as frame_system::Config>::BlockNumber),
-      Created2(HouseIndex, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
+      HouseMinted(HouseIndex, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
       Contributed(
          <T as frame_system::Config>::AccountId,
          BalanceOf<T>,
@@ -162,7 +162,7 @@ pub mod pallet {
       /// An example dispatchable that takes a singles value as a parameter, writes the value to
       /// storage and emits an event. This function must be dispatched by a signed extrinsic.
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      pub fn do_something(origin: OriginFor<T>, something: u32, acc:T::AccountId ,rent:BalanceOf<T>,_cd:CID,_cl:ClassIdOf<T>,_start:Barak<T>)-> DispatchResult 
+      pub fn do_something(origin: OriginFor<T>, something: u32, acc:T::AccountId ,rent:BalanceOf<T>)-> DispatchResult 
       { // cl:ClassIdOf<T>
          // Check that the extrinsic was signed and get the signer.
          // This function will return an error if the extrinsic is not signed.
@@ -181,6 +181,9 @@ pub mod pallet {
          //Investor::<T,u32>::contribute(dev,origin,rent)?;
          Ok(().into())
       }
+
+      //#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+      //pub fn mint_house(){}
 
       /// An example dispatchable that may throw a custom error.
       #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]

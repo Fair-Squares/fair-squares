@@ -6,7 +6,8 @@ pub use frame_support::{
     sp_runtime::traits::{AccountIdConversion,Hash, Zero},
     storage::{child},
     traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons},
-    PalletId		
+    PalletId,
+    assert_ok,		
  };
 pub use frame_system::{pallet_prelude::*,ensure_signed};
 pub use frame_support::pallet_prelude::*;

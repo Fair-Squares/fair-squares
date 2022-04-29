@@ -13,6 +13,7 @@ pub type Bool = bool;
 pub type NftOf<T> = Vec<T>;
 
 
+
 #[derive(Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
@@ -151,6 +152,7 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
             age: now,
         };
         MintedHouseLog::<T>::insert(idx,house);
+
     }
     //-------------MINT HOUSE METHOD_END-------------------------------
     //-----------------------------------------------------------------
@@ -159,7 +161,7 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
     //-------------PROPOSAL CREATION METHOD_BEGIN----------------------
 
     pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32) -> DispatchResult{
-        let creator = ensure_signed(origin)?;
+        let creator = ensure_signed(origin.clone())?;
         let now = <frame_system::Pallet<T>>::block_number();
         let deposit = <T as pallet::Config>::SubmissionDeposit::get();
         let imb = <T as pallet::Config>::Currency::withdraw(
@@ -177,7 +179,12 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
             <T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
             v.push(self.account_id);
             let house = MintedHouseLog::<T>::get(hindex);
+
             //mint a nft with the same index as HouseInd here
+        
+            
+            //NftL::Pallet::<T>::mint(origin,creator,clss,NftL::CID::default(),1);
+
             let store = (now,value,house,false);
             ProposalLog::<T>::insert(pindex,store);
             }

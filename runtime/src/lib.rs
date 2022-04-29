@@ -22,7 +22,7 @@ use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-
+pub use frame_system::EnsureRoot;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
@@ -36,7 +36,7 @@ pub use frame_support::{
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
-use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenData, CREATION_FEE};
+use pallet_nft::{CREATION_FEE};
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -48,6 +48,7 @@ pub use pallet_template;
 /// An index to a block.
 pub type BlockNumber = u32;
 
+
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
 
@@ -57,6 +58,8 @@ pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::Account
 
 /// Balance of an account.
 pub type Balance = u128;
+
+pub const UNITS: Balance = 1_000_000_000_000;
 
 /// Index of a transaction in the chain.
 pub type Index = u32;
@@ -297,7 +300,6 @@ parameter_types! {
 // Configure nft pallet in pallets/nft
 parameter_types! {
 	pub const ClassCreationFee: u32 = CREATION_FEE;
-	pub const Pot: AccountId = AccountId::new([9u8; 32]);
 }
 
 impl pallet_nft::Config for Runtime {
@@ -305,22 +307,39 @@ impl pallet_nft::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = ();
 	type ClassCreationFee = ClassCreationFee;
-	type Pot = Pot;
+	
+	
 }
 
 parameter_types! {
-	pub const MaxClassMetadata: u32 = 1024;
-	pub const MaxTokenMetadata: u32 = 1024;
+	
+	pub const ClassDeposit: Balance = 100 * UNITS; // 100 UNITS deposit to create asset class
+	pub const InstanceDeposit: Balance = 100 * UNITS; // 100 UNITS deposit to create asset instance
+	pub const KeyLimit: u32 = 256;	// Max 256 bytes per key
+	pub const ValueLimit: u32 = 1024;	// Max 1024 bytes per value
+	pub const UniquesMetadataDepositBase: Balance = 100 * UNITS;
+	pub const AttributeDepositBase: Balance = 10 * UNITS;
+	pub const DepositPerByte: Balance = UNITS;
+	pub const UniquesStringLimit: u32 = 60;
 }
 
-// Configure orml nft pallet
-impl orml_nft::Config for Runtime {
-	type ClassId = u32;
-	type TokenId = u64;
-	type ClassData = ClassData<BlockNumberOf<Self>, ClassIdOf<Self>>;
-	type TokenData = TokenData;
-	type MaxClassMetadata = MaxClassMetadata;
-	type MaxTokenMetadata = MaxTokenMetadata;
+// Configure uniques nft pallet
+impl pallet_uniques::Config for Runtime {
+	type Event = Event;
+	type ClassId = u128;
+	type InstanceId = u128;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type ClassDeposit = ClassDeposit;
+	type InstanceDeposit = InstanceDeposit;
+	type MetadataDepositBase = UniquesMetadataDepositBase;
+	type AttributeDepositBase = AttributeDepositBase;
+	type DepositPerByte = DepositPerByte;
+	type StringLimit = UniquesStringLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type WeightInfo = ();
+
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -340,8 +359,9 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
-		NFT: pallet_nft,
-		OrmlNFT: orml_nft,
+		Uniques: pallet_uniques,
+		Nft: pallet_nft,
+		//OrmlNFT: orml_nft,
 	}
 );
 
