@@ -35,7 +35,7 @@ pub mod pallet {
    use super::*;
    use frame_support::{
       dispatch::DispatchResult,
-      pallet_prelude::*,
+      transactional,
       sp_runtime::traits::{AccountIdConversion, Zero},
       traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
       PalletId		
@@ -317,6 +317,7 @@ pub mod pallet {
       
       // Process a proposal to distribute house share between investissor according to the votes
       #[pallet::weight(T::WeightInfo::manage_proposal())]
+      #[transactional]
       pub fn manage_proposal(origin: OriginFor<T>, 
          house_id: StorageIndex,
          house_owner_account: AccountIdOf<T>, 
@@ -355,6 +356,7 @@ pub mod pallet {
 
       // Add a contribution to the common fund for thhe investissor
       #[pallet::weight(T::WeightInfo::add_contribution_fund())]
+      #[transactional]
       pub fn add_contribution_fund(origin: OriginFor<T>, account: AccountIdOf<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
@@ -401,6 +403,7 @@ pub mod pallet {
    
       // A house owner can mint a new house
       #[pallet::weight(T::WeightInfo::mint_house())]
+      #[transactional]
       pub fn mint_house(origin: OriginFor<T>, account: AccountIdOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
@@ -435,6 +438,7 @@ pub mod pallet {
 
       // Create a proposal from a house
       #[pallet::weight(T::WeightInfo::create_proposal())]
+      #[transactional]
       pub fn create_proposal(origin: OriginFor<T>, account_id: AccountIdOf<T>, house_id: StorageIndex, valuation: u32) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
@@ -469,6 +473,7 @@ pub mod pallet {
 
       // An investissor can add a vote to a proposal
       #[pallet::weight(T::WeightInfo::vote_proposal())]
+      #[transactional]
       pub fn vote_proposal(
          origin: OriginFor<T>, 
          account_id: AccountIdOf<T>, 

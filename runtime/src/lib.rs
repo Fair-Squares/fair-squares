@@ -300,6 +300,7 @@ impl pallet_fairsquares::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type MinContribution = MinContribution;
+	type WeightInfo = pallet_fairsquares::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
