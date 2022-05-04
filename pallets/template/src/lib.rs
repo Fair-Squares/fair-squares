@@ -58,20 +58,20 @@ pub mod pallet {
    
 
    #[pallet::storage]
-	pub(super) type InvestorLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<Investor::<T,u32>>, ValueQuery>;
+	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor::<T,u32>, OptionQuery>;
 
    #[pallet::storage]
-	pub(super) type HouseOwnerLog<T: Config> = StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Vec<HouseOwner::<T,u32>>, ValueQuery>;
+	pub(super) type HouseOwnerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseOwner::<T,u32>, OptionQuery>;
 
 
    #[pallet::storage]
-	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Blake2_128Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Vec<Investor::<T,u32>>), ValueQuery>;
+	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Investor::<T,u32>), OptionQuery>;
 
    #[pallet::storage]
-   pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Blake2_128Concat,HouseIndex,House<T>, ValueQuery>;
+   pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Twox64Concat,HouseIndex,House<T>, ValueQuery>;
 
    #[pallet::storage]
-	pub(super) type ProposalLog<T: Config> = StorageMap<_, Blake2_128Concat,ProposalIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>,Bool), ValueQuery>;
+	pub(super) type ProposalLog<T: Config> = StorageMap<_, Twox64Concat,ProposalIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>,Bool), ValueQuery>;
 
 
    #[pallet::storage]

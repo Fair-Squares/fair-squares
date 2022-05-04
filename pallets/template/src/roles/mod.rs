@@ -47,12 +47,13 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
         let now = <frame_system::Pallet<T>>::block_number();
         
         if InvestorLog::<T>::contains_key(&acc)==false{
+            
             let inv = Investor{
                 account_id: acc,
                 nft: Vec::new(),
                 age: now,		
             };
-            InvestorLog::<T>::insert(inv.account_id.clone(),vec![inv]);
+            InvestorLog::<T>::insert(inv.account_id.clone(),inv);
         } else {
             let _message = "Role already attributed";
                 //return the above string in an event          
@@ -75,11 +76,13 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
 	let c1=Contribution::new(&self.account_id,&value);
         if ContributionsLog::<T>::contains_key(&idx){
             ContributionsLog::<T>::mutate(&idx, |val|{
-                val.1 += *c1.amount;
+                
+                let rec = val.clone().unwrap();
+                let _old = val.replace((rec.0,rec.1+*c1.amount,rec.2));
             })
         } else {
             let id = idx;
-            let v0 = vec![self];
+            let v0 = self;
             ContributionsLog::<T>::insert(id,(now,value,v0));
         }
         
@@ -126,7 +129,7 @@ impl<T:Config,U> HouseOwner<T,U> where roles::HouseOwner<T, U>: EncodeLike<roles
                 nft: Vec::new(),
                 age: now,		
             };
-            HouseOwnerLog::<T>::insert(hw.account_id.clone(),vec![hw]);
+            HouseOwnerLog::<T>::insert(hw.account_id.clone(),hw);
         } else {
             let _message = "Role already attributed";
                 //return the above string in an event         
