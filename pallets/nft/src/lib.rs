@@ -43,6 +43,14 @@ pub mod pallet {
 	use frame_support::{pallet_prelude::*, traits::EnsureOrigin};
 	use frame_system::pallet_prelude::OriginFor;
 
+	#[derive(Encode, Decode, Clone, Eq, PartialEq, RuntimeDebug)]
+	#[derive(TypeInfo)]
+	#[scale_info(skip_type_params(T))]
+	pub struct TokenByOwnerData<T:Config> {
+		pub percent_owned: (u8,u8),
+		pub instance: InstanceInfoOf<T>,
+}
+
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
@@ -86,6 +94,11 @@ pub mod pallet {
 	/// Stores instance info
 	pub type Instances<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, T::NftClassId, Twox64Concat, T::NftInstanceId, InstanceInfoOf<T>>;
+
+	#[pallet::storage]
+	/// Stores owner's share of the fractional nft
+	pub type TokenByOwner<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, T::AccountId, Twox64Concat, (T::NftClassId,T::NftInstanceId), TokenByOwnerData<T>>;
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -138,7 +151,7 @@ pub mod pallet {
 				.ok_or(Error::<T>::ClassUnknown)?;
 
 			ensure!(T::Permissions::can_mint(&class_type), Error::<T>::NotPermitted);
-
+			
 			Self::do_mint(sender, class_id, instance_id, metadata)?;
 
 			Ok(())
@@ -159,8 +172,11 @@ pub mod pallet {
 			class_id: T::NftClassId,
 			instance_id: T::NftInstanceId,
 			dest: <T::Lookup as StaticLookup>::Source,
+			
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
+
+			let share=TokenByOwner::<T>::get(&sender,(&class_id,&instance_id));
 
 			let dest = T::Lookup::lookup(dest)?;
 
@@ -335,6 +351,17 @@ impl<T: Config> Pallet<T> {
 	) -> Result<T::NftInstanceId, DispatchError> {
 		pallet_uniques::Pallet::<T>::do_mint(class_id.into(), instance_id.into(), owner.clone(), |_details| Ok(()))?;
 
+		let share = TokenByOwnerData::<T>{
+			percent_owned: (100,00),
+			instance: InstanceInfo {
+				metadata: metadata.clone(),
+			},
+		};
+		let key = TokenByOwner::<T>::contains_key(&owner,(&class_id, &instance_id));
+		if key == false{
+			TokenByOwner::<T>::insert(&owner, (&class_id, &instance_id), share);
+		}
+
 		Instances::<T>::insert(
 			class_id,
 			instance_id,
@@ -342,6 +369,7 @@ impl<T: Config> Pallet<T> {
 				metadata: metadata.clone(),
 			},
 		);
+		
 
 		Self::deposit_event(Event::InstanceMinted {
 			owner,
@@ -362,6 +390,7 @@ impl<T: Config> Pallet<T> {
 		if from == to {
 			return Ok(());
 		}
+		
 
 		pallet_uniques::Pallet::<T>::do_transfer(
 			class_id.into(),
