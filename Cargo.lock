@@ -4415,6 +4415,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-nft",
+ "pallet-uniques",
  "parity-scale-codec 3.1.2",
  "scale-info",
  "serde",

@@ -8,11 +8,13 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Contributors<T> = Vec<AccountIdOf<T>>;
 pub type HouseIndex = u32;
 pub type ProposalIndex = u32;
+pub type NftId = u32;
 pub type ContributionIndex = u32;
 pub type Bool = bool;
 pub type NftOf<T> = Vec<T>;
-
-
+pub type ClassOf<T> = <T as pallet_nft::Config>::NftClassId;
+pub const House_Class:u32=1000;
+pub const Apt_Class:u32=1000;
 
 
 //-------------------------------------------------------------------------------------
@@ -152,7 +154,7 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
     //-----------------------------------------------------------------
     //-------------PROPOSAL CREATION METHOD_BEGIN----------------------
 
-    pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32) -> DispatchResult{
+    pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32,metadata:&str) -> DispatchResult{
         let creator = ensure_signed(origin.clone())?;
         let now = <frame_system::Pallet<T>>::block_number();
         let deposit = <T as pallet::Config>::SubmissionDeposit::get();
@@ -172,8 +174,27 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
             v.push(self.account_id);
             let house = MintedHouseLog::<T>::get(hindex);
 
+            //Select Investors for nft ownership here
+
             //mint a nft with the same index as HouseInd here
-        
+            let nid = NftInstanceId::<T>::get()+1;
+            
+            //mint
+            let data:BoundedVecOfUnq<T> = metadata.as_bytes().to_vec().try_into().unwrap();
+            let cls = NftL::Pallet::<T>::do_create_class(
+                creator.clone(),
+                House_Class.into(),
+                Default::default(),
+                data.clone()
+            )?;            
+            let nft = NftL::Pallet::<T>::do_mint(
+                creator,
+                cls.0,
+                nid.into(),
+                data
+            );
+
+           
             
             //NftL::Pallet::<T>::mint(origin,creator,clss,NftL::CID::default(),1);
 

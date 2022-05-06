@@ -12,8 +12,11 @@ mod mock;
 mod tests;
 mod roles;
 pub use crate::roles::*;
-
 pub use pallet_nft::pallet as NftL;
+pub use pallet_uniques as UNQ;
+pub use pallet_nft::{BoundedVecOfUnq, ClassInfoOf, InstanceInfoOf};
+
+
 
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -22,7 +25,7 @@ mod benchmarking;
 #[frame_support::pallet]
 pub mod pallet {
    pub use super::*;  
-   //use pallet_nft::{Barak, ClassData, ClassIdOf, TokenIdOf,Properties,CID,ClassType};
+   
    pub const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
    pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 
@@ -30,7 +33,7 @@ pub mod pallet {
 
    /// Configure the pallet by specifying the parameters and types on which it depends.
    #[pallet::config]
-   pub trait Config: frame_system::Config {
+   pub trait Config: frame_system::Config+NftL::Config+pallet_uniques::Config {
       /// Because this pallet emits events, it depends on the runtime's definition of an event.
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;
@@ -85,6 +88,10 @@ pub mod pallet {
    #[pallet::storage]
 	/// Kazu:The total number of proposals that have so far been submitted.
 	pub(super) type ProposalInd<T: Config> = StorageValue<_, ProposalIndex, ValueQuery>;
+
+   #[pallet::storage]
+	/// Kazu:The total number of proposals that have so far been submitted.
+	pub(super) type NftInstanceId<T: Config> = StorageValue<_, NftId, ValueQuery>;
 
 
 
