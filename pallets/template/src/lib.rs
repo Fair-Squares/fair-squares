@@ -61,11 +61,11 @@ pub mod pallet {
 	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor::<T,u32>, OptionQuery>;
 
    #[pallet::storage]
-	pub(super) type HouseOwnerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseOwner::<T,u32>, OptionQuery>;
+	pub(super) type HouseSellerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller::<T,u32>, OptionQuery>;
 
 
    #[pallet::storage]
-	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Investor::<T,u32>), OptionQuery>;
+	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Vec<Contribution::<T>>), ValueQuery>;
 
    #[pallet::storage]
    pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Twox64Concat,HouseIndex,House<T>, ValueQuery>;
