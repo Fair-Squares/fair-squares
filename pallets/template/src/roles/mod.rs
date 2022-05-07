@@ -8,11 +8,12 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Contributors<T> = Vec<AccountIdOf<T>>;
 pub type HouseIndex = u32;
 pub type ProposalIndex = u32;
-pub type NftId = u32;
 pub type ContributionIndex = u32;
 pub type Bool = bool;
 pub type NftOf<T> = Vec<T>;
 pub type ClassOf<T> = <T as pallet_nft::Config>::NftClassId;
+pub type InstanceOf<T> = <T as pallet_nft::Config>::NftInstanceId;
+pub type NfT<T> = NftL::TokenByOwnerData<T>;
 pub const House_Class:u32=1000;
 pub const Apt_Class:u32=1000;
 
@@ -174,11 +175,10 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
             v.push(self.account_id);
             let house = MintedHouseLog::<T>::get(hindex);
 
-            //Select Investors for nft ownership here
+            //Select Investors for nft ownership
 
             //mint a nft with the same index as HouseInd here
-            let nid = NftInstanceId::<T>::get()+1;
-            
+                       
             //mint
             let data:BoundedVecOfUnq<T> = metadata.as_bytes().to_vec().try_into().unwrap();
             let cls = NftL::Pallet::<T>::do_create_class(
@@ -188,16 +188,18 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
                 data.clone()
             )?;            
             let nft = NftL::Pallet::<T>::do_mint(
-                creator,
+                creator.clone(),
                 cls.0,
-                nid.into(),
+                hindex.into(),
                 data
             );
+            let hi:InstanceOf<T> = hindex.clone().into();
 
-           
+            let own = NftL::TokenByOwner::<T>::get(creator,(cls.0,hi)).unwrap();
+            if !(MintedNftLog::<T>::contains_key(&hindex)){
+                MintedNftLog::<T>::insert(hindex,own);
+            }         
             
-            //NftL::Pallet::<T>::mint(origin,creator,clss,NftL::CID::default(),1);
-
             let store = (now,value,house,false);
             ProposalLog::<T>::insert(pindex,store);
             }

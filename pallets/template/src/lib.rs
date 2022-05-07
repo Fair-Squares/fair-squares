@@ -90,9 +90,9 @@ pub mod pallet {
 	pub(super) type ProposalInd<T: Config> = StorageValue<_, ProposalIndex, ValueQuery>;
 
    #[pallet::storage]
-	/// Kazu:The total number of proposals that have so far been submitted.
-	pub(super) type NftInstanceId<T: Config> = StorageValue<_, NftId, ValueQuery>;
+   pub(super) type MintedNftLog<T:Config> = StorageMap<_, Twox64Concat,HouseIndex,NfT<T>, OptionQuery>;
 
+   
 
 
 
