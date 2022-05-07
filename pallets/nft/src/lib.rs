@@ -274,7 +274,7 @@ pub mod pallet {
 				.map_err(|_| Error::<T>::CreationFeeNotPaid)?;
 
 			match class_type {
-				ClassType::Merge(id1, id2, burn) =>
+				ClassType::Merge(id1, id2, burn) => {
 					if !burn {
 						ensure!(
 							<orml_nft::Pallet<T>>::classes(id1).is_some(),
@@ -300,7 +300,8 @@ pub mod pallet {
 							data2.properties.0.contains(ClassProperty::Burnable),
 							Error::<T>::NonBurnable
 						);
-					},
+					}
+				},
 				ClassType::Claim(_) => {
 					ClaimedList::<T>::insert(next_id, Vec::<u16>::new());
 				},
@@ -455,8 +456,8 @@ pub mod pallet {
 
 			if let ClassType::Merge(id1, id2, b) = merged_class_info.data.class_type {
 				ensure!(
-					((id1 == token1.0) && (id2 == token2.0)) ||
-						((id1 == token2.0) && (id2 == token1.0)),
+					((id1 == token1.0) && (id2 == token2.0))
+						|| ((id1 == token2.0) && (id2 == token1.0)),
 					Error::<T>::WrongMergeBase,
 				);
 				burn = b;
@@ -583,12 +584,12 @@ impl<T: Config> Pallet<T> {
 		let current_block_number = <frame_system::Pallet<T>>::block_number();
 		if let Some(start_block) = token_info.start_block {
 			if start_block > current_block_number {
-				return false
+				return false;
 			}
 		}
 		if let Some(end_block) = token_info.end_block {
 			if end_block < current_block_number {
-				return false
+				return false;
 			}
 		}
 		true

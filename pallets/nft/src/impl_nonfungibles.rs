@@ -33,7 +33,7 @@ impl<T: Config> Inspect<<T as frame_system::Config>::AccountId> for Pallet<T> {
 			// We make the empty key map to the instance metadata value.
 			orml_nft::Pallet::<T>::tokens(class, instance).map(|a| a.metadata.into())
 		} else {
-			return None
+			return None;
 		}
 	}
 
@@ -47,7 +47,7 @@ impl<T: Config> Inspect<<T as frame_system::Config>::AccountId> for Pallet<T> {
 			// We make the empty key map to the instance metadata value.
 			orml_nft::Pallet::<T>::classes(class).map(|a| a.metadata.into())
 		} else {
-			return None
+			return None;
 		}
 	}
 

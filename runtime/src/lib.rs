@@ -34,9 +34,9 @@ pub use frame_support::{
 	StorageValue,
 };
 pub use pallet_balances::Call as BalancesCall;
+use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenData, CREATION_FEE};
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
-use pallet_nft::{BlockNumberOf, ClassData, ClassIdOf, TokenData, CREATION_FEE};
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -44,6 +44,7 @@ pub use sp_runtime::{Perbill, Permill};
 
 /// Import the template pallet.
 pub use pallet_template;
+pub use pallet_estate_asset;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -196,7 +197,6 @@ impl frame_system::Config for Runtime {
 	type OnSetCode = ();
 
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
-
 }
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
@@ -314,6 +314,23 @@ impl orml_nft::Config for Runtime {
 	type MaxTokenMetadata = MaxTokenMetadata;
 }
 
+//implementing pallet Estate Asset
+parameter_types! {
+	pub const LifeTime:BlockNumber = 100;
+	pub const PricePerSqm: u32 = 100;
+	pub const MaxAssetOwned:u32 = 5;
+	pub const MaxBytes:u32 = 20;
+}
+
+impl pallet_estate_asset::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type LifeTime = LifeTime;
+	//type PricePerSqm = PricePerSqm;
+	type MaxAssetOwned = MaxAssetOwned;
+	type MaxBytes = MaxBytes;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -331,8 +348,9 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
-		NFT: pallet_nft,
 		OrmlNFT: orml_nft,
+		NFT: pallet_nft,
+		EstateAsset: pallet_estate_asset,
 	}
 );
 
