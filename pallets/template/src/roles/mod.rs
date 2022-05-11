@@ -64,8 +64,8 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
 	let now = <frame_system::Pallet<T>>::block_number();
     let idx = ContribIndex::<T>::get()+1;
 	let c1=Contribution::<T>::new(self.account_id.clone(),value.clone());
-        if ContributionsLog::<T>::contains_key(&idx){
-            ContributionsLog::<T>::mutate(&idx, |val|{
+        if ContributionsLog::<T>::contains_key(&self.account_id){
+            ContributionsLog::<T>::mutate(&self.account_id, |val|{
                 
                 //let rec = val.clone().unwrap();
                 //let _old = val.replace((rec.0,rec.1+*c1.amount,rec.2));
@@ -73,7 +73,7 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
                 val.1 +=c1.amount;
             })
         } else {
-            let id = idx;
+            let id = self.account_id;
             let v0 = vec![c1];
             ContributionsLog::<T>::insert(id,(now,value,v0));
         }

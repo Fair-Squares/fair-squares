@@ -68,7 +68,7 @@ pub mod pallet {
 
 
    #[pallet::storage]
-	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,ContributionIndex,(BlockNumberOf<T>,BalanceOf<T>,Vec<Contribution::<T>>), ValueQuery>;
+	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,AccountIdOf<T>,(BlockNumberOf<T>,BalanceOf<T>,Vec<Contribution::<T>>), ValueQuery>;
 
    #[pallet::storage]
    pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Twox64Concat,HouseIndex,House<T>, ValueQuery>;

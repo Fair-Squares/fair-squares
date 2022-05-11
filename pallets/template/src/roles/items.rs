@@ -35,18 +35,18 @@ impl<T:Config> Default for House<T>{
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Contribution<T:Config>{
-    pub account:T::AccountId,
+pub struct Contribution<T:Config>{    
     pub amount:BalanceOf<T>,
     pub age:BlockNumberOf<T>,
+    pub idx: u32,
 }
 
 impl<T:Config>Contribution<T>{
     pub fn new(acc:T::AccountId,val:BalanceOf<T>)-> Self{
         Self{
-            account:acc,
             amount:val,
             age: <frame_system::Pallet<T>>::block_number(),
+            idx: 0,
         }
     }
 }
