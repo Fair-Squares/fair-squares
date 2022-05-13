@@ -71,7 +71,7 @@ impl<T: Config> Transfer<T::AccountId> for Pallet<T> {
 		let from = orml_nft::Pallet::<T>::tokens(class, instance)
 			.map(|a| a.owner)
 			.ok_or(Error::<T>::TokenNotFound)?;
-		Self::do_transfer(&from, &destination, (*class, *instance))?;
+		//Self::do_transfer(&from, &destination, (*class, *instance))?;
 		Ok(())
 	}
 }

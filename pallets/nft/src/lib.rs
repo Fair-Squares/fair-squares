@@ -273,44 +273,60 @@ pub mod pallet {
 			T::Currency::transfer(&who, &T::Pot::get(), fee, KeepAlive)
 				.map_err(|_| Error::<T>::CreationFeeNotPaid)?;
 
-			match class_type {
-				ClassType::Merge(id1, id2, burn) =>
-					if !burn {
-						ensure!(
-							<orml_nft::Pallet<T>>::classes(id1).is_some(),
-							Error::<T>::ClassIdNotFound
-						);
-						ensure!(
-							<orml_nft::Pallet<T>>::classes(id2).is_some(),
-							Error::<T>::ClassIdNotFound
-						);
-					} else {
-						let class_info1 = orml_nft::Pallet::<T>::classes(id1)
-							.ok_or(Error::<T>::ClassIdNotFound)?;
-						let class_info2 = orml_nft::Pallet::<T>::classes(id2)
-							.ok_or(Error::<T>::ClassIdNotFound)?;
+			// match class_type {
+			// 	ClassType::Merge(id1, id2, burn) =>
+			// 		if !burn {
+			// 			ensure!(
+			// 				<orml_nft::Pallet<T>>::classes(id1).is_some(),
+			// 				Error::<T>::ClassIdNotFound
+			// 			);
+			// 			ensure!(
+			// 				<orml_nft::Pallet<T>>::classes(id2).is_some(),
+			// 				Error::<T>::ClassIdNotFound
+			// 			);
+			// 		} else {
+			// 			let class_info1 = orml_nft::Pallet::<T>::classes(id1)
+			// 				.ok_or(Error::<T>::ClassIdNotFound)?;
+			// 			let class_info2 = orml_nft::Pallet::<T>::classes(id2)
+			// 				.ok_or(Error::<T>::ClassIdNotFound)?;
 
-						let data1 = class_info1.data;
-						ensure!(
-							data1.properties.0.contains(ClassProperty::Burnable),
-							Error::<T>::NonBurnable
-						);
-						let data2 = class_info2.data;
-						ensure!(
-							data2.properties.0.contains(ClassProperty::Burnable),
-							Error::<T>::NonBurnable
-						);
-					},
-				ClassType::Claim(_) => {
-					ClaimedList::<T>::insert(next_id, Vec::<u16>::new());
-				},
-				_ => {},
-			}
+			// 			let data1 = class_info1.data;
+			// 			ensure!(
+			// 				data1.properties.0.contains(ClassProperty::Burnable),
+			// 				Error::<T>::NonBurnable
+			// 			);
+			// 			let data2 = class_info2.data;
+			// 			ensure!(
+			// 				data2.properties.0.contains(ClassProperty::Burnable),
+			// 				Error::<T>::NonBurnable
+			// 			);
+			// 		},
+			// 	ClassType::Claim(_) => {
+			// 		ClaimedList::<T>::insert(next_id, Vec::<u16>::new());
+			// 	},
+			// 	_ => {},
+			// }
 
 			let data = ClassData { properties, start_block, end_block, class_type };
 			orml_nft::Pallet::<T>::create_class(&who, metadata.to_vec(), data)?;
 
 			Self::deposit_event(Event::CreatedClass(who, next_id));
+			Ok(().into())
+		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::create_class())]
+		//#[transactional]
+		pub fn create_class_bis(
+			origin: OriginFor<T>,
+			metadata: CID,
+			properties: Properties,
+			start_block: Option<BlockNumberOf<T>>,
+			end_block: Option<BlockNumberOf<T>>,
+			class_type: ClassType<ClassIdOf<T>>,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			
+			
 			Ok(().into())
 		}
 
@@ -359,6 +375,30 @@ pub mod pallet {
 			}
 
 			Self::deposit_event(Event::MintedToken(who, to, class_id, start_token_id, quantity));
+			Ok(().into())
+		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::mint(*quantity))]
+		// #[transactional]
+		pub fn mint_bis(
+			origin: OriginFor<T>,
+			to: <T::Lookup as StaticLookup>::Source,
+			class_id: ClassIdOf<T>,
+			metadata: CID,
+			quantity: u32,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			
+			Ok(().into())
+		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::create_class())]
+		#[transactional]
+		pub fn pre_mint_biss(
+			origin: OriginFor<T>
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			
 			Ok(().into())
 		}
 
@@ -513,6 +553,18 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 			let to = T::Lookup::lookup(to)?;
 			Self::do_transfer(&who, &to, token)?;
+			Ok(().into())
+		}
+
+		#[pallet::weight(<T as Config>::WeightInfo::transfer())]
+		// #[transactional]
+		pub fn transfer_bis(
+			origin: OriginFor<T>,
+			to: <T::Lookup as StaticLookup>::Source,
+			token: (ClassIdOf<T>, TokenIdOf<T>),
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+			
 			Ok(().into())
 		}
 

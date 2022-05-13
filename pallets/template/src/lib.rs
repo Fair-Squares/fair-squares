@@ -70,30 +70,30 @@ pub mod pallet {
    // https://docs.substrate.io/v3/runtime/storage
    #[pallet::storage]
    #[pallet::getter(fn something)]
-   // Learn more about declaring storage items:
-   // https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
+   // storage value template for tuto prupose, to be deleted
    pub type Something<T> = StorageValue<_, u32>;
 
    #[pallet::storage]
    #[pallet::getter(fn fund_amount)]
+   // The total amount deposited by investors
    pub(super) type FundAmount<T> = StorageValue<
       _, 
-      BalanceOf<T>, 
-      ValueQuery
-      >;
+      BalanceOf<T>>;
 
    #[pallet::storage]
    #[pallet::getter(fn contributions)]
-   pub type Contributions<T> = StorageMap<
+   // Distribution of investor's contributions
+   pub(super) type Contributions<T> = StorageMap<
       _, 
       Blake2_128Concat, 
       AccountIdOf<T>, 
-      (BalanceOf<T>, u32), 
-      ValueQuery
+      (BalanceOf<T>, u32, AccountIdOf<T>), 
+      OptionQuery
       >;
    
    #[pallet::storage]
    #[pallet::getter(fn contribution_log)]
+   // Investor's contribution history storage
    pub type ContributionLog<T> = StorageMap<
       _, 
       Blake2_128Concat, 
@@ -104,24 +104,35 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn roles)]
+   // Role's attribution for each account
    pub(super) type Roles<T> = StorageMap<
       _, 
       Blake2_128Concat, 
       AccountIdOf<T>, 
-      Vec<Role>, 
+      Vec<u16>, 
       ValueQuery
       >;
+   
+   // #[pallet::storage]
+   // #[pallet::getter(fn roles_bis)]
+   // pub(super) type RolesBis<T> = StorageMap<
+   //    _, 
+   //    Blake2_128Concat, 
+   //    AccountIdOf<T>, 
+   //    Vec<u16>, 
+   //    ValueQuery
+   //    >;
 
    #[pallet::storage]
    #[pallet::getter(fn ownership_index)]
+   // Count of ownerships created until then
    pub(super) type OwnershipIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
-
+   
    #[pallet::storage]
    #[pallet::getter(fn ownerships)]
-   pub(super) type Ownerships<T> = StorageDoubleMap<
+   // Links between a house and owners
+   pub(super) type Ownerships<T> = StorageMap<
       _, 
-      Blake2_128Concat, 
-      (StorageIndex, AccountIdOf<T>), 
       Blake2_128Concat, 
       StorageIndex, 
       Ownership<T>, 
@@ -130,10 +141,12 @@ pub mod pallet {
    
    #[pallet::storage]
    #[pallet::getter(fn house_index)]
-   pub(super) type HouseIndexBis<T> = StorageValue<_, StorageIndex, ValueQuery>;
+   // Count of total house minted
+   pub(super) type HouseIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
 
    #[pallet::storage]
-   #[pallet::getter(fn minted_houses)]
+   #[pallet::getter(fn mintedhouses)]
+   // Houses minted and not owned by investors
    pub(super) type MintedHouses<T> = StorageMap<
       _, 
       Blake2_128Concat, 
@@ -144,6 +157,7 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn fs_houses)]
+   // Houses owned by investors
    pub(super) type FSHouses<T> = StorageMap<
       _, 
       Blake2_128Concat, 
@@ -154,14 +168,14 @@ pub mod pallet {
 
    #[pallet::storage]
    #[pallet::getter(fn proposal_index)]
+   // Count of proposals
    pub type ProposalIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
 
    #[pallet::storage]
    #[pallet::getter(fn proposals)]
-   pub(super) type Proposals<T> = StorageDoubleMap<
+   // Proposal created for houses
+   pub(super) type Proposals<T> = StorageMap<
       _, 
-      Blake2_128Concat, 
-      (StorageIndex, AccountIdOf<T>), 
       Blake2_128Concat, 
       StorageIndex, 
       Proposal<T>, 
@@ -170,10 +184,12 @@ pub mod pallet {
    
    #[pallet::storage]
    #[pallet::getter(fn vote_index)]
+   // Count of votes
    pub type VoteIndex<T> = StorageValue<_, StorageIndex, ValueQuery>;
 
    #[pallet::storage]
-   #[pallet::getter(fn votes)] 
+   #[pallet::getter(fn votes)]
+   // Votes of investors for proposals
    pub type Votes<T> = StorageDoubleMap<
       _, 
       Blake2_128Concat, 
@@ -194,16 +210,22 @@ pub mod pallet {
       /// parameters. [something, who]
       SomethingStored(u32, T::AccountId),
       Created( <T as frame_system::Config>::BlockNumber),
+      /// A house was minted
       MintedHouse(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
+      /// A proposal was created
       CreatedProposal(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
+      /// A vote was created
       CreatedVote(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
+      /// A house ownership distribution between investors was realized
       RealizedDistribution(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::BlockNumber),
       Created2(u32, <T as frame_system::Config>::BlockNumber), //Kazu:for creation of a proposal
+      /// A contribution was deposited
       Contributed(
          <T as frame_system::Config>::AccountId,
          BalanceOf<T>,
          <T as frame_system::Config>::BlockNumber,
       ),
+      /// A contribution was withdrawn
       Withdrew(
          <T as frame_system::Config>::AccountId,
          BalanceOf<T>,
@@ -268,6 +290,24 @@ pub mod pallet {
    // Dispatchable functions must be annotated with a weight and must return a DispatchResult.
    #[pallet::call]
    impl<T: Config> Pallet<T> {
+
+      /// An example dispatchable that takes a singles value as a parameter, writes the value to
+		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://docs.substrate.io/v3/runtime/origins
+			let who = ensure_signed(origin)?;
+
+			// Update storage.
+			<Something<T>>::put(something);
+
+			// Emit an event.
+			Self::deposit_event(Event::SomethingStored(something, who));
+			// Return a successful DispatchResultWithPostInfo
+			Ok(())
+		}
       
       /// An example dispatchable that may throw a custom error.
       #[pallet::weight(T::WeightInfo::cause_error())]
@@ -295,24 +335,24 @@ pub mod pallet {
          #[pallet::compact]index: StorageIndex,
       ) -> DispatchResultWithPostInfo {
 	
-	// Check the inputs
-	let who = ensure_signed(origin)?;
-	let balance = Self::contribution_get(&who);
-	ensure!(balance > Zero::zero(), Error::<T>::NoContribution);
-	
-	// Execute treatment
-	/// TODO : extract execution from following commented code
-	
-	let now = <frame_system::Pallet<T>>::block_number();
+         // Check the inputs
+         let who = ensure_signed(origin)?;
+         let balance = Self::contribution_get(&who);
+         ensure!(balance > Zero::zero(), Error::<T>::NoContribution);
+         
+         // Execute treatment
+         /// TODO : extract execution from following commented code
+         
+         let now = <frame_system::Pallet<T>>::block_number();
 
-	// Update storage
-	Self::contribution_kill( &who);
-	
-	// Raise event
-	Self::deposit_event(Event::Withdrew(who, balance, now));
-	
-	// Exit
-	Ok(().into())
+         // Update storage
+         Self::contribution_kill( &who);
+         
+         // Raise event
+         Self::deposit_event(Event::Withdrew(who, balance, now));
+         
+         // Exit
+         Ok(().into())
       }
       
       // Process a proposal to distribute house share between investissor according to the votes
@@ -357,27 +397,29 @@ pub mod pallet {
       // Add a contribution to the common fund for thhe investissor
       #[pallet::weight(T::WeightInfo::add_contribution_fund())]
       #[transactional]
-      pub fn add_contribution_fund(origin: OriginFor<T>, account: AccountIdOf<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
+      pub fn add_contribution_fund(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
+         /// TODO : remove code below when dev finished
+         Self::set_roles(who.clone());
+
          // Check that the account has a attributed investor role
-         let _account = account.clone();
+         let _account = who.clone();
          let exist_account = Roles::<T>::contains_key(&_account);
 
          ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
 
          // Checks if has the investor role
          let role_entry = Roles::<T>::get(_account);
-         let role = role_entry.get(0).unwrap();
-         let mut role_iter = role.roles.iter();
+         let mut role_iter = role_entry.iter();
          let exist_investor_role = role_iter.position(|&x| x == INVESTOR_ROLE);
 
          ensure!(exist_investor_role.is_none() == false, Error::<T>::IncorrectRole);
 
          ensure!(amount >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 
-         let investor = Investor::<T>::new(account.clone());
+         let investor = Investor::<T>::new(who.clone());
 
          let result = investor.add_contribution_fund(amount);
 
@@ -392,44 +434,44 @@ pub mod pallet {
                )?;
 
                let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::Contributed(account.clone(), amount, block_number));
+               Self::deposit_event(Event::Contributed(who.clone(), amount, block_number));
                Ok(().into()) 
             },
             Err(e) => Err(e),
         }
-
-        // Ok(().into())
       }
    
       // A house owner can mint a new house
       #[pallet::weight(T::WeightInfo::mint_house())]
       #[transactional]
-      pub fn mint_house(origin: OriginFor<T>, account: AccountIdOf<T>) -> DispatchResultWithPostInfo {
+      pub fn mint_house(origin: OriginFor<T>, name: Vec<u8>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
-         let _account = account.clone();
+         /// TODO : remove code below when dev finished
+         Self::set_roles(who.clone());
+
+         let _account = who.clone();
          let exist_account = Roles::<T>::contains_key(&_account);
 
          ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
 
          // Checks if has the house owner role
          let role_entry = Roles::<T>::get(_account);
-         let role = role_entry.get(0).unwrap();
-         let mut role_iter = role.roles.iter();
+         let mut role_iter = role_entry.iter();
          let exist_house_owner_role = role_iter.position(|&x| x == HOUSE_OWNER_ROLE);
 
          ensure!(exist_house_owner_role.is_none() == false, Error::<T>::IncorrectRole);
 
          /// TODO Call nft pallet to get ids
-         let house_owner = HouseOwnerBis::<T>::new(account.clone());
-         let result = house_owner.mint_house();
+         let house_owner = HouseOwner::<T>::new(who.clone());
+         let result = house_owner.mint_house(name.clone());
 
          match result {
             Ok(n)  => { 
 
                let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::MintedHouse(account.clone(), block_number));
+               Self::deposit_event(Event::MintedHouse(who.clone(), block_number));
                Ok(().into()) 
             },
             Err(e) => Err(e),
@@ -439,32 +481,34 @@ pub mod pallet {
       // Create a proposal from a house
       #[pallet::weight(T::WeightInfo::create_proposal())]
       #[transactional]
-      pub fn create_proposal(origin: OriginFor<T>, account_id: AccountIdOf<T>, house_id: StorageIndex, valuation: u32) -> DispatchResultWithPostInfo {
+      pub fn create_proposal(origin: OriginFor<T>, house_id: StorageIndex, valuation: BalanceOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
+         /// TODO : remove code below when dev finished
+         Self::set_roles(who.clone());
+
          // Check that the account has a attributed investor role
-         let _account_id = account_id.clone();
+         let _account_id = who.clone();
          let exist_account = Roles::<T>::contains_key(&_account_id);
 
          ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
 
          // Checks if has the house owner role
          let role_entry = Roles::<T>::get(_account_id);
-         let role = role_entry.get(0).unwrap();
-         let mut role_iter = role.roles.iter();
+         let mut role_iter = role_entry.iter();
          let exist_house_owner_role = role_iter.position(|&x| x == HOUSE_OWNER_ROLE);
 
          ensure!(exist_house_owner_role.is_none() == false, Error::<T>::IncorrectRole);
 
-         let _house_owner = HouseOwnerBis::<T>::new(account_id.clone());
+         let _house_owner = HouseOwner::<T>::new(who.clone());
          let result = _house_owner.create_proposal(house_id, valuation);
 
          match result {
             Ok(n)  => { 
 
                let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::CreatedProposal(account_id.clone(), block_number));
+               Self::deposit_event(Event::CreatedProposal(who.clone(), block_number));
                Ok(().into()) 
             },
             Err(e) => Err(e),
@@ -475,38 +519,38 @@ pub mod pallet {
       #[pallet::weight(T::WeightInfo::vote_proposal())]
       #[transactional]
       pub fn vote_proposal(
-         origin: OriginFor<T>, 
-         account_id: AccountIdOf<T>, 
-         house_id: StorageIndex, 
-         house_owner_account: AccountIdOf<T>, 
+         origin: OriginFor<T>,
          proposal_id: StorageIndex, 
          status: bool) -> DispatchResultWithPostInfo {
 
          // Check the inputs
          let who = ensure_signed(origin)?;
 
+         /// TODO : remove code below when dev finished
+         Self::set_roles(who.clone());
+
          // Check that the account has a attributed investor role
-         let _account_id = account_id.clone();
+         let _account_id = who.clone();
          let exist_account = Roles::<T>::contains_key(&_account_id);
 
          ensure!(exist_account == true, Error::<T>::UnregisteredAccount);
 
          // Checks if has the investor role
          let role_entry = Roles::<T>::get(_account_id);
-         let role = role_entry.get(0).unwrap();
-         let mut role_iter = role.roles.iter();
+         let mut role_iter = role_entry.iter();
          let exist_investor_role = role_iter.position(|&x| x == INVESTOR_ROLE);
 
          ensure!(exist_investor_role.is_none() == false, Error::<T>::IncorrectRole);
 
-         let investor = Investor::<T>::new(account_id.clone());
-         let result = investor.vote_proposal(house_id, house_owner_account, proposal_id, status);
+         let investor = Investor::<T>::new(who.clone());
+         // let result = investor.vote_proposal(house_id, house_owner_account, proposal_id, status);
+         let result = investor.vote_proposal(proposal_id, status);
 
          match result {
             Ok(n)  => { 
 
                let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::CreatedVote(account_id.clone(), block_number));
+               Self::deposit_event(Event::CreatedVote(who.clone(), block_number));
                Ok(().into()) 
             },
             Err(e) => Err(e),

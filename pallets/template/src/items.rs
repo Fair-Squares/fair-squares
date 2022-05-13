@@ -5,7 +5,7 @@ pub use frame_support::{
     codec::{Encode, Decode},
     traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons}
  };
-use scale_info::TypeInfo;
+use scale_info::{ TypeInfo };
 use frame_support::inherent::Vec;
 
 pub type NftIndex = u32;
@@ -22,7 +22,7 @@ pub struct Contribution<T: Config> {
    pub timestamp: BlockNumberOf<T>
 }
 
-#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 pub struct FundSharing<T: Config> {
     pub amount: BalanceOf<T>,
@@ -72,14 +72,16 @@ impl Role {
  pub struct HouseMinted<T: Config, U> {
      pub id: StorageIndex,
      pub nft: U,
+     pub name: Vec<u8>,
      pub timestamp: BlockNumberOf<T>,
      pub ownerships: Vec<StorageIndex>
  }
 impl<T: Config, U> HouseMinted<T, U> {
-    pub fn new(id: StorageIndex, nft: U, timestamp: BlockNumberOf<T>) -> Self {
+    pub fn new(id: StorageIndex, nft: U, name: Vec<u8>, timestamp: BlockNumberOf<T>) -> Self {
         Self {
             id,
             nft,
+            name,
             timestamp,
             ownerships: Vec::<StorageIndex>::new()
         }
@@ -92,22 +94,30 @@ impl<T: Config, U> HouseMinted<T, U> {
      pub id: StorageIndex,
      pub house_id: StorageIndex,
      pub account_id: AccountIdOf<T>,
-     pub valuation: u32,
+     pub valuation: BalanceOf<T>,
+     pub house_name: Vec<u8>,
      pub active: bool,
      pub funded: bool,
+     pub vote_ok_count: u32,
+     pub vote_ko_count: u32,
     //  pub votes: Vec<VoteBis<T>>,
      pub timestamp: BlockNumberOf<T>
  }
  impl<T: Config> Proposal<T> {
-     pub fn new(id: StorageIndex, house_id: StorageIndex, account_id: AccountIdOf<T>, valuation: u32, timestamp: BlockNumberOf<T>, active:bool, funded: bool) -> Self {
+     pub fn new(id: StorageIndex, house_id: StorageIndex, account_id: AccountIdOf<T>, 
+        valuation: BalanceOf<T>, house_name: Vec<u8>, timestamp: BlockNumberOf<T>, 
+        active:bool, funded: bool, vote_ok_count: u32, vote_ko_count: u32) -> Self {
          Self {
              id,
              house_id,
              account_id,
              valuation,
+             house_name,
              active,
              funded,
-             timestamp
+             timestamp,
+             vote_ok_count,
+             vote_ko_count
             //  votes: Vec::new()
          }
      }
