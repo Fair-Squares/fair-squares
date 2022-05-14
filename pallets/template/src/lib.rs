@@ -61,7 +61,7 @@ pub mod pallet {
    
 
    #[pallet::storage]
-	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor::<T,u32>, OptionQuery>;
+	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor::<T>, OptionQuery>;
 
    #[pallet::storage]
 	pub(super) type HouseSellerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller::<T,u32>, OptionQuery>;
@@ -157,7 +157,9 @@ pub mod pallet {
       /// Cannot dispense funds from an unsuccessful fund
       UnsuccessfulFund,
       /// Proposal already Funded
-      AlreadyFunded
+      AlreadyFunded,
+
+      NoAccount
    }
    
 
@@ -279,5 +281,19 @@ pub mod pallet {
          let id = Self::id_from_index();
          who.using_encoded(|b| child::kill(&id, b));
       }
+
+      pub fn u32_to_balance_option(input: u32) -> Option<BalanceOf<T>> {
+         input.try_into().ok()
+       }
+   
+      pub fn balance_to_u32_option(input: BalanceOf<T>) -> Option<u32> {
+         input.try_into().ok()
+       }
+
+       pub fn pot() -> BalanceOf<T> {
+			<T as pallet::Config>::Currency::free_balance(&TREASURE_PALLET_ID.into_account())
+			// Must never be less than 0 but better be safe.
+			.saturating_sub(<T as pallet::Config>::Currency::minimum_balance())
+	}
    }
 }

@@ -23,17 +23,18 @@ pub const Apt_Class:u32=1000;
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Investor<T:Config,U> {
+pub struct Investor<T:Config> {
     pub account_id:T::AccountId,
-    pub nft:NftOf<U>,
+    pub nft:NftOf<u32>,
     pub age:BlockNumberOf<T>,
+    pub share:BalanceOf<T>,
 }
 
-impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::Investor<T, u32>>{
+impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<T>>{
 
     //-------------------------------------------------------------------
     //-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
-    pub fn new(acc:T::AccountId,_nft:U){
+    pub fn new(acc:T::AccountId,_nft:u32){
         let now = <frame_system::Pallet<T>>::block_number();
         
         if InvestorLog::<T>::contains_key(&acc)==false{
@@ -41,7 +42,8 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
             let inv = Investor{
                 account_id: acc,
                 nft: Vec::new(),
-                age: now,		
+                age: now,
+                share:Zero::zero(),
             };
             InvestorLog::<T>::insert(inv.account_id.clone(),inv);
         } else {
@@ -56,14 +58,24 @@ impl<T:Config,U> Investor<T,U> where roles::Investor<T, U>: EncodeLike<roles::In
 
     //-------------------------------------------------------------------
     //-------------INVESTOR CONTRIBUTION METHOD_BEGIN--------------------
-    pub fn contribute(self, origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResult{
+    pub fn contribute(mut self, origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResult{
         
         let who = ensure_signed(origin)?;
 	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 	
 	let now = <frame_system::Pallet<T>>::block_number();
+    let total_fund:BalanceOf<T> = Pallet::<T>::pot();
+    let wperc = Pallet::<T>::u32_to_balance_option(100000);
+    let share = wperc.unwrap()*value/total_fund;
     let idx = ContribIndex::<T>::get()+1;
+    self.share = share.clone();
 	let c1=Contribution::<T>::new(self.account_id.clone(),value.clone());
+    let mut inv = Some(self.clone());
+
+    ensure!(InvestorLog::<T>::contains_key(&self.account_id),Error::<T>::NoAccount);
+    InvestorLog::<T>::mutate(&self.account_id,|mut val|{
+        *val = inv;
+    });
         if ContributionsLog::<T>::contains_key(&self.account_id){
             ContributionsLog::<T>::mutate(&self.account_id, |val|{
                 

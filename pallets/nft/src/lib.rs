@@ -47,7 +47,7 @@ pub mod pallet {
 	#[derive(TypeInfo)]
 	#[scale_info(skip_type_params(T))]
 	pub struct TokenByOwnerData<T:Config> {
-		pub percent_owned: (u8,u8),
+		pub percent_owned: u32,
 		pub instance: InstanceInfoOf<T>,
 }
 
@@ -352,7 +352,7 @@ impl<T: Config> Pallet<T> {
 		pallet_uniques::Pallet::<T>::do_mint(class_id.into(), instance_id.into(), owner.clone(), |_details| Ok(()))?;
 
 		let share = TokenByOwnerData::<T>{
-			percent_owned: (100,00),
+			percent_owned: 100000,
 			instance: InstanceInfo {
 				metadata: metadata.clone(),
 			},
