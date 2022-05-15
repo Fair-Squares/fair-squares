@@ -28,6 +28,7 @@ pub struct Investor<T:Config> {
     pub nft:NftOf<u32>,
     pub age:BlockNumberOf<T>,
     pub share:BalanceOf<T>,
+    pub selections:u32,
 }
 
 impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<T>>{
@@ -40,12 +41,14 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
         if InvestorLog::<T>::contains_key(&acc)==false{
             
             let inv = Investor{
-                account_id: acc,
+                account_id: acc.clone(),
                 nft: Vec::new(),
                 age: now,
                 share:Zero::zero(),
+                selections:0,
             };
-            InvestorLog::<T>::insert(inv.account_id.clone(),inv);
+            
+            InvestorLog::<T>::insert(acc,inv);
         } else {
             let _message = "Role already attributed";
                 //return the above string in an event          
