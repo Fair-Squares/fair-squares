@@ -14,8 +14,10 @@ pub type NftOf<T> = Vec<T>;
 pub type ClassOf<T> = <T as pallet_nft::Config>::NftClassId;
 pub type InstanceOf<T> = <T as pallet_nft::Config>::NftInstanceId;
 pub type NfT<T> = NftL::TokenByOwnerData<T>;
-pub const House_Class:u32=1000;
-pub const Apt_Class:u32=1000;
+
+pub const HOUSE_CLASS:u32=1000;
+pub const APT_CLASS:u32=2000;
+pub const COMPUTER_CLASS:u32=3000;
 
 
 //-------------------------------------------------------------------------------------
@@ -35,25 +37,28 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 
     //-------------------------------------------------------------------
     //-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
-    pub fn new(acc:T::AccountId,_nft:u32){
+    pub fn new(acc:OriginFor<T>) -> Self{
+        let caller = ensure_signed(acc).unwrap();
         let now = <frame_system::Pallet<T>>::block_number();
-        
-        if InvestorLog::<T>::contains_key(&acc)==false{
             
             let inv = Investor{
-                account_id: acc.clone(),
+                account_id: caller.clone(),
                 nft: Vec::new(),
                 age: now,
                 share:Zero::zero(),
                 selections:0,
             };
             
-            InvestorLog::<T>::insert(acc,inv);
-        } else {
-            let _message = "Role already attributed";
-                //return the above string in an event          
-
-        }          
+            InvestorLog::<T>::insert(caller.clone(),inv);
+        
+        
+        Investor{
+            account_id: caller,
+            nft: Vec::new(),
+            age: now,
+            share:Zero::zero(),
+            selections:0,
+        }
 
         }
     //-------------NEW INVESTOR CREATION METHOD_END--------------------
@@ -71,12 +76,13 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
     let wperc = Pallet::<T>::u32_to_balance_option(100000);
     let share = wperc.unwrap()*value/total_fund;
     let idx = ContribIndex::<T>::get()+1;
+    ContribIndex::<T>::put(idx);
     self.share = share.clone();
-	let c1=Contribution::<T>::new(self.account_id.clone(),value.clone());
-    let mut inv = Some(self.clone());
+	let c1=Contribution::<T>::new(value.clone());
+    let inv = Some(self.clone());
 
     ensure!(InvestorLog::<T>::contains_key(&self.account_id),Error::<T>::NoAccount);
-    InvestorLog::<T>::mutate(&self.account_id,|mut val|{
+    InvestorLog::<T>::mutate(&self.account_id,|val|{
         *val = inv;
     });
         if ContributionsLog::<T>::contains_key(&self.account_id){
@@ -118,30 +124,32 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct HouseSeller<T: Config,U>{
+pub struct HouseSeller<T: Config>{
     pub account_id:T::AccountId,
-    pub nft:NftOf<U>,
+    pub nft:NftOf<u32>,
     pub age:BlockNumberOf<T>,
 }
-impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<roles::HouseSeller<T, u32>>{
+impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::HouseSeller<T>>{
 
     //--------------------------------------------------------------------
     //-------------HOUSE OWNER CREATION METHOD_BEGIN----------------------
-    pub fn new(acc:T::AccountId,_nft:U){
-
-        let now = <frame_system::Pallet<T>>::block_number();        
-        if HouseSellerLog::<T>::contains_key(&acc)==false{
+    pub fn new(acc: OriginFor<T>) -> Self{
+        let caller = ensure_signed(acc).unwrap();
+        let now = <frame_system::Pallet<T>>::block_number(); 
+        //ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);      
+        
             let hw = HouseSeller{
-                account_id: acc,
+                account_id: caller.clone(),
                 nft: Vec::new(),
-                age: now,		
+                age: now.clone(),		
             };
             HouseSellerLog::<T>::insert(hw.account_id.clone(),hw);
-        } else {
-            let _message = "Role already attributed";
-                //return the above string in an event         
-
-        }       
+            HouseSeller{
+                account_id: caller,
+                nft: Vec::new(),
+                age: now,		
+            }           
+         
 
         } 
 
@@ -152,7 +160,7 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
     //-------------MINT HOUSE METHOD_BEGIN-----------------------------
 
     pub fn mint_house(&self,origin:OriginFor<T>){
-        let creator = ensure_signed(origin);
+        let _creator = ensure_signed(origin);
         let now = <frame_system::Pallet<T>>::block_number();
         let idx = HouseInd::<T>::get()+1;
         HouseInd::<T>::put(idx.clone());
@@ -170,7 +178,7 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
     //-----------------------------------------------------------------
     //-------------PROPOSAL CREATION METHOD_BEGIN----------------------
 
-    pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32,metadata:&str) -> DispatchResult{
+    pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32,metadata:Vec<u8>) -> DispatchResult{
         let creator = ensure_signed(origin.clone())?;
         let now = <frame_system::Pallet<T>>::block_number();
         let deposit = <T as pallet::Config>::SubmissionDeposit::get();
@@ -195,14 +203,15 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
             //mint a nft with the same index as HouseInd here
                        
             //mint
-            let data:BoundedVecOfUnq<T> = metadata.as_bytes().to_vec().try_into().unwrap();
+            //let data:BoundedVecOfUnq<T> = metadata.as_bytes().to_vec().try_into().unwrap();
+            let data:BoundedVecOfUnq<T> = metadata.try_into().unwrap();
             let cls = NftL::Pallet::<T>::do_create_class(
                 creator.clone(),
-                House_Class.into(),
+                HOUSE_CLASS.into(),
                 Default::default(),
                 data.clone()
             )?;            
-            let nft = NftL::Pallet::<T>::do_mint(
+            let _nft = NftL::Pallet::<T>::do_mint(
                 creator.clone(),
                 cls.0,
                 hindex.into(),
@@ -238,17 +247,18 @@ impl<T:Config,U> HouseSeller<T,U> where roles::HouseSeller<T, U>: EncodeLike<rol
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct Tenant<T:Config,U>{
+pub struct Tenant<T:Config>{
     pub account_id: T::AccountId,
-    pub rent:U,
+    pub rent:BalanceOf<T>,
     pub age:BlockNumberOf<T>,
 }
-impl<T:Config,U> Tenant<T,U>{    
-    pub fn new(acc:T::AccountId,rent:U)-> Self{
+impl<T:Config> Tenant<T> {    
+    pub fn new(acc:OriginFor<T>)-> Self{
+        let caller = ensure_signed(acc).unwrap();        
         let now = <frame_system::Pallet<T>>::block_number();
         Tenant{
-            account_id: acc,
-            rent: rent,
+            account_id: caller,
+            rent: Zero::zero(),
             age:now,
         }
         

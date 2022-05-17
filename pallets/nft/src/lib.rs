@@ -6,12 +6,12 @@ use codec::HasCompact;
 use frame_support::{
 	dispatch::{DispatchResult, DispatchResultWithPostInfo},
 	ensure,
-	traits::{Currency,tokens::nonfungibles::*, Get, NamedReservableCurrency},
+	traits::{tokens::nonfungibles::*, Get, NamedReservableCurrency},
 	transactional, BoundedVec,
 };
 use frame_system::ensure_signed;
 
-use primitives::{nft::NftPermission, ReserveIdentifier};
+use primitives::{nft::NftPermission};
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
 	DispatchError,
@@ -176,7 +176,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let share=TokenByOwner::<T>::get(&sender,(&class_id,&instance_id));
+			let _share=TokenByOwner::<T>::get(&sender,(&class_id,&instance_id));
 
 			let dest = T::Lookup::lookup(dest)?;
 

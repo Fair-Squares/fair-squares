@@ -42,7 +42,7 @@ pub struct Contribution<T:Config>{
 }
 
 impl<T:Config>Contribution<T>{
-    pub fn new(acc:T::AccountId,val:BalanceOf<T>)-> Self{
+    pub fn new(val:BalanceOf<T>)-> Self{
         Self{
             amount:val,
             age: <frame_system::Pallet<T>>::block_number(),
