@@ -100,7 +100,6 @@ impl<T: Config> Investor<T>{
     pub fn vote_proposal(&self, proposal_id: StorageIndex, status: bool) -> DispatchResultWithPostInfo {
       
       // // Check if the proposal exist
-
       ensure!(Proposals::<T>::contains_key(proposal_id), Error::<T>::InvalidIndex);
       
       let proposal = Proposals::<T>::get(proposal_id).unwrap();
@@ -149,14 +148,12 @@ impl<T: Config> Investor<T>{
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 pub struct HouseOwner<T: Config> {
-   pub account_id: AccountIdOf<T>,
-   // pub houses: Vec<StorageIndex>
+   pub account_id: AccountIdOf<T>
 }
 impl<T: Config> HouseOwner<T> {
    pub fn new(account_id: AccountIdOf<T>) -> Self {
       Self {
-         account_id,
-         // houses: Vec::<StorageIndex>::new()
+         account_id
       }
    }
 
@@ -178,7 +175,7 @@ impl<T: Config> HouseOwner<T> {
       // Create ownership relation
       let ownership_id = <OwnershipIndex<T>>::get() + 1;
       let _ownership_id = ownership_id;
-      <OwnershipIndex<T>>::put(ownership_id).clone();
+      <OwnershipIndex<T>>::put(ownership_id);
       let block_number = <frame_system::Pallet<T>>::block_number();
 
       let ownership = Ownership {
@@ -207,7 +204,6 @@ impl<T: Config> HouseOwner<T> {
       ensure!(MintedHouses::<T>::contains_key(house_id), Error::<T>::InvalidIndex);
 
       let house = MintedHouses::<T>::get(house_id.clone()).unwrap();
-      let house_ownerships_iter = house.ownerships.iter();
       
       let _account_id = self.account_id.clone();
 
@@ -220,6 +216,10 @@ impl<T: Config> HouseOwner<T> {
          item.1.account_id == self.account_id &&
          item.1.active == true });
       ensure!(exist_active_proposalbis.is_none() == true, Error::<T>::AlreadyActiveProposal);
+
+      let is_valuation_validated = Pallet::<T>::validate_proposal_amount(valuation);
+
+      ensure!(is_valuation_validated == true, Error::<T>::ProposalExceedFundLimit);
 
       // Create the proposal
       let block_number = <frame_system::Pallet<T>>::block_number();

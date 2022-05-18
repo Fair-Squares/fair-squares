@@ -279,7 +279,9 @@ pub mod pallet {
       // The investor cannot vote twice
       AlreadyVotedProposal,
       // The proposal is no longer active
-      ProposalOutDated
+      ProposalOutDated,
+      // The proposal valuation exceed fund limit
+      ProposalExceedFundLimit
    }
    
 

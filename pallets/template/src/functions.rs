@@ -70,4 +70,8 @@ impl<T: Config> Pallet<T> {
             }
          }
       }
+
+      pub fn validate_proposal_amount(amount: BalanceOf<T>) -> bool {
+         true
+      }
    }
