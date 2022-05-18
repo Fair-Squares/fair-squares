@@ -40,20 +40,34 @@ impl<T: Config> Pallet<T> {
          who.using_encoded(|b| child::kill(&id, b));
       }
 
-      pub fn set_roles(account: AccountIdOf<T>) -> DispatchResultWithPostInfo {
-
-         let _account = account.clone();
-         // if !Roles::<T>::contains_key(&_account) {
-         //    let role = Role { roles : vec![INVESTOR_ROLE, HOUSE_OWNER_ROLE]};
-         //    let wrap_rop = vec![role];
-         //    Roles::<T>::insert(&_account, wrap_rop);
-         // }
-
-         if !Roles::<T>::contains_key(&_account) {
-            let roles = vec![INVESTOR_ROLE, HOUSE_OWNER_ROLE];
-            Roles::<T>::insert(&_account, roles);
+      pub fn set_roles(account_id: AccountIdOf<T>, role: Role) {
+         match role {
+            Role::HOUSE_OWNER => {
+               HouseOwner::<T>::create(account_id);
+            },
+            Role::INVESTOR => {
+               Investor::<T>::create(account_id);
+            },
+            Role::TENANT => {
+               Tenant::<T>::create(account_id);
+            }
          }
+      }
 
-         Ok(().into())
+      pub fn create_account(account_id: AccountIdOf<T>, role: Role) -> bool {
+         match role {
+            Role::HOUSE_OWNER => {
+               let result = HouseOwner::<T>::create(account_id);
+               result
+            },
+            Role::INVESTOR => {
+               let result = Investor::<T>::create(account_id);
+               result
+            },
+            Role::TENANT => {
+               let result = Tenant::<T>::create(account_id);
+               result
+            }
+         }
       }
    }

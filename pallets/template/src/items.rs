@@ -14,6 +14,13 @@ pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+pub enum Role {
+    HOUSE_OWNER,
+    INVESTOR,
+    TENANT
+}
+
 
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
@@ -28,19 +35,6 @@ pub struct FundSharing<T: Config> {
     pub amount: BalanceOf<T>,
     pub share: u32
 }
-
-#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
-#[scale_info(skip_type_params(T))]
-pub struct Role {
-    pub roles: Vec<u16>
-}
-impl Role {
-    pub fn new() -> Self {
-       Self {
-          roles: Vec::<u16>::new()
-       }
-    }
- }
 
 
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
@@ -100,7 +94,6 @@ impl<T: Config, U> HouseMinted<T, U> {
      pub funded: bool,
      pub vote_ok_count: u32,
      pub vote_ko_count: u32,
-    //  pub votes: Vec<VoteBis<T>>,
      pub timestamp: BlockNumberOf<T>
  }
  impl<T: Config> Proposal<T> {
@@ -118,13 +111,8 @@ impl<T: Config, U> HouseMinted<T, U> {
              timestamp,
              vote_ok_count,
              vote_ko_count
-            //  votes: Vec::new()
          }
      }
-
-    //  pub fn add_vote(&mut self, vote: VoteBis<T>) {
-    //     self.votes.push(vote);
-    //  }
  }
 
 //  #[derive(Clone, Encode, Decode, EPartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]

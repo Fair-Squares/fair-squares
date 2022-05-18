@@ -8,6 +8,7 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
     fn cause_error() -> Weight;
 	fn withdraw() -> Weight;
+	fn create_account() -> Weight;
 	fn manage_proposal() -> Weight;
 	fn withdraw_house_contribution() -> Weight;
 	fn add_contribution_fund() -> Weight;
@@ -23,6 +24,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 		(10_000 as Weight)
 	}
     fn withdraw() -> Weight {
+		(10_000 as Weight)
+	}
+    fn create_account() -> Weight {
 		(10_000 as Weight)
 	}
     fn manage_proposal() -> Weight {

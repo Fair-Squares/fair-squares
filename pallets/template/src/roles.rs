@@ -11,6 +11,8 @@ pub use frame_support::{
 pub use frame_system::{pallet_prelude::*,ensure_signed};
 use frame_support::inherent::Vec;
 
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[scale_info(skip_type_params(T))]
 pub struct Investor<T: Config> {
     pub account_id: AccountIdOf<T>,
 }
@@ -21,18 +23,23 @@ impl<T: Config> Investor<T>{
         }        
     }
 
+    pub fn create(account_id: AccountIdOf<T>) -> bool {
+      if !Investors::<T>::contains_key(&account_id) {
+         let investor = Investor { account_id: account_id.clone() };
+         Investors::<T>::insert(account_id.clone(), investor);
+         return true
+      }
+      false
+    }
+
     pub fn add_contribution_fund(&self, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
       
-      // ensure!(amount >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
       let _account = self.account_id.clone();
       let block_number = <frame_system::Pallet<T>>::block_number();
       let contribution = Contribution {
          amount: amount,
          timestamp: block_number
       };
-
-      // let fund = <FundAmount<T>>::get();
-      // let total_fund = fund.unwrap() + amount.clone();
 
       let mut total_fund = amount.clone();
       let wrap_fund = <FundAmount<T>>::get();
@@ -41,18 +48,8 @@ impl<T: Config> Investor<T>{
       }
 
       if !Contributions::<T>::contains_key(&_account) {
-         // let share = amount.clone() / total_fund;
-         // let converted_share = TryInto::<u32>::try_into(share).ok();
-
-         // let mut fund_share= match converted_share {
-         //    Some(x) => x * 100,
-         //    None => 0,
-         // };
-
-         //let sharing_fund = FundSharing { amount: amount, share: converted_share.unwrap() * 100 };
 
          Contributions::<T>::insert(&_account, (amount, 0, self.account_id.clone()));
-         // ContributionBis::<T>::insert(&_account, FundSharing { amount: amount, share: 0} );
 
          let mut contribution_list = Vec::new();
          contribution_list.push(contribution);
@@ -68,19 +65,6 @@ impl<T: Config> Investor<T>{
              let contrib = (unwrap_val.0 + amount, unwrap_val.1, unwrap_val.2);
              *val = Some(contrib);
          });
-
-      //    ContributionBis::<T>::mutate(&_account, |val| {
-      //       let mut null_fund_sharing = FundSharing { amount: None, share: 0};
-      //       let fund_sharing = match val {
-      //          Some(val) => val,
-      //          None => &null_fund_sharing
-      //       };
-      //       if fund_sharing.amount != null_fund_sharing.amount && fund_sharing.share != null_fund_sharing.share  {
-      //          let new_fund_sharing = FundSharing { amount: fund_sharing.amount + amount, share: fund_sharing.share };
-      //          *val = Some(new_fund_sharing);
-      //       }
-
-      //   });
       }
 
       <FundAmount<T>>::put(total_fund.clone());
@@ -92,49 +76,14 @@ impl<T: Config> Investor<T>{
          
          let wrap_percent = self.u64_to_balance_option(100000);
          let share = wrap_percent.unwrap() * item.1.0.clone() / total_fund;
-         // let converted_share = TryInto::<u32>::try_into(share).ok();
-
-         // let fund_share= match converted_share {
-         //    Some(x) => x * 100,
-         //    None => 0,
-         // };
-
-         
-         
-         // let percent = match wrap_percent {
-         //    Some(x) => x,
-         //    None => 0 as BalanceOf<T>,
-         // };
-
-         // let new_share = share.clone() * wrap_percent.unwrap();
-
-         // let fund_share= 20;
 
          Contributions::<T>::mutate(item.0, |val| {
-            // val.1 = fund_share;
-            // val.1 = self.balance_to_u32_option(share).unwrap();
 
             let unwrap_val = val.clone().unwrap();
             let contrib = (unwrap_val.0, self.balance_to_u32_option(share).unwrap(), unwrap_val.2);
             *val = Some(contrib);
         });
       }
-
-      // for item in ContributionBis::<T>::iter() {
-         
-      //    let share = item.1.amount.clone() / total_fund;
-      //    let converted_share = TryInto::<u32>::try_into(share).ok();
-
-      //    let fund_share= match converted_share {
-      //       Some(x) => x * 100,
-      //       None => 0,
-      //    };
-
-      //    ContributionBis::<T>::mutate(item.0, |val| {
-      //       let new_fund_sharing = FundSharing { amount: total_fund.clone(), share: fund_share };
-      //       *val = Some(new_fund_sharing);
-      //   });
-      // }
 
       Ok(().into())
     }
@@ -151,14 +100,9 @@ impl<T: Config> Investor<T>{
     pub fn vote_proposal(&self, proposal_id: StorageIndex, status: bool) -> DispatchResultWithPostInfo {
       
       // // Check if the proposal exist
-      // let proposal_exist = Proposals::<T>::contains_key((house_id, house_owner_account.clone()), proposal_id);
-      // ensure!(proposal_exist == true, Error::<T>::InvalidIndex);
 
       ensure!(Proposals::<T>::contains_key(proposal_id), Error::<T>::InvalidIndex);
       
-      // let proposal = Proposals::<T>::get((house_id, house_owner_account.clone()), proposal_id).unwrap();
-      // ensure!(proposal.active == true, Error::<T>::ProposalOutDated);
-
       let proposal = Proposals::<T>::get(proposal_id).unwrap();
       ensure!(proposal.active == true, Error::<T>::ProposalOutDated);
 
@@ -202,16 +146,27 @@ impl<T: Config> Investor<T>{
     }
 }
 
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[scale_info(skip_type_params(T))]
 pub struct HouseOwner<T: Config> {
    pub account_id: AccountIdOf<T>,
-   pub houses: Vec<StorageIndex>
+   // pub houses: Vec<StorageIndex>
 }
 impl<T: Config> HouseOwner<T> {
    pub fn new(account_id: AccountIdOf<T>) -> Self {
       Self {
          account_id,
-         houses: Vec::<StorageIndex>::new()
+         // houses: Vec::<StorageIndex>::new()
       }
+   }
+
+   pub fn create(account_id: AccountIdOf<T>) -> bool {
+      if !HouseOwners::<T>::contains_key(&account_id) {
+         let house_owner = HouseOwner { account_id: account_id.clone() };
+         HouseOwners::<T>::insert(account_id.clone(), house_owner);
+         return true
+      }
+      false  
    }
 
    pub fn mint_house(&self, name: Vec<u8>) -> DispatchResultWithPostInfo {
@@ -249,26 +204,15 @@ impl<T: Config> HouseOwner<T> {
    pub fn create_proposal(&self, house_id: StorageIndex, valuation: BalanceOf<T>) -> DispatchResultWithPostInfo {
 
       // Check if the house is owned by the account
-      
+      ensure!(MintedHouses::<T>::contains_key(house_id), Error::<T>::InvalidIndex);
+
       let house = MintedHouses::<T>::get(house_id.clone()).unwrap();
       let house_ownerships_iter = house.ownerships.iter();
       
       let _account_id = self.account_id.clone();
 
-      // Check if the account is the owner of the house
-      // let mut wrap_ownership_iter = Ownerships::<T>::iter_prefix_values((house_id.clone(), _account_id.clone()));
-      // let exist_ownership = wrap_ownership_iter.position(|item| {
-      //    item.active == true
-      // });
-      // ensure!(exist_ownership.is_none() == false, Error::<T>::NotOwnedHouse);
-
       let ownership = Ownerships::<T>::get(house.ownerships[0]).unwrap();
       ensure!(ownership.account_id == _account_id, Error::<T>::NotOwnedHouse);
-
-      // Check if there is already a current proposal for this house
-      // let mut wrap_proposal_iter = Proposals::<T>::iter_prefix_values((house_id.clone(), self.account_id.clone()));
-      // let exist_active_proposal = wrap_proposal_iter.position(|val| val.active == true);
-      // ensure!(exist_active_proposal.is_none() == true, Error::<T>::AlreadyActiveProposal);
 
       let mut wrap_proposalbis_iter = Proposals::<T>::iter();
       let exist_active_proposalbis = wrap_proposalbis_iter.position(|item| { 
@@ -285,7 +229,6 @@ impl<T: Config> HouseOwner<T> {
          valuation, house.name.clone(), block_number, 
          true, false, 0, 0);
       
-      // <Proposals<T>>::insert((house_id, self.account_id.clone()), proposal_id, proposal.clone());
       <Proposals<T>>::insert(proposal_id, proposal);
 
       Ok(().into())
@@ -307,13 +250,14 @@ impl<T: Config> EngineProcessor<T> {
       proposal_id: StorageIndex
    ) -> DispatchResultWithPostInfo {
 
-      // let wrap_proposal = Proposals::<T>::get((house_id, house_owner_account.clone()), proposal_id);
       let wrap_proposal = Proposals::<T>::get(proposal_id.clone());
       // Check if the proposal exist
       ensure!(wrap_proposal.is_none() == false, Error::<T>::InvalidIndex);
       let mut proposal =  wrap_proposal.unwrap();
       // Check if the proposal is still active
       ensure!(proposal.active == true, Error::<T>::ProposalOutDated);
+
+      ensure!(house_id.clone() == proposal.house_id, Error::<T>::InvalidIndex);
 
       // We retrieve the votes to count them and determine if the yes has won
       let mut votes_iter = Votes::<T>::iter().filter(|item| item.0 == proposal_id);
@@ -330,20 +274,11 @@ impl<T: Config> EngineProcessor<T> {
       let total_votes_count_f = votes_iter.count() as f64;
       let votes_ok_count_f = votes_ok.count() as f64;
       let votes_ok_percentage = votes_ok_count_f / total_votes_count_f * 100.0; 
-      
-      // // We update the proposal with the active field to false and the funded flaag according to the result of the vote
-      // // let propo = items::Proposal::<T>::new(proposal.id, proposal.house_id, proposal.account_id.clone(), proposal.valuation, proposal.timestamp, false, votes_ok_percentage > 51.0);
-      // let propo = items::Proposal::<T>::new(proposal.id, proposal.house_id, proposal.account_id.clone(), 
-      //    proposal.valuation, proposal.house_name, proposal.timestamp, false, 
-      //    votes_ok_percentage > 51.0, proposal.vote_ok_count, proposal.vote_ko_count);
 
       let propo = items::Proposal::<T>::new(proposal.id, proposal.house_id, proposal.account_id.clone(), 
          proposal.valuation, proposal.house_name, proposal.timestamp, false, 
          true, proposal.vote_ok_count, proposal.vote_ko_count);
- 
-   //    Proposals::<T>::mutate((house_id, house_owner_account.clone()), proposal_id, |val| {
-   //      *val = Some(propo);
-   //   });
+         
       Proposals::<T>::mutate(proposal_id, |val| {
          *val = Some(propo);
       });
@@ -356,17 +291,11 @@ impl<T: Config> EngineProcessor<T> {
 
          let house_ownership_id = house.ownerships.get(0).unwrap();
 
-         // let mut wrap_house_ownership = Ownerships::<T>::get((house_id, house_owner_account.clone()), house_ownership_id);
          let mut wrap_house_ownership = Ownerships::<T>::get(house_ownership_id);
 
-         // let mut house_ownership = wrap_house_ownership.unwrap();
          let mut house_ownership = wrap_house_ownership.unwrap();
 
          let mut new_house_ownership = Ownership::<T>::new(*house_ownership_id, house_id, house_ownership.account_id.clone(), house_ownership.share, house_ownership.timestamp, false);
-
-         // Ownerships::<T>::mutate((house_id, house_owner_account.clone()), house_ownership.id, |val| {
-         //    *val = Some(new_house_ownership.clone());
-         // });
 
          Ownerships::<T>::mutate(house_ownership.id, |val| {
             *val = Some(new_house_ownership.clone());
@@ -410,7 +339,6 @@ impl<T: Config> EngineProcessor<T> {
             let new_ownership = Ownership::<T>::new(ownership_id.clone(), house_id, item.clone(), new_share, block_number, true);
 
             <OwnershipIndex<T>>::put(ownership_id.clone());
-            // Ownerships::<T>::insert((house_id, house_owner_account.clone()), ownership_id.clone(), new_ownership.clone());
             Ownerships::<T>::insert(ownership_id.clone(), new_ownership.clone());
             ownerships.push(ownership_id);
          }
@@ -426,4 +354,26 @@ impl<T: Config> EngineProcessor<T> {
    }
 }
 
+
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[scale_info(skip_type_params(T))]
+pub struct Tenant<T: Config> {
+   pub account_id: AccountIdOf<T>
+}
+impl<T: Config> Tenant<T> {
+   pub fn new(account_id: AccountIdOf<T>) -> Self {
+      Self {
+         account_id
+      }
+   }
+
+   pub fn create(account_id: AccountIdOf<T>) -> bool {
+      if !Tenants::<T>::contains_key(&account_id) {
+         let tenant = Tenant { account_id: account_id.clone() };
+         Tenants::<T>::insert(account_id.clone(), tenant);
+         return true
+      }
+      false   
+   }
+}
 
