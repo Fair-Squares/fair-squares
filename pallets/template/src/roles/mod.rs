@@ -219,9 +219,9 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
             );
             let hi:InstanceOf<T> = hindex.clone().into();
 
-            let own = NftL::TokenByOwner::<T>::get(creator,(cls.0,hi)).unwrap();
-            if !(MintedNftLog::<T>::contains_key(&hindex)){
-                MintedNftLog::<T>::insert(hindex,own);
+            let own = NftL::TokenByOwner::<T>::get(creator.clone(),(cls.0,hi)).unwrap();
+            if !(MintedNftLog::<T>::contains_key(&creator,&hindex)){
+                MintedNftLog::<T>::insert(creator,hindex,own);
             }         
             
             let store = (now,value,house,false);

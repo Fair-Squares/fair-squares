@@ -100,7 +100,7 @@ pub mod pallet {
 	pub(super) type ProposalInd<T: Config> = StorageValue<_, ProposalIndex, ValueQuery>;
 
    #[pallet::storage]
-   pub(super) type MintedNftLog<T:Config> = StorageMap<_, Twox64Concat,HouseIndex,NfT<T>, OptionQuery>;
+   pub(super) type MintedNftLog<T:Config> = StorageDoubleMap<_, Twox64Concat, T::AccountId,Twox64Concat,HouseIndex,NfT<T>, OptionQuery>;
 
    
 
