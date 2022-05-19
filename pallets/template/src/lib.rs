@@ -348,28 +348,15 @@ pub mod pallet {
       // Process a proposal to distribute house share between investissor according to the votes
       #[pallet::weight(T::WeightInfo::manage_proposal())]
       #[transactional]
-      pub fn manage_proposal(origin: OriginFor<T>, 
-         house_id: StorageIndex,
-         house_owner_account: AccountIdOf<T>, 
-         proposal_id: StorageIndex
-      ) -> DispatchResultWithPostInfo {
+      pub fn manage_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
       
          // Check the inputs
          let who = ensure_signed(origin)?;
 
-         let engine_processor = EngineProcessor::<T>::new(who.clone());
-         let result = engine_processor.manage_proposal(house_id, house_owner_account.clone(), proposal_id);
-         
-         match result {
-            Ok(n)  => { 
-
-               let block_number = <frame_system::Pallet<T>>::block_number();
-               // Raise event
-               Self::deposit_event(Event::RealizedDistribution(who.clone(), block_number));
-               Ok(().into()) 
-            },
-            Err(e) => Err(e),
-        }
+         let block_number = <frame_system::Pallet<T>>::block_number();
+         // Raise event
+         Self::deposit_event(Event::RealizedDistribution(who.clone(), block_number));
+         Ok(().into())
       }
       
       /// Withdraw full balance of a contributor to treasury
@@ -391,33 +378,9 @@ pub mod pallet {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
-         ensure!(amount >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
-
-         Self::set_roles(who.clone(), Role::INVESTOR);
-
-         let wrap_investor = Investors::<T>::get(who.clone());
-         ensure!(wrap_investor.is_none() == false, Error::<T>::IncorrectRole);
-
-         let investor = wrap_investor.unwrap();
-         
-         let result = investor.add_contribution_fund(amount);
-
-         match result {
-            Ok(n)  => { 
-
-               T::Currency::transfer(
-                  &who,
-                  &TREASURE_PALLET_ID.into_account(),
-                  amount,
-                  ExistenceRequirement::AllowDeath,
-               )?;
-
-               let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::Contributed(who.clone(), amount, block_number));
-               Ok(().into()) 
-            },
-            Err(e) => Err(e),
-        }
+         let block_number = <frame_system::Pallet<T>>::block_number();
+         Self::deposit_event(Event::Contributed(who.clone(), amount, block_number));
+         Ok(().into()) 
       }
    
       // A house owner can mint a new house
@@ -427,82 +390,34 @@ pub mod pallet {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
-         Self::set_roles(who.clone(), Role::HOUSE_OWNER);
-
-         let wrap_house_owner = HouseOwners::<T>::get(who.clone());
-         ensure!(wrap_house_owner.is_none() == false, Error::<T>::IncorrectRole);
-
-         let house_owner = wrap_house_owner.unwrap();
-
-         let result = house_owner.mint_house(name.clone());
-
-         match result {
-            Ok(n)  => { 
-
-               let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::MintedHouse(who.clone(), block_number));
-               Ok(().into()) 
-            },
-            Err(e) => Err(e),
-        }
+         let block_number = <frame_system::Pallet<T>>::block_number();
+         Self::deposit_event(Event::MintedHouse(who.clone(), block_number));
+         Ok(().into()) 
       }
 
       // Create a proposal from a house
       #[pallet::weight(T::WeightInfo::create_proposal())]
       #[transactional]
-      pub fn create_proposal(origin: OriginFor<T>, house_id: StorageIndex, valuation: BalanceOf<T>) -> DispatchResultWithPostInfo {
+      pub fn create_proposal(origin: OriginFor<T>, valuation: BalanceOf<T>) -> DispatchResultWithPostInfo {
          // Check the inputs
          let who = ensure_signed(origin)?;
 
-         Self::set_roles(who.clone(), Role::HOUSE_OWNER);
-
-         let wrap_house_owner = HouseOwners::<T>::get(who.clone());
-         ensure!(wrap_house_owner.is_none() == false, Error::<T>::IncorrectRole);
-
-         let house_owner = wrap_house_owner.unwrap();
-
-         let result = house_owner.create_proposal(house_id.clone(), valuation.clone());
-
-         match result {
-            Ok(n)  => { 
-
-               let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::CreatedProposal(who.clone(), block_number));
-               Ok(().into()) 
-            },
-            Err(e) => Err(e),
-        }
+         let block_number = <frame_system::Pallet<T>>::block_number();
+         Self::deposit_event(Event::CreatedProposal(who.clone(), block_number));
+         Ok(().into())
       }
 
       // An investissor can add a vote to a proposal
       #[pallet::weight(T::WeightInfo::vote_proposal())]
       #[transactional]
-      pub fn vote_proposal(
-         origin: OriginFor<T>,
-         proposal_id: StorageIndex, 
-         status: bool) -> DispatchResultWithPostInfo {
+      pub fn vote_proposal(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 
          // Check the inputs
          let who = ensure_signed(origin)?;
 
-         Self::set_roles(who.clone(), Role::INVESTOR);
-
-         let wrap_investor = Investors::<T>::get(who.clone());
-         ensure!(wrap_investor.is_none() == false, Error::<T>::IncorrectRole);
-
-         let investor = wrap_investor.unwrap();
-
-         let result = investor.vote_proposal(proposal_id.clone(), status.clone());
-
-         match result {
-            Ok(n)  => { 
-
-               let block_number = <frame_system::Pallet<T>>::block_number();
-               Self::deposit_event(Event::CreatedVote(who.clone(), block_number));
-               Ok(().into()) 
-            },
-            Err(e) => Err(e),
-        }
+         let block_number = <frame_system::Pallet<T>>::block_number();
+         Self::deposit_event(Event::CreatedVote(who.clone(), block_number));
+         Ok(().into())
       }
    }
 }
