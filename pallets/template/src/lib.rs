@@ -286,6 +286,31 @@ pub mod pallet {
          let id = Self::id_from_index();
          who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
       }
+
+      pub fn fractional_transfer(from:T::AccountId, to:Vec<T::AccountId>,index:HouseIndex)-> DispatchResult{
+         let house =   MintedHouseLog::<T>::get(index);
+         //Check that sending account is a seller
+         ensure!(HouseSellerLog::<T>::contains_key(&from),Error::<T>::NotSellerAccount);
+         //Check that this seller has ownership of this house 
+         let howner = house
+                        .clone()
+                        .owners;
+         ensure!(howner.contains(&from), Error::<T>::NoAccount);
+         //Get nft instance from minted nft storage
+         let nft_ins = MintedNftLog::<T>::get(&from,index.clone()).unwrap().instance;
+         
+         //TODO
+         //for each owner in the list update the nft share in the storage
+         //Update the list of owners in the house struct
+         //Update the house share of the seller
+         //Update the new owners/investors nft index 
+         //Update the owner and the house share in the mintednft's storage 
+
+
+         Ok(().into())
+
+
+      }
       
       /// Remove a contribution from an associated child trie.
       pub fn contribution_kill(who: &T::AccountId) {
