@@ -176,8 +176,6 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let _share=TokenByOwner::<T>::get(&sender,(&class_id,&instance_id));
-
 			let dest = T::Lookup::lookup(dest)?;
 
 			let class_type = Self::classes(class_id)

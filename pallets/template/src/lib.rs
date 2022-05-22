@@ -14,7 +14,7 @@ mod roles;
 pub use crate::roles::*;
 pub use pallet_nft::pallet as NftL;
 pub use pallet_uniques as UNQ;
-pub use pallet_nft::{BoundedVecOfUnq, ClassInfoOf, InstanceInfoOf};
+pub use pallet_nft::{BoundedVecOfUnq, ClassInfoOf, InstanceInfoOf };
 pub use scale_info::prelude::string::String;
 
 
@@ -100,7 +100,7 @@ pub mod pallet {
 	pub(super) type ProposalInd<T: Config> = StorageValue<_, ProposalIndex, ValueQuery>;
 
    #[pallet::storage]
-   pub(super) type MintedNftLog<T:Config> = StorageDoubleMap<_, Twox64Concat, T::AccountId,Twox64Concat,HouseIndex,NfT<T>, OptionQuery>;
+   pub(super) type MintedNftLog<T:Config> = StorageDoubleMap<_, Twox64Concat, T::AccountId,Twox64Concat,HouseIndex,(ClassOf<T>,InstanceOf<T>,NfT<T>), OptionQuery>;
 
    
 
@@ -287,8 +287,13 @@ pub mod pallet {
          who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
       }
 
-      pub fn fractional_transfer(from:T::AccountId, to:Vec<T::AccountId>,index:HouseIndex)-> DispatchResult{
-         let house =   MintedHouseLog::<T>::get(index);
+      pub fn fractional_transfer(from:T::AccountId, to:Vec<T::AccountId>,p_index:ProposalIndex)-> DispatchResult{
+         //Check that Proposal has been accepted
+         let proposal = ProposalLog::<T>::get(p_index.clone());
+         ensure!(proposal.clone().3==true,Error::<T>::UnsuccessfulFund);
+
+         let house =  proposal.2;
+         let house_index = house.clone().index;
          //Check that sending account is a seller
          ensure!(HouseSellerLog::<T>::contains_key(&from),Error::<T>::NotSellerAccount);
          //Check that this seller has ownership of this house 
@@ -297,14 +302,22 @@ pub mod pallet {
                         .owners;
          ensure!(howner.contains(&from), Error::<T>::NoAccount);
          //Get nft instance from minted nft storage
-         let nft_ins = MintedNftLog::<T>::get(&from,index.clone()).unwrap().instance;
-         
+         let nft_instance = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().2.instance;
+         let pot: T::AccountId=  TREASURE_PALLET_ID.into_account();
          //TODO
-         //for each owner in the list update the nft share in the storage
-         //Update the list of owners in the house struct
-         //Update the house share of the seller
-         //Update the new owners/investors nft index 
-         //Update the owner and the house share in the mintednft's storage 
+         //Transfer nft from Seller to pot
+         let class_id:ClassOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().0;
+         let instance_id:InstanceOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().1;
+         NftL::Pallet::<T>::do_transfer(class_id,instance_id,from,pot);
+         
+         //ToDo
+
+         //Return the seller share to 0
+         //Remove nft/house index from Seller's assets list 
+         //for each owner ID found in the Vec 'to': 
+            //Update the list of owners in the house struct
+            //Update the new owners/investors nft index 
+            //Update the owner and the house share in the mintednft's storage 
 
 
          Ok(().into())

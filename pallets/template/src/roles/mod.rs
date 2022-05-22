@@ -168,6 +168,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
             owners: vec![self.account_id.clone()],
             nft: idx,
             age: now,
+            index: idx.clone(),
         };
         MintedHouseLog::<T>::insert(idx,house);
 
@@ -205,23 +206,26 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
             //mint
             //let data:BoundedVecOfUnq<T> = metadata.as_bytes().to_vec().try_into().unwrap();
             let data:BoundedVecOfUnq<T> = metadata.try_into().unwrap();
+            let cl_id:ClassOf<T> = HOUSE_CLASS.into();
+            let inst_id:InstanceOf<T> = hindex.into();
+
             let cls = NftL::Pallet::<T>::do_create_class(
                 creator.clone(),
-                HOUSE_CLASS.into(),
+                cl_id.clone(),
                 Default::default(),
                 data.clone()
             )?;            
             let _nft = NftL::Pallet::<T>::do_mint(
                 creator.clone(),
                 cls.0,
-                hindex.into(),
+                inst_id.clone(),
                 data
             );
             let hi:InstanceOf<T> = hindex.clone().into();
 
             let own = NftL::TokenByOwner::<T>::get(creator.clone(),(cls.0,hi)).unwrap();
             if !(MintedNftLog::<T>::contains_key(&creator,&hindex)){
-                MintedNftLog::<T>::insert(creator,hindex,own);
+                MintedNftLog::<T>::insert(creator,hindex,(cl_id,inst_id,own));
             }         
             
             let store = (now,value,house,false);

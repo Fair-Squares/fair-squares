@@ -23,10 +23,11 @@ pub struct House<T:Config> {
     pub owners:Vec<T::AccountId>,
     pub nft:u32,
     pub age:BlockNumberOf<T>,
+    pub index:HouseIndex
 }
 impl<T:Config> Default for House<T>{
     fn default() -> Self{
-        Self{owners: Vec::new(),nft:0,age:<frame_system::Pallet<T>>::block_number()}
+        Self{owners: Vec::new(),nft:0,age:<frame_system::Pallet<T>>::block_number(),index:0}
     }
 }
 
