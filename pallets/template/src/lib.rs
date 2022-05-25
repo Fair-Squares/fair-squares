@@ -308,8 +308,14 @@ pub mod pallet {
          //Transfer nft from Seller to pot
          let class_id:ClassOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().0;
          let instance_id:InstanceOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().1;
-         NftL::Pallet::<T>::do_transfer(class_id,instance_id,from,pot);
-         
+         NftL::Pallet::<T>::do_transfer(class_id,instance_id,from.clone(),pot);
+         //Remove nft_index from house_seller struct
+         let mut seller0 = (HouseSellerLog::<T>::get(&from)).unwrap();
+         seller0.nft_index.remove(0);
+         let seller = Some(seller0);
+         HouseSellerLog::<T>::mutate(&from,|val|{
+            *val = seller;
+         });
          //ToDo
 
          //Return the seller share to 0

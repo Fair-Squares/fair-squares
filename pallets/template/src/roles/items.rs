@@ -21,13 +21,13 @@ pub use scale_info::{prelude::vec,TypeInfo};
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct House<T:Config> {
     pub owners:Vec<T::AccountId>,
-    pub nft:u32,
+    pub nft_index:u32,
     pub age:BlockNumberOf<T>,
     pub index:HouseIndex
 }
 impl<T:Config> Default for House<T>{
     fn default() -> Self{
-        Self{owners: Vec::new(),nft:0,age:<frame_system::Pallet<T>>::block_number(),index:0}
+        Self{owners: Vec::new(),nft_index:0,age:<frame_system::Pallet<T>>::block_number(),index:0}
     }
 }
 
@@ -39,7 +39,7 @@ impl<T:Config> Default for House<T>{
 pub struct Contribution<T:Config>{    
     pub amount:BalanceOf<T>,
     pub age:BlockNumberOf<T>,
-    pub idx: u32,
+    pub index: u32,
 }
 
 impl<T:Config>Contribution<T>{
@@ -47,7 +47,7 @@ impl<T:Config>Contribution<T>{
         Self{
             amount:val,
             age: <frame_system::Pallet<T>>::block_number(),
-            idx: 0,
+            index: 0,
         }
     }
 }

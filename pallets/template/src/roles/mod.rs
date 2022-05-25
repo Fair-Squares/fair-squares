@@ -27,7 +27,7 @@ pub const COMPUTER_CLASS:u32=3000;
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Investor<T:Config> {
     pub account_id:T::AccountId,
-    pub nft:NftOf<u32>,
+    pub nft_index:NftOf<u32>,
     pub age:BlockNumberOf<T>,
     pub share:BalanceOf<T>,
     pub selections:u32,
@@ -43,7 +43,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
             
             let inv = Investor{
                 account_id: caller.clone(),
-                nft: Vec::new(),
+                nft_index: Vec::new(),
                 age: now,
                 share:Zero::zero(),
                 selections:0,
@@ -54,7 +54,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
         
         Investor{
             account_id: caller,
-            nft: Vec::new(),
+            nft_index: Vec::new(),
             age: now,
             share:Zero::zero(),
             selections:0,
@@ -126,7 +126,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct HouseSeller<T: Config>{
     pub account_id:T::AccountId,
-    pub nft:NftOf<u32>,
+    pub nft_index:NftOf<u32>,
     pub age:BlockNumberOf<T>,
 }
 impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::HouseSeller<T>>{
@@ -140,13 +140,13 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
         
             let hw = HouseSeller{
                 account_id: caller.clone(),
-                nft: Vec::new(),
+                nft_index: Vec::new(),
                 age: now.clone(),		
             };
             HouseSellerLog::<T>::insert(hw.account_id.clone(),hw);
             HouseSeller{
                 account_id: caller,
-                nft: Vec::new(),
+                nft_index: Vec::new(),
                 age: now,		
             }           
          
@@ -166,7 +166,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
         HouseInd::<T>::put(idx.clone());
         let house = House{
             owners: vec![self.account_id.clone()],
-            nft: idx,
+            nft_index: idx,
             age: now,
             index: idx.clone(),
         };
