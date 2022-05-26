@@ -19,6 +19,13 @@ pub use crate::roles::*;
 pub use items::*;
 
 use pallet_nft::pallet as NftL;
+use pallet_roles::pallet as PRoles;
+use pallet_housing_fund::pallet as PHousingFund;
+use pallet_onboarding::pallet as Onboarding;
+use pallet_voting::pallet as Voting;
+use pallet_biding::pallet as Biding;
+use pallet_finalizer::pallet as Finalizer;
+use pallet_recurring_payments::pallet as RecurringPayments;
 
 pub use weights::WeightInfo;
 

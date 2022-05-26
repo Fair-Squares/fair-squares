@@ -1,7 +1,7 @@
 [package]
-name = "pallet-fairsquares"
+name = "pallet-housing_fund"
 version = "1.0.0-dev"
-description = "Fair squares pallet template for defining custom runtime logic."
+description = "Fair squares pallet template for defining roles logic."
 authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
 homepage = "https://fairsquares.io/"
 edition = "2021"
@@ -21,15 +21,6 @@ scale-info = { version = "1.0", default-features = false, features = ["derive"] 
 frame-support = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16"}
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16" }
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16", optional = true }
-pallet-nft = { default-features = false, path="../nft"}
-pallet-roles = { default-features = false, path="../roles"}
-pallet-housing_fund = { default-features = false, path="../housing_fund"}
-pallet-onboarding = { default-features = false, path="../onboarding"}
-pallet-voting = { default-features = false, path="../voting"}
-pallet-biding = { default-features = false, path="../biding"}
-pallet-finalizer = { default-features = false, path="../finalizer"}
-pallet-recurring_payments = { default-features = false, path="../recurring_payments"}
-
 
 [dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", default-features = false, branch = "polkadot-v0.9.16" }

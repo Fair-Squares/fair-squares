@@ -3405,14 +3405,21 @@ dependencies = [
  "node-primitives",
  "pallet-aura",
  "pallet-balances",
+ "pallet-biding",
  "pallet-fairsquares",
+ "pallet-finalizer",
  "pallet-grandpa",
+ "pallet-housing_fund",
+ "pallet-onboarding",
  "pallet-randomness-collective-flip",
+ "pallet-recurring_payments",
+ "pallet-roles",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
+ "pallet-voting",
  "parity-scale-codec",
  "polkadot-primitives",
  "scale-info",
@@ -3702,13 +3709,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-biding"
+version = "1.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+]
+
+[[package]]
 name = "pallet-fairsquares"
 version = "1.0.0-dev"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-biding",
+ "pallet-finalizer",
+ "pallet-housing_fund",
  "pallet-nft",
+ "pallet-onboarding",
+ "pallet-recurring_payments",
+ "pallet-roles",
+ "pallet-voting",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+]
+
+[[package]]
+name = "pallet-finalizer"
+version = "1.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -3741,6 +3785,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-housing_fund"
+version = "1.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+]
+
+[[package]]
 name = "pallet-nft"
 version = "0.0.1"
 dependencies = [
@@ -3762,6 +3821,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-onboarding"
+version = "1.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+]
+
+[[package]]
 name = "pallet-randomness-collective-flip"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.16#19162e43be45817b44c7d48e50d03f074f60fbf4"
@@ -3773,6 +3847,36 @@ dependencies = [
  "scale-info",
  "sp-runtime",
  "sp-std 4.0.0",
+]
+
+[[package]]
+name = "pallet-recurring_payments"
+version = "1.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
+]
+
+[[package]]
+name = "pallet-roles"
+version = "1.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
 ]
 
 [[package]]
@@ -3903,6 +4007,21 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 4.0.0",
+]
+
+[[package]]
+name = "pallet-voting"
+version = "1.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 3.0.0",
 ]
 
 [[package]]

@@ -53,6 +53,13 @@ hex-literal = { version = "0.3.4", optional = true }
 
 # Local Dependencies
 pallet-fairsquares = { version = "1.0.0-dev", default-features = false, path = "../pallets/template" }
+pallet-roles = { version = "1.0.0-dev", default-features = false, path = "../pallets/roles" }
+pallet-housing_fund = { version = "1.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
+pallet-onboarding = { version = "1.0.0-dev", default-features = false, path = "../pallets/onboarding" }
+pallet-voting = { version = "1.0.0-dev", default-features = false, path = "../pallets/voting" }
+pallet-biding = { version = "1.0.0-dev", default-features = false, path = "../pallets/biding" }
+pallet-finalizer = { version = "1.0.0-dev", default-features = false, path = "../pallets/finalizer" }
+pallet-recurring_payments = { version = "1.0.0-dev", default-features = false, path = "../pallets/recurring_payments" }
 
 # Polkadot dependencies
 polkadot-primitives = { git = "https://github.com/paritytech/polkadot", default-features = false, branch = "release-v0.9.16" }
@@ -76,6 +83,13 @@ std = [
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
 	"pallet-fairsquares/std",
+	"pallet-roles/std",
+	"pallet-housing_fund/std",
+	"pallet-onboarding/std",
+	"pallet-voting/std",
+	"pallet-biding/std",
+	"pallet-finalizer/std",
+	"pallet-recurring_payments/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -101,6 +115,13 @@ runtime-benchmarks = [
 	"hex-literal",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-fairsquares/runtime-benchmarks",
+	"pallet-roles/runtime-benchmarks",
+	"pallet-housing_fund/runtime-benchmarks",
+	"pallet-onboarding/runtime-benchmarks",
+	"pallet-voting/runtime-benchmarks",
+	"pallet-biding/runtime-benchmarks",
+	"pallet-finalizer/runtime-benchmarks",
+	"pallet-recurring_payments/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",

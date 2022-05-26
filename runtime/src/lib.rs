@@ -295,7 +295,7 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-/// Configure the pallet-template in pallets/template.
+/// Configure the pallet-fairsquares n pallets/fairsquares.
 impl pallet_fairsquares::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
@@ -306,6 +306,63 @@ impl pallet_fairsquares::Config for Runtime {
 parameter_types! {
 	pub const MinContribution: u128 = 10;
 }
+
+/// Configure the pallet-roles in pallets/roles.
+impl pallet_roles::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+
+/// Configure the pallet-housing_fund in pallets/housing_fund.
+impl pallet_housing_fund::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
+}
+
+/// Configure the pallet-onboarding in pallets/onboarding.
+impl pallet_onboarding::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_onboarding::weights::SubstrateWeight<Runtime>;
+}
+
+/// Configure the pallet-voting in pallets/voting.
+impl pallet_voting::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_voting::weights::SubstrateWeight<Runtime>;
+}
+
+/// Configure the pallet-biding in pallets/biding.
+impl pallet_biding::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_biding::weights::SubstrateWeight<Runtime>;
+}
+
+/// Configure the pallet-finalizer in pallets/finalizer.
+impl pallet_finalizer::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_finalizer::weights::SubstrateWeight<Runtime>;
+}
+
+/// Configure the pallet-recurring_payments in pallets/recurring_payments.
+impl pallet_recurring_payments::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_recurring_payments::weights::SubstrateWeight<Runtime>;
+}
+
 
 
 
@@ -326,7 +383,13 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_fairsquares,
-		
+		RoleModule: pallet_roles,
+		HousingFundModule: pallet_housing_fund,
+		OnboardingModule: pallet_onboarding,
+		VotingModule: pallet_voting,
+		BidingModule: pallet_biding,
+		FinalizerModule: pallet_finalizer,
+		ReccuringPaymentsModule: pallet_recurring_payments,
 	}
 );
 
