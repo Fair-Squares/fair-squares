@@ -172,6 +172,7 @@ pub mod pallet {
 			class_id: T::NftClassId,
 			instance_id: T::NftInstanceId,
 			dest: <T::Lookup as StaticLookup>::Source,
+			share: u32,
 			
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
@@ -184,7 +185,7 @@ pub mod pallet {
 
 			ensure!(T::Permissions::can_transfer(&class_type), Error::<T>::NotPermitted);
 
-			Self::do_transfer(class_id, instance_id, sender, dest)?;
+			Self::do_transfer(class_id, instance_id, sender, dest, share)?;
 
 			Ok(())
 		}
@@ -384,9 +385,36 @@ impl<T: Config> Pallet<T> {
 		instance_id: T::NftInstanceId,
 		from: T::AccountId,
 		to: T::AccountId,
+		share: u32,
 	) -> DispatchResult {
 		if from == to {
 			return Ok(());
+		}
+		let mut owner_data =  TokenByOwner::<T>::get(&from,(&class_id,&instance_id)).unwrap();
+		let oldshare = owner_data.percent_owned;
+		ensure!(oldshare>=share, Error::<T>::NotPermitted);
+		let newshare = oldshare-&share;
+		owner_data.percent_owned = newshare;
+		TokenByOwner::<T>::mutate(&from,(&class_id,&instance_id),|val|{
+			*val = Some(owner_data);
+		});
+
+		
+		if TokenByOwner::<T>::contains_key(&to,(&class_id,&instance_id)){
+			let mut owner_data1 =  TokenByOwner::<T>::get(&to,(&class_id,&instance_id)).unwrap();
+			let oldshare1 = owner_data1.percent_owned;
+			let new = &share+oldshare1;
+			ensure!(new <= 100000, Error::<T>::NotPermitted);
+			owner_data1.percent_owned = new;
+			TokenByOwner::<T>::mutate(&to,(&class_id,&instance_id),|val|{
+				*val = Some(owner_data1);
+			});
+		} else{
+			let owner_data1 = TokenByOwnerData::<T>{
+				percent_owned: share,
+				instance: Instances::<T>::get(&class_id,&instance_id).unwrap(),
+			};
+			TokenByOwner::<T>::insert(&to,(&class_id,&instance_id),owner_data1);
 		}
 		
 

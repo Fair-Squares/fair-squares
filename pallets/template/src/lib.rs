@@ -304,11 +304,12 @@ pub mod pallet {
          //Get nft instance from minted nft storage
          let nft_instance = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().2.instance;
          let pot: T::AccountId=  TREASURE_PALLET_ID.into_account();
-         //TODO
+         
          //Transfer nft from Seller to pot
          let class_id:ClassOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().0;
          let instance_id:InstanceOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().1;
-         NftL::Pallet::<T>::do_transfer(class_id,instance_id,from.clone(),pot);
+         let share:u32 = 100000;
+         NftL::Pallet::<T>::do_transfer(class_id,instance_id,from.clone(),pot,share).ok();
          //Remove nft_index from house_seller struct
          let mut seller0 = (HouseSellerLog::<T>::get(&from)).unwrap();
          seller0.nft_index.remove(0);
@@ -316,9 +317,12 @@ pub mod pallet {
          HouseSellerLog::<T>::mutate(&from,|val|{
             *val = seller;
          });
+
+         //Nft share redistribution is done in the function do_transfer of the nft_pallet
+
          //ToDo
 
-         //Return the seller share to 0
+         
          //Remove nft/house index from Seller's assets list 
          //for each owner ID found in the Vec 'to': 
             //Update the list of owners in the house struct
