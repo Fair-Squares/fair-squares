@@ -291,17 +291,17 @@ pub mod pallet {
          who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
       }
 
-      ///During Investors vote, Houses linked to an approved proposal are removed from
-      ///the MintedHouse storage, and the boolean in the corresponding Minted nft storage
-      ///is turned to true.
-      ///fractional_transfer takes care of nft ownership & share distribution, as well as
+      //During Investors vote, Houses linked to an approved proposal are removed from
+      //the MintedHouse storage, and the boolean in the corresponding Proposal_storage
+      //is turned to true.
+      ///Fractional_transfer takes care of nft ownership & share distribution, as well as
       ///update of related storages.
       pub fn fractional_transfer(from:T::AccountId, to:Vec<(T::AccountId,BalanceOf<T>)>,p_index:ProposalIndex)-> DispatchResult{
          //Check that Proposal has been accepted
-         let proposal = ProposalLog::<T>::get(p_index.clone());
+         let mut proposal = ProposalLog::<T>::get(p_index.clone());
          ensure!(proposal.clone().3==true,Error::<T>::UnsuccessfulFund);
 
-         let house =  proposal.2;
+         let house =  proposal.clone().2;
          let house_index = house.clone().index;
          //Check that sending account is a seller
          ensure!(HouseSellerLog::<T>::contains_key(&from),Error::<T>::NotSellerAccount);
@@ -313,6 +313,8 @@ pub mod pallet {
          ensure!(howner.contains(&from), Error::<T>::NoAccount);
 
          //remove Seller from house owners list
+         proposal.2.owners.remove(0);
+
          //Get nft data from minted nft storage
          let nft_instance = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().2.instance;
          let class_id:ClassOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().0;
@@ -336,12 +338,16 @@ pub mod pallet {
             let share = (contribution*100000)/&value;
             
             //Redistribute nft share
-            NftL::Pallet::<T>::do_transfer(class_id.clone(),instance_id.clone(),from.clone(),i.0,share).ok();
+            NftL::Pallet::<T>::do_transfer(class_id.clone(),instance_id.clone(),from.clone(),i.clone().0,share).ok();
             
-            //ToDo
-            //Update the list of owners in the house structs found in Proposal_storage & remove house item from minted house
-
+           
+            //Update the list of owners in the house structs found in ProposalLog_storage & remove house item from minted house
+            proposal.2.owners.push(i.0);       
+         
          }
+         ProposalLog::<T>::mutate(&p_index,|val|{
+            *val = proposal;
+         });
 
 
          Ok(().into())
