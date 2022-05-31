@@ -14,6 +14,7 @@ mod roles;
 pub use crate::roles::*;
 pub use pallet_nft::pallet as NftL;
 pub use pallet_uniques as UNQ;
+pub use pallet_democracy as DMC;
 pub use pallet_nft::{BoundedVecOfUnq, ClassInfoOf, InstanceInfoOf };
 pub use scale_info::prelude::string::String;
 
@@ -43,7 +44,7 @@ pub mod pallet {
 
    /// Configure the pallet by specifying the parameters and types on which it depends.
    #[pallet::config]
-   pub trait Config: frame_system::Config+NftL::Config+pallet_uniques::Config {
+   pub trait Config: frame_system::Config+NftL::Config+pallet_uniques::Config+pallet_democracy::Config{
       /// Because this pallet emits events, it depends on the runtime's definition of an event.
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;

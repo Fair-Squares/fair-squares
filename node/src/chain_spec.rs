@@ -152,5 +152,8 @@ fn testnet_genesis(
 			key: Some(root_key),
 		},
 		transaction_payment: Default::default(),
+		council: Default::default(),
+		treasury: Default::default(),
+		technical_committee: Default::default(),
 	}
 }
