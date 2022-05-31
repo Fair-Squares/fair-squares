@@ -317,9 +317,11 @@ pub mod pallet {
          proposal.2.owners.remove(0);
 
          //Get nft data from minted nft storage
-         let nft_instance = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().2.instance;
+         let _nft_instance = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().2.instance;
          let class_id:ClassOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().0;
          let instance_id:InstanceOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().1;
+         let mut nft_item = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap();
+         MintedNftLog::<T>::remove(&from,house_index.clone());
          
          //Remove nft_index from house_seller struct
          let mut seller0 = (HouseSellerLog::<T>::get(&from)).unwrap();
@@ -338,6 +340,13 @@ pub mod pallet {
             let contribution = Self::balance_to_u32_option(i.1).unwrap();
             let share = (contribution*100000)/&value;
             
+            //Update minted nft log with new owners
+            
+            if !(MintedNftLog::<T>::contains_key(i.0.clone(),house_index.clone())){
+               nft_item.2.percent_owned = share.clone();
+               MintedNftLog::<T>::insert(&i.0,&house_index,nft_item.clone());
+            }
+            //
             //Redistribute nft share
             NftL::Pallet::<T>::do_transfer(class_id.clone(),instance_id.clone(),from.clone(),i.clone().0,share).ok();
             
