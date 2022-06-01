@@ -1,8 +1,10 @@
+//! #Template pallet
+//!
+//! This pallet manages the complete workflow of the Fairsquares app 
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
+
 pub use pallet::*;
 
 #[cfg(test)]
@@ -30,6 +32,7 @@ pub mod pallet {
    pub const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
    pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
    
+   ///This enum contains the roles selectable at account creation
    #[derive(Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
    #[cfg_attr(feature = "std", derive(Debug))]
    pub enum Accounts{
@@ -37,14 +40,13 @@ pub mod pallet {
        SELLER,
        TENANT,
        INVALID,
-   }
-   
+   }   
 
 
 
    /// Configure the pallet by specifying the parameters and types on which it depends.
    #[pallet::config]
-   pub trait Config: frame_system::Config+NftL::Config+pallet_uniques::Config+pallet_democracy::Config{
+   pub trait Config: frame_system::Config+NftL::Config+UNQ::Config+DMC::Config{
       /// Because this pallet emits events, it depends on the runtime's definition of an event.
       type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
       type Currency: ReservableCurrency<Self::AccountId>;
@@ -70,20 +72,24 @@ pub mod pallet {
    // https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
    pub type Something<T> = StorageValue<_, u32>;
    
-
    #[pallet::storage]
+   ///Registry of Investors organized by AccountId
 	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor::<T>, OptionQuery>;
 
    #[pallet::storage]
+   ///Registry of Sellers organized by AccountId
 	pub(super) type HouseSellerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller::<T>, OptionQuery>;
 
 
    #[pallet::storage]
-	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,AccountIdOf<T>,(BlockNumberOf<T>,BalanceOf<T>,Vec<Contribution::<T>>), ValueQuery>;
-
+   ///Registry of General Fund contribution's (Creation time,amount,contribution infos), organized by accountId
+	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,AccountIdOf<T>,(BlockNumberOf<T>,BalanceOf<T>,Contribution::<T>), OptionQuery>;
+   
    #[pallet::storage]
+   ///Registry of minted house's organized by houses indexes
    pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Twox64Concat,HouseIndex,House<T>, ValueQuery>;
 
+   ///Registry of created proposal's (Creation time,value,house,voting status), organized by proposal index
    #[pallet::storage]
 	pub(super) type ProposalLog<T: Config> = StorageMap<_, Twox64Concat,ProposalIndex,(BlockNumberOf<T>,BalanceOf<T>,House<T>,Bool), ValueQuery>;
 
@@ -212,9 +218,10 @@ pub mod pallet {
          //Ok(().into())
          
       }
-      ///This function is used to mint an asset slot.
-      ///besides user ID input, no other information is needed. 
+       
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      ///This function is used to mint an asset slot.
+      ///besides user ID input, no other information is needed.
       pub fn create_asset(origin:OriginFor<T>) -> DispatchResult{
          let creator= ensure_signed(origin.clone())?;
 
@@ -233,10 +240,11 @@ pub mod pallet {
 
       //ToDO
       //#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-      //pub fn vote_proposal(_origin:OriginFor<T>){}
+      //pub fn vote_proposal(origin:OriginFor<T>){}
 
-      ///This function create a proposal from an asset previously minted
+      
       #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+      ///This function create a proposal from an asset previously minted
       pub fn create_proposal(origin:OriginFor<T>,value: BalanceOf<T>,house_index: u32, metadata:Vec<u8>) -> DispatchResult{
          let creator= ensure_signed(origin.clone())?;
 

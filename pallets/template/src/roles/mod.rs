@@ -88,14 +88,13 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
         if ContributionsLog::<T>::contains_key(&self.account_id){
             ContributionsLog::<T>::mutate(&self.account_id, |val|{
                 
-                //let rec = val.clone().unwrap();
-                //let _old = val.replace((rec.0,rec.1+*c1.amount,rec.2));
-                val.2.push(c1.clone());
-                val.1 +=c1.amount;
+                let rec = val.clone().unwrap();
+                let b = rec.1 + c1.amount;
+                *val = Some((now,b,c1));
             })
         } else {
             let id = self.account_id;
-            let v0 = vec![c1];
+            let v0 = c1;
             ContributionsLog::<T>::insert(id,(now,value,v0));
         }
         
