@@ -3385,7 +3385,6 @@ dependencies = [
  "orml-nft",
  "pallet-aura",
  "pallet-balances",
- "pallet-estate-asset",
  "pallet-grandpa",
  "pallet-nft",
  "pallet-randomness-collective-flip",
@@ -3669,20 +3668,6 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-estate-asset"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
  "sp-runtime",
  "sp-std",
 ]

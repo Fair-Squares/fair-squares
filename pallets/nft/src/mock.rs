@@ -136,7 +136,7 @@ pub fn events_filter<T: 'static>() -> Vec<Event> {
 	let mut evt = System::events();
 
 	evt.retain(|evt| if_right_events::<T>(&evt.event));
-	return evt.into_iter().map(|evt| evt.event).collect::<Vec<_>>();
+	return evt.into_iter().map(|evt| evt.event).collect::<Vec<_>>()
 }
 
 /// return true if Event is an instance of T
@@ -153,7 +153,7 @@ pub fn events_filter<T: 'static>() -> Vec<Event> {
 /// Ormal_NFT is also tested but no imported Event so far.
 pub fn if_right_events<T: 'static>(evt: &Event) -> bool {
 	if TypeId::of::<T>() == TypeId::of::<Event>() {
-		return true;
+		return true
 	} else {
 		match evt {
 			Event::System(i) => return if_right_raw_events::<T>(i),

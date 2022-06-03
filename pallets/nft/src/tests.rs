@@ -25,7 +25,7 @@ fn initial_accounts() -> (AccountId32, AccountId32) {
 
 	let _ = Balances::deposit_creating(&Pot::get(), 1);
 
-	return (alice_account.clone(), bob_account.clone());
+	return (alice_account.clone(), bob_account.clone())
 }
 
 #[test]
