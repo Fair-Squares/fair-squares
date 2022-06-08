@@ -1,4 +1,4 @@
-//! #Template pallet
+//! # Template Pallet
 //!
 //! This pallet manages the complete workflow of the Fairsquares app 
 
@@ -102,6 +102,13 @@ pub mod pallet {
 	/// The total number of proposals that have so far been submitted.
 	pub(super) type HouseInd<T: Config> = StorageValue<_, HouseIndex, ValueQuery>;
 
+   #[pallet::type_value]
+   pub(super) fn MyDefault<T: Config>() -> BalanceOf<T> { Zero::zero() }
+   
+   #[pallet::storage]
+	/// Funds reserved for spending.
+	pub(super) type ReserveFunds<T: Config> = StorageValue<_, BalanceOf<T>, ValueQuery,MyDefault<T>>;
+
    #[pallet::storage]
 	/// The total number of proposals that have so far been submitted.
 	pub(super) type ProposalInd<T: Config> = StorageValue<_, ProposalIndex, ValueQuery>;
@@ -180,10 +187,15 @@ pub mod pallet {
       NoAccount,
       /// Not a Seller account
       NotSellerAccount,
+      /// Not an Investor account
+      NotInvestorAccount,
       /// Amount to high for the fund
       OverFundCapacity,
       /// Asset is not yet minted
-      NoAsset
+      NoAsset,
+      ///Not enough funds available for this purchase
+      NotEnoughFunds,
+
    }
    
 
@@ -200,11 +212,14 @@ pub mod pallet {
          match account_type{
             Accounts::INVESTOR => {
                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                let _acc = Investor::<T>::new(origin);
                Ok(().into())
             },
             Accounts::SELLER => {
                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               //Bring the decision for this account creation to a vote
                let _acc = HouseSeller::<T>::new(origin);
                Ok(().into())
             },
@@ -215,8 +230,19 @@ pub mod pallet {
             },
             _=> Ok(()),
          }
-         //Ok(().into())
+        
          
+      }
+
+      #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      ///This function is used to mint an asset slot.
+      ///besides user ID input, no other information is needed.
+      pub fn contribute(origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResult{
+         let caller = ensure_signed(origin.clone())?;
+         ensure!(InvestorLog::<T>::contains_key(&caller),Error::<T>::NotInvestorAccount);
+         let investor = InvestorLog::<T>::get(caller).unwrap();
+         investor.contribute(origin,value);
+         Ok(().into())
       }
        
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
@@ -239,31 +265,40 @@ pub mod pallet {
       }
 
       //ToDO
-      //#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-      //pub fn vote_proposal(origin:OriginFor<T>){}
+      #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+      pub fn proposal_vote(origin:OriginFor<T>,ref_index:DMC::ReferendumIndex,vote:DMC::AccountVote<BalanceOf2<T>>)-> DispatchResult{
+         let caller = ensure_signed(origin.clone())?;
+         ensure!(InvestorLog::<T>::contains_key(&caller),Error::<T>::NotInvestorAccount);
+         DMC::Pallet::<T>::vote(origin,ref_index,vote);
+
+         Ok(().into())
+      }
 
       
       #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
       ///This function create a proposal from an asset previously minted
       pub fn create_proposal(origin:OriginFor<T>,value: BalanceOf<T>,house_index: u32, metadata:Vec<u8>) -> DispatchResult{
          let creator= ensure_signed(origin.clone())?;
+         //Make sure that enough funds are available
+         let total_fund = Pallet::<T>::pot();
+         ensure!(total_fund > Zero::zero(),Error::<T>::OverFundCapacity);
+         ensure!(total_fund > value,Error::<T>::OverFundCapacity);        
+         let reserve = ReserveFunds::<T>::get();
+         let av = reserve+value.clone();
+         ensure!(total_fund > av,Error::<T>::OverFundCapacity);
+         
 
          // Ensure that the caller account is a Seller account
          ensure!(HouseSellerLog::<T>::contains_key(&creator),Error::<T>::NotSellerAccount);
 
          // Ensure that the House index is registered
          ensure!(MintedHouseLog::<T>::contains_key(&house_index),Error::<T>::NoAsset);
-
+         
          // Ensure that the seller owns the rights on the indexed house 
          let house = MintedHouseLog::<T>::get(&house_index);
          let howner = house.owners;
          ensure!(howner.contains(&creator), Error::<T>::NoAccount);
 
-         // Ensure that the house value is not to high for the fund --> less than 1/4th
-         let total_fund:BalanceOf<T> = Pallet::<T>::pot();
-         let total = Self::balance_to_u32_option(total_fund).unwrap()/4;
-         let f0 = Self::u32_to_balance_option(total).unwrap();
-         ensure!(value<=f0,Error::<T>::OverFundCapacity);
 
          // Create Proposal
          let seller = HouseSellerLog::<T>::get(creator).unwrap();
@@ -299,6 +334,7 @@ pub mod pallet {
          let id = Self::id_from_index();
          who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
       }
+      
 
       //During Investors vote, Houses linked to an approved proposal are removed from
       //the MintedHouse storage, and the boolean in the corresponding Proposal_storage

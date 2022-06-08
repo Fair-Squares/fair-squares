@@ -1,8 +1,12 @@
+//! # Roles
+//!
+//! Definition and implementation of the different Roles found in FairSquares
 
 mod items;
 pub use super::*;
 pub use crate::roles::items::*;
 pub type BalanceOf<T> = <<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+pub type BalanceOf2<T> = <<T as pallet_democracy::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Contributors<T> = Vec<AccountIdOf<T>>;
@@ -71,17 +75,24 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
         let who = ensure_signed(origin)?;
 	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 	
-	let now = <frame_system::Pallet<T>>::block_number();
-    let total_fund:BalanceOf<T> = Pallet::<T>::pot();
+	let now = <frame_system::Pallet<T>>::block_number();    
     let wperc = Pallet::<T>::u32_to_balance_option(100000);
-    let share = wperc.unwrap()*value/total_fund;
+    
     let idx = ContribIndex::<T>::get()+1;
     ContribIndex::<T>::put(idx);
+    <T as pallet::Config>::Currency::transfer(
+        &who,
+        &TREASURE_PALLET_ID.into_account(),
+        value,
+        ExistenceRequirement::AllowDeath,
+    )?;
+    let total_fund:BalanceOf<T> = Pallet::<T>::pot();
+    
+    let share = wperc.unwrap()*value/total_fund;
     self.share = share.clone();
 	let c1=Contribution::<T>::new(value.clone());
     let inv = Some(self.clone());
 
-    ensure!(InvestorLog::<T>::contains_key(&self.account_id),Error::<T>::NoAccount);
     InvestorLog::<T>::mutate(&self.account_id,|val|{
         *val = inv;
     });
@@ -99,12 +110,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
         }
         
 
-        <T as pallet::Config>::Currency::transfer(
-            &who,
-            &TREASURE_PALLET_ID.into_account(),
-            value,
-            ExistenceRequirement::AllowDeath,
-        )?;
+        
 
         Ok(().into())
     }
@@ -181,7 +187,9 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
     pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32,metadata:Vec<u8>) -> DispatchResult{
         let creator = ensure_signed(origin.clone())?;
         let now = <frame_system::Pallet<T>>::block_number();
+        
         let deposit = <T as pallet::Config>::SubmissionDeposit::get();
+        let deposit0:BalanceOf2<T> = <T as DMC::Config>::MinimumDeposit::get();
         let imb = <T as pallet::Config>::Currency::withdraw(
             &creator,
             deposit,
@@ -193,17 +201,20 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
 
         if MintedHouseLog::<T>::contains_key(hindex.clone()){
         if ProposalLog::<T>::contains_key(pindex.clone())==false{
-            let mut v = Vec::new();
+
             <T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
-            v.push(self.account_id);
+
+            //add proposal to DMC voting queue
             let house = MintedHouseLog::<T>::get(hindex);
-
+            DMC::Pallet::<T>::note_preimage(origin.clone(),metadata.clone());
+            let proposal_hash = T::Hashing::hash(&metadata[..]);
+            DMC::Pallet::<T>::propose(origin,proposal_hash,deposit0);       
+            
             //Select Investors for nft ownership
-
-            //mint a nft with the same index as HouseInd here
-                       
+            //-------------------------------------------------------------------------------
+            //mint a nft with the same index as HouseInd here                       
             //mint
-            //let data:BoundedVecOfUnq<T> = metadata.as_bytes().to_vec().try_into().unwrap();
+            
             let data:BoundedVecOfUnq<T> = metadata.try_into().unwrap();
             let cl_id:ClassOf<T> = HOUSE_CLASS.into();
             let inst_id:InstanceOf<T> = hindex.into();
@@ -226,9 +237,14 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
             if !(MintedNftLog::<T>::contains_key(&creator,&hindex)){
                 MintedNftLog::<T>::insert(creator,hindex,(cl_id,inst_id,own));
             }         
-            
+            //----------------------------------------------------------------------------------
+            ReserveFunds::<T>::mutate(|val|{
+                *val += value.clone();
+            });
             let store = (now,value,house,false);
+            
             ProposalLog::<T>::insert(pindex,store);
+            
             }
         }
 

@@ -6,17 +6,18 @@ pub use frame_support::{
     inherent::Vec,
     sp_runtime::traits::{AccountIdConversion,Hash, Zero,Saturating},
     storage::{child},
-    traits::{Currency, ExistenceRequirement, Get, ReservableCurrency, WithdrawReasons},
+    traits::{Currency, ExistenceRequirement, Get, ReservableCurrency,LockableCurrency, WithdrawReasons},
     PalletId,
     assert_ok,		
  };
 pub use frame_system::{pallet_prelude::*,ensure_signed};
 pub use frame_support::pallet_prelude::*;
 pub use scale_info::{prelude::vec,TypeInfo};
-//pub use parity_codec::{Encode, Decode};
+#[cfg(feature = "std")]
+use frame_support::serde::{Deserialize, Serialize};
 
 
-#[derive(Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
+#[derive(Hash,Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct House<T:Config> {

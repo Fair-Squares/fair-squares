@@ -41,6 +41,9 @@ std = [
 	"frame-system/std",
 	"pallet-nft/std",
 	"frame-benchmarking/std",
+	'serde/std',
+	'sp-core/std',
+	
 ]
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
