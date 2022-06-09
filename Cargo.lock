@@ -4488,13 +4488,17 @@ dependencies = [
 name = "pallet-template"
 version = "4.0.0-dev"
 dependencies = [
+ "common-runtime",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-balances",
  "pallet-democracy",
  "pallet-nft",
+ "pallet-scheduler",
  "pallet-uniques",
  "parity-scale-codec 3.1.2",
+ "primitives",
  "scale-info",
  "serde",
  "sp-core",

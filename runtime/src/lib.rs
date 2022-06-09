@@ -6,7 +6,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use frame_system::{EnsureRoot,EnsureSigned};
+
 
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -47,7 +47,7 @@ use primitives::{
 use sp_runtime::Percent;
 use crate::pallet_template::PalletId;
 pub use common_runtime::*;
-use primitives::constants::currency::UNITS;
+
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -286,10 +286,10 @@ impl pallet_template::Config for Runtime {
 	type SubmissionDeposit = SubmissionDeposit;
 }
 
-parameter_types! {	
+parameter_types! {
 	pub const SubmissionDeposit: u128 = 10;
 	pub const MinContribution: u128 = 10;
-	
+
 }
 parameter_types! {
 	pub ReserveClassIdUpTo: u128 = 999_999;
@@ -461,7 +461,7 @@ parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxProposals: u32 = 100;
-	
+
 }
 
 impl pallet_democracy::Config for Runtime {
@@ -516,7 +516,7 @@ impl pallet_democracy::Config for Runtime {
 }
 
 parameter_types! {
-	
+
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) *
 		BlockWeights::get().max_block;
 	// Retry a scheduled item every 10 blocks (1 minute) until the preimage exists.
@@ -564,8 +564,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
-		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>} = 20,
-		NFT: pallet_nft::{Pallet, Call, Event<T>, Storage} = 105,
+
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Event<T>} = 10,
 		Council: pallet_collective::<Instance1>,
 		TechnicalCommittee: pallet_collective::<Instance2>,
