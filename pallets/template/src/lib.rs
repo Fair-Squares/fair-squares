@@ -52,6 +52,7 @@ pub mod pallet {
       type Currency: ReservableCurrency<Self::AccountId>;
       type MinContribution: Get<BalanceOf<Self>>;
       type SubmissionDeposit: Get<BalanceOf<Self>>;
+      type Delay: Get<Self::BlockNumber>;
 
    }
 
@@ -207,6 +208,8 @@ pub mod pallet {
 
 
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      ///Several kind of accounts can be created
+      ///Seller and servicer accounts require approval from an admin
       pub fn create_account(origin:OriginFor<T>, account_type:Accounts) -> DispatchResult{
          let caller = ensure_signed(origin.clone())?; 
          match account_type{
@@ -235,18 +238,17 @@ pub mod pallet {
       }
 
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      ///This function is used to mint an asset slot.
-      ///besides user ID input, no other information is needed.
+      ///This function is used to contribute to the house fund.
       pub fn contribute(origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResult{
          let caller = ensure_signed(origin.clone())?;
          ensure!(InvestorLog::<T>::contains_key(&caller),Error::<T>::NotInvestorAccount);
          let investor = InvestorLog::<T>::get(caller).unwrap();
-         investor.contribute(origin,value);
+         investor.contribute(origin,value).ok();
          Ok(().into())
       }
        
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      ///This function is used to mint an asset slot.
+      ///This function is used to create an asset slot that can be used to create a proposal.
       ///besides user ID input, no other information is needed.
       pub fn create_asset(origin:OriginFor<T>) -> DispatchResult{
          let creator= ensure_signed(origin.clone())?;
@@ -264,19 +266,12 @@ pub mod pallet {
 
       }
 
-      //ToDO
-      #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-      pub fn proposal_vote(origin:OriginFor<T>,ref_index:DMC::ReferendumIndex,vote:DMC::AccountVote<BalanceOf2<T>>)-> DispatchResult{
-         let caller = ensure_signed(origin.clone())?;
-         ensure!(InvestorLog::<T>::contains_key(&caller),Error::<T>::NotInvestorAccount);
-         DMC::Pallet::<T>::vote(origin,ref_index,vote);
-
-         Ok(().into())
-      }
-
+      
+      
       
       #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
       ///This function create a proposal from an asset previously minted
+      ///On creation approval, a proposal is sent to the Democracy system, and a SimpleMajority Referandum is started
       pub fn create_proposal(origin:OriginFor<T>,value: BalanceOf<T>,house_index: u32, metadata:Vec<u8>) -> DispatchResult{
          let creator= ensure_signed(origin.clone())?;
          //Make sure that enough funds are available
@@ -311,7 +306,21 @@ pub mod pallet {
 
       }
 
+      #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+      ///This function allows the user to cast his votes for the active referandums.
+      ///The vote configuration selected is 'Split'. 
+      pub fn proposal_vote(origin:OriginFor<T>,ref_index:DMC::ReferendumIndex, vote_type:DMC::AccountVote<BalanceOf2<T>>)-> DispatchResult{
+         let caller = ensure_signed(origin.clone())?;
+         ensure!(InvestorLog::<T>::contains_key(&caller),Error::<T>::NotInvestorAccount);
+         //let bal:BalanceOf2<T> = Zero::zero();
+         //let vtype = DMC::AccountVote::Split{ aye: bal, nay: bal };
+         DMC::Pallet::<T>::vote(origin,ref_index,vote_type).ok();
 
+         Ok(().into())
+      }
+
+      //ToDo
+      //Process the vote results, and update necessary storages accordingly
      
     
    

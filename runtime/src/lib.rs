@@ -284,11 +284,13 @@ impl pallet_template::Config for Runtime {
 	type Currency = Balances;
 	type MinContribution = MinContribution;
 	type SubmissionDeposit = SubmissionDeposit;
+	type Delay = Delay;
 }
 
 parameter_types! {	
 	pub const SubmissionDeposit: u128 = 10;
 	pub const MinContribution: u128 = 10;
+	pub const Delay: BlockNumber = 3* MINUTES;
 	
 }
 parameter_types! {
@@ -462,9 +464,11 @@ parameter_types! {
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxProposals: u32 = 100;
 	
+	
 }
 
 impl pallet_democracy::Config for Runtime {
+	
 	type Proposal = Call;
 	type Event = Event;
 	type Currency = Balances;

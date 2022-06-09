@@ -19,6 +19,7 @@ pub type ClassOf<T> = <T as pallet_nft::Config>::NftClassId;
 pub type InstanceOf<T> = <T as pallet_nft::Config>::NftInstanceId;
 pub type NfT<T> = NftL::TokenByOwnerData<T>;
 
+
 pub const HOUSE_CLASS:u32=1000;
 pub const APT_CLASS:u32=2000;
 pub const COMPUTER_CLASS:u32=3000;
@@ -163,7 +164,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
         
     //-----------------------------------------------------------------
     //-------------MINT HOUSE METHOD_BEGIN-----------------------------
-
+    
     pub fn mint_house(&self,origin:OriginFor<T>){
         let _creator = ensure_signed(origin);
         let now = <frame_system::Pallet<T>>::block_number();
@@ -188,27 +189,33 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
         let creator = ensure_signed(origin.clone())?;
         let now = <frame_system::Pallet<T>>::block_number();
         
-        let deposit = <T as pallet::Config>::SubmissionDeposit::get();
-        let deposit0:BalanceOf2<T> = <T as DMC::Config>::MinimumDeposit::get();
-        let imb = <T as pallet::Config>::Currency::withdraw(
-            &creator,
-            deposit,
-            WithdrawReasons::TRANSFER,
-            ExistenceRequirement::AllowDeath,
-        )?;
+//        let deposit = <T as pallet::Config>::SubmissionDeposit::get();
+        let deposit0= <T as DMC::Config>::MinimumDeposit::get();
+//        let imb = <T as pallet::Config>::Currency::withdraw(
+//            &creator,
+//            deposit,
+//            WithdrawReasons::TRANSFER,
+//            ExistenceRequirement::AllowDeath,
+//        )?;
         let pindex = ProposalInd::<T>::get()+1;
         ProposalInd::<T>::put(pindex.clone());
 
         if MintedHouseLog::<T>::contains_key(hindex.clone()){
         if ProposalLog::<T>::contains_key(pindex.clone())==false{
 
-            <T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
+            //<T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
 
             //add proposal to DMC voting queue
             let house = MintedHouseLog::<T>::get(hindex);
-            DMC::Pallet::<T>::note_preimage(origin.clone(),metadata.clone());
             let proposal_hash = T::Hashing::hash(&metadata[..]);
-            DMC::Pallet::<T>::propose(origin,proposal_hash,deposit0);       
+            DMC::Pallet::<T>::propose(origin.clone(),proposal_hash.clone(),deposit0).ok(); 
+            DMC::Pallet::<T>::note_imminent_preimage(origin.clone(),metadata.clone()).ok();
+            
+            //Start Referendum with a 'SimpleMajority' threshold
+            let threshold = DMC::VoteThreshold::SimpleMajority;
+            let delay = <T as Config>::Delay::get();
+            DMC::Pallet::<T>::internal_start_referendum(proposal_hash,threshold,delay);
+
             
             //Select Investors for nft ownership
             //-------------------------------------------------------------------------------

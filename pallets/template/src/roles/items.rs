@@ -13,8 +13,6 @@ pub use frame_support::{
 pub use frame_system::{pallet_prelude::*,ensure_signed};
 pub use frame_support::pallet_prelude::*;
 pub use scale_info::{prelude::vec,TypeInfo};
-#[cfg(feature = "std")]
-use frame_support::serde::{Deserialize, Serialize};
 
 
 #[derive(Hash,Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
