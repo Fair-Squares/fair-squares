@@ -24,12 +24,16 @@ frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "h
 pallet-nft = { default-features = false, path="../nft"}
 pallet-uniques = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19", default-features = false }
 pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19", default-features = false }
-
-
+pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.19", default-features = false }
+#local dependencies
+primitives = { default-features = false, path = "../../primitives"}
+common-runtime = { path = '../../runtime/common', default-features = false }
 [dev-dependencies]
 sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
 sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
 sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.19" }
+
 
 
 [features]
@@ -40,6 +44,8 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"pallet-nft/std",
+	"pallet-balances/std",
+	"pallet-democracy/std",
 	"frame-benchmarking/std",
 	'serde/std',
 	'sp-core/std',

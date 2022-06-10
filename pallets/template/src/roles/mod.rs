@@ -1,6 +1,10 @@
+<<<<<<< HEAD
+use frame_support::sp_runtime::traits::CheckedAdd;
+=======
 //! # Roles
 //!
 //! Definition and implementation of the different Roles found in FairSquares
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
 
 mod items;
 pub use super::*;
@@ -42,10 +46,11 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 
     //-------------------------------------------------------------------
     //-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
+	// I think method new should return a result
     pub fn new(acc:OriginFor<T>) -> Self{
         let caller = ensure_signed(acc).unwrap();
         let now = <frame_system::Pallet<T>>::block_number();
-            
+
             let inv = Investor{
                 account_id: caller.clone(),
                 nft_index: Vec::new(),
@@ -53,10 +58,10 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
                 share:Zero::zero(),
                 selections:0,
             };
-            
+
             InvestorLog::<T>::insert(caller.clone(),inv);
-        
-        
+
+
         Investor{
             account_id: caller,
             nft_index: Vec::new(),
@@ -71,15 +76,24 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 
     //-------------------------------------------------------------------
     //-------------INVESTOR CONTRIBUTION METHOD_BEGIN--------------------
-    pub fn contribute(mut self, origin:OriginFor<T>,value:BalanceOf<T>) -> DispatchResult{
-        
+    pub fn contribute(mut self, origin: OriginFor<T>,value: BalanceOf<T>) -> DispatchResult{
+
         let who = ensure_signed(origin)?;
 	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+<<<<<<< HEAD
+
+	let now = <frame_system::Pallet<T>>::block_number();
+    let total_fund:BalanceOf<T> = Pallet::<T>::pot();
+    let wperc = Pallet::<T>::u32_to_balance_option(100000);
+    let share = wperc.unwrap()*value/total_fund;
+    let idx = ContribIndex::<T>::get().checked_add(1).unwrap();
+=======
 	
 	let now = <frame_system::Pallet<T>>::block_number();    
     let wperc = Pallet::<T>::u32_to_balance_option(100000);
     
     let idx = ContribIndex::<T>::get()+1;
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
     ContribIndex::<T>::put(idx);
     <T as pallet::Config>::Currency::transfer(
         &who,
@@ -91,7 +105,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
     
     let share = wperc.unwrap()*value/total_fund;
     self.share = share.clone();
-	let c1=Contribution::<T>::new(value.clone());
+	let c1 = Contribution::<T>::new(value.clone());
     let inv = Some(self.clone());
 
     InvestorLog::<T>::mutate(&self.account_id,|val|{
@@ -99,7 +113,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
     });
         if ContributionsLog::<T>::contains_key(&self.account_id){
             ContributionsLog::<T>::mutate(&self.account_id, |val|{
-                
+
                 let rec = val.clone().unwrap();
                 let b = rec.1 + c1.amount;
                 *val = Some((now,b,c1));
@@ -109,7 +123,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
             let v0 = c1;
             ContributionsLog::<T>::insert(id,(now,value,v0));
         }
-        
+
 
         
 
@@ -141,27 +155,27 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
     //-------------HOUSE OWNER CREATION METHOD_BEGIN----------------------
     pub fn new(acc: OriginFor<T>) -> Self{
         let caller = ensure_signed(acc).unwrap();
-        let now = <frame_system::Pallet<T>>::block_number(); 
-        //ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);      
-        
+        let now = <frame_system::Pallet<T>>::block_number();
+        //ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+
             let hw = HouseSeller{
                 account_id: caller.clone(),
                 nft_index: Vec::new(),
-                age: now.clone(),		
+                age: now.clone(),
             };
             HouseSellerLog::<T>::insert(hw.account_id.clone(),hw);
             HouseSeller{
                 account_id: caller,
                 nft_index: Vec::new(),
-                age: now,		
-            }           
-         
+                age: now,
+            }
 
-        } 
+
+        }
 
     //-------------HOUSE OWNER CREATION METHOD_END----------------------
     //------------------------------------------------------------------
-        
+
     //-----------------------------------------------------------------
     //-------------MINT HOUSE METHOD_BEGIN-----------------------------
     
@@ -218,8 +232,14 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
 
             
             //Select Investors for nft ownership
+<<<<<<< HEAD
+
+            //mint a nft with the same index as HouseInd here
+
+=======
             //-------------------------------------------------------------------------------
             //mint a nft with the same index as HouseInd here                       
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
             //mint
             
             let data:BoundedVecOfUnq<T> = metadata.try_into().unwrap();
@@ -231,7 +251,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
                 cl_id.clone(),
                 Default::default(),
                 data.clone()
-            )?;            
+            )?;
             let _nft = NftL::Pallet::<T>::do_mint(
                 creator.clone(),
                 cls.0,
@@ -243,11 +263,16 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
             let own = NftL::TokenByOwner::<T>::get(creator.clone(),(cls.0,hi)).unwrap();
             if !(MintedNftLog::<T>::contains_key(&creator,&hindex)){
                 MintedNftLog::<T>::insert(creator,hindex,(cl_id,inst_id,own));
+<<<<<<< HEAD
+            }
+
+=======
             }         
             //----------------------------------------------------------------------------------
             ReserveFunds::<T>::mutate(|val|{
                 *val += value.clone();
             });
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
             let store = (now,value,house,false);
             
             ProposalLog::<T>::insert(pindex,store);
@@ -261,7 +286,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
     pub fn destroy_proposal(){}
     //-------------PROPOSAL CREATION METHOD_END----------------------
     //-----------------------------------------------------------------
-    
+
 }
 //-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
 //--------------------------------------------------------------------------------------
@@ -278,16 +303,16 @@ pub struct Tenant<T:Config>{
     pub rent:BalanceOf<T>,
     pub age:BlockNumberOf<T>,
 }
-impl<T:Config> Tenant<T> {    
+impl<T:Config> Tenant<T> {
     pub fn new(acc:OriginFor<T>)-> Self{
-        let caller = ensure_signed(acc).unwrap();        
+        let caller = ensure_signed(acc).unwrap();
         let now = <frame_system::Pallet<T>>::block_number();
         Tenant{
             account_id: caller,
             rent: Zero::zero(),
             age:now,
         }
-        
+
     }
 }
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------

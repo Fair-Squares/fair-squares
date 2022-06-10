@@ -1,6 +1,6 @@
 //! # Template Pallet
 //!
-//! This pallet manages the complete workflow of the Fairsquares app 
+//! This pallet manages the complete workflow of the Fairsquares app
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -28,10 +28,10 @@ mod benchmarking;
 
 #[frame_support::pallet]
 pub mod pallet {
-   pub use super::*;     
+   pub use super::*;
    pub const PALLET_ID: PalletId = PalletId(*b"ex/cfund");
    pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
-   
+
    ///This enum contains the roles selectable at account creation
    #[derive(Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
    #[cfg_attr(feature = "std", derive(Debug))]
@@ -40,7 +40,7 @@ pub mod pallet {
        SELLER,
        TENANT,
        INVALID,
-   }   
+   }
 
 
 
@@ -64,15 +64,6 @@ pub mod pallet {
    pub struct Pallet<T>(_);
 
 
-
-   // The pallet's runtime storage items.
-   // https://docs.substrate.io/v3/runtime/storage
-   #[pallet::storage]
-   #[pallet::getter(fn something)]
-   // Learn more about declaring storage items:
-   // https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
-   pub type Something<T> = StorageValue<_, u32>;
-   
    #[pallet::storage]
    ///Registry of Investors organized by AccountId
 	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor::<T>, OptionQuery>;
@@ -85,7 +76,7 @@ pub mod pallet {
    #[pallet::storage]
    ///Registry of General Fund contribution's (Creation time,amount,contribution infos), organized by accountId
 	pub(super) type ContributionsLog<T: Config> = StorageMap<_, Twox64Concat,AccountIdOf<T>,(BlockNumberOf<T>,BalanceOf<T>,Contribution::<T>), OptionQuery>;
-   
+
    #[pallet::storage]
    ///Registry of minted house's organized by houses indexes
    pub(super) type MintedHouseLog<T:Config> = StorageMap<_, Twox64Concat,HouseIndex,House<T>, ValueQuery>;
@@ -117,26 +108,24 @@ pub mod pallet {
    #[pallet::storage]
    pub(super) type MintedNftLog<T:Config> = StorageDoubleMap<_, Twox64Concat, T::AccountId,Twox64Concat,HouseIndex,(ClassOf<T>,InstanceOf<T>,NfT<T>), OptionQuery>;
 
-   
 
 
 
 
 
 
-   
+
+
 
    // Pallets use events to inform users when important changes are made.
    // https://docs.substrate.io/v3/runtime/events-and-errors
    #[pallet::event]
    #[pallet::generate_deposit(pub(super) fn deposit_event)]
    pub enum Event<T: Config> {
-      /// Event documentation should end with an array that provides descriptive names for event
-      /// parameters. [something, who]
-      SomethingStored(u32, T::AccountId),
+
       Created( <T as frame_system::Config>::BlockNumber),
       ProposalCreated(<T as frame_system::Config>::BlockNumber),
-      HouseMinted(HouseIndex, <T as frame_system::Config>::BlockNumber), 
+      HouseMinted(HouseIndex, <T as frame_system::Config>::BlockNumber),
       Contributed(
          <T as frame_system::Config>::AccountId,
          BalanceOf<T>,
@@ -148,16 +137,16 @@ pub mod pallet {
          <T as frame_system::Config>::BlockNumber,
       ),
       Retiring(<T as frame_system::Config>::BlockNumber),
-      Dissolved(		
+      Dissolved(
          <T as frame_system::Config>::BlockNumber,
          <T as frame_system::Config>::AccountId,
       ),
-      Dispensed(		
+      Dispensed(
          <T as frame_system::Config>::BlockNumber,
          <T as frame_system::Config>::AccountId,
       ),
    }
-   
+
 
    // Errors inform users that something went wrong.
    #[pallet::error]
@@ -198,7 +187,7 @@ pub mod pallet {
       NotEnoughFunds,
 
    }
-   
+
 
    // Dispatchable functions allows users to interact with the pallet and invoke state changes.
    // These functions materialize as "extrinsics", which are often compared to transactions.
@@ -211,28 +200,47 @@ pub mod pallet {
       ///Several kind of accounts can be created
       ///Seller and servicer accounts require approval from an admin
       pub fn create_account(origin:OriginFor<T>, account_type:Accounts) -> DispatchResult{
-         let caller = ensure_signed(origin.clone())?; 
+         let caller = ensure_signed(origin.clone())?;
+
+		  //In each account creation we must make sure that an account does not exist in all the
+		  //storages
          match account_type{
             Accounts::INVESTOR => {
+<<<<<<< HEAD
+                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+=======
                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
                let _acc = Investor::<T>::new(origin);
                Ok(().into())
             },
             Accounts::SELLER => {
+<<<<<<< HEAD
+                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+=======
                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                //Bring the decision for this account creation to a vote
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
                let _acc = HouseSeller::<T>::new(origin);
                Ok(().into())
             },
             Accounts::TENANT => {
-               
+
                let _acc = Tenant::<T>::new(origin);
                Ok(().into())
             },
             _=> Ok(()),
          }
+<<<<<<< HEAD
+         //Ok(().into())
+
+      }
+
+=======
         
          
       }
@@ -247,6 +255,7 @@ pub mod pallet {
          Ok(().into())
       }
        
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
       ///This function is used to create an asset slot that can be used to create a proposal.
       ///besides user ID input, no other information is needed.
@@ -266,9 +275,17 @@ pub mod pallet {
 
       }
 
+<<<<<<< HEAD
+      //ToDO
+      //#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+      //pub fn vote_proposal(origin:OriginFor<T>){}
+
+
+=======
       
       
       
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
       #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
       ///This function create a proposal from an asset previously minted
       ///On creation approval, a proposal is sent to the Democracy system, and a SimpleMajority Referandum is started
@@ -288,8 +305,13 @@ pub mod pallet {
 
          // Ensure that the House index is registered
          ensure!(MintedHouseLog::<T>::contains_key(&house_index),Error::<T>::NoAsset);
+<<<<<<< HEAD
+
+         // Ensure that the seller owns the rights on the indexed house
+=======
          
          // Ensure that the seller owns the rights on the indexed house 
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
          let house = MintedHouseLog::<T>::get(&house_index);
          let howner = house.owners;
          ensure!(howner.contains(&creator), Error::<T>::NoAccount);
@@ -301,7 +323,7 @@ pub mod pallet {
 
          let now = <frame_system::Pallet<T>>::block_number();
          Self::deposit_event(Event::ProposalCreated(now));
-         
+
          Ok(().into())
 
       }
@@ -316,6 +338,11 @@ pub mod pallet {
          //let vtype = DMC::AccountVote::Split{ aye: bal, nay: bal };
          DMC::Pallet::<T>::vote(origin,ref_index,vote_type).ok();
 
+<<<<<<< HEAD
+
+
+
+=======
          Ok(().into())
       }
 
@@ -324,10 +351,11 @@ pub mod pallet {
      
     
    
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
    }
-   
+
    impl<T: Config> Pallet<T> {
-   
+
       /// Each fund stores information about its contributors and their contributions in a child trie
       // This helper function calculates the id of the associated child trie.
       pub fn id_from_index() -> child::ChildInfo {
@@ -337,7 +365,7 @@ pub mod pallet {
 
          child::ChildInfo::new_default(T::Hashing::hash(&buf[..]).as_ref())
       }
-   
+
       /// Lookup a contribution in the associated child trie.
       pub fn contribution_get(who: &T::AccountId) -> BalanceOf<T> {
          let id = Self::id_from_index();
@@ -359,8 +387,8 @@ pub mod pallet {
          let house_index = house.clone().index;
          //Check that sending account is a seller
          ensure!(HouseSellerLog::<T>::contains_key(&from),Error::<T>::NotSellerAccount);
-         
-         //Check that this seller has ownership of this house 
+
+         //Check that this seller has ownership of this house
          let howner = house
                         .clone()
                         .owners;
@@ -375,7 +403,7 @@ pub mod pallet {
          let instance_id:InstanceOf<T> = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap().1;
          let mut nft_item = MintedNftLog::<T>::get(&from,house_index.clone()).unwrap();
          MintedNftLog::<T>::remove(&from,house_index.clone());
-         
+
          //Remove nft_index from house_seller struct
          let mut seller0 = (HouseSellerLog::<T>::get(&from)).unwrap();
          seller0.nft_index.remove(0);
@@ -392,9 +420,9 @@ pub mod pallet {
             //Calculate nft share from amount contributed to the house
             let contribution = Self::balance_to_u32_option(i.1).unwrap();
             let share = (contribution*100000)/&value;
-            
+
             //Update minted nft log with new owners
-            
+
             if !(MintedNftLog::<T>::contains_key(i.0.clone(),house_index.clone())){
                nft_item.2.percent_owned = share.clone();
                MintedNftLog::<T>::insert(&i.0,&house_index,nft_item.clone());
@@ -402,11 +430,11 @@ pub mod pallet {
             //
             //Redistribute nft share
             NftL::Pallet::<T>::do_transfer(class_id.clone(),instance_id.clone(),from.clone(),i.clone().0,share).ok();
-            
-           
+
+
             //Update the list of owners in the house structs found in ProposalLog_storage & remove house item from minted house
-            proposal.2.owners.push(i.0);       
-         
+            proposal.2.owners.push(i.0);
+
          }
          ProposalLog::<T>::mutate(&p_index,|val|{
             *val = proposal;
@@ -417,7 +445,7 @@ pub mod pallet {
 
 
       }
-      
+
       /// Remove a contribution from an associated child trie.
       pub fn contribution_kill(who: &T::AccountId) {
          let id = Self::id_from_index();
@@ -427,7 +455,7 @@ pub mod pallet {
       pub fn u32_to_balance_option(input: u32) -> Option<BalanceOf<T>> {
          input.try_into().ok()
        }
-   
+
       pub fn balance_to_u32_option(input: BalanceOf<T>) -> Option<u32> {
          input.try_into().ok()
        }
