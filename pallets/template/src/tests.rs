@@ -56,7 +56,7 @@ fn test_new_account_tenant_ok() {
 
 
 
-//  testing all new methods for structs in the module
+//  testing all new methods for structs in the module`
 #[test]
 fn correct_error_for_none_value() {
 	new_test_ext().execute_with(|| {
