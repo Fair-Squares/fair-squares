@@ -84,8 +84,8 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 
 	let now = <frame_system::Pallet<T>>::block_number();
     let total_fund:BalanceOf<T> = Pallet::<T>::pot();
-    let wperc = Pallet::<T>::u32_to_balance_option(100000);
-    let share = wperc.unwrap()*value/total_fund;
+    let wperc = Pallet::<T>::u32_to_balance_option(100000).unwrap();
+    let share = wperc*value/total_fund;
     let idx = ContribIndex::<T>::get().checked_add(1).unwrap();
 =======
 	

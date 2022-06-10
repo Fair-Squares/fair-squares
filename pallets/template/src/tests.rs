@@ -1,5 +1,5 @@
 use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, assert_err};
 use super::*;
 
 
@@ -20,6 +20,7 @@ fn test_new_account_investor_ok() {
 	});
 }
 
+//testing seller account creation
 #[test]
 fn test_new_account_seller_ok() {
 	new_test_ext().execute_with(|| {
@@ -36,6 +37,7 @@ fn test_new_account_seller_ok() {
 }
 
 //for the existing logic is that tenant can be a seller even an investor.
+// Waiting for lib.rs to update its implementation on TENANT
 #[test]
 fn test_new_account_tenant_ok() {
 	new_test_ext().execute_with(|| {
@@ -44,7 +46,12 @@ fn test_new_account_tenant_ok() {
 }
 
 // testing creating asset
+#[test]
+fn test_create_asset_ok() {
+	new_test_ext().execute_with(|| {
 
+	})
+}
 
 
 
@@ -58,9 +65,49 @@ fn test_new_account_tenant_ok() {
 
 //  testing all new methods for structs in the module`
 #[test]
-fn correct_error_for_none_value() {
+fn test_investor_struct_methods() {
 	new_test_ext().execute_with(|| {
-	});
+		assert_eq!(roles::Investor::<Test>::new(Origin::signed(1)),
+				   roles::Investor{
+					   account_id: 1,
+					   nft_index: Vec::new(),
+					   age: System::block_number(),
+					   share: 0,
+					   selections:0,
+				   }
+		);
+
+		//-----contribution method--------//
+		// making sure the contribution is above minimum_contribution as for now is = 10
+		//for testing
+		assert_noop!(roles::Investor::<Test>::contribute(
+			roles::Investor{
+					   account_id: 1,
+					   nft_index: Vec::new(),
+					   age: System::block_number(),
+					   share: 0,
+					   selections:0,
+				   },
+			Origin::signed(1),
+				5
+			),
+			Error::<Test>::ContributionTooSmall
+			);
+		});
+
+	// This should work fine
+	TemplateModule::create_account(Origin::signed(1),Accounts::INVESTOR);
+
+	assert_ok!(roles::Investor::<Test>::contribute(
+		roles::Investor{
+					   account_id: 1,
+					   nft_index: Vec::new(),
+					   age: System::block_number(),
+					   share: 0,
+					   selections:0,
+				   },
+		Origin::signed(1),20)
+	);
 }
 
 //lib.rs testing
