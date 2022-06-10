@@ -47,6 +47,9 @@ std = [
 	"pallet-balances/std",
 	"pallet-democracy/std",
 	"frame-benchmarking/std",
+	'serde/std',
+	'sp-core/std',
+	
 ]
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]

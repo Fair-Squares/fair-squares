@@ -284,12 +284,18 @@ impl pallet_template::Config for Runtime {
 	type Currency = Balances;
 	type MinContribution = MinContribution;
 	type SubmissionDeposit = SubmissionDeposit;
+	type Delay = Delay;
 }
 
 parameter_types! {
 	pub const SubmissionDeposit: u128 = 10;
 	pub const MinContribution: u128 = 10;
+<<<<<<< HEAD
 
+=======
+	pub const Delay: BlockNumber = 3* MINUTES;
+	
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
 }
 parameter_types! {
 	pub ReserveClassIdUpTo: u128 = 999_999;
@@ -461,10 +467,16 @@ parameter_types! {
 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxProposals: u32 = 100;
+<<<<<<< HEAD
 
+=======
+	
+	
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
 }
 
 impl pallet_democracy::Config for Runtime {
+	
 	type Proposal = Call;
 	type Event = Event;
 	type Currency = Balances;

@@ -1,9 +1,16 @@
+<<<<<<< HEAD
 use frame_support::sp_runtime::traits::CheckedAdd;
+=======
+//! # Roles
+//!
+//! Definition and implementation of the different Roles found in FairSquares
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
 
 mod items;
 pub use super::*;
 pub use crate::roles::items::*;
 pub type BalanceOf<T> = <<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+pub type BalanceOf2<T> = <<T as pallet_democracy::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Contributors<T> = Vec<AccountIdOf<T>>;
@@ -15,6 +22,7 @@ pub type NftOf<T> = Vec<T>;
 pub type ClassOf<T> = <T as pallet_nft::Config>::NftClassId;
 pub type InstanceOf<T> = <T as pallet_nft::Config>::NftInstanceId;
 pub type NfT<T> = NftL::TokenByOwnerData<T>;
+
 
 pub const HOUSE_CLASS:u32=1000;
 pub const APT_CLASS:u32=2000;
@@ -72,18 +80,34 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 
         let who = ensure_signed(origin)?;
 	ensure!(value >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+<<<<<<< HEAD
 
 	let now = <frame_system::Pallet<T>>::block_number();
     let total_fund:BalanceOf<T> = Pallet::<T>::pot();
     let wperc = Pallet::<T>::u32_to_balance_option(100000);
     let share = wperc.unwrap()*value/total_fund;
     let idx = ContribIndex::<T>::get().checked_add(1).unwrap();
+=======
+	
+	let now = <frame_system::Pallet<T>>::block_number();    
+    let wperc = Pallet::<T>::u32_to_balance_option(100000);
+    
+    let idx = ContribIndex::<T>::get()+1;
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
     ContribIndex::<T>::put(idx);
+    <T as pallet::Config>::Currency::transfer(
+        &who,
+        &TREASURE_PALLET_ID.into_account(),
+        value,
+        ExistenceRequirement::AllowDeath,
+    )?;
+    let total_fund:BalanceOf<T> = Pallet::<T>::pot();
+    
+    let share = wperc.unwrap()*value/total_fund;
     self.share = share.clone();
 	let c1 = Contribution::<T>::new(value.clone());
     let inv = Some(self.clone());
 
-    ensure!(InvestorLog::<T>::contains_key(&self.account_id),Error::<T>::NoAccount);
     InvestorLog::<T>::mutate(&self.account_id,|val|{
         *val = inv;
     });
@@ -101,12 +125,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
         }
 
 
-        <T as pallet::Config>::Currency::transfer(
-            &who,
-            &TREASURE_PALLET_ID.into_account(),
-            value,
-            ExistenceRequirement::AllowDeath,
-        )?;
+        
 
         Ok(().into())
     }
@@ -159,7 +178,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
 
     //-----------------------------------------------------------------
     //-------------MINT HOUSE METHOD_BEGIN-----------------------------
-
+    
     pub fn mint_house(&self,origin:OriginFor<T>){
         let _creator = ensure_signed(origin);
         let now = <frame_system::Pallet<T>>::block_number();
@@ -183,29 +202,46 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
     pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32,metadata:Vec<u8>) -> DispatchResult{
         let creator = ensure_signed(origin.clone())?;
         let now = <frame_system::Pallet<T>>::block_number();
-        let deposit = <T as pallet::Config>::SubmissionDeposit::get();
-        let imb = <T as pallet::Config>::Currency::withdraw(
-            &creator,
-            deposit,
-            WithdrawReasons::TRANSFER,
-            ExistenceRequirement::AllowDeath,
-        )?;
+        
+//        let deposit = <T as pallet::Config>::SubmissionDeposit::get();
+        let deposit0= <T as DMC::Config>::MinimumDeposit::get();
+//        let imb = <T as pallet::Config>::Currency::withdraw(
+//            &creator,
+//            deposit,
+//            WithdrawReasons::TRANSFER,
+//            ExistenceRequirement::AllowDeath,
+//        )?;
         let pindex = ProposalInd::<T>::get()+1;
         ProposalInd::<T>::put(pindex.clone());
 
         if MintedHouseLog::<T>::contains_key(hindex.clone()){
         if ProposalLog::<T>::contains_key(pindex.clone())==false{
-            let mut v = Vec::new();
-            <T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
-            v.push(self.account_id);
-            let house = MintedHouseLog::<T>::get(hindex);
 
+            //<T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
+
+            //add proposal to DMC voting queue
+            let house = MintedHouseLog::<T>::get(hindex);
+            let proposal_hash = T::Hashing::hash(&metadata[..]);
+            DMC::Pallet::<T>::propose(origin.clone(),proposal_hash.clone(),deposit0).ok(); 
+            DMC::Pallet::<T>::note_imminent_preimage(origin.clone(),metadata.clone()).ok();
+            
+            //Start Referendum with a 'SimpleMajority' threshold
+            let threshold = DMC::VoteThreshold::SimpleMajority;
+            let delay = <T as Config>::Delay::get();
+            DMC::Pallet::<T>::internal_start_referendum(proposal_hash,threshold,delay);
+
+            
             //Select Investors for nft ownership
+<<<<<<< HEAD
 
             //mint a nft with the same index as HouseInd here
 
+=======
+            //-------------------------------------------------------------------------------
+            //mint a nft with the same index as HouseInd here                       
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
             //mint
-            //let data:BoundedVecOfUnq<T> = metadata.as_bytes().to_vec().try_into().unwrap();
+            
             let data:BoundedVecOfUnq<T> = metadata.try_into().unwrap();
             let cl_id:ClassOf<T> = HOUSE_CLASS.into();
             let inst_id:InstanceOf<T> = hindex.into();
@@ -227,10 +263,20 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
             let own = NftL::TokenByOwner::<T>::get(creator.clone(),(cls.0,hi)).unwrap();
             if !(MintedNftLog::<T>::contains_key(&creator,&hindex)){
                 MintedNftLog::<T>::insert(creator,hindex,(cl_id,inst_id,own));
+<<<<<<< HEAD
             }
 
+=======
+            }         
+            //----------------------------------------------------------------------------------
+            ReserveFunds::<T>::mutate(|val|{
+                *val += value.clone();
+            });
+>>>>>>> 88a9acd86626dc9a4585864b0a7913c26bb15621
             let store = (now,value,house,false);
+            
             ProposalLog::<T>::insert(pindex,store);
+            
             }
         }
 
