@@ -42,11 +42,11 @@ pub struct Contribution<T:Config>{
 }
 
 impl<T:Config>Contribution<T>{
-    pub fn new(val:BalanceOf<T>)-> Self{
+    pub fn new(val:BalanceOf<T>,idx:ContributionIndex)-> Self{
         Self{
             amount:val,
             age: <frame_system::Pallet<T>>::block_number(),
-            index: 0,
+            index: idx,
         }
     }
 }

@@ -18,6 +18,7 @@ pub type NftOf<T> = Vec<T>;
 pub type ClassOf<T> = <T as pallet_nft::Config>::NftClassId;
 pub type InstanceOf<T> = <T as pallet_nft::Config>::NftInstanceId;
 pub type NfT<T> = NftL::TokenByOwnerData<T>;
+pub type Idle<T> = (Vec<HouseSeller<T>>,Vec<Servicer<T>>);
 
 
 pub const HOUSE_CLASS:u32=1000;
@@ -80,7 +81,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
     let wperc = Pallet::<T>::u32_to_balance_option(100000);
     
     let idx = ContribIndex::<T>::get()+1;
-    ContribIndex::<T>::put(idx);
+    ContribIndex::<T>::put(&idx);
     <T as pallet::Config>::Currency::transfer(
         &who,
         &TREASURE_PALLET_ID.into_account(),
@@ -91,7 +92,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
     
     let share = wperc.unwrap()*value/total_fund;
     self.share = share.clone();
-	let c1=Contribution::<T>::new(value.clone());
+	let c1=Contribution::<T>::new(value.clone(),idx);
     let inv = Some(self.clone());
 
     InvestorLog::<T>::mutate(&self.account_id,|val|{
@@ -139,7 +140,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
 
     //--------------------------------------------------------------------
     //-------------HOUSE OWNER CREATION METHOD_BEGIN----------------------
-    pub fn new(acc: OriginFor<T>) -> Self{
+    pub fn new(acc: OriginFor<T>) -> DispatchResult{
         let caller = ensure_signed(acc).unwrap();
         let now = <frame_system::Pallet<T>>::block_number(); 
         //ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);      
@@ -149,13 +150,10 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
                 nft_index: Vec::new(),
                 age: now.clone(),		
             };
-            HouseSellerLog::<T>::insert(hw.account_id.clone(),hw);
-            HouseSeller{
-                account_id: caller,
-                nft_index: Vec::new(),
-                age: now,		
-            }           
-         
+            WaitingList::<T>::mutate(|val|{
+                val.0.push(hw);
+            });         
+            Ok(().into())
 
         } 
 
@@ -272,6 +270,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
 //--------------------------------------------------------------------------------------
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Tenant<T:Config>{
     pub account_id: T::AccountId,
@@ -293,3 +292,30 @@ impl<T:Config> Tenant<T> {
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
 //--------------------------------------------------------------------------------------
 
+
+//--------------------------------------------------------------------------------------
+//-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Servicer<T:Config>{
+    pub account_id: T::AccountId,
+    pub age:BlockNumberOf<T>,
+}
+impl<T:Config> Servicer<T> {    
+    pub fn new(acc:OriginFor<T>) -> DispatchResult{
+        let caller = ensure_signed(acc).unwrap();        
+        let now = <frame_system::Pallet<T>>::block_number();
+        let sv = Servicer{
+            account_id: caller,
+            age:now,
+        };
+        WaitingList::<T>::mutate(|val|{
+            val.1.push(sv);
+        });
+        Ok(().into())
+        
+    }
+}
+//-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
+//--------------------------------------------------------------------------------------

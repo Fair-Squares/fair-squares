@@ -36,11 +36,11 @@ pub mod pallet {
    #[derive(Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
    #[cfg_attr(feature = "std", derive(Debug))]
    pub enum Accounts{
-       INVESTOR,
-       SELLER,
-       TENANT,
-       INVALID,
-   }   
+		INVESTOR,
+		SELLER,
+		TENANT,
+		SERVICER,
+	}      
 
 
 
@@ -81,6 +81,19 @@ pub mod pallet {
    ///Registry of Sellers organized by AccountId
 	pub(super) type HouseSellerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller::<T>, OptionQuery>;
 
+   #[pallet::storage]
+   ///Registry of Tenants organized by AccountId
+	pub(super) type TenantLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant::<T>, OptionQuery>;
+
+	#[pallet::storage]
+   ///Registry of Servicers organized by AccountId
+	pub(super) type ServicerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer::<T>, OptionQuery>;
+
+	#[pallet::type_value]
+   pub(super) fn MyDefault1<T: Config>() -> Idle<T> { (Vec::new(),Vec::new()) }
+	#[pallet::storage]
+   ///Registry of Sellers organized by AccountId
+	pub(super) type WaitingList<T: Config> = StorageValue<_, Idle<T>, ValueQuery,MyDefault1<T>>;
 
    #[pallet::storage]
    ///Registry of General Fund contribution's (Creation time,amount,contribution infos), organized by accountId
@@ -216,22 +229,36 @@ pub mod pallet {
             Accounts::INVESTOR => {
                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                let _acc = Investor::<T>::new(origin);
                Ok(().into())
             },
             Accounts::SELLER => {
                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                //Bring the decision for this account creation to a vote
                let _acc = HouseSeller::<T>::new(origin);
                Ok(().into())
             },
             Accounts::TENANT => {
-               
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
                let _acc = Tenant::<T>::new(origin);
                Ok(().into())
             },
-            _=> Ok(()),
+			Accounts::SERVICER => {
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               let _acc = Servicer::<T>::new(origin);
+               Ok(().into())
+            },
          }
         
          
@@ -247,32 +274,11 @@ pub mod pallet {
          Ok(().into())
       }
        
-      #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-      ///This function is used to create an asset slot that can be used to create a proposal.
-      ///besides user ID input, no other information is needed.
-      pub fn create_asset(origin:OriginFor<T>) -> DispatchResult{
-         let creator= ensure_signed(origin.clone())?;
-
-         // Ensure that the caller account is a Seller account
-         ensure!(HouseSellerLog::<T>::contains_key(&creator),Error::<T>::NotSellerAccount);
-         let seller = HouseSellerLog::<T>::get(creator).unwrap();
-         seller.mint_house(origin);
-         let idx:HouseIndex = HouseInd::<T>::get();
-         let now = <frame_system::Pallet<T>>::block_number();
-
-         Self::deposit_event(Event::HouseMinted(idx,now));
-
-         Ok(().into())
-
-      }
-
-      
-      
       
       #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
       ///This function create a proposal from an asset previously minted
       ///On creation approval, a proposal is sent to the Democracy system, and a SimpleMajority Referandum is started
-      pub fn create_proposal(origin:OriginFor<T>,value: BalanceOf<T>,house_index: u32, metadata:Vec<u8>) -> DispatchResult{
+      pub fn create_proposal(origin:OriginFor<T>,value: BalanceOf<T>,metadata:Vec<u8>) -> DispatchResult{
          let creator= ensure_signed(origin.clone())?;
          //Make sure that enough funds are available
          let total_fund = Pallet::<T>::pot();
@@ -285,21 +291,28 @@ pub mod pallet {
 
          // Ensure that the caller account is a Seller account
          ensure!(HouseSellerLog::<T>::contains_key(&creator),Error::<T>::NotSellerAccount);
+         let seller = HouseSellerLog::<T>::get(creator.clone()).unwrap(); 
+         //creating a house slot
+         seller.mint_house(origin.clone());
+         let house_index:HouseIndex = HouseInd::<T>::get();
+         let now = <frame_system::Pallet<T>>::block_number();
+
+         Self::deposit_event(Event::HouseMinted(house_index.clone(),now.clone()));
 
          // Ensure that the House index is registered
-         ensure!(MintedHouseLog::<T>::contains_key(&house_index),Error::<T>::NoAsset);
+         ensure!(MintedHouseLog::<T>::contains_key(house_index.clone()),Error::<T>::NoAsset);
          
          // Ensure that the seller owns the rights on the indexed house 
-         let house = MintedHouseLog::<T>::get(&house_index);
+         let house = MintedHouseLog::<T>::get(house_index.clone());
          let howner = house.owners;
          ensure!(howner.contains(&creator), Error::<T>::NoAccount);
 
 
          // Create Proposal
-         let seller = HouseSellerLog::<T>::get(creator).unwrap();
+         
          seller.new_proposal(origin,value,house_index,metadata).ok();
 
-         let now = <frame_system::Pallet<T>>::block_number();
+         //let now = <frame_system::Pallet<T>>::block_number();
          Self::deposit_event(Event::ProposalCreated(now));
          
          Ok(().into())
@@ -430,6 +443,22 @@ pub mod pallet {
    
       pub fn balance_to_u32_option(input: BalanceOf<T>) -> Option<u32> {
          input.try_into().ok()
+       }
+      
+       pub fn approve_account(who: T::AccountId) {
+         let waitlist = WaitingList::<T>::get();
+         let sellers =  waitlist.0;
+         let servicers = waitlist.1;
+         for sell in sellers.iter(){
+            if sell.account_id == who.clone(){
+               HouseSellerLog::<T>::insert(&who,sell);
+            }
+         }
+         for serv in servicers.iter(){
+            if serv.account_id == who.clone(){
+               ServicerLog::<T>::insert(&who,serv);
+            }
+         }
        }
 
        pub fn pot() -> BalanceOf<T> {
