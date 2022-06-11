@@ -209,6 +209,8 @@ pub mod pallet {
       NoAsset,
       ///Not enough funds available for this purchase
       NotEnoughFunds,
+      ///Only One role allowed
+      OnlyOneRoleAllowed
 
    }
    
@@ -227,41 +229,50 @@ pub mod pallet {
          let caller = ensure_signed(origin.clone())?; 
          match account_type{
             Accounts::INVESTOR => {
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                let _acc = Investor::<T>::new(origin);
                Ok(().into())
             },
             Accounts::SELLER => {
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                //Bring the decision for this account creation to a vote
                let _acc = HouseSeller::<T>::new(origin);
                Ok(().into())
             },
             Accounts::TENANT => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                let _acc = Tenant::<T>::new(origin);
                Ok(().into())
             },
 			Accounts::SERVICER => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                let _acc = Servicer::<T>::new(origin);
                Ok(().into())
             },
          }
         
          
+      }
+
+      #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      ///Approval function for Sellers and Servicers. Only for admin level.
+      pub fn account_approval(origin:OriginFor<T>,account: T::AccountId)-> DispatchResult{
+         ensure_root(origin.clone())?;
+         Self::approve_account(account);
+         Ok(().into())
+
       }
 
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
@@ -295,9 +306,9 @@ pub mod pallet {
          //creating a house slot
          seller.mint_house(origin.clone());
          let house_index:HouseIndex = HouseInd::<T>::get();
-         let now = <frame_system::Pallet<T>>::block_number();
+         let now0 = <frame_system::Pallet<T>>::block_number();
 
-         Self::deposit_event(Event::HouseMinted(house_index.clone(),now.clone()));
+         Self::deposit_event(Event::HouseMinted(house_index.clone(),now0));
 
          // Ensure that the House index is registered
          ensure!(MintedHouseLog::<T>::contains_key(house_index.clone()),Error::<T>::NoAsset);
@@ -312,7 +323,7 @@ pub mod pallet {
          
          seller.new_proposal(origin,value,house_index,metadata).ok();
 
-         //let now = <frame_system::Pallet<T>>::block_number();
+         let now = <frame_system::Pallet<T>>::block_number();
          Self::deposit_event(Event::ProposalCreated(now));
          
          Ok(().into())
@@ -321,19 +332,19 @@ pub mod pallet {
 
       #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
       ///This function allows the user to cast his votes for the active referandums.
-      ///The vote configuration selected is 'Split'. 
-      pub fn proposal_vote(origin:OriginFor<T>,ref_index:DMC::ReferendumIndex, vote_type:DMC::AccountVote<BalanceOf2<T>>)-> DispatchResult{
+      ///The vote configuration selected is 'Standard'. 
+      pub fn proposal_vote(origin:OriginFor<T>,ref_index:DMC::ReferendumIndex, vote:DMC::Vote)-> DispatchResult{
          let caller = ensure_signed(origin.clone())?;
          ensure!(InvestorLog::<T>::contains_key(&caller),Error::<T>::NotInvestorAccount);
-         //let bal:BalanceOf2<T> = Zero::zero();
-         //let vtype = DMC::AccountVote::Split{ aye: bal, nay: bal };
-         DMC::Pallet::<T>::vote(origin,ref_index,vote_type).ok();
+         let bal= Self::u32_to_balance_option2(500).unwrap();
+         let vtype = DMC::AccountVote::Standard{ vote: vote, balance: bal };
+         DMC::Pallet::<T>::vote(origin,ref_index,vtype).ok();
 
          Ok(().into())
       }
 
       //ToDo
-      //Process the vote results, and update necessary storages accordingly
+      //Periodically check the vote results, and update necessary storages accordingly
      
     
    
@@ -440,6 +451,10 @@ pub mod pallet {
       pub fn u32_to_balance_option(input: u32) -> Option<BalanceOf<T>> {
          input.try_into().ok()
        }
+
+       pub fn u32_to_balance_option2(input: u32) -> Option<BalanceOf2<T>> {
+         input.try_into().ok()
+       }
    
       pub fn balance_to_u32_option(input: BalanceOf<T>) -> Option<u32> {
          input.try_into().ok()
@@ -451,15 +466,25 @@ pub mod pallet {
          let servicers = waitlist.1;
          for sell in sellers.iter(){
             if sell.account_id == who.clone(){
-               HouseSellerLog::<T>::insert(&who,sell);
+               HouseSellerLog::<T>::insert(&who,sell.clone());
+               let index = sellers.iter().position(|x| *x == *sell).unwrap();
+               WaitingList::<T>::mutate(|val|{
+                  val.0.remove(index);
+               })
             }
          }
          for serv in servicers.iter(){
             if serv.account_id == who.clone(){
                ServicerLog::<T>::insert(&who,serv);
+               let index = servicers.iter().position(|x| *x == *serv).unwrap();
+               WaitingList::<T>::mutate(|val|{
+                  val.0.remove(index);
+               })
             }
          }
        }
+
+       pub fn destroy_proposal(){}
 
        pub fn pot() -> BalanceOf<T> {
 			<T as pallet::Config>::Currency::free_balance(&TREASURE_PALLET_ID.into_account())

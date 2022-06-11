@@ -187,26 +187,25 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
         let creator = ensure_signed(origin.clone())?;
         let now = <frame_system::Pallet<T>>::block_number();
         
-//        let deposit = <T as pallet::Config>::SubmissionDeposit::get();
+        //Make sure that the Seller has enough funds to make a deposit
+        //let balance  = <T as pallet::Config>::Currency::free_balance(&creator);
+        //let balance1 = Pallet::<T>::balance_to_u32_option(balance).unwrap();
+        //let balance2 = Pallet::<T>::u32_to_balance_option2(balance1).unwrap();
         let deposit0= <T as DMC::Config>::MinimumDeposit::get();
-//        let imb = <T as pallet::Config>::Currency::withdraw(
-//            &creator,
-//            deposit,
-//            WithdrawReasons::TRANSFER,
-//            ExistenceRequirement::AllowDeath,
-//        )?;
+        //ensure!(balance2>deposit0,Error::<T>::NotEnoughFunds);
+
         let pindex = ProposalInd::<T>::get()+1;
         ProposalInd::<T>::put(pindex.clone());
 
         if MintedHouseLog::<T>::contains_key(hindex.clone()){
         if ProposalLog::<T>::contains_key(pindex.clone())==false{
 
-            //<T as pallet::Config>::Currency::resolve_creating(&self.account_id, imb);
-
+            
             //add proposal to DMC voting queue
             let house = MintedHouseLog::<T>::get(hindex);
             let proposal_hash = T::Hashing::hash(&metadata[..]);
-            DMC::Pallet::<T>::propose(origin.clone(),proposal_hash.clone(),deposit0).ok(); 
+            DMC::Pallet::<T>::propose(origin.clone(),proposal_hash.clone(),deposit0).ok();
+
             DMC::Pallet::<T>::note_imminent_preimage(origin.clone(),metadata.clone()).ok();
             
             //Start Referendum with a 'SimpleMajority' threshold
@@ -256,7 +255,7 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
         Ok(().into())
     }
 
-    pub fn destroy_proposal(){}
+    
     //-------------PROPOSAL CREATION METHOD_END----------------------
     //-----------------------------------------------------------------
     
