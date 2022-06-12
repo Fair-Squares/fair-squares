@@ -307,6 +307,7 @@ pub mod pallet {
          seller.mint_house(origin.clone());
          let house_index:HouseIndex = HouseInd::<T>::get();
          let now0 = <frame_system::Pallet<T>>::block_number();
+         let pindex = ProposalInd::<T>::get()+1;
 
          Self::deposit_event(Event::HouseMinted(house_index.clone(),now0));
 
@@ -315,15 +316,22 @@ pub mod pallet {
          
          // Ensure that the seller owns the rights on the indexed house 
          let house = MintedHouseLog::<T>::get(house_index.clone());
-         let howner = house.owners;
+         let howner = house.clone().owners;
          ensure!(howner.contains(&creator), Error::<T>::NoAccount);
 
 
-         // Create Proposal
-         
-         seller.new_proposal(origin,value,house_index,metadata).ok();
+         // Create Proposal         
+         seller.new_proposal(origin.clone(),value.clone(),house_index.clone(),metadata.clone())?;
+         //Submit preimage for running proposal
+         DMC::Pallet::<T>::note_preimage(origin,metadata.clone())?;
+         //Mint the proposal nft 
+         Self::mint_house_nft(creator,house_index,metadata);
 
+         //Update the storages 
          let now = <frame_system::Pallet<T>>::block_number();
+         let store = (now.clone(),value,house,false);
+         ProposalInd::<T>::put(pindex.clone());
+         ProposalLog::<T>::insert(pindex,store);
          Self::deposit_event(Event::ProposalCreated(now));
          
          Ok(().into())
@@ -460,6 +468,10 @@ pub mod pallet {
          input.try_into().ok()
        }
       
+       pub fn balance_to_u32_option2(input: BalanceOf2<T>) -> Option<u32> {
+         input.try_into().ok()
+       }
+      
        pub fn approve_account(who: T::AccountId) {
          let waitlist = WaitingList::<T>::get();
          let sellers =  waitlist.0;
@@ -485,6 +497,33 @@ pub mod pallet {
        }
 
        pub fn destroy_proposal(){}
+
+       pub fn mint_house_nft(creator: T::AccountId, hindex:u32,metadata:Vec<u8>){
+          //mint a nft with the same index as HouseInd here                       
+            //mint            
+            let data:BoundedVecOfUnq<T> = metadata.try_into().unwrap();
+            let cl_id:ClassOf<T> = HOUSE_CLASS.into();
+            let inst_id:InstanceOf<T> = hindex.into();
+
+            let cls = NftL::Pallet::<T>::do_create_class(
+                creator.clone(),
+                cl_id.clone(),
+                Default::default(),
+                data.clone()
+            ).unwrap();            
+            let _nft = NftL::Pallet::<T>::do_mint(
+                creator.clone(),
+                cls.0,
+                inst_id.clone(),
+                data
+            );
+            let hi:InstanceOf<T> = hindex.clone().into();
+
+            let own = NftL::TokenByOwner::<T>::get(creator.clone(),(cls.0,hi)).unwrap();
+            if !(MintedNftLog::<T>::contains_key(&creator,&hindex)){
+                MintedNftLog::<T>::insert(creator,hindex,(cl_id,inst_id,own));
+            } 
+       }
 
        pub fn pot() -> BalanceOf<T> {
 			<T as pallet::Config>::Currency::free_balance(&TREASURE_PALLET_ID.into_account())

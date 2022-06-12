@@ -184,70 +184,29 @@ impl<T:Config> HouseSeller<T> where roles::HouseSeller<T>: EncodeLike<roles::Hou
     //-------------PROPOSAL CREATION METHOD_BEGIN----------------------
 
     pub fn new_proposal(self,origin: OriginFor<T>,value: BalanceOf<T>,hindex:u32,metadata:Vec<u8>) -> DispatchResult{
-        let creator = ensure_signed(origin.clone())?;
-        let now = <frame_system::Pallet<T>>::block_number();
-        
+        ensure_signed(origin.clone())?;
         //Make sure that the Seller has enough funds to make a deposit
-        //let balance  = <T as pallet::Config>::Currency::free_balance(&creator);
-        //let balance1 = Pallet::<T>::balance_to_u32_option(balance).unwrap();
-        //let balance2 = Pallet::<T>::u32_to_balance_option2(balance1).unwrap();
         let deposit0= <T as DMC::Config>::MinimumDeposit::get();
-        //ensure!(balance2>deposit0,Error::<T>::NotEnoughFunds);
-
         let pindex = ProposalInd::<T>::get()+1;
-        ProposalInd::<T>::put(pindex.clone());
+        
 
         if MintedHouseLog::<T>::contains_key(hindex.clone()){
         if ProposalLog::<T>::contains_key(pindex.clone())==false{
 
             
             //add proposal to DMC voting queue
-            let house = MintedHouseLog::<T>::get(hindex);
             let proposal_hash = T::Hashing::hash(&metadata[..]);
-            DMC::Pallet::<T>::propose(origin.clone(),proposal_hash.clone(),deposit0).ok();
-
-            DMC::Pallet::<T>::note_imminent_preimage(origin.clone(),metadata.clone()).ok();
+            DMC::Pallet::<T>::propose(origin.clone(),proposal_hash.clone(),deposit0)?;
             
+                        
             //Start Referendum with a 'SimpleMajority' threshold
             let threshold = DMC::VoteThreshold::SimpleMajority;
             let delay = <T as Config>::Delay::get();
-            DMC::Pallet::<T>::internal_start_referendum(proposal_hash,threshold,delay);
-
+            DMC::Pallet::<T>::internal_start_referendum(proposal_hash,threshold,delay);            
             
-            //Select Investors for nft ownership
-            //-------------------------------------------------------------------------------
-            //mint a nft with the same index as HouseInd here                       
-            //mint
-            
-            let data:BoundedVecOfUnq<T> = metadata.try_into().unwrap();
-            let cl_id:ClassOf<T> = HOUSE_CLASS.into();
-            let inst_id:InstanceOf<T> = hindex.into();
-
-            let cls = NftL::Pallet::<T>::do_create_class(
-                creator.clone(),
-                cl_id.clone(),
-                Default::default(),
-                data.clone()
-            )?;            
-            let _nft = NftL::Pallet::<T>::do_mint(
-                creator.clone(),
-                cls.0,
-                inst_id.clone(),
-                data
-            );
-            let hi:InstanceOf<T> = hindex.clone().into();
-
-            let own = NftL::TokenByOwner::<T>::get(creator.clone(),(cls.0,hi)).unwrap();
-            if !(MintedNftLog::<T>::contains_key(&creator,&hindex)){
-                MintedNftLog::<T>::insert(creator,hindex,(cl_id,inst_id,own));
-            }         
-            //----------------------------------------------------------------------------------
             ReserveFunds::<T>::mutate(|val|{
                 *val += value.clone();
             });
-            let store = (now,value,house,false);
-            
-            ProposalLog::<T>::insert(pindex,store);
             
             }
         }
