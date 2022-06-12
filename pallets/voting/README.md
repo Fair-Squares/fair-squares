@@ -1,1 +1,1 @@
-License: Unlicense
+# Voting pallet
