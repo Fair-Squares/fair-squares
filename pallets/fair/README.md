@@ -1,1 +1,1 @@
-License: Unlicense
+# Fair Algo
