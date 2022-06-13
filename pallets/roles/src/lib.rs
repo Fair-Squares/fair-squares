@@ -208,7 +208,7 @@ pub mod pallet {
 				  ServicerLog::<T>::insert(&who,serv);
 				  let index = servicers.iter().position(|x| *x == *serv).unwrap();
 				  WaitingList::<T>::mutate(|val|{
-					 val.0.remove(index);
+					 val.1.remove(index);
 				  });
 				  let now = <frame_system::Pallet<T>>::block_number();
 				  Self::deposit_event(Event::ServicerCreated(now,who.clone()));
@@ -237,7 +237,7 @@ pub mod pallet {
 				if serv.account_id == who.clone(){				   
 				   let index = servicers.iter().position(|x| *x == *serv).unwrap();
 				   WaitingList::<T>::mutate(|val|{
-					  val.0.remove(index);
+					  val.1.remove(index);
 				   });
 				   let now = <frame_system::Pallet<T>>::block_number();
 				   Self::deposit_event(Event::ServicerAccountCreationRejected(now,who.clone()));
