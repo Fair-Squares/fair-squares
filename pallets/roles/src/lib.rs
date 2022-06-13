@@ -45,13 +45,6 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/v3/runtime/storage
-	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
 
 	#[pallet::storage]
    ///Registry of Investors organized by AccountId
@@ -72,7 +65,7 @@ pub mod pallet {
 	#[pallet::type_value]
    pub(super) fn MyDefault<T: Config>() -> Idle<T> { (Vec::new(),Vec::new()) }
 	#[pallet::storage]
-   ///Registry of Sellers organized by AccountId
+   ///Waiting list for Sellers and Servicers
 	pub(super) type WaitingList<T: Config> = StorageValue<_, Idle<T>, ValueQuery,MyDefault<T>>;
 
 
@@ -85,7 +78,15 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		
+		InvestorCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		TenantCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		SellerCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		ServicerCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		AccountCreationApproved(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		SellerAccountCreationRejected(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		ServicerAccountCreationRejected(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		CreationRequestCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -95,6 +96,10 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		///Multiple roles are not permitted
+		MultipleRolesIssue,
+		///Invalid Operation
+		InvalidOperation
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -105,40 +110,49 @@ pub mod pallet {
 
 
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		///Account creation function. Only one role per account is permitted. 
       pub fn create_account(origin:OriginFor<T>, account_type:Accounts) -> DispatchResult{
          let caller = ensure_signed(origin.clone())?; 
          match account_type{
             Accounts::INVESTOR => {
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
                let _acc = Investor::<T>::new(origin);
+			   let now = <frame_system::Pallet<T>>::block_number();
+			   Self::deposit_event(Event::InvestorCreated(now,caller));
                Ok(().into())
             },
             Accounts::SELLER => {
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
                //Bring the decision for this account creation to a vote
                let _acc = HouseSeller::<T>::new(origin);
+			   let now = <frame_system::Pallet<T>>::block_number();
+			   Self::deposit_event(Event::CreationRequestCreated(now,caller));
                Ok(().into())
             },
             Accounts::TENANT => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
                let _acc = Tenant::<T>::new(origin);
+			   let now = <frame_system::Pallet<T>>::block_number();
+			   Self::deposit_event(Event::TenantCreated(now,caller));
                Ok(().into())
             },
 			Accounts::SERVICER => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::NoneValue);
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
                let _acc = Servicer::<T>::new(origin);
+			   let now = <frame_system::Pallet<T>>::block_number();
+			   Self::deposit_event(Event::CreationRequestCreated(now,caller));
                Ok(().into())
             },
          }
@@ -146,41 +160,91 @@ pub mod pallet {
          
       }
 
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/v3/runtime/origins
-			let who = ensure_signed(origin)?;
+	  #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      ///Approval function for Sellers and Servicers. Only for admin level.
+      pub fn account_approval(origin:OriginFor<T>,account: T::AccountId)-> DispatchResult{
+         ensure_root(origin.clone())?;
+		 let caller = ensure_signed(origin)?;
+		 ensure!(caller.clone()!=account.clone(),Error::<T>::InvalidOperation);
+         Self::approve_account(account)?;
+		 let now = <frame_system::Pallet<T>>::block_number();
+		 Self::deposit_event(Event::AccountCreationApproved(now,caller));
+         Ok(().into())
 
-			// Update storage.
-			<Something<T>>::put(something);
+      }
 
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
-			// Return a successful DispatchResultWithPostInfo
-			Ok(())
-		}
 
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
+	  #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      ///Creation Refusal function for Sellers and Servicers. Only for admin level.
+	  pub fn account_rejection(origin:OriginFor<T>,account: T::AccountId) -> DispatchResult{
+		ensure_root(origin.clone())?;
+		let caller = ensure_signed(origin)?;
+		ensure!(caller.clone()!=account.clone(),Error::<T>::InvalidOperation);
+		Self::reject_account(account)?;
+		Ok(().into())
+	  }
 
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
+	}
+
+	impl<T: Config> Pallet<T> {
+		//Helper function for account creation approval by admin only
+		pub fn approve_account(who: T::AccountId) -> DispatchResult{
+			let waitlist = WaitingList::<T>::get();
+			let sellers =  waitlist.0;
+			let servicers = waitlist.1;
+			for sell in sellers.iter(){
+			   if sell.account_id == who.clone(){
+				  HouseSellerLog::<T>::insert(&who,sell.clone());
+				  let index = sellers.iter().position(|x| *x == *sell).unwrap();
+				  WaitingList::<T>::mutate(|val|{
+					 val.0.remove(index);
+				  });
+				  let now = <frame_system::Pallet<T>>::block_number();
+				  Self::deposit_event(Event::SellerCreated(now,who.clone()));
+			   }
 			}
+			for serv in servicers.iter(){
+			   if serv.account_id == who.clone(){
+				  ServicerLog::<T>::insert(&who,serv);
+				  let index = servicers.iter().position(|x| *x == *serv).unwrap();
+				  WaitingList::<T>::mutate(|val|{
+					 val.0.remove(index);
+				  });
+				  let now = <frame_system::Pallet<T>>::block_number();
+				  Self::deposit_event(Event::ServicerCreated(now,who.clone()));
+			   }
+			}
+			Ok(().into())
+
+		  }
+		//Helper function for account creation rejection by admin only
+		pub fn reject_account(who: T::AccountId)-> DispatchResult{
+			let waitlist = WaitingList::<T>::get();
+			let sellers =  waitlist.0;
+			let servicers = waitlist.1;
+			for sell in sellers.iter(){
+				if sell.account_id == who.clone(){				   
+				   let index = sellers.iter().position(|x| *x == *sell).unwrap();
+				   WaitingList::<T>::mutate(|val|{
+					  val.0.remove(index);
+				   });
+				   let now = <frame_system::Pallet<T>>::block_number();
+				   Self::deposit_event(Event::SellerAccountCreationRejected(now,who.clone()));
+				}
+			 }
+
+			 for serv in servicers.iter(){
+				if serv.account_id == who.clone(){				   
+				   let index = servicers.iter().position(|x| *x == *serv).unwrap();
+				   WaitingList::<T>::mutate(|val|{
+					  val.0.remove(index);
+				   });
+				   let now = <frame_system::Pallet<T>>::block_number();
+				   Self::deposit_event(Event::ServicerAccountCreationRejected(now,who.clone()));
+				}
+			 }
+			 Ok(().into())
 		}
 	}
+
 }
