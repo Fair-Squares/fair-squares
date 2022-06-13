@@ -2,16 +2,16 @@ version: "3.2"
 
 services:
   dev:
-    container_name: fs-node
+    container_name: node-template
     image: paritytech/ci-linux:staging
-    working_dir: /var/www/fs-node
+    working_dir: /var/www/node-template
     ports:
       - "9944:9944"
     environment:
-      - CARGO_HOME=/var/www/fs-node/.cargo
+      - CARGO_HOME=/var/www/node-template/.cargo
     volumes:
-      - .:/var/www/fs-node
+      - .:/var/www/node-template
       - type: bind
         source: ./.local
         target: /root/.local
-    command: bash -c "cargo build --release && ./target/release/fs-node--dev --ws-external"
+    command: bash -c "cargo build --release && ./target/release/node-template --dev --ws-external"
