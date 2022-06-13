@@ -146,7 +146,14 @@ pub mod pallet {
    pub enum Event<T: Config> {
       /// Event documentation should end with an array that provides descriptive names for event
       /// parameters. [something, who]
-      SomethingStored(u32, T::AccountId),
+      InvestorCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		TenantCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		SellerCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		ServicerCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		AccountCreationApproved(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		SellerAccountCreationRejected(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		ServicerAccountCreationRejected(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		CreationRequestCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
       Created( <T as frame_system::Config>::BlockNumber),
       ProposalCreated(<T as frame_system::Config>::BlockNumber),
       HouseMinted(HouseIndex, <T as frame_system::Config>::BlockNumber), 
@@ -210,7 +217,9 @@ pub mod pallet {
       ///Not enough funds available for this purchase
       NotEnoughFunds,
       ///Only One role allowed
-      OnlyOneRoleAllowed
+      OnlyOneRoleAllowed,
+      ///Invalid Operation
+		InvalidOperation
 
    }
    
@@ -231,34 +240,42 @@ pub mod pallet {
             Accounts::INVESTOR => {
                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+			      ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                let _acc = Investor::<T>::new(origin);
+               let now = <frame_system::Pallet<T>>::block_number();
+			      Self::deposit_event(Event::InvestorCreated(now,caller));
                Ok(().into())
             },
             Accounts::SELLER => {
                ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+			      ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                //Bring the decision for this account creation to a vote
                let _acc = HouseSeller::<T>::new(origin);
+               let now = <frame_system::Pallet<T>>::block_number();
+			      Self::deposit_event(Event::CreationRequestCreated(now,caller));
                Ok(().into())
             },
             Accounts::TENANT => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				   ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				   ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                let _acc = Tenant::<T>::new(origin);
+               let now = <frame_system::Pallet<T>>::block_number();
+			      Self::deposit_event(Event::TenantCreated(now,caller));
                Ok(().into())
             },
-			Accounts::SERVICER => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+		      Accounts::SERVICER => {
+				   ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				   ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
+				   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OnlyOneRoleAllowed);
                let _acc = Servicer::<T>::new(origin);
+               let now = <frame_system::Pallet<T>>::block_number();
+			      Self::deposit_event(Event::CreationRequestCreated(now,caller));
                Ok(().into())
             },
          }
@@ -270,10 +287,25 @@ pub mod pallet {
       ///Approval function for Sellers and Servicers. Only for admin level.
       pub fn account_approval(origin:OriginFor<T>,account: T::AccountId)-> DispatchResult{
          ensure_root(origin.clone())?;
-         Self::approve_account(account);
+		   let caller = ensure_signed(origin)?;
+		   ensure!(caller.clone()!=account.clone(),Error::<T>::InvalidOperation);
+         Self::approve_account(account)?;
+		   let now = <frame_system::Pallet<T>>::block_number();
+		   Self::deposit_event(Event::AccountCreationApproved(now,caller));
          Ok(().into())
 
       }
+
+      #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+      ///Creation Refusal function for Sellers and Servicers. Only for admin level.
+	  pub fn account_rejection(origin:OriginFor<T>,account: T::AccountId) -> DispatchResult{
+		   ensure_root(origin.clone())?;
+		   let caller = ensure_signed(origin)?;
+		   ensure!(caller.clone()!=account.clone(),Error::<T>::InvalidOperation);
+		   Self::reject_account(account)?;
+		   Ok(().into())
+	  }
+
 
       #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
       ///This function is used to contribute to the house fund.
@@ -360,23 +392,6 @@ pub mod pallet {
    
    impl<T: Config> Pallet<T> {
    
-      /// Each fund stores information about its contributors and their contributions in a child trie
-      // This helper function calculates the id of the associated child trie.
-      pub fn id_from_index() -> child::ChildInfo {
-         let mut buf = Vec::new();
-         buf.extend_from_slice(b"treasury");
-         //buf.extend_from_slice(&index.to_le_bytes()[..]);
-
-         child::ChildInfo::new_default(T::Hashing::hash(&buf[..]).as_ref())
-      }
-   
-      /// Lookup a contribution in the associated child trie.
-      pub fn contribution_get(who: &T::AccountId) -> BalanceOf<T> {
-         let id = Self::id_from_index();
-         who.using_encoded(|b| child::get_or_default::<BalanceOf<T>>(&id, b))
-      }
-      
-
       //During Investors vote, Houses linked to an approved proposal are removed from
       //the MintedHouse storage, and the boolean in the corresponding Proposal_storage
       //is turned to true.
@@ -450,11 +465,7 @@ pub mod pallet {
 
       }
       
-      /// Remove a contribution from an associated child trie.
-      pub fn contribution_kill(who: &T::AccountId) {
-         let id = Self::id_from_index();
-         who.using_encoded(|b| child::kill(&id, b));
-      }
+      
 
       pub fn u32_to_balance_option(input: u32) -> Option<BalanceOf<T>> {
          input.try_into().ok()
@@ -472,29 +483,65 @@ pub mod pallet {
          input.try_into().ok()
        }
       
-       pub fn approve_account(who: T::AccountId) {
-         let waitlist = WaitingList::<T>::get();
-         let sellers =  waitlist.0;
-         let servicers = waitlist.1;
-         for sell in sellers.iter(){
-            if sell.account_id == who.clone(){
-               HouseSellerLog::<T>::insert(&who,sell.clone());
-               let index = sellers.iter().position(|x| *x == *sell).unwrap();
-               WaitingList::<T>::mutate(|val|{
-                  val.0.remove(index);
-               })
-            }
-         }
-         for serv in servicers.iter(){
-            if serv.account_id == who.clone(){
-               ServicerLog::<T>::insert(&who,serv);
-               let index = servicers.iter().position(|x| *x == *serv).unwrap();
-               WaitingList::<T>::mutate(|val|{
-                  val.0.remove(index);
-               })
-            }
-         }
-       }
+       //Helper function for account creation approval by admin only
+		pub fn approve_account(who: T::AccountId) -> DispatchResult{
+			let waitlist = WaitingList::<T>::get();
+			let sellers =  waitlist.0;
+			let servicers = waitlist.1;
+			for sell in sellers.iter(){
+			   if sell.account_id == who.clone(){
+				  HouseSellerLog::<T>::insert(&who,sell.clone());
+				  let index = sellers.iter().position(|x| *x == *sell).unwrap();
+				  WaitingList::<T>::mutate(|val|{
+					 val.0.remove(index);
+				  });
+				  let now = <frame_system::Pallet<T>>::block_number();
+				  Self::deposit_event(Event::SellerCreated(now,who.clone()));
+			   }
+			}
+			for serv in servicers.iter(){
+			   if serv.account_id == who.clone(){
+				  ServicerLog::<T>::insert(&who,serv);
+				  let index = servicers.iter().position(|x| *x == *serv).unwrap();
+				  WaitingList::<T>::mutate(|val|{
+					 val.0.remove(index);
+				  });
+				  let now = <frame_system::Pallet<T>>::block_number();
+				  Self::deposit_event(Event::ServicerCreated(now,who.clone()));
+			   }
+			}
+			Ok(().into())
+
+		  }
+
+      //Helper function for account creation rejection by admin only
+		pub fn reject_account(who: T::AccountId)-> DispatchResult{
+			let waitlist = WaitingList::<T>::get();
+			let sellers =  waitlist.0;
+			let servicers = waitlist.1;
+			for sell in sellers.iter(){
+				if sell.account_id == who.clone(){				   
+				   let index = sellers.iter().position(|x| *x == *sell).unwrap();
+				   WaitingList::<T>::mutate(|val|{
+					  val.0.remove(index);
+				   });
+				   let now = <frame_system::Pallet<T>>::block_number();
+				   Self::deposit_event(Event::SellerAccountCreationRejected(now,who.clone()));
+				}
+			 }
+
+			 for serv in servicers.iter(){
+				if serv.account_id == who.clone(){				   
+				   let index = servicers.iter().position(|x| *x == *serv).unwrap();
+				   WaitingList::<T>::mutate(|val|{
+					  val.0.remove(index);
+				   });
+				   let now = <frame_system::Pallet<T>>::block_number();
+				   Self::deposit_event(Event::ServicerAccountCreationRejected(now,who.clone()));
+				}
+			 }
+			 Ok(().into())
+		}
 
        pub fn destroy_proposal(){}
 
