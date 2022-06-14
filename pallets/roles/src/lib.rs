@@ -5,15 +5,9 @@
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 
-#[cfg(test)]
-mod mock;
 
-#[cfg(test)]
-mod tests;
 mod structs;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
 
 
 pub use crate::structs::*;
