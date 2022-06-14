@@ -1,8 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 
 #[cfg(test)]
@@ -13,17 +10,27 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-
-mod structs;
 pub mod weights;
 
-pub use structs::*;
+mod functions;
+mod structs;
+
+pub use crate::structs::*;
 pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
+	use super::*;
+	use frame_support::{
+		dispatch::DispatchResult,
+		sp_runtime::traits::AccountIdConversion,
+		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
+		transactional, PalletId,
+	};
+	use sp_std::vec;
+
+	pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
+	pub const PERCENT_FACTOR: u64 = 100000;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -39,24 +46,28 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/v3/runtime/storage
 	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
+	#[pallet::getter(fn contributions)]
+	// Distribution of investor's contributions
+	pub(super) type Contributions<T> =
+		StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Contribution<T>, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
-	// https://docs.substrate.io/v3/runtime/events-and-errors
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		/// Account's contribution successfully added to the fund
+		ContributeSucceeded(AccountIdOf<T>, BalanceOf<T>, BlockNumberOf<T>),
+		/// Withdraw by account succeeded
+		WithdrawalSucceeded(
+			AccountIdOf<T>,
+			BalanceOf<T>,
+			structs::WithdrawalReason,
+			BlockNumberOf<T>,
+		),
 	}
 
 	// Errors inform users that something went wrong.
@@ -66,48 +77,139 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// Must have enough to contribute
+		NotEnoughToContribute,
+		/// Must contribute at least the minimum amount of funds
+		ContributionTooSmall,
+		/// Must be a contributor to the fund
+		NotAContributor,
 	}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::weight(T::WeightInfo::do_something())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
+		/// Allow an account to contribute to the common fund
+		/// The origin must be signed
+		/// - 'amount': the amount deposited in the fund
+		/// Emits ContributeSucceeded event when successful
+		#[pallet::weight(T::WeightInfo::contribute_to_fund())]
+		#[transactional]
+		pub fn contribute_to_fund(
+			origin: OriginFor<T>,
+			amount: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/v3/runtime/origins
 			let who = ensure_signed(origin)?;
 
-			// Update storage.
-			<Something<T>>::put(something);
+			// Check if it is the minimal contribution
+			ensure!(amount.clone() >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+
+			// Check if account has enough to contribute
+			ensure!(
+				T::Currency::free_balance(&who) >= amount.clone(),
+				Error::<T>::NotEnoughToContribute
+			);
+
+			// Get the block timestamp
+			let block_number = <frame_system::Pallet<T>>::block_number();
+
+			let contribution_log =
+				ContributionLog { amount: amount.clone(), block_number: block_number.clone() };
+
+			// Get the total fund to calculate the shares
+			let mut total_fund = amount.clone();
+			total_fund += T::Currency::total_balance(&TREASURE_PALLET_ID.into_account_truncating());
+
+			if !Contributions::<T>::contains_key(&who) {
+				let contribution = Contribution {
+					account_id: who.clone(),
+					total_balance: amount.clone(),
+					share: 0,
+					block_number: block_number.clone(),
+					contributions: vec![contribution_log.clone()],
+				};
+
+				Contributions::<T>::insert(&who, contribution);
+			} else {
+				Contributions::<T>::mutate(&who, |val| {
+					let unwrap_val = val.clone().unwrap();
+					let mut contribution_logs = unwrap_val.contributions.clone();
+					contribution_logs.push(contribution_log.clone());
+
+					let contrib = Contribution {
+						account_id: who.clone(),
+						total_balance: unwrap_val.total_balance + amount.clone(),
+						share: unwrap_val.share,
+						block_number: block_number.clone(),
+						contributions: contribution_logs,
+					};
+					*val = Some(contrib);
+				});
+			}
+
+			// The amount is transferred to the treasurery
+			T::Currency::transfer(
+				&who,
+				&TREASURE_PALLET_ID.into_account_truncating(),
+				amount.clone(),
+				ExistenceRequirement::AllowDeath,
+			)?;
+
+			// Update the shares of each contributor according to the new total balance
+			Self::update_contribution_share(total_fund.clone());
 
 			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
-			// Return a successful DispatchResultWithPostInfo
-			Ok(())
+			Self::deposit_event(Event::ContributeSucceeded(who, amount, block_number));
+
+			Ok(().into())
 		}
 
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
+		/// Withdraw the account contribution from the fund
+		/// The origin must be signed
+		/// Emits WithdrawalSucceeded event when successful
+		#[pallet::weight(T::WeightInfo::withdraw_fund())]
+		#[transactional]
+		pub fn withdraw_fund(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+			// Check that the extrinsic was signed and get the signer.
+			let who = ensure_signed(origin)?;
 
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
+			// Check if the account has contributed to the fund
+			ensure!(Contributions::<T>::contains_key(&who), Error::<T>::NotAContributor);
+
+			// Get the contribution's account
+			let contribution = Contributions::<T>::get(who.clone()).unwrap();
+
+			// Retrieve the balance of the account
+			let contribution_amount = contribution.total_balance.clone();
+
+			Contributions::<T>::remove(&who);
+
+			// The amount is transferred from the treasurery to the account
+			T::Currency::transfer(
+				&TREASURE_PALLET_ID.into_account_truncating(),
+				&who,
+				contribution_amount.clone(),
+				ExistenceRequirement::AllowDeath,
+			)?;
+
+			// Get the total balance to claculate the updated shares
+			let total_balance =
+				T::Currency::free_balance(&TREASURE_PALLET_ID.into_account_truncating());
+
+			// Update the shares of each contributor according to the new total balance
+			Self::update_contribution_share(total_balance.clone());
+
+			// Get the block timestamp
+			let block_number = <frame_system::Pallet<T>>::block_number();
+
+			// Emit an event.
+			Self::deposit_event(Event::WithdrawalSucceeded(
+				who,
+				contribution_amount,
+				structs::WithdrawalReason::NotDefined,
+				block_number,
+			));
+
+			Ok(().into())
 		}
 	}
 }

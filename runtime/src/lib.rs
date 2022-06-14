@@ -43,9 +43,9 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
-pub use pallet_housing_fund;
 /// Import the template pallet.
 pub use pallet_roles;
+pub use pallet_housing_fund;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -262,7 +262,11 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-/// Configure the pallet-template in pallets/template.
+parameter_types! {
+	pub const MinContribution: u128 = 10;
+}
+
+/// Configure the pallet-roles in pallets/roles.
 impl pallet_roles::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
@@ -293,6 +297,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		RoleModule: pallet_roles,
+		HousingFundModule: pallet_housing_fund,
 	}
 );
 
@@ -338,6 +343,7 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RoleModule]
+		[pallet_housing_fund, HousingFundModule]
 	);
 }
 
