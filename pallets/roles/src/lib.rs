@@ -79,14 +79,14 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		
-		InvestorCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
-		TenantCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
-		SellerCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
-		ServicerCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
-		AccountCreationApproved(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
-		SellerAccountCreationRejected(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
-		ServicerAccountCreationRejected(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
-		CreationRequestCreated(<T as frame_system::Config>::BlockNumber,<T as frame_system::Config>::AccountId),
+		InvestorCreated(T::BlockNumber,T::AccountId),
+		TenantCreated(T::BlockNumber,T::AccountId),
+		SellerCreated(T::BlockNumber,T::AccountId),
+		ServicerCreated(T::BlockNumber,T::AccountId),
+		AccountCreationApproved(T::BlockNumber,T::AccountId),
+		SellerAccountCreationRejected(T::BlockNumber,T::AccountId),
+		ServicerAccountCreationRejected(T::BlockNumber,T::AccountId),
+		CreationRequestCreated(T::BlockNumber,T::AccountId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -96,8 +96,8 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
-		///Multiple roles are not permitted
-		MultipleRolesIssue,
+		///One role is allowed
+		OneRoleAllowed,
 		///Invalid Operation
 		InvalidOperation
 	}
@@ -115,20 +115,20 @@ pub mod pallet {
          let caller = ensure_signed(origin.clone())?; 
          match account_type{
             Accounts::INVESTOR => {
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
                let _acc = Investor::<T>::new(origin);
 			   let now = <frame_system::Pallet<T>>::block_number();
 			   Self::deposit_event(Event::InvestorCreated(now,caller));
                Ok(().into())
             },
             Accounts::SELLER => {
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
                //Bring the decision for this account creation to a vote
                let _acc = HouseSeller::<T>::new(origin);
 			   let now = <frame_system::Pallet<T>>::block_number();
@@ -136,20 +136,20 @@ pub mod pallet {
                Ok(().into())
             },
             Accounts::TENANT => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
                let _acc = Tenant::<T>::new(origin);
 			   let now = <frame_system::Pallet<T>>::block_number();
 			   Self::deposit_event(Event::TenantCreated(now,caller));
                Ok(().into())
             },
 			Accounts::SERVICER => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::MultipleRolesIssue);
+				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
                let _acc = Servicer::<T>::new(origin);
 			   let now = <frame_system::Pallet<T>>::block_number();
 			   Self::deposit_event(Event::CreationRequestCreated(now,caller));
