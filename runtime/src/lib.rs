@@ -43,9 +43,9 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
+pub use pallet_housing_fund;
 /// Import the template pallet.
 pub use pallet_roles;
-pub use pallet_hfund;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -266,6 +266,14 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_roles::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
+}
+
+/// Configure the pallet-housing_fund in pallets/housing_fund.
+impl pallet_housing_fund::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
