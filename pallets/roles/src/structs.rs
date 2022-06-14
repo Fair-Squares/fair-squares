@@ -8,7 +8,7 @@ pub use frame_support::{
     dispatch::{DispatchResult,EncodeLike},
     pallet_prelude::*,
     inherent::Vec,
-    sp_runtime::traits::{AccountIdConversion,Hash, Zero,Saturating},
+    sp_runtime::traits::{AccountIdConversion,Hash,StaticLookup, Zero,Saturating},
     storage::{child},
     traits::{Currency, ExistenceRequirement, Get, ReservableCurrency,LockableCurrency, WithdrawReasons},
     PalletId,
@@ -22,6 +22,7 @@ pub type BalanceOf<T> = <<T as pallet::Config>::Currency as Currency<<T as frame
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Idle<T> = (Vec<HouseSeller<T>>,Vec<Servicer<T>>);
+
 
 //-------------------------------------------------------------------------------------
 //-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------

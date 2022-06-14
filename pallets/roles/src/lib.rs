@@ -17,6 +17,7 @@ mod benchmarking;
 
 
 pub use crate::structs::*;
+pub use pallet_sudo as SUDO;
 #[frame_support::pallet]
 pub mod pallet {
 	pub use super::*;
@@ -34,7 +35,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config+SUDO::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
@@ -115,20 +116,14 @@ pub mod pallet {
          let caller = ensure_signed(origin.clone())?; 
          match account_type{
             Accounts::INVESTOR => {
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-               let _acc = Investor::<T>::new(origin);
-			   let now = <frame_system::Pallet<T>>::block_number();
-			   Self::deposit_event(Event::InvestorCreated(now,caller));
-               Ok(().into())
+				Self::check_storage(caller.clone())?;
+            	let _acc = Investor::<T>::new(origin);
+				let now = <frame_system::Pallet<T>>::block_number();
+				Self::deposit_event(Event::InvestorCreated(now,caller));
+            	Ok(().into())
             },
             Accounts::SELLER => {
-               ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-               ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-			   ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+            	Self::check_storage(caller.clone())?;
                //Bring the decision for this account creation to a vote
                let _acc = HouseSeller::<T>::new(origin);
 			   let now = <frame_system::Pallet<T>>::block_number();
@@ -136,20 +131,14 @@ pub mod pallet {
                Ok(().into())
             },
             Accounts::TENANT => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+				Self::check_storage(caller.clone())?;
                let _acc = Tenant::<T>::new(origin);
 			   let now = <frame_system::Pallet<T>>::block_number();
 			   Self::deposit_event(Event::TenantCreated(now,caller));
                Ok(().into())
             },
 			Accounts::SERVICER => {
-				ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-				ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-				ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
-               ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+				Self::check_storage(caller.clone())?;
                let _acc = Servicer::<T>::new(origin);
 			   let now = <frame_system::Pallet<T>>::block_number();
 			   Self::deposit_event(Event::CreationRequestCreated(now,caller));
@@ -184,7 +173,21 @@ pub mod pallet {
 		Ok(().into())
 	  }
 
+	  #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+	  ///The caller will transfer his manager authority to a different account
+	  pub fn set_manager(origin:OriginFor<T>,new: <T::Lookup as StaticLookup>::Source)->DispatchResult{
+		//ensure_signed(origin.clone())?;
+		ensure_root(origin.clone())?;
+		SUDO::Pallet::<T>::set_key(origin,new).ok();
+		Ok(().into())
 	}
+
+
+
+
+	}
+
+
 
 	impl<T: Config> Pallet<T> {
 		//Helper function for account creation approval by admin only
@@ -217,6 +220,15 @@ pub mod pallet {
 			Ok(().into())
 
 		  }
+
+		pub fn check_storage(caller:T::AccountId) -> DispatchResult{
+			ensure!(HouseSellerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+            ensure!(InvestorLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+			ensure!(ServicerLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+            ensure!(TenantLog::<T>::contains_key(&caller)==false,Error::<T>::OneRoleAllowed);
+			Ok(().into())
+		}
+
 		//Helper function for account creation rejection by admin only
 		pub fn reject_account(who: T::AccountId)-> DispatchResult{
 			let waitlist = WaitingList::<T>::get();
@@ -245,6 +257,8 @@ pub mod pallet {
 			 }
 			 Ok(().into())
 		}
+
+		
 	}
 
 }
