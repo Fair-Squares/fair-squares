@@ -8,7 +8,7 @@
 use std::sync::Arc;
 
 use jsonrpsee::RpcModule;
-use node_fs_runtime::{opaque::Block, AccountId, Balance, Index};
+use fs_node_runtime::{opaque::Block, AccountId, Balance, Index};
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
