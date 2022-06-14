@@ -12,7 +12,7 @@ benchmarks! {
 		let caller: T::AccountId = whitelisted_caller();
 	}: _(RawOrigin::Signed(caller))
 	verify {
-		assert_eq!(True, True);
+		assert_eq!(true, true);
 	}
 
 	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);
