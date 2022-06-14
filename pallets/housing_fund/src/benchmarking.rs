@@ -1,9 +1,9 @@
-//! Benchmarking setup for pallet-housing_fund
+//! Benchmarking setup for pallet-template
 
 use super::*;
 
 #[allow(unused)]
-use crate::Pallet as HousingFund;
+use crate::Pallet as Template;
 use frame_benchmarking::{benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
 
@@ -16,5 +16,5 @@ benchmarks! {
 		assert_eq!(Something::<T>::get(), Some(s));
 	}
 
-	impl_benchmark_test_suite!(HousingFund, crate::mock::new_test_ext(), crate::mock::Test);
+	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);
 }

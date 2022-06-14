@@ -3718,7 +3718,7 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
- "pallet-hfund",
+ "pallet-housing_fund",
  "pallet-randomness-collective-flip",
  "pallet-roles",
  "pallet-sudo",
@@ -4017,7 +4017,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-hfund"
+name = "pallet-housing_fund"
 version = "4.0.0-dev"
 dependencies = [
  "frame-benchmarking",
@@ -4028,6 +4028,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
