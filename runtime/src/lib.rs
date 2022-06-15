@@ -262,10 +262,22 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-/// Configure the pallet-template in pallets/template.
+parameter_types! {
+	pub const MinContribution: u128 = 10;
+}
+
+/// Configure the pallet-roles in pallets/roles.
 impl pallet_roles::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
+}
+
+/// Configure the pallet-housing_fund in pallets/housing_fund.
+impl pallet_housing_fund::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type MinContribution = MinContribution;
+	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -285,6 +297,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		RoleModule: pallet_roles,
+		HousingFundModule: pallet_housing_fund,
 	}
 );
 
@@ -330,6 +343,7 @@ mod benches {
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RoleModule]
+		[pallet_housing_fund, HousingFundModule]
 	);
 }
 
