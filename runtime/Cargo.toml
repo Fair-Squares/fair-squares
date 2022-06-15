@@ -50,7 +50,7 @@ hex-literal = { version = "0.3.4", optional = true }
 
 # Local Dependencies
 pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
-pallet-hfund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
+pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.23" }
@@ -70,7 +70,7 @@ std = [
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
 	"pallet-roles/std",
-	"pallet-hfund/std",
+	"pallet-housing_fund/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -95,7 +95,7 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",
-	"pallet-hfund/runtime-benchmarks",
+	"pallet-housing_fund/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]
@@ -109,7 +109,7 @@ try-runtime = [
 	"pallet-randomness-collective-flip/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-roles/try-runtime",
-	"pallet-hfund/try-runtime",
+	"pallet-housing_fund/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 ]

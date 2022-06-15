@@ -8,12 +8,13 @@ use frame_benchmarking::{benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
 
 benchmarks! {
-	do_something {
-		let s in 0 .. 100;
+	withdraw_fund {
 		let caller: T::AccountId = whitelisted_caller();
-	}: _(RawOrigin::Signed(caller), s)
+		let value: u32 = 1000;
+		let amount: BalanceOf<T> = value.into();
+	}: _(RawOrigin::Signed(caller), amount)
 	verify {
-		assert_eq!(Something::<T>::get(), Some(s));
+		assert_eq!(true, true);
 	}
 
 	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);
