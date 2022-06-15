@@ -19,8 +19,6 @@ pub use frame_support::pallet_prelude::*;
 pub use scale_info::{prelude::vec,TypeInfo};
 
 pub type BalanceOf<T> = <<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Idle<T> = (Vec<HouseSeller<T>>,Vec<Servicer<T>>);
 
 //-------------------------------------------------------------------------------------
@@ -31,7 +29,7 @@ pub type Idle<T> = (Vec<HouseSeller<T>>,Vec<Servicer<T>>);
 pub struct Investor<T:Config> {
     pub account_id:T::AccountId,
     pub nft_index:Vec<u32>,
-    pub age:BlockNumberOf<T>,
+    pub age:T::BlockNumber,
     pub share:BalanceOf<T>,
     pub selections:u32,
 }
@@ -85,7 +83,7 @@ impl<T:Config> Investor<T> where structs::Investor<T>: EncodeLike<structs::Inves
 pub struct HouseSeller<T: Config>{
     pub account_id:T::AccountId,
     pub nft_index:Vec<u32>,
-    pub age:BlockNumberOf<T>,
+    pub age:T::BlockNumber,
 }
 impl<T:Config> HouseSeller<T> where structs::HouseSeller<T>: EncodeLike<structs::HouseSeller<T>>{
 
@@ -129,7 +127,7 @@ impl<T:Config> HouseSeller<T> where structs::HouseSeller<T>: EncodeLike<structs:
 pub struct Tenant<T:Config>{
     pub account_id: T::AccountId,
     pub rent:BalanceOf<T>,
-    pub age:BlockNumberOf<T>,
+    pub age:T::BlockNumber,
 }
 impl<T:Config> Tenant<T> {    
     pub fn new(acc:OriginFor<T>)-> Self{
@@ -154,7 +152,7 @@ impl<T:Config> Tenant<T> {
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Servicer<T:Config>{
     pub account_id: T::AccountId,
-    pub age:BlockNumberOf<T>,
+    pub age:T::BlockNumber,
 }
 impl<T:Config> Servicer<T> {    
     pub fn new(acc:OriginFor<T>) -> DispatchResult{

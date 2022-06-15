@@ -4,16 +4,18 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
+mod structs;
 
 #[cfg(test)]
 mod mock;
 
 #[cfg(test)]
 mod tests;
-mod structs;
+
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+
 
 
 pub use crate::structs::*;
@@ -55,19 +57,19 @@ pub mod pallet {
 
 	#[pallet::storage]
    ///Registry of Investors organized by AccountId
-	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor::<T>, OptionQuery>;
+	pub(super) type InvestorLog<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Investor::<T>, OptionQuery>;
 
    #[pallet::storage]
    ///Registry of Sellers organized by AccountId
-	pub(super) type HouseSellerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller::<T>, OptionQuery>;
+	pub(super) type HouseSellerLog<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, HouseSeller::<T>, OptionQuery>;
 
 	#[pallet::storage]
    ///Registry of Tenants organized by AccountId
-	pub(super) type TenantLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant::<T>, OptionQuery>;
+	pub(super) type TenantLog<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Tenant::<T>, OptionQuery>;
 
 	#[pallet::storage]
    ///Registry of Servicers organized by AccountId
-	pub(super) type ServicerLog<T: Config> = StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer::<T>, OptionQuery>;
+	pub(super) type ServicerLog<T: Config> = StorageMap<_, Twox64Concat, T::AccountId, Servicer::<T>, OptionQuery>;
 
 	#[pallet::type_value]
    pub(super) fn MyDefault<T: Config>() -> Idle<T> { (Vec::new(),Vec::new()) }
