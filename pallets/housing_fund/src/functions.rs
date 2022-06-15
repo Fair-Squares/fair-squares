@@ -35,6 +35,7 @@ impl<T: Config> Pallet<T> {
                     account_id: unwrap_val.account_id,
                     total_balance: unwrap_val.total_balance,
                     share: Self::balance_to_u32_option(share).unwrap(),
+                    has_withdrawn: unwrap_val.has_withdrawn,
                     block_number: unwrap_val.block_number,
                     contributions: unwrap_val.contributions.clone()
                 };

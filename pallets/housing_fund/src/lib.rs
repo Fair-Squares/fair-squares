@@ -79,6 +79,8 @@ pub mod pallet {
 		StorageOverflow,
 		/// Must have enough to contribute
 		NotEnoughToContribute,
+		/// Must have enough to withdraw
+		NotEnoughFundToWithdraw,
 		/// Must contribute at least the minimum amount of funds
 		ContributionTooSmall,
 		/// Must be a contributor to the fund
@@ -109,7 +111,7 @@ pub mod pallet {
 				Error::<T>::NotEnoughToContribute
 			);
 
-			// Get the block timestamp
+			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
 			let contribution_log =
@@ -124,6 +126,7 @@ pub mod pallet {
 					account_id: who.clone(),
 					total_balance: amount.clone(),
 					share: 0,
+					has_withdrawn: false,
 					block_number: block_number.clone(),
 					contributions: vec![contribution_log.clone()],
 				};
@@ -139,6 +142,7 @@ pub mod pallet {
 						account_id: who.clone(),
 						total_balance: unwrap_val.total_balance + amount.clone(),
 						share: unwrap_val.share,
+						has_withdrawn: unwrap_val.has_withdrawn,
 						block_number: block_number.clone(),
 						contributions: contribution_logs,
 					};
@@ -168,7 +172,7 @@ pub mod pallet {
 		/// Emits WithdrawalSucceeded event when successful
 		#[pallet::weight(T::WeightInfo::withdraw_fund())]
 		#[transactional]
-		pub fn withdraw_fund(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn withdraw_fund(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer.
 			let who = ensure_signed(origin)?;
 
@@ -181,7 +185,26 @@ pub mod pallet {
 			// Retrieve the balance of the account
 			let contribution_amount = contribution.total_balance.clone();
 
-			Contributions::<T>::remove(&who);
+			// Check that the amount is not superior to the total balance of the contributor
+			ensure!(amount.clone() <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
+
+			// Get the block number for timestamp
+			let block_number = <frame_system::Pallet<T>>::block_number();
+
+			Contributions::<T>::mutate(&who, |val| {
+				let unwrap_val = val.clone().unwrap();
+				let contribution_logs = unwrap_val.contributions.clone();
+
+				let contrib = Contribution {
+					account_id: who.clone(),
+					total_balance: unwrap_val.total_balance - amount.clone(),
+					share: unwrap_val.share,
+					has_withdrawn: true,
+					block_number: block_number.clone(),
+					contributions: contribution_logs.clone(),
+				};
+				*val = Some(contrib);
+			});
 
 			// The amount is transferred from the treasurery to the account
 			T::Currency::transfer(
@@ -197,9 +220,6 @@ pub mod pallet {
 
 			// Update the shares of each contributor according to the new total balance
 			Self::update_contribution_share(total_balance.clone());
-
-			// Get the block timestamp
-			let block_number = <frame_system::Pallet<T>>::block_number();
 
 			// Emit an event.
 			Self::deposit_event(Event::WithdrawalSucceeded(

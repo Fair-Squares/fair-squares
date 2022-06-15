@@ -29,7 +29,9 @@ pub enum WithdrawalReason {
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct ContributionLog<T: Config> {
+   // Amount contributed
    pub amount: BalanceOf<T>,
+   // Block numer as timestamp
    pub block_number: BlockNumberOf<T>
 }
 
@@ -37,9 +39,16 @@ pub struct ContributionLog<T: Config> {
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct Contribution<T: Config> {
+    // Account of the contributor
     pub account_id: AccountIdOf<T>,
+    // Total balance contributed
     pub total_balance: BalanceOf<T>,
+    // Share of the housing fund
     pub share: u32,
+    // Indicate if the contributor has withdrawn from the housing fund
+    pub has_withdrawn: bool,
+    // Block number of the last contribution's update
     pub block_number: BlockNumberOf<T>,
+    // History of the contributor's contribution
     pub contributions: Vec<ContributionLog<T>>
 }
