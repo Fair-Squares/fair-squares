@@ -4080,6 +4080,8 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "hex-literal",
+ "pallet-sudo",
  "parity-scale-codec",
  "scale-info",
  "sp-core",

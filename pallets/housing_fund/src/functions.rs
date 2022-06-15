@@ -37,6 +37,7 @@ impl<T: Config> Pallet<T> {
                     share: Self::balance_to_u32_option(share).unwrap(),
                     block_number: unwrap_val.block_number,
                     contributions: unwrap_val.contributions.clone()
+
                 };
                 *val = Some(contrib);
             });
