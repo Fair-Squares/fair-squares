@@ -3,10 +3,10 @@
 pub use pallet::*;
 
 #[cfg(test)]
-mod mock;
+//mod mock;
 
 #[cfg(test)]
-mod tests;
+//mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -28,10 +28,10 @@ pub mod pallet {
 		transactional,
 		sp_runtime::traits::{AccountIdConversion },
 		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
-		PalletId		
+		PalletId
 	 };
 	 use sp_std::vec;
-	
+
 	pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 	pub const PERCENT_FACTOR: u64 = 100000;
 
@@ -56,10 +56,10 @@ pub mod pallet {
     #[pallet::getter(fn contributions)]
     // Distribution of investor's contributions
     pub(super) type Contributions<T> = StorageMap<
-      _, 
-      Blake2_128Concat, 
-      AccountIdOf<T>, 
-      Contribution::<T>, 
+      _,
+      Blake2_128Concat,
+      AccountIdOf<T>,
+      Contribution::<T>,
       OptionQuery
       >;
 
@@ -90,7 +90,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		
+
 		/// Allow an account to contribute to the common fund
 		/// The origin must be signed
 		/// - 'amount': the amount deposited in the fund
@@ -133,15 +133,15 @@ pub mod pallet {
 				};
 
 				Contributions::<T>::insert(&who, contribution);
-			} 
+			}
 			else {
 				Contributions::<T>::mutate(&who, |val| {
 					let unwrap_val = val.clone().unwrap();
 					let mut contribution_logs = unwrap_val.contributions.clone();
 					contribution_logs.push(contribution_log.clone());
 
-					let contrib = Contribution { 
-						account_id: who.clone(), 
+					let contrib = Contribution {
+						account_id: who.clone(),
 						total_balance: unwrap_val.total_balance + amount.clone(),
 						share: unwrap_val.share,
 						block_number: block_number.clone(),
@@ -164,7 +164,7 @@ pub mod pallet {
 
 			// Emit an event.
 			Self::deposit_event(Event::ContributeSucceeded(who, amount, block_number));
-			
+
 			Ok(().into())
 		}
 
@@ -198,7 +198,7 @@ pub mod pallet {
 
 			// Get the total balance to claculate the updated shares
 			let total_balance = T::Currency::free_balance(&TREASURE_PALLET_ID.into_account_truncating());
-			
+
 			// Update the shares of each contributor according to the new total balance
 			Self::update_contribution_share(total_balance.clone());
 

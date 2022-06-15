@@ -7,14 +7,7 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="20d98dbd-5338-4e02-9e9e-3da769c0018f" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pallets/roles/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/roles/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pallets/roles/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/roles/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pallets/roles/src/mock.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/roles/src/mock.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pallets/roles/src/structs.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/roles/src/structs.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pallets/roles/src/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/pallets/roles/src/tests.rs" afterDir="false" />
-    </list>
+    <list default="true" id="20d98dbd-5338-4e02-9e9e-3da769c0018f" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
