@@ -29,7 +29,6 @@ pub mod pallet {
 	};
 	use sp_std::vec;
 
-	pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 	pub const PERCENT_FACTOR: u64 = 100000;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -41,6 +40,7 @@ pub mod pallet {
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
+		type PalletId: Get<PalletId>;
 
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
@@ -178,7 +178,7 @@ pub mod pallet {
 			// The amount is transferred to the treasurery
 			T::Currency::transfer(
 				&who,
-				&TREASURE_PALLET_ID.into_account_truncating(),
+				&T::PalletId::get().into_account_truncating(),
 				amount.clone(),
 				ExistenceRequirement::AllowDeath,
 			)?;
@@ -254,7 +254,7 @@ pub mod pallet {
 
 			// The amount is transferred from the treasurery to the account
 			T::Currency::transfer(
-				&TREASURE_PALLET_ID.into_account_truncating(),
+				&T::PalletId::get().into_account_truncating(),
 				&who,
 				amount.clone(),
 				ExistenceRequirement::AllowDeath,
