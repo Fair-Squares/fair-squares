@@ -39,6 +39,8 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
 		type MinContribution: Get<BalanceOf<Self>>;
+		type FundThreshold: Get<BalanceOf<Self>>;
+		type MaxFundContribution: Get<BalanceOf<Self>>;
 
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
@@ -48,6 +50,10 @@ pub mod pallet {
 	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
+
+	#[pallet::storage]
+	#[pallet::getter(fn fund_balance)]
+	pub type FundBalance<T> = StorageValue<_, FundInfo<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn contributions)]
@@ -81,6 +87,8 @@ pub mod pallet {
 		NotEnoughToContribute,
 		/// Must have enough to withdraw
 		NotEnoughFundToWithdraw,
+		/// Fund Must have enough in transferable for withdraw action
+		NotEnoughInTransferableForWithdraw,
 		/// Must contribute at least the minimum amount of funds
 		ContributionTooSmall,
 		/// Must be a contributor to the fund
@@ -117,9 +125,17 @@ pub mod pallet {
 			let contribution_log =
 				ContributionLog { amount: amount.clone(), block_number: block_number.clone() };
 
+			// Get the fund balance
+			let wrap_fund = FundBalance::<T>::get();
+
+			ensure!(wrap_fund.is_none() == false, Error::<T>::NoneValue);
+
+			let mut fund = wrap_fund.unwrap();
+
 			// Get the total fund to calculate the shares
 			let mut total_fund = amount.clone();
-			total_fund += T::Currency::total_balance(&TREASURE_PALLET_ID.into_account_truncating());
+			total_fund += fund.total.clone();
+			// total_fund += T::Currency::total_balance(&TREASURE_PALLET_ID.into_account_truncating());
 
 			if !Contributions::<T>::contains_key(&who) {
 				let contribution = Contribution {
@@ -129,6 +145,7 @@ pub mod pallet {
 					has_withdrawn: false,
 					block_number: block_number.clone(),
 					contributions: vec![contribution_log.clone()],
+					withdraws: Vec::new(),
 				};
 
 				Contributions::<T>::insert(&who, contribution);
@@ -136,6 +153,7 @@ pub mod pallet {
 				Contributions::<T>::mutate(&who, |val| {
 					let unwrap_val = val.clone().unwrap();
 					let mut contribution_logs = unwrap_val.contributions.clone();
+					// update the contributions history
 					contribution_logs.push(contribution_log.clone());
 
 					let contrib = Contribution {
@@ -145,10 +163,17 @@ pub mod pallet {
 						has_withdrawn: unwrap_val.has_withdrawn,
 						block_number: block_number.clone(),
 						contributions: contribution_logs,
+						withdraws: Vec::new(),
 					};
 					*val = Some(contrib);
 				});
 			}
+
+			// Update fund with new transferable amount			
+			fund.contribute_transferable(amount.clone());
+			FundBalance::<T>::mutate(|val| {
+				*val = Some(fund);
+			});
 
 			// The amount is transferred to the treasurery
 			T::Currency::transfer(
@@ -188,12 +213,26 @@ pub mod pallet {
 			// Check that the amount is not superior to the total balance of the contributor
 			ensure!(amount.clone() <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
 
+			// Get the fund balance
+			let wrap_fund = FundBalance::<T>::get();
+			ensure!(wrap_fund.is_none() == false, Error::<T>::NoneValue);
+
+			let mut fund = wrap_fund.unwrap();
+
+			// Check taht the fund has enough transferable for the withdraw
+			ensure!(fund.can_withdraw(amount.clone()), Error::<T>::NotEnoughInTransferableForWithdraw);
+
 			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
+
+			let withdraw_log = ContributionLog { amount: amount.clone(), block_number: block_number.clone() };
 
 			Contributions::<T>::mutate(&who, |val| {
 				let unwrap_val = val.clone().unwrap();
 				let contribution_logs = unwrap_val.contributions.clone();
+				let mut withdraw_logs = unwrap_val.withdraws.clone();
+				// update the withdraws history
+				withdraw_logs.push(withdraw_log.clone());
 
 				let contrib = Contribution {
 					account_id: who.clone(),
@@ -202,21 +241,27 @@ pub mod pallet {
 					has_withdrawn: true,
 					block_number: block_number.clone(),
 					contributions: contribution_logs.clone(),
+					withdraws: withdraw_logs.clone()
 				};
 				*val = Some(contrib);
+			});
+
+			// Update fund with new transferable amount
+			fund.withdraw_transferable(amount.clone());
+			FundBalance::<T>::mutate(|val| {
+				*val = Some(fund.clone());
 			});
 
 			// The amount is transferred from the treasurery to the account
 			T::Currency::transfer(
 				&TREASURE_PALLET_ID.into_account_truncating(),
 				&who,
-				contribution_amount.clone(),
+				amount.clone(),
 				ExistenceRequirement::AllowDeath,
 			)?;
 
 			// Get the total balance to claculate the updated shares
-			let total_balance =
-				T::Currency::free_balance(&TREASURE_PALLET_ID.into_account_truncating());
+			let total_balance = fund.clone().total;
 
 			// Update the shares of each contributor according to the new total balance
 			Self::update_contribution_share(total_balance.clone());

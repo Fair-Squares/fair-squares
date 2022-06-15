@@ -264,6 +264,8 @@ impl pallet_sudo::Config for Runtime {
 
 parameter_types! {
 	pub const MinContribution: u128 = 10;
+	pub const FundThreshold: u128 = 100;
+	pub const MaxFundContribution: u128 = 200;
 }
 
 /// Configure the pallet-roles in pallets/roles.
@@ -277,6 +279,8 @@ impl pallet_housing_fund::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type MinContribution = MinContribution;
+	type FundThreshold = FundThreshold;
+	type MaxFundContribution = MaxFundContribution;
 	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
 }
 
