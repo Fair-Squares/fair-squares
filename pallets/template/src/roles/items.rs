@@ -4,7 +4,7 @@ pub use frame_support::{
     dispatch::{DispatchResult,EncodeLike},
     pallet_prelude::*,
     inherent::Vec,
-    sp_runtime::traits::{AccountIdConversion,Hash, Zero,Saturating},
+    sp_runtime::traits::{AccountIdConversion,Hash, Zero,Saturating,StaticLookup},
     storage::{child},
     traits::{Currency, ExistenceRequirement, Get, ReservableCurrency,LockableCurrency, WithdrawReasons},
     PalletId,
