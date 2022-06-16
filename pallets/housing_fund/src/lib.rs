@@ -12,26 +12,23 @@ mod tests;
 mod benchmarking;
 pub mod weights;
 
-mod structs;
 mod functions;
+mod structs;
 
 pub use crate::structs::*;
 pub use weights::WeightInfo;
-
-
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::{
 		dispatch::DispatchResult,
-		transactional,
-		sp_runtime::traits::{AccountIdConversion },
+		sp_runtime::traits::AccountIdConversion,
 		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
-		PalletId		
-	 };
-	 use sp_std::vec;
-	
+		transactional, PalletId,
+	};
+	use sp_std::vec;
+
 	pub const TREASURE_PALLET_ID: PalletId = PalletId(*b"py/trsry");
 	pub const PERCENT_FACTOR: u64 = 100000;
 
@@ -41,9 +38,9 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
-      	type MinContribution: Get<BalanceOf<Self>>;
+		type MinContribution: Get<BalanceOf<Self>>;
 
-      	/// Weight information for extrinsics in this pallet.
+		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
 	}
 
@@ -53,15 +50,10 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
-    #[pallet::getter(fn contributions)]
-    // Distribution of investor's contributions
-    pub(super) type Contributions<T> = StorageMap<
-      _, 
-      Blake2_128Concat, 
-      AccountIdOf<T>, 
-      Contribution::<T>, 
-      OptionQuery
-      >;
+	#[pallet::getter(fn contributions)]
+	// Distribution of investor's contributions
+	pub(super) type Contributions<T> =
+		StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Contribution<T>, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	#[pallet::event]
@@ -70,7 +62,12 @@ pub mod pallet {
 		/// Account's contribution successfully added to the fund
 		ContributeSucceeded(AccountIdOf<T>, BalanceOf<T>, BlockNumberOf<T>),
 		/// Withdraw by account succeeded
-		WithdrawalSucceeded(AccountIdOf<T>, BalanceOf<T>, structs::WithdrawalReason, BlockNumberOf<T>),
+		WithdrawalSucceeded(
+			AccountIdOf<T>,
+			BalanceOf<T>,
+			structs::WithdrawalReason,
+			BlockNumberOf<T>,
+		),
 	}
 
 	// Errors inform users that something went wrong.
@@ -85,19 +82,21 @@ pub mod pallet {
 		/// Must contribute at least the minimum amount of funds
 		ContributionTooSmall,
 		/// Must be a contributor to the fund
-		NotAContributor
+		NotAContributor,
 	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		
 		/// Allow an account to contribute to the common fund
 		/// The origin must be signed
 		/// - 'amount': the amount deposited in the fund
 		/// Emits ContributeSucceeded event when successful
 		#[pallet::weight(T::WeightInfo::contribute_to_fund())]
 		#[transactional]
-		pub fn contribute_to_fund(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
+		pub fn contribute_to_fund(
+			origin: OriginFor<T>,
+			amount: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer.
 			let who = ensure_signed(origin)?;
 
@@ -113,41 +112,37 @@ pub mod pallet {
 			// Get the block timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
-			let contribution_log = ContributionLog {
-				amount: amount.clone(),
-				block_number: block_number.clone()
-			};
+			let contribution_log =
+				ContributionLog { amount: amount.clone(), block_number: block_number.clone() };
 
 			// Get the total fund to calculate the shares
 			let mut total_fund = amount.clone();
 			total_fund += T::Currency::total_balance(&TREASURE_PALLET_ID.into_account_truncating());
 
 			if !Contributions::<T>::contains_key(&who) {
-
 				let contribution = Contribution {
 					account_id: who.clone(),
 					total_balance: amount.clone(),
 					share: 0,
 					block_number: block_number.clone(),
-					contributions: vec![contribution_log.clone()]
+					contributions: vec![contribution_log.clone()],
 				};
 
 				Contributions::<T>::insert(&who, contribution);
-			} 
-			else {
+			} else {
 				Contributions::<T>::mutate(&who, |val| {
 					let unwrap_val = val.clone().unwrap();
 					let mut contribution_logs = unwrap_val.contributions.clone();
 					contribution_logs.push(contribution_log.clone());
 
-					let contrib = Contribution { 
-						account_id: who.clone(), 
+					let contrib = Contribution {
+						account_id: who.clone(),
 						total_balance: unwrap_val.total_balance + amount.clone(),
 						share: unwrap_val.share,
 						block_number: block_number.clone(),
-						contributions: contribution_logs
-					 };
-					 *val = Some(contrib);
+						contributions: contribution_logs,
+					};
+					*val = Some(contrib);
 				});
 			}
 
@@ -164,7 +159,7 @@ pub mod pallet {
 
 			// Emit an event.
 			Self::deposit_event(Event::ContributeSucceeded(who, amount, block_number));
-			
+
 			Ok(().into())
 		}
 
@@ -173,12 +168,12 @@ pub mod pallet {
 		/// Emits WithdrawalSucceeded event when successful
 		#[pallet::weight(T::WeightInfo::withdraw_fund())]
 		#[transactional]
-		pub fn withdraw_fund(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
+		pub fn withdraw_fund(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer.
 			let who = ensure_signed(origin)?;
 
 			// Check if the account has contributed to the fund
-			ensure!(Contributions::<T>::contains_key(&who),Error::<T>::NotAContributor);
+			ensure!(Contributions::<T>::contains_key(&who), Error::<T>::NotAContributor);
 
 			// Get the contribution's account
 			let contribution = Contributions::<T>::get(who.clone()).unwrap();
@@ -197,8 +192,9 @@ pub mod pallet {
 			)?;
 
 			// Get the total balance to claculate the updated shares
-			let total_balance = T::Currency::free_balance(&TREASURE_PALLET_ID.into_account_truncating());
-			
+			let total_balance =
+				T::Currency::free_balance(&TREASURE_PALLET_ID.into_account_truncating());
+
 			// Update the shares of each contributor according to the new total balance
 			Self::update_contribution_share(total_balance.clone());
 
@@ -206,7 +202,12 @@ pub mod pallet {
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
 			// Emit an event.
-			Self::deposit_event(Event::WithdrawalSucceeded(who, amount, structs::WithdrawalReason::NotDefined, block_number));
+			Self::deposit_event(Event::WithdrawalSucceeded(
+				who,
+				contribution_amount,
+				structs::WithdrawalReason::NotDefined,
+				block_number,
+			));
 
 			Ok(().into())
 		}
