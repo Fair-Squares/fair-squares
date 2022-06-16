@@ -2,8 +2,8 @@
 name = "fs-node"
 version = "4.0.0-dev"
 description = "A fresh FRAME-based Substrate node, ready for hacking."
-authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
-homepage = "https://substrate.io/"
+authors = ["Fair Squares"]
+homepage = "https://fair-squares.nl"
 edition = "2021"
 license = "Apache 2.0"
 publish = false
