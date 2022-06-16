@@ -4493,6 +4493,7 @@ dependencies = [
  "frame-system",
  "pallet-democracy",
  "pallet-nft",
+ "pallet-sudo",
  "pallet-uniques",
  "parity-scale-codec 3.1.2",
  "scale-info",
