@@ -2,10 +2,10 @@
 name = "pallet-housing_fund"
 version = "4.0.0-dev"
 description = "FRAME pallet template for defining custom runtime logic."
-authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
-homepage = "https://substrate.io/"
+authors = ["Fair Squares"]
+homepage = "https://fair-squares.nl"
 edition = "2021"
-license = "Unlicense"
+license = "Apache 2.0"
 publish = false
 repository = "https://github.com/substrate-developer-hub/substrate-node-template/"
 

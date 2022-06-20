@@ -61,7 +61,7 @@ also replace the default command
 by appending your own. A few useful ones are as follow.
 
 ```bash
-# Run Substrate node without re-compiling
+# Run FS node without re-compiling
 ./scripts/docker_run.sh ./target/release/fs-node --dev --ws-external
 
 # Purge the local dev chain

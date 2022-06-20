@@ -29,6 +29,7 @@ pub mod pallet {
 	};
 	use sp_std::vec;
 
+
 	pub const PERCENT_FACTOR: u64 = 100000;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -197,7 +198,7 @@ pub mod pallet {
 		/// Emits WithdrawalSucceeded event when successful
 		#[pallet::weight(T::WeightInfo::withdraw_fund())]
 		#[transactional]
-		pub fn withdraw_fund(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResultWithPostInfo {
+		pub fn withdraw_fund(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer.
 			let who = ensure_signed(origin)?;
 
