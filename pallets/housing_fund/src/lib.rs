@@ -61,6 +61,18 @@ pub mod pallet {
 	pub(super) type Contributions<T> =
 		StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Contribution<T>, OptionQuery>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn reservations)]
+	// Housing fund reservations
+	pub(super) type Reservations<T> =
+		StorageMap<_, Blake2_128Concat, StorageIndex, FundOperation<T>, OptionQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn purchases)]
+	// Housing fund used for purchases
+	pub(super) type Purchases<T> =
+		StorageMap<_, Blake2_128Concat, StorageIndex, FundOperation<T>, OptionQuery>;
+
 	// Pallets use events to inform users when important changes are made.
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -74,6 +86,8 @@ pub mod pallet {
 			structs::WithdrawalReason,
 			BlockNumberOf<T>,
 		),
+		/// Fund reservation succeded
+		FundReservationSucceeded(AccountIdOf<T>, StorageIndex, BalanceOf<T>, BlockNumberOf<T>)
 	}
 
 	// Errors inform users that something went wrong.
@@ -93,6 +107,8 @@ pub mod pallet {
 		ContributionTooSmall,
 		/// Must be a contributor to the fund
 		NotAContributor,
+		/// Contributor must have enough available balance
+		NotEnoughAvailableBalance,
 	}
 
 	#[pallet::call]
@@ -198,6 +214,7 @@ pub mod pallet {
 
 		/// Withdraw the account contribution from the fund
 		/// The origin must be signed
+		/// - amount : the amount to be withdrawn from the fund
 		/// Emits WithdrawalSucceeded event when successful
 		#[pallet::weight(T::WeightInfo::withdraw_fund())]
 		#[transactional]
@@ -223,8 +240,8 @@ pub mod pallet {
 
 			let mut fund = wrap_fund.unwrap();
 
-			// Check taht the fund has enough transferable for the withdraw
-			ensure!(fund.can_withdraw(amount.clone()), Error::<T>::NotEnoughInTransferableForWithdraw);
+			// Check that the fund has enough transferable for the withdraw
+			ensure!(fund.can_take_off(amount.clone()), Error::<T>::NotEnoughInTransferableForWithdraw);
 
 			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
@@ -279,6 +296,74 @@ pub mod pallet {
 				structs::WithdrawalReason::NotDefined,
 				block_number,
 			));
+
+			Ok(().into())
+		}
+
+		/// Execute a bid on a house, funds are reserve for the bid before the transfer
+		/// The origin must be signed
+		/// Emits FundReservationSucceeded when successful
+		#[pallet::weight(T::WeightInfo::house_bidding())]
+		#[transactional]
+		pub fn house_bidding(
+			origin: OriginFor<T>, 
+			account_id: AccountIdOf<T>, 
+			house_id: StorageIndex,
+			amount: BalanceOf<T>, 
+			contributions: Vec<(AccountIdOf<T>, BalanceOf<T>)>
+		) -> DispatchResultWithPostInfo {
+			// Check that the extrinsic was signed and get the signer.
+			let who = ensure_signed(origin)?;
+
+			// Check that the fund can afford the bid
+			let wrap_fund = FundBalance::<T>::get();
+			ensure!(wrap_fund.is_none() == false, Error::<T>::NoneValue);
+
+			let mut fund = wrap_fund.unwrap();
+			ensure!(fund.can_take_off(amount.clone()), Error::<T>::NotEnoughAvailableBalance);
+
+			// Checks that each contribution is possible
+			let contribution_iter = contributions.iter();
+
+			let mut contribution_list = Vec::new();
+
+			for item in contribution_iter {
+				let entry = Contributions::<T>::get(item.0.clone());
+				ensure!(entry.is_none() == false, Error::<T>::NotAContributor);
+				ensure!(entry.unwrap().can_reserve(item.1.clone()), Error::<T>::NotEnoughAvailableBalance);
+
+				Contributions::<T>::mutate(item.0.clone(), |val| {
+					let mut unwrap_val = val.clone().unwrap(); 
+					unwrap_val.reserve_amount(item.1.clone());
+					let contribution = unwrap_val.clone();
+					*val = Some(contribution);
+				});
+				contribution_list.push((item.0.clone(), item.1.clone()));
+			}
+
+			// The amount is tagged as reserved in the fund for the account_id
+			T::Currency::reserve(
+				&who,
+				amount.clone()
+			)?;
+			fund.reserve(amount.clone());
+
+			// Get the block number for timestamp
+			let block_number = <frame_system::Pallet<T>>::block_number();
+
+			let reservation = FundOperation {
+				account_id: account_id.clone(),
+				house_id: house_id.clone(),
+				amount: amount.clone(),
+				block_number: block_number.clone(),
+				contributions: contribution_list
+			};
+
+			// The reservation is added to the storage
+			Reservations::<T>::insert(house_id.clone(), reservation);
+
+			// Emit an event.
+			Self::deposit_event(Event::FundReservationSucceeded(who, house_id, amount, block_number));
 
 			Ok(().into())
 		}

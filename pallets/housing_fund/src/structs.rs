@@ -47,8 +47,8 @@ impl<T: Config> FundInfo<T> {
         self.total += amount.clone();
     }
 
-    pub fn can_withdraw(&self, amount: BalanceOf<T>) -> bool {
-        // check that amount to withdraw if inferior to the transferable
+    pub fn can_take_off(&self, amount: BalanceOf<T>) -> bool {
+        // check that amount to take off if inferior to the transferable
         amount.clone() <= self.transferable.clone()
     }
 
@@ -105,4 +105,34 @@ impl<T: Config> Contribution<T> {
     pub fn get_total_balance(&self) -> BalanceOf<T> {
         self.available_balance.clone() + self.reserved_balance.clone()
     }
+
+    pub fn can_reserve(&self, amount: BalanceOf<T>) -> bool {
+        amount.clone() <= self.available_balance.clone()
+    }
+
+    pub fn reserve_amount(&mut self, amount: BalanceOf<T>) {
+        self.available_balance -= amount.clone();
+        self.reserved_balance += amount.clone();
+    }
+
+    pub fn unreserve_amount(&mut self, amount: BalanceOf<T>) {
+        self.reserved_balance -= amount.clone();
+        self.available_balance += amount.clone();        
+    }
+}
+
+// Contains the details of the operations that occured
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+pub struct FundOperation<T: Config> {
+    // Account to which the amount is destinated
+    pub account_id: AccountIdOf<T>,
+    // The house identifier
+    pub house_id: StorageIndex,
+    // The amount of the transaction
+    pub amount: BalanceOf<T>,
+    // Block number of the last contribution's update
+    pub block_number: BlockNumberOf<T>,
+    // List of (AccountIdOf<T>, BalanceOf<T>) representing the investors and their contribution
+    pub contributions: Vec<(AccountIdOf<T>, BalanceOf<T>)>
 }
