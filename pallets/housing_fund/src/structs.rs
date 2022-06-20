@@ -35,8 +35,8 @@ pub struct FundInfo<T: Config> {
     pub transferable: BalanceOf<T>,
     // The amount used project funding
     pub reserved: BalanceOf<T>,
-    // Frozen amount of the fund
-    pub frozen: BalanceOf<T>
+    // Amount of the fund used to purchase houses
+    pub contributed: BalanceOf<T>
 }
 impl<T: Config> FundInfo<T> {
     // Add amount to the tranferable fund
@@ -84,8 +84,12 @@ pub struct ContributionLog<T: Config> {
 pub struct Contribution<T: Config> {
     // Account of the contributor
     pub account_id: AccountIdOf<T>,
-    // Total balance contributed
-    pub total_balance: BalanceOf<T>,
+    // Amount available for transactions
+    pub available_balance: BalanceOf<T>,
+    // Amount reserved for house bidding
+    pub reserved_balance: BalanceOf<T>,
+    // Amount used to purchase houses
+    pub contributed_balance: BalanceOf<T>,
     // Share of the housing fund
     pub share: u32,
     // Indicate if the contributor has withdrawn from the housing fund
@@ -96,4 +100,9 @@ pub struct Contribution<T: Config> {
     pub contributions: Vec<ContributionLog<T>>,
     // History of the contributor's withdraws
     pub withdraws: Vec<ContributionLog<T>>
+}
+impl<T: Config> Contribution<T> {
+    pub fn get_total_balance(&self) -> BalanceOf<T> {
+        self.available_balance.clone() + self.reserved_balance.clone()
+    }
 }

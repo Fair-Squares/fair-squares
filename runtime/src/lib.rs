@@ -267,7 +267,7 @@ parameter_types! {
 	pub const MinContribution: u128 = 10;
 	pub const FundThreshold: u128 = 100;
 	pub const MaxFundContribution: u128 = 200;
-	pub const HousingFundPalletId: PalletId = PalletId(*b"py/trsry");
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 }
 
 /// Configure the pallet-roles in pallets/roles.

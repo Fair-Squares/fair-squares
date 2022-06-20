@@ -140,7 +140,9 @@ pub mod pallet {
 			if !Contributions::<T>::contains_key(&who) {
 				let contribution = Contribution {
 					account_id: who.clone(),
-					total_balance: amount.clone(),
+					available_balance: amount.clone(),
+					reserved_balance: Self::u64_to_balance_option(0).unwrap(),
+					contributed_balance: Self::u64_to_balance_option(0).unwrap(),
 					share: 0,
 					has_withdrawn: false,
 					block_number: block_number.clone(),
@@ -156,16 +158,18 @@ pub mod pallet {
 					// update the contributions history
 					contribution_logs.push(contribution_log.clone());
 
-					let contrib = Contribution {
+					let new_contrib = Contribution {
 						account_id: who.clone(),
-						total_balance: unwrap_val.total_balance + amount.clone(),
+						available_balance: unwrap_val.available_balance + amount.clone(),
+						reserved_balance: unwrap_val.reserved_balance,
+						contributed_balance: unwrap_val.contributed_balance,
 						share: unwrap_val.share,
 						has_withdrawn: unwrap_val.has_withdrawn,
 						block_number: block_number.clone(),
 						contributions: contribution_logs,
 						withdraws: Vec::new(),
 					};
-					*val = Some(contrib);
+					*val = Some(new_contrib);
 				});
 			}
 
@@ -208,7 +212,7 @@ pub mod pallet {
 			let contribution = Contributions::<T>::get(who.clone()).unwrap();
 
 			// Retrieve the balance of the account
-			let contribution_amount = contribution.total_balance.clone();
+			let contribution_amount = contribution.get_total_balance();
 
 			// Check that the amount is not superior to the total balance of the contributor
 			ensure!(amount.clone() <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
@@ -234,16 +238,18 @@ pub mod pallet {
 				// update the withdraws history
 				withdraw_logs.push(withdraw_log.clone());
 
-				let contrib = Contribution {
+				let new_contrib = Contribution {
 					account_id: who.clone(),
-					total_balance: unwrap_val.total_balance - amount.clone(),
+					available_balance: unwrap_val.available_balance - amount.clone(),
+					reserved_balance: unwrap_val.reserved_balance,
+					contributed_balance: unwrap_val.contributed_balance,
 					share: unwrap_val.share,
 					has_withdrawn: true,
 					block_number: block_number.clone(),
 					contributions: contribution_logs.clone(),
 					withdraws: withdraw_logs.clone()
 				};
-				*val = Some(contrib);
+				*val = Some(new_contrib);
 			});
 
 			// Update fund with new transferable amount
