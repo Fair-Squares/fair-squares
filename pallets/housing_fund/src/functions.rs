@@ -27,7 +27,7 @@ impl<T: Config> Pallet<T> {
         for item in contributions_iter {
             let factor = Self::u64_to_balance_option(PERCENT_FACTOR.clone());
             // Calculate the share according to the new total amount of the fund
-            let share = factor.unwrap() * (item.1.clone().available_balance + item.1.clone().reserved_balance) / amount.clone();
+            let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount.clone();
 
             Contributions::<T>::mutate(item.0, |val| {
                 let unwrap_val = val.clone().unwrap();

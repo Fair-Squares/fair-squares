@@ -12,7 +12,7 @@ benchmarks! {
 		let caller: T::AccountId = whitelisted_caller();
 		let value: u32 = 1000;
 		let amount: BalanceOf<T> = value.into();
-	}: _(RawOrigin::Signed(caller), amount)
+	}: _(RawOrigin::Signed(caller), amount
 	verify {
 		assert_eq!(true, true);
 	}
