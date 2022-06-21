@@ -1,6 +1,6 @@
 use crate as pallet_housing_fund;
 use frame_support::traits::{ConstU16, ConstU64};
-use frame_support::parameter_types;
+use frame_support::{parameter_types,PalletId};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -52,6 +52,9 @@ impl frame_system::Config for Test {
 
 parameter_types! {
 	pub const MinContribution: u128 = 10;
+	pub const FundThreshold: u128 = 100;
+	pub const MaxFundContribution: u128 = 200;
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 	
 }
 
@@ -59,7 +62,10 @@ impl pallet_housing_fund::Config for Test {
 	type Event = Event;
 	type Currency = Balances;
 	type MinContribution = MinContribution;
+	type FundThreshold = FundThreshold;
+	type MaxFundContribution = MaxFundContribution;
 	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Test>;
+	type PalletId = HousingFundPalletId;
 }
 
 parameter_types!{
