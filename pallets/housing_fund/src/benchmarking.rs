@@ -10,7 +10,9 @@ use frame_system::RawOrigin;
 benchmarks! {
 	withdraw_fund {
 		let caller: T::AccountId = whitelisted_caller();
-	}: _(RawOrigin::Signed(caller))
+		let value: u32 = 1000;
+		let amount: BalanceOf<T> = value.into();
+	}: _(RawOrigin::Signed(caller), amount)
 	verify {
 		assert_eq!(true, true);
 	}
