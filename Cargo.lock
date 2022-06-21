@@ -4011,6 +4011,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
+ "pallet-balances",
  "pallet-sudo",
  "parity-scale-codec",
  "scale-info",

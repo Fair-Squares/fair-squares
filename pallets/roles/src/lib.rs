@@ -10,10 +10,12 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
-mod structs;
+
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+
+mod structs;
 
 
 pub use crate::structs::*;
@@ -21,8 +23,9 @@ pub use pallet_sudo as SUDO;
 #[frame_support::pallet]
 pub mod pallet {
 	pub use super::*;
-	
-	
+
+
+
 	///This enum contains the roles selectable at account creation
 	#[derive(Clone, Encode, Decode,PartialEq, Eq, TypeInfo)]
 	#[cfg_attr(feature = "std", derive(Debug))]
@@ -31,7 +34,7 @@ pub mod pallet {
 		SELLER,
 		TENANT,
 		SERVICER,
-	}   
+	}
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -79,7 +82,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		
+
 		InvestorCreated(T::BlockNumber,T::AccountId),
 		TenantCreated(T::BlockNumber,T::AccountId),
 		SellerCreated(T::BlockNumber,T::AccountId),
@@ -111,9 +114,9 @@ pub mod pallet {
 
 
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		///Account creation function. Only one role per account is permitted. 
+		///Account creation function. Only one role per account is permitted.
       pub fn create_account(origin:OriginFor<T>, account_type:Accounts) -> DispatchResult{
-         let caller = ensure_signed(origin.clone())?; 
+         let caller = ensure_signed(origin.clone())?;
          match account_type{
             Accounts::INVESTOR => {
 				Self::check_storage(caller.clone())?;
@@ -145,8 +148,8 @@ pub mod pallet {
                Ok(().into())
             },
          }
-        
-         
+
+
       }
 
 	  #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
@@ -235,7 +238,7 @@ pub mod pallet {
 			let sellers =  waitlist.0;
 			let servicers = waitlist.1;
 			for sell in sellers.iter(){
-				if sell.account_id == who.clone(){				   
+				if sell.account_id == who.clone(){
 				   let index = sellers.iter().position(|x| *x == *sell).unwrap();
 				   WaitingList::<T>::mutate(|val|{
 					  val.0.remove(index);
@@ -246,7 +249,7 @@ pub mod pallet {
 			 }
 
 			 for serv in servicers.iter(){
-				if serv.account_id == who.clone(){				   
+				if serv.account_id == who.clone(){
 				   let index = servicers.iter().position(|x| *x == *serv).unwrap();
 				   WaitingList::<T>::mutate(|val|{
 					  val.1.remove(index);
@@ -258,7 +261,7 @@ pub mod pallet {
 			 Ok(().into())
 		}
 
-		
+
 	}
 
 }
