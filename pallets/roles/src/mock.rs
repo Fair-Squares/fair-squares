@@ -1,6 +1,6 @@
 use crate as pallet_roles;
 use frame_support::traits::{ConstU16, ConstU64};
-use frame_system as system;
+use frame_support::parameter_types;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -9,6 +9,7 @@ use sp_runtime::{
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
+pub(crate) type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -19,10 +20,12 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
-impl system::Config for Test {
+impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
@@ -40,7 +43,7 @@ impl system::Config for Test {
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<u128>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -51,9 +54,30 @@ impl system::Config for Test {
 
 impl pallet_roles::Config for Test {
 	type Event = Event;
+	type Currency = Balances;
+}
+
+parameter_types!{
+	pub static ExistentialDeposit: Balance = 1;
+}
+impl pallet_balances::Config for Test {
+	type MaxLocks = frame_support::traits::ConstU32<1024>;
+	type MaxReserves = ();
+	type ReserveIdentifier = [u8; 8];
+	type Balance = Balance;
+	type Event = Event;
+	type DustRemoval = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = System;
+	type WeightInfo = ();
+}
+
+impl pallet_sudo::Config for Test {
+	type Event = Event;
+	type Call = Call;
 }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
 }
