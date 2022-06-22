@@ -8,6 +8,7 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
     fn contribute_to_fund() -> Weight;
     fn withdraw_fund() -> Weight;
+    fn house_bidding() -> Weight;
 }
 
 /// TODO implement realistic weights for the different functions below
@@ -17,6 +18,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
       (10_000 as Weight)
     }
     fn withdraw_fund() -> Weight {
+      (10_000 as Weight)
+    }
+    fn house_bidding() -> Weight {
       (10_000 as Weight)
     }
 }
