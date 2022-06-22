@@ -1,6 +1,7 @@
 use crate as pallet_roles;
 use frame_support::traits::{ConstU16,ConstU32,ConstU8,ConstU64};
 use frame_system as system;
+pub use frame_system::RawOrigin;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -75,7 +76,7 @@ impl pallet_roles::Config for Test {
 }
 
 //helper types
-//pub type RoleCall = RoleModule::Call<Test>;
+pub type RoleCall = pallet_roles::Call<Test>;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
