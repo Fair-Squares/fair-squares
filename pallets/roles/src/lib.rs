@@ -74,9 +74,6 @@ pub mod pallet {
 
 
 
-
-	// Pallets use events to inform users when important changes are made.
-	// https://docs.substrate.io/v3/runtime/events-and-errors
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -94,7 +91,7 @@ pub mod pallet {
 		CreationRequestCreated(T::BlockNumber,T::AccountId),
 	}
 
-	// Errors inform users that something went wrong.
+
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Error names should be descriptive.
@@ -110,9 +107,7 @@ pub mod pallet {
 
 	}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 
@@ -179,9 +174,8 @@ pub mod pallet {
 	  }
 
 	  #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-	  ///The caller will transfer his manager authority to a different account
+	  ///The caller will transfer his admin authority to a different account
 	  pub fn set_manager(origin:OriginFor<T>,new: <T::Lookup as StaticLookup>::Source)->DispatchResult{
-		//ensure_signed(origin.clone())?;
 		ensure_root(origin.clone())?;
 		SUDO::Pallet::<T>::set_key(origin,new).ok();
 		Ok(().into())
@@ -201,6 +195,7 @@ pub mod pallet {
 			let sellers =  waitlist.0;
 			let servicers = waitlist.1;
 			for sell in sellers.iter(){
+				ensure!(!HouseSellerLog::<T>::contains_key(&who),Error::<T>::OneRoleAllowed);
 			   if sell.account_id == who.clone(){
 				  HouseSellerLog::<T>::insert(&who,sell.clone());
 				  let index = sellers.iter().position(|x| *x == *sell).unwrap();
@@ -212,6 +207,7 @@ pub mod pallet {
 			   }
 			}
 			for serv in servicers.iter(){
+				ensure!(!ServicerLog::<T>::contains_key(&who),Error::<T>::OneRoleAllowed);
 			   if serv.account_id == who.clone(){
 				  ServicerLog::<T>::insert(&who,serv);
 				  let index = servicers.iter().position(|x| *x == *serv).unwrap();

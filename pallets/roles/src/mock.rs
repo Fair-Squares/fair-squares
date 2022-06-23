@@ -80,6 +80,7 @@ impl pallet_roles::Config for Test {
 
 //helper types
 pub type RoleCall = pallet_roles::Call<Test>;
+pub type Acc = pallet_roles::Accounts;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext(root_key: u64) -> sp_io::TestExternalities {
