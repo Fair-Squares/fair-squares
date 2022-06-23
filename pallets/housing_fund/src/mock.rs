@@ -85,5 +85,16 @@ impl pallet_balances::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+	// Initialize balance for account_id (1, 2)
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![(1, 100), (2, 100)],
+	}
+	.assimilate_storage(&mut storage)
+	.unwrap();
+
+	let mut externalities = sp_io::TestExternalities::new(storage);
+	externalities.execute_with(|| System::set_block_number(1));
+	externalities
 }

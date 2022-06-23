@@ -51,9 +51,19 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
+	#[pallet::type_value]
+	pub fn DefaultFundBalance<T: Config>() -> FundInfo<T> { 
+		FundInfo {
+			total: Pallet::<T>::u64_to_balance_option(0).unwrap(),
+			transferable: Pallet::<T>::u64_to_balance_option(0).unwrap(),
+			reserved: Pallet::<T>::u64_to_balance_option(0).unwrap(),
+			contributed: Pallet::<T>::u64_to_balance_option(0).unwrap(),
+		}
+	 }
+
 	#[pallet::storage]
 	#[pallet::getter(fn fund_balance)]
-	pub type FundBalance<T> = StorageValue<_, FundInfo<T>>;
+	pub type FundBalance<T> = StorageValue<_, FundInfo<T>, ValueQuery, DefaultFundBalance<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn contributions)]
@@ -142,16 +152,11 @@ pub mod pallet {
 				ContributionLog { amount: amount.clone(), block_number: block_number.clone() };
 
 			// Get the fund balance
-			let wrap_fund = FundBalance::<T>::get();
-
-			ensure!(wrap_fund.is_none() == false, Error::<T>::NoneValue);
-
-			let mut fund = wrap_fund.unwrap();
+			let mut fund = FundBalance::<T>::get();
 
 			// Get the total fund to calculate the shares
 			let mut total_fund = amount.clone();
 			total_fund += fund.total.clone();
-			// total_fund += T::Currency::total_balance(&TREASURE_PALLET_ID.into_account_truncating());
 
 			if !Contributions::<T>::contains_key(&who) {
 				let contribution = Contribution {
@@ -192,7 +197,7 @@ pub mod pallet {
 			// Update fund with new transferable amount			
 			fund.contribute_transferable(amount.clone());
 			FundBalance::<T>::mutate(|val| {
-				*val = Some(fund);
+				*val = fund.clone();
 			});
 
 			// The amount is transferred to the treasurery
@@ -235,10 +240,7 @@ pub mod pallet {
 			ensure!(amount.clone() <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
 
 			// Get the fund balance
-			let wrap_fund = FundBalance::<T>::get();
-			ensure!(wrap_fund.is_none() == false, Error::<T>::NoneValue);
-
-			let mut fund = wrap_fund.unwrap();
+			let mut fund = FundBalance::<T>::get();
 
 			// Check that the fund has enough transferable for the withdraw
 			ensure!(fund.can_take_off(amount.clone()), Error::<T>::NotEnoughInTransferableForWithdraw);
@@ -272,7 +274,7 @@ pub mod pallet {
 			// Update fund with new transferable amount
 			fund.withdraw_transferable(amount.clone());
 			FundBalance::<T>::mutate(|val| {
-				*val = Some(fund.clone());
+				*val = fund.clone();
 			});
 
 			// The amount is transferred from the treasurery to the account
@@ -292,7 +294,7 @@ pub mod pallet {
 			// Emit an event.
 			Self::deposit_event(Event::WithdrawalSucceeded(
 				who,
-				contribution_amount,
+				amount.clone(),
 				structs::WithdrawalReason::NotDefined,
 				block_number,
 			));
@@ -316,10 +318,8 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			// Check that the fund can afford the bid
-			let wrap_fund = FundBalance::<T>::get();
-			ensure!(wrap_fund.is_none() == false, Error::<T>::NoneValue);
-
-			let mut fund = wrap_fund.unwrap();
+			let mut fund = FundBalance::<T>::get();
+			
 			ensure!(fund.can_take_off(amount.clone()), Error::<T>::NotEnoughAvailableBalance);
 
 			// Checks that each contribution is possible
@@ -347,6 +347,11 @@ pub mod pallet {
 				amount.clone()
 			)?;
 			fund.reserve(amount.clone());
+
+			// The amount is reserved in the pot
+			FundBalance::<T>::mutate(|val| {
+				*val = fund.clone();
+			});
 
 			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
