@@ -1,6 +1,11 @@
-on: [push]
+# Controls when the action will run.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-name: build
+name: coverage
 
 jobs:
   check:
