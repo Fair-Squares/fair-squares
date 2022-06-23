@@ -53,16 +53,10 @@ impl<T:Config> Investor<T> where structs::Investor<T>: EncodeLike<structs::Inves
                 selections:0,
             };
             
-            InvestorLog::<T>::insert(caller.clone(),inv);
+            InvestorLog::<T>::insert(caller,&inv);
         
         
-        Investor{
-            account_id: caller,
-            nft_index: Vec::new(),
-            age: now,
-            share:Zero::zero(),
-            selections:0,
-        }
+        inv
 
         }
     //-------------NEW INVESTOR CREATION METHOD_END--------------------
@@ -136,11 +130,13 @@ impl<T:Config> Tenant<T> {
     pub fn new(acc:OriginFor<T>)-> Self{
         let caller = ensure_signed(acc).unwrap();        
         let now = <frame_system::Pallet<T>>::block_number();
-        Tenant{
-            account_id: caller,
+        let tenant= Tenant{
+            account_id: caller.clone(),
             rent: Zero::zero(),
             age:now,
-        }
+        };
+        TenantLog::<T>::insert(caller, &tenant);
+        tenant
         
     }
 }

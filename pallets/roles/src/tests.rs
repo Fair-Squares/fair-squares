@@ -1,15 +1,125 @@
-use crate::{mock::*, Error,pallet::*};
-use frame_support::{assert_noop, assert_ok};
+use crate::{mock::*, Error};
+use crate::mock::Call;
+use frame_support::{assert_noop,assert_err, assert_ok};
+use super::*;
 
 #[test]
-fn investor_creation_should_work() {
-	new_test_ext().execute_with(|| {
-		// add funds to accountId nbr 1
-		let bal:u128 = 100;
-		let caller:u64 = 1;
-		Balances::make_free_balance_be(&caller,bal);
-		// test contribute with unsufficient contribution: MinContribution is 10
-		assert_ok!(RoleModule::create_account(Origin::signed(1), Accounts::INVESTOR));
+fn test_struct_methods() {
+	new_test_ext(4).execute_with(|| {
+		assert_eq!(Investor::<Test>::new(Origin::signed(1)),
+				   Investor{
+					   account_id: 1,
+					   nft_index: Vec::new(),
+					   age: System::block_number(),
+					   share: 0,
+					   selections:0,
+				   }
+		);
+		//--checking investor storage if its updated----
+		assert_eq!(InvestorLog::<Test>::get(1),
+				   Some(Investor{
+					   account_id: 1,
+					   nft_index: Vec::new(),
+					   age: System::block_number(),
+					   share: 0,
+					   selections:0,
+				   })
+		);
+
+		//---HouseSeller-------
+		assert_ok!(HouseSeller::<Test>::new(Origin::signed(1)));
+		assert_eq!(WaitingList::<Test>::get(),
+			(
+				vec![
+					HouseSeller{
+						account_id:1,
+						nft_index:Vec::new(),
+						age: System::block_number(),
+					}
+				],
+				vec![]
+			)
+		);
+		//---house seller should fail successfully----
+		/*assert_ne!(WaitingList::<Test>::get(),
+				   (
+					   vec![],
+					   vec![
+						   HouseSeller{
+							   account_id:1,
+							   nft_index:Vec::new(),
+							   age: System::block_number(),
+						   },
+					   ]
+				   )
+		)*/  //assert_ne! is not supported at the moment, as this expression should panick
+
+
+		//-------tenant-----------
+		assert_eq!(Tenant::<Test>::new(Origin::signed(1)),
+			Tenant{
+				account_id:1,
+				rent:0,
+				age: System::block_number(),
+			}
+		);
+		//-- checking Tenant storage------
+		assert_eq!(TenantLog::<Test>::get(1),
+			Some(
+				Tenant{
+					account_id:1,
+					rent:0,
+					age: System::block_number(),
+				}
+			)
+		);
 		
+		 //-----Servicer-----------------------------------------
+		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
+		//--checking storage-------------
+		assert_eq!(WaitingList::<Test>::get(),
+				   (
+					   vec![
+						   HouseSeller{
+							   account_id:1,
+							   nft_index:Vec::new(),
+							   age: System::block_number(),
+						   }
+					   ],
+					   vec![
+						   Servicer{
+							   account_id:2,
+							   age: System::block_number(),
+						   }
+					   ]
+					   )
+		)
+
 	});
+
 }
+
+#[test]
+fn test_dispatchable_calls(){
+	new_test_ext(4).execute_with(|| {
+		//----testing account approval-----
+		let master = Origin::signed(4);
+		let wait0 = WaitingList::<Test>::get();
+		let serv0 = wait0.1;
+		assert_eq!(serv0.len(),0);
+
+		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
+		let wait1 = WaitingList::<Test>::get();
+		let serv1 = wait1.1;
+		assert_eq!(serv1.len(),1);
+
+		let call = Box::new(Call::RoleModule(RoleCall::account_approval{account:2}));
+		assert_ok!(Sudo::sudo(master,call));
+		let wait2 = WaitingList::<Test>::get();
+		let serv2 = wait2.1;
+		assert_eq!(serv2.len(),0);
+
+	})
+}
+
+
