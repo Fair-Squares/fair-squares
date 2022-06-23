@@ -88,6 +88,7 @@ pub mod pallet {
 		SellerCreated(T::BlockNumber,T::AccountId),
 		ServicerCreated(T::BlockNumber,T::AccountId),
 		AccountCreationApproved(T::BlockNumber,T::AccountId),
+		AccountCreationRejected(T::BlockNumber,T::AccountId),
 		SellerAccountCreationRejected(T::BlockNumber,T::AccountId),
 		ServicerAccountCreationRejected(T::BlockNumber,T::AccountId),
 		CreationRequestCreated(T::BlockNumber,T::AccountId),
@@ -103,7 +104,10 @@ pub mod pallet {
 		///One role is allowed
 		OneRoleAllowed,
 		///Invalid Operation
-		InvalidOperation
+		InvalidOperation,
+		///Require Sudo
+		RequireSudo
+
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -156,11 +160,9 @@ pub mod pallet {
       ///Approval function for Sellers and Servicers. Only for admin level.
       pub fn account_approval(origin:OriginFor<T>,account: T::AccountId)-> DispatchResult{
          ensure_root(origin.clone())?;
-		 let caller = ensure_signed(origin)?;
-		 ensure!(caller.clone()!=account.clone(),Error::<T>::InvalidOperation);
-         Self::approve_account(account)?;
+         Self::approve_account(account.clone())?;
 		 let now = <frame_system::Pallet<T>>::block_number();
-		 Self::deposit_event(Event::AccountCreationApproved(now,caller));
+		 Self::deposit_event(Event::AccountCreationApproved(now,account));
          Ok(().into())
 
       }
@@ -170,9 +172,9 @@ pub mod pallet {
       ///Creation Refusal function for Sellers and Servicers. Only for admin level.
 	  pub fn account_rejection(origin:OriginFor<T>,account: T::AccountId) -> DispatchResult{
 		ensure_root(origin.clone())?;
-		let caller = ensure_signed(origin)?;
-		ensure!(caller.clone()!=account.clone(),Error::<T>::InvalidOperation);
-		Self::reject_account(account)?;
+		Self::reject_account(account.clone())?;
+		let now = <frame_system::Pallet<T>>::block_number();
+		Self::deposit_event(Event::AccountCreationRejected(now,account));
 		Ok(().into())
 	  }
 

@@ -1,7 +1,9 @@
 use crate as pallet_roles;
-use frame_support::traits::{ConstU16,ConstU32,ConstU8,ConstU64};
+use frame_support::traits::{ConstU32,ConstU64};
 use frame_system as system;
 pub use frame_system::RawOrigin;
+use frame_support::traits::GenesisBuild;
+//use crate::SUDO::GenesisConfig;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -10,7 +12,7 @@ use sp_runtime::{
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
-pub(crate) type Balance = u128;
+
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -80,6 +82,10 @@ impl pallet_roles::Config for Test {
 pub type RoleCall = pallet_roles::Call<Test>;
 
 // Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+pub fn new_test_ext(root_key: u64) -> sp_io::TestExternalities {
+	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	pallet_sudo::GenesisConfig::<Test> {key: Some(root_key)}
+		.assimilate_storage(&mut t)
+		.unwrap();
+	t.into()
 }

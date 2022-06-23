@@ -5,7 +5,7 @@ use super::*;
 
 #[test]
 fn test_struct_methods() {
-	new_test_ext().execute_with(|| {
+	new_test_ext(4).execute_with(|| {
 		assert_eq!(Investor::<Test>::new(Origin::signed(1)),
 				   Investor{
 					   account_id: 1,
@@ -73,8 +73,7 @@ fn test_struct_methods() {
 				}
 			)
 		);
-		//This test is failing because There is no an update on Tenant Storage when initializing
-
+		
 		 //-----Servicer-----------------------------------------
 		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
 		//--checking storage-------------
@@ -100,20 +99,27 @@ fn test_struct_methods() {
 
 }
 
-/*#[test]
+#[test]
 fn test_dispatchable_calls(){
-	new_test_ext().execute_with(|| {
+	new_test_ext(4).execute_with(|| {
 		//----testing account approval-----
-		let account = Sudo::key().unwrap_or(1);
-		let master = Origin::signed(account);
-		
-		let call = Box::new(Call::RoleModule(RoleCall::account_approval{account:2}));
-		//assert_ok!(Sudo::sudo(RawOrigin::Root.into(),call));
-		assert_ok!(RoleModule::account_approval(master,2));
-		
-		//the sudo::Key storage is still empty, and needs to be initialised
-	})
-}*/
+		let master = Origin::signed(4);
+		let wait0 = WaitingList::<Test>::get();
+		let serv0 = wait0.1;
+		assert_eq!(serv0.len(),0);
 
+		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
+		let wait1 = WaitingList::<Test>::get();
+		let serv1 = wait1.1;
+		assert_eq!(serv1.len(),1);
+
+		let call = Box::new(Call::RoleModule(RoleCall::account_approval{account:2}));
+		assert_ok!(Sudo::sudo(master,call));
+		let wait2 = WaitingList::<Test>::get();
+		let serv2 = wait2.1;
+		assert_eq!(serv2.len(),0);
+
+	})
+}
 
 
