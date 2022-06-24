@@ -93,6 +93,7 @@ pub mod pallet {
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Error names should be descriptive.
+		InitializationError,
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
@@ -103,7 +104,7 @@ pub mod pallet {
 		///Require Sudo
 		RequireSudo,
 		/// Account already in the waiting list
-		AlreadyWaiting 
+		AlreadyWaiting
 	}
 
 	#[pallet::call]
@@ -115,7 +116,7 @@ pub mod pallet {
 			match account_type {
 				Accounts::INVESTOR => {
 					Self::check_storage(caller.clone())?;
-					let _acc = Investor::<T>::new(origin);
+					let _acc = Investor::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::InvestorCreated(now, caller));
 					Ok(().into())
@@ -123,14 +124,14 @@ pub mod pallet {
 				Accounts::SELLER => {
 					Self::check_storage(caller.clone())?;
 					Self::check_waitinglist(caller.clone())?;
-					let _acc = HouseSeller::<T>::new(origin);
+					let _acc = HouseSeller::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
 					Ok(().into())
 				},
 				Accounts::TENANT => {
 					Self::check_storage(caller.clone())?;
-					let _acc = Tenant::<T>::new(origin);
+					let _acc = Tenant::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::TenantCreated(now, caller));
 					Ok(().into())
@@ -138,7 +139,7 @@ pub mod pallet {
 				Accounts::SERVICER => {
 					Self::check_storage(caller.clone())?;
 					Self::check_waitinglist(caller.clone())?;
-					let _acc = Servicer::<T>::new(origin);
+					let _acc = Servicer::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
 					Ok(().into())
@@ -178,5 +179,5 @@ pub mod pallet {
 		}
 	}
 
-	
+
 }

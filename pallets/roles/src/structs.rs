@@ -43,8 +43,8 @@ where
 {
 	//-------------------------------------------------------------------
 	//-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
-	pub fn new(acc: OriginFor<T>) -> Self {
-		let caller = ensure_signed(acc).unwrap();
+	pub fn new(acc: OriginFor<T>) -> DispatchResult {
+		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
 
 		let inv = Investor {
@@ -57,7 +57,7 @@ where
 
 		InvestorLog::<T>::insert(caller, &inv);
 
-		inv
+		Ok(())
 	}
 	//-------------NEW INVESTOR CREATION METHOD_END--------------------
 	//-----------------------------------------------------------------
@@ -82,7 +82,7 @@ where
 	//--------------------------------------------------------------------
 	//-------------HOUSE OWNER CREATION METHOD_BEGIN----------------------
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc).unwrap();
+		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
 		ensure!(HouseSellerLog::<T>::contains_key(&caller) == false, Error::<T>::NoneValue);
 
@@ -112,12 +112,12 @@ pub struct Tenant<T: Config> {
 	pub age: BlockNumberOf<T>,
 }
 impl<T: Config> Tenant<T> {
-	pub fn new(acc: OriginFor<T>) -> Self {
-		let caller = ensure_signed(acc).unwrap();
+	pub fn new(acc: OriginFor<T>) -> DispatchResult {
+		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
 		let tenant = Tenant { account_id: caller.clone(), rent: Zero::zero(), age: now };
 		TenantLog::<T>::insert(caller, &tenant);
-		tenant
+		Ok(())
 	}
 }
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
@@ -134,7 +134,7 @@ pub struct Servicer<T: Config> {
 }
 impl<T: Config> Servicer<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc).unwrap();
+		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
 		let sv = Servicer { account_id: caller, age: now };
 		WaitingList::<T>::mutate(|val| {

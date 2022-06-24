@@ -8,16 +8,7 @@ use frame_support::{assert_noop, assert_ok};
 #[test]
 fn test_struct_methods() {
 	new_test_ext(4).execute_with(|| {
-		assert_eq!(
-			Investor::<Test>::new(Origin::signed(1)),
-			Investor {
-				account_id: 1,
-				nft_index: Vec::new(),
-				age: System::block_number(),
-				share: 0,
-				selections: 0,
-			}
-		);
+		assert_ok!(Investor::<Test>::new(Origin::signed(1)));
 		//--checking investor storage if its updated----
 		assert!(InvestorLog::<Test>::contains_key(1));
 		assert_eq!(
@@ -48,10 +39,7 @@ fn test_struct_methods() {
 		assert_ne!(WaitingList::<Test>::get(), (vec![], vec![])); //assert_ne! is not supported at the moment, as this expression should panick
 
 		//-------tenant-----------
-		assert_eq!(
-			Tenant::<Test>::new(Origin::signed(1)),
-			Tenant { account_id: 1, rent: 0, age: System::block_number() }
-		);
+		assert_ok!(Tenant::<Test>::new(Origin::signed(1)));
 		//-- checking Tenant storage------
 		assert_eq!(
 			TenantLog::<Test>::get(1),
