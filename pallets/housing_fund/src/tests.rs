@@ -2,9 +2,8 @@ use super::*;
 use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 
-
 #[test]
-fn contribute_with_less_that_minimun_amount_should_fail(){
+fn contribute_with_less_than_minimun_amount_should_fail(){
 	new_test_ext().execute_with(|| {
 		let account_id: u64 = 1;
 		// test contribute with unsufficient contribution: MinContribution is 10

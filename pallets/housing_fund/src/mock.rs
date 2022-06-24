@@ -1,6 +1,9 @@
 use crate as pallet_housing_fund;
-use frame_support::traits::{ConstU16, ConstU64};
-use frame_support::{parameter_types,PalletId};
+use frame_support::{
+	parameter_types,
+	traits::{ConstU16, ConstU64},
+	PalletId,
+};
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
@@ -55,7 +58,7 @@ parameter_types! {
 	pub const FundThreshold: u128 = 100;
 	pub const MaxFundContribution: u128 = 200;
 	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
-	
+
 }
 
 impl pallet_housing_fund::Config for Test {
@@ -68,7 +71,7 @@ impl pallet_housing_fund::Config for Test {
 	type PalletId = HousingFundPalletId;
 }
 
-parameter_types!{
+parameter_types! {
 	pub static ExistentialDeposit: Balance = 1;
 }
 impl pallet_balances::Config for Test {
