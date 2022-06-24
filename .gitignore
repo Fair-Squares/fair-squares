@@ -14,3 +14,9 @@
 
 # direnv cache
 .direnv
+
+**/.idea/
+
+.vscode
+
+shell.nix
