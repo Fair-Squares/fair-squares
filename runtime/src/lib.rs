@@ -34,6 +34,7 @@ pub use frame_support::{
 		IdentityFee, Weight,
 	},
 	StorageValue,
+	PalletId
 };
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
@@ -264,6 +265,9 @@ impl pallet_sudo::Config for Runtime {
 
 parameter_types! {
 	pub const MinContribution: u128 = 10;
+	pub const FundThreshold: u128 = 100;
+	pub const MaxFundContribution: u128 = 200;
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 }
 
 /// Configure the pallet-roles in pallets/roles.
@@ -277,7 +281,10 @@ impl pallet_housing_fund::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type MinContribution = MinContribution;
+	type FundThreshold = FundThreshold;
+	type MaxFundContribution = MaxFundContribution;
 	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
+	type PalletId = HousingFundPalletId;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
