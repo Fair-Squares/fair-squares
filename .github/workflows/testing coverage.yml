@@ -5,11 +5,11 @@ on:
   pull_request:
     branches: [ main ]
 
-name: fs-test-coverage
+name: coverage
 
 jobs:
   check:
-    name: Rust project
+    name: fs-test-coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -26,7 +26,7 @@ jobs:
       - name: Run cargo-tarpaulin
         uses: actions-rs/tarpaulin@v0.1
         with:
-          version: '0.15.0'
+          version: '0.20.0'
           args: '-- --test-threads 1'
 
       - name: Upload to codecov.io
