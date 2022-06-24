@@ -343,7 +343,7 @@ pub mod pallet {
 
 			// The amount is tagged as reserved in the fund for the account_id
 			T::Currency::reserve(
-				&who,
+				&T::PalletId::get().into_account_truncating(),
 				amount.clone()
 			)?;
 			fund.reserve(amount.clone());

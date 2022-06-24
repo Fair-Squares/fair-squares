@@ -28,9 +28,12 @@ fn contribute_with_with_not_enough_free_balance_should_fail(){
 }
 
 #[test]
-fn contribution_with_valid_values_should_succeed() {
+fn contribute_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let account_id:u64 = 1;
+		let fund_account_id = HousingFundModule::fund_account_id();
+		let fund_account_balance = Balances::free_balance(&fund_account_id);
+
 		// test contribute with sufficient contribution and free balance
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
 
@@ -70,6 +73,12 @@ fn contribution_with_valid_values_should_succeed() {
 			Balances::free_balance(account_id),
 			HousingFundModule::u64_to_balance_option(75).unwrap()
 		);
+
+		// Check the fund account has received the correct amount => 10 (minimum balance) + 25		
+		assert_eq!(
+			Balances::free_balance(&fund_account_id),
+			HousingFundModule::u64_to_balance_option(25).unwrap() + fund_account_balance
+		);
 		
 		let event = <frame_system::Pallet<Test>>::events().pop()
             .expect("Expected at least one EventRecord to be found").event;
@@ -83,7 +92,7 @@ fn contribution_with_valid_values_should_succeed() {
 }
 
 #[test]
-fn contribution_with_valid_values_from_two_contributors_should_succeed() {
+fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let first_account_id:u64 = 1;
 		let second_account_id:u64 = 2;
@@ -176,9 +185,10 @@ fn withdraw_more_than_contributed_should_fail() {
 fn withdraw_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let account_id:u64 = 1;
+		let fund_account_id = HousingFundModule::fund_account_id();
+		let fund_account_balance = Balances::free_balance(&fund_account_id);
 		
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
-
 		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(account_id), 20));
 
 		// check if balance has been correctly updated
@@ -220,6 +230,12 @@ fn withdraw_with_valid_values_should_succeed() {
 		assert_eq!(
 			Balances::free_balance(account_id),
 			HousingFundModule::u64_to_balance_option(95).unwrap()
+		);
+
+		// Check the fund account has been withdraw the correct amount	
+		assert_eq!(
+			Balances::free_balance(&fund_account_id),
+			HousingFundModule::u64_to_balance_option(5).unwrap() + fund_account_balance
 		);
 
 		let event = <frame_system::Pallet<Test>>::events().pop()
@@ -374,14 +390,14 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 fn house_bidding_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let origin:u64 = 1;
-		let account_id:u64 = 1;
+		let fund_account_id = HousingFundModule::fund_account_id();
 
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(
 			Origin::signed(origin), 
-			account_id, 
+			3, 
 			1, 
 			60, 
 			vec![(1, 30), (2,30)]
@@ -438,12 +454,18 @@ fn house_bidding_with_valid_values_should_succeed() {
 		assert_eq!(
 			HousingFundModule::reservations(1),
 			Some(FundOperation {
-				account_id: 1,
+				account_id: 3,
 				house_id: 1,
 				amount: 60,
 				block_number: 1,
 				contributions: vec![(1, 30), (2, 30)]
 			})
+		);
+
+		// Check the amount reserved for the account		
+		assert_eq!(
+			Balances::reserved_balance(&fund_account_id),
+			HousingFundModule::u64_to_balance_option(60).unwrap()
 		);
 
 		let event = <frame_system::Pallet<Test>>::events().pop()
@@ -453,5 +475,116 @@ fn house_bidding_with_valid_values_should_succeed() {
 			event, 
 			mock::Event::HousingFundModule(crate::Event::FundReservationSucceeded(1, 1, 60, 1))
 		);
+	});
+}
+
+#[test]
+fn fund_info_contribute_transferable_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let mut fund_info = HousingFundModule::fund_balance();
+		// contribute to the fund
+		fund_info.contribute_transferable(100);
+		
+		// check that the values are valid
+		assert_eq!(fund_info.total, 100);
+		assert_eq!(fund_info.transferable, 100);
+		assert_eq!(fund_info.reserved, 0);
+	});
+}
+
+#[test]
+fn fund_info_can_take_off_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let mut fund_info = HousingFundModule::fund_balance();
+		// contribute to the fund
+		fund_info.contribute_transferable(100);
+		// check that the test is correct
+		assert_eq!(fund_info.can_take_off(50), true);
+		assert_eq!(fund_info.can_take_off(110), false);
+	});
+}
+
+#[test]
+fn fund_info_withdraw_transferable_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let mut fund_info = HousingFundModule::fund_balance();
+		// contribute then withdraw
+		fund_info.contribute_transferable(100);
+		fund_info.withdraw_transferable(80);
+		// check tha the values are valid
+		assert_eq!(fund_info.total, 20);
+		assert_eq!(fund_info.transferable, 20);
+		assert_eq!(fund_info.reserved, 0);
+	});
+}
+
+#[test]
+fn fund_info_reserve_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let mut fund_info = HousingFundModule::fund_balance();
+		// reserve an amount in the fund
+		fund_info.contribute_transferable(100);
+		fund_info.reserve(80);
+		// check that the values are valid
+		assert_eq!(fund_info.total, 100);
+		assert_eq!(fund_info.transferable, 20);
+		assert_eq!(fund_info.reserved, 80);
+	});
+}
+
+#[test]
+fn contribution_get_total_balance_succeed() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+
+		let mut contribution = HousingFundModule::contributions(1).unwrap();
+		// reserve an amount from an account contribution
+		contribution.reserve_amount(30);
+		// check that the total balance correctly calculated
+		assert_eq!(
+			contribution.get_total_balance(),
+			contribution.available_balance + contribution.reserved_balance
+		);
+	});
+}
+
+#[test]
+fn contribution_can_reserve_succeed() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+		// get the account contribution
+		let contribution = HousingFundModule::contributions(1).unwrap();
+		// check if the method respond correctly
+		assert_eq!(contribution.can_reserve(30), true);
+		assert_eq!(contribution.can_reserve(60), false);
+	});
+}
+
+#[test]
+fn contribution_reserve_amount_succeed() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+
+		let mut contribution = HousingFundModule::contributions(1).unwrap();
+
+		contribution.reserve_amount(30);
+		// check that contribution balance is correctly set
+		assert_eq!(contribution.available_balance, 20);
+		assert_eq!(contribution.reserved_balance, 30);
+	});
+}
+
+#[test]
+fn contribution_unreserve_amount_succeed() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+
+		let mut contribution = HousingFundModule::contributions(1).unwrap();
+
+		contribution.reserve_amount(30);
+		contribution.unreserve_amount(20);
+		// check that contribution balance is correctly set
+		assert_eq!(contribution.available_balance, 40);
+		assert_eq!(contribution.reserved_balance, 10);
 	});
 }

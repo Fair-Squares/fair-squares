@@ -19,6 +19,10 @@ impl<T: Config> Pallet<T> {
         input.try_into().ok()
     }
 
+    pub fn fund_account_id() -> T::AccountId {
+        T::PalletId::get().into_account_truncating()
+    }
+
     // Update the shares of the contributions
     pub fn update_contribution_share(amount: BalanceOf<T>) {
 
