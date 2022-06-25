@@ -91,6 +91,42 @@ fn contribute_with_valid_values_should_succeed() {
 }
 
 #[test]
+fn contribute_update_contribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let account_id:u64 = 1;
+
+		// contribute to the fund
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 20));
+		// update the contribution
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 30));
+
+		// a contribution must have been registered for the account
+		assert_eq!(
+			HousingFundModule::contributions(account_id),
+			Some(Contribution {
+				account_id: 1,
+				available_balance: HousingFundModule::u64_to_balance_option(50).unwrap(),
+				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				share: 100000,
+				has_withdrawn: false,
+				block_number: 1,
+				contributions: vec![
+					ContributionLog { 
+						amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
+						block_number: 1
+					},
+					ContributionLog { 
+						amount: HousingFundModule::u64_to_balance_option(30).unwrap(),
+						block_number: 1
+					}],
+				withdraws: Vec::new()
+			})
+		);
+	});
+}
+
+#[test]
 fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let first_account_id:u64 = 1;
