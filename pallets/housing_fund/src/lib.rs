@@ -36,7 +36,7 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type Currency: ReservableCurrency<Self::AccountId>;
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
