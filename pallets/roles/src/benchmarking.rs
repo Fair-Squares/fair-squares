@@ -1,9 +1,7 @@
 #![cfg(feature = "runtime-benchmarks")]
 
 use super::*;
-
 use frame_benchmarking::{account, benchmarks};
-
 use frame_system::RawOrigin;
 
 const SEED: u32 = 0;
@@ -22,9 +20,9 @@ benchmarks! {
 			let account1 = Accounts::INVESTOR;
 			let user = acc[b as usize].clone();
 
-	}:create_account(RawOrigin::Signed(user),account1.clone())
+	}:create_account(RawOrigin::Signed(user.clone()),account1.clone())
 	verify{
-		assert!(InvestorLog::<T>::contains(account1),Error::<T>::NoneValue);
+		assert!(InvestorLog::<T>::contains_key(user),"Investor account missing");
 	}
 	
 	#[extra]
@@ -42,13 +40,16 @@ benchmarks! {
 
 			let user = acc[b as usize].clone();
 
-	}:create_account(RawOrigin::Signed(user),account1)
+	}:create_account(RawOrigin::Signed(user.clone()),account1)
+	verify{
+		assert!(TenantLog::<T>::contains_key(user),"Tenant account missing");
+	}
 	
 	#[extra]
 	seller{
 		let b in 0 .. 99;
 		let mut acc = Vec::<T::AccountId>::new();
-
+		
 		for i in 0 .. 100{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
@@ -60,6 +61,11 @@ benchmarks! {
 			let user = acc[b as usize].clone();
 
 	}:create_account(RawOrigin::Signed(user),account1)
+
+
+
+	
+
 
 
 
