@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-	mock::{Call, *},
+	mock::*,
 	Error,
 };
 use frame_support::{assert_noop, assert_ok};
@@ -83,12 +83,10 @@ fn test_account_approval_rejection() {
 		assert_eq!(serv1.len(), 2);
 		assert_eq!(sell1.len(), 1);
 
-		let call = Box::new(Call::RoleModule(RoleCall::account_approval { account: 2 }));
-		assert_ok!(Sudo::sudo(master.clone(), call));
-		let call = Box::new(Call::RoleModule(RoleCall::account_approval { account: 3 }));
-		assert_ok!(Sudo::sudo(master.clone(), call));
-		let call = Box::new(Call::RoleModule(RoleCall::account_rejection { account: 5 }));
-		assert_ok!(Sudo::sudo(master, call));
+		assert_ok!(RoleModule::account_approval(master.clone(),2));
+		assert_ok!(RoleModule::account_approval(master.clone(),3));
+		assert_ok!(RoleModule::account_rejection(master,5));
+		
 		let wait2 = WaitingList::<Test>::get();
 		let serv2 = wait2.1;
 		let sell2 = wait2.0;
@@ -118,8 +116,7 @@ fn test_account_creation() {
 		let wait_sell = WaitingList::<Test>::get().0;
 		let sell_len2 = wait_sell.len();
 		assert_eq!(sell_len2, sell_len + 1);
-		let call = Box::new(Call::RoleModule(RoleCall::account_approval { account: 2 }));
-		assert_ok!(Sudo::sudo(master.clone(), call));
+		assert_ok!(RoleModule::account_approval(master,2));
 		assert!(HouseSellerLog::<Test>::contains_key(2));
 	})
 }
