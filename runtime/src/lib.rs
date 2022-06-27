@@ -530,6 +530,8 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 			add_benchmarks!(params, batches);
+			add_benchmark!(params, batches, pallet_roles, RoleModule);
+			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 
 			Ok(batches)
 		}

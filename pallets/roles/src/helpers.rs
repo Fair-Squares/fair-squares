@@ -6,8 +6,9 @@ impl<T: Config> Pallet<T> {
         let waitlist = WaitingList::<T>::get();
         let sellers = waitlist.0;
         let servicers = waitlist.1;
+        
         for sell in sellers.iter() {
-            ensure!(!HouseSellerLog::<T>::contains_key(&who), Error::<T>::OneRoleAllowed);
+            
             if sell.account_id == who.clone() {
                 HouseSellerLog::<T>::insert(&who, sell.clone());
                 let index = sellers.iter().position(|x| *x == *sell).unwrap();
@@ -19,7 +20,7 @@ impl<T: Config> Pallet<T> {
             }
         }
         for serv in servicers.iter() {
-            ensure!(!ServicerLog::<T>::contains_key(&who), Error::<T>::OneRoleAllowed);
+            
             if serv.account_id == who.clone() {
                 ServicerLog::<T>::insert(&who, serv);
                 let index = servicers.iter().position(|x| *x == *serv).unwrap();
@@ -77,6 +78,8 @@ impl<T: Config> Pallet<T> {
         let waitlists = WaitingList::<T>::get();
 		let serv = waitlists.1;
 		let sell = waitlists.0;
+        ensure!(!HouseSellerLog::<T>::contains_key(&account), Error::<T>::OneRoleAllowed);
+        ensure!(!ServicerLog::<T>::contains_key(&account), Error::<T>::OneRoleAllowed);
         if sell.len() >0{
             for sellers in sell.iter(){
                 let id = &sellers.account_id;

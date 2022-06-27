@@ -150,7 +150,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		///Approval function for Sellers and Servicers. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			ensure_root(origin.clone())?;
+			let sender = ensure_signed(origin.clone())?;
+			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
 			Self::approve_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
@@ -160,7 +161,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			ensure_root(origin.clone())?;
+			let sender = ensure_signed(origin.clone())?;
+			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
 			Self::reject_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationRejected(now, account));
@@ -173,7 +175,8 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			new: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
-			ensure_root(origin.clone())?;
+			let sender = ensure_signed(origin.clone())?;
+			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
 			Ok(().into())
 		}
