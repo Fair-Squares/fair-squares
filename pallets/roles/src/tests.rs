@@ -127,7 +127,7 @@ fn test_set_manager() {
 		//-----checking existing manager--------
 		assert_eq!(Sudo::key(), Some(4));
 		//---changing--------------------------
-		let call =
+
 		assert_ok!(RoleModule::set_manager(Origin::signed(4),2));
 		assert_eq!(Sudo::key(),Some(2));
 	})
