@@ -123,3 +123,15 @@ fn test_account_creation() {
 		assert!(HouseSellerLog::<Test>::contains_key(2));
 	})
 }
+
+#[test]
+fn test_set_manager() {
+	new_test_ext(4).execute_with(|| {
+		//-----checking existing manager--------
+		assert_eq!(Sudo::key(), Some(4));
+		//---changing--------------------------
+		let call =
+		assert_ok!(RoleModule::set_manager(Origin::signed(4),2));
+		assert_eq!(Sudo::key(),Some(2));
+	})
+}
