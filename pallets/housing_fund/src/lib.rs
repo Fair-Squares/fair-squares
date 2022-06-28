@@ -17,12 +17,12 @@ mod structs;
 
 pub use crate::structs::*;
 pub use weights::WeightInfo;
+pub use pallet_roles as ROLES;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		dispatch::DispatchResult,
 		sp_runtime::traits::AccountIdConversion,
 		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
 		transactional, PalletId,
@@ -33,10 +33,10 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + ROLES::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+		type LocalCurrency: frame_support::traits::Currency<Self::AccountId> + frame_support::traits::ReservableCurrency<Self::AccountId>;
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
@@ -119,6 +119,8 @@ pub mod pallet {
 		NotAContributor,
 		/// Contributor must have enough available balance
 		NotEnoughAvailableBalance,
+		/// Must have the investor role,
+		NotAnInvestor,
 	}
 
 	#[pallet::call]
@@ -136,12 +138,15 @@ pub mod pallet {
 			// Check that the extrinsic was signed and get the signer.
 			let who = ensure_signed(origin)?;
 
+			// Check that the account has the investor role
+			ensure!(ROLES::Pallet::<T>::investors(who.clone()).is_none() == false, Error::<T>::NotAnInvestor);
+
 			// Check if it is the minimal contribution
 			ensure!(amount.clone() >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 
 			// Check if account has enough to contribute
 			ensure!(
-				T::Currency::free_balance(&who) >= amount.clone(),
+				T::LocalCurrency::free_balance(&who) >= amount.clone(),
 				Error::<T>::NotEnoughToContribute
 			);
 
@@ -201,7 +206,7 @@ pub mod pallet {
 			});
 
 			// The amount is transferred to the treasurery
-			T::Currency::transfer(
+			T::LocalCurrency::transfer(
 				&who,
 				&T::PalletId::get().into_account_truncating(),
 				amount.clone(),
@@ -229,6 +234,9 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer.
 			let who = ensure_signed(origin)?;
+
+			// Check that the account has the investor role
+			ensure!(ROLES::Pallet::<T>::investors(who.clone()).is_none() == false, Error::<T>::NotAnInvestor);
 
 			// Check if the account has contributed to the fund
 			ensure!(Contributions::<T>::contains_key(&who), Error::<T>::NotAContributor);
@@ -285,7 +293,7 @@ pub mod pallet {
 			});
 
 			// The amount is transferred from the treasurery to the account
-			T::Currency::transfer(
+			T::LocalCurrency::transfer(
 				&T::PalletId::get().into_account_truncating(),
 				&who,
 				amount.clone(),
@@ -311,6 +319,10 @@ pub mod pallet {
 
 		/// Execute a bid on a house, funds are reserve for the bid before the transfer
 		/// The origin must be signed
+		/// - account_id : account of the house seller
+		/// - house_id : id of the house to be sell
+		/// - amount : amount used to buy the house
+		/// - contributions : list of investors contributions
 		/// Emits FundReservationSucceeded when successful
 		#[pallet::weight(T::WeightInfo::house_bidding())]
 		#[transactional]
@@ -352,7 +364,10 @@ pub mod pallet {
 			}
 
 			// The amount is tagged as reserved in the fund for the account_id
-			T::Currency::reserve(&T::PalletId::get().into_account_truncating(), amount.clone())?;
+			T::LocalCurrency::reserve(
+				&T::PalletId::get().into_account_truncating(),
+				amount.clone()
+			)?;
 			fund.reserve(amount.clone());
 
 			// The amount is reserved in the pot

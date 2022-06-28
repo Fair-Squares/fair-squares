@@ -11,11 +11,10 @@ pub use frame_support::{
 };
 pub use frame_system::{ensure_signed, pallet_prelude::*};
 use scale_info::TypeInfo;
-use sp_std::vec;
 
 pub type StorageIndex = u32;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-pub type BalanceOf<T> = <<T as Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+pub type BalanceOf<T> = <<T as Config>::LocalCurrency as Currency<AccountIdOf<T>>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
