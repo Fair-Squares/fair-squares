@@ -7,7 +7,7 @@ use frame_support::{
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
-	traits::{BlakeTwo256, IdentityLookup, AccountIdConversion},
+	traits::{BlakeTwo256, IdentityLookup},
 };
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -23,6 +23,8 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		HousingFundModule: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
+		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
 
@@ -61,9 +63,19 @@ parameter_types! {
 
 }
 
-impl pallet_housing_fund::Config for Test {
+impl pallet_sudo::Config for Test {
+	type Event = Event;
+	type Call = Call;
+}
+
+impl pallet_roles::Config for Test {
 	type Event = Event;
 	type Currency = Balances;
+}
+
+impl pallet_housing_fund::Config for Test {
+	type Event = Event;
+	type LocalCurrency = Balances;
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
 	type MaxFundContribution = MaxFundContribution;

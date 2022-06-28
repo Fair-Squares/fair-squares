@@ -278,7 +278,7 @@ impl pallet_roles::Config for Runtime {
 /// Configure the pallet-housing_fund in pallets/housing_fund.
 impl pallet_housing_fund::Config for Runtime {
 	type Event = Event;
-	type Currency = Balances;
+	type LocalCurrency = Balances;
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
 	type MaxFundContribution = MaxFundContribution;
