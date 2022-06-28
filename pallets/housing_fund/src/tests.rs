@@ -127,9 +127,6 @@ fn contribute_with_valid_values_should_succeed() {
 #[test]
 fn contribute_update_contribution_should_succeed() {
 	new_test_ext().execute_with(|| {
-<<<<<<< HEAD
-		let account_id: u64 = 1;
-=======
 		let account_id:u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(
@@ -138,7 +135,6 @@ fn contribute_update_contribution_should_succeed() {
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
->>>>>>> main
 
 		// contribute to the fund
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 20));
@@ -175,10 +171,6 @@ fn contribute_update_contribution_should_succeed() {
 #[test]
 fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 	new_test_ext().execute_with(|| {
-<<<<<<< HEAD
-		let first_account_id: u64 = 1;
-		let second_account_id: u64 = 2;
-=======
 		let first_account_id:u64 = 1;
 		let second_account_id:u64 = 2;
 		// Give the investor role to the accounts
@@ -194,7 +186,6 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
->>>>>>> main
 		// test contribute with sufficient contribution: MinContribution is 10
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(first_account_id), 25));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(second_account_id), 25));
@@ -302,10 +293,6 @@ fn withdraw_without_being_contributor_should_fail() {
 #[test]
 fn withdraw_more_than_contributed_should_fail() {
 	new_test_ext().execute_with(|| {
-<<<<<<< HEAD
-		let account_id: u64 = 1;
-
-=======
 		let account_id:u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(
@@ -315,7 +302,6 @@ fn withdraw_more_than_contributed_should_fail() {
 			)
 		);
 		
->>>>>>> main
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
 
 		// Try to withdraw more than contributed
@@ -333,8 +319,6 @@ fn withdraw_with_valid_values_should_succeed() {
 		let fund_account_id = HousingFundModule::fund_account_id();
 		let fund_account_balance = Balances::free_balance(&fund_account_id);
 
-<<<<<<< HEAD
-=======
 		// Give the investor role to the account
 		assert_ok!(
 			RoleModule::create_account(
@@ -343,7 +327,6 @@ fn withdraw_with_valid_values_should_succeed() {
 			)
 		);
 		
->>>>>>> main
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
 		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(account_id), 20));
 
@@ -413,10 +396,6 @@ fn withdraw_with_valid_values_should_succeed() {
 #[test]
 fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 	new_test_ext().execute_with(|| {
-<<<<<<< HEAD
-		let first_account_id: u64 = 1;
-		let second_account_id: u64 = 2;
-=======
 		let first_account_id:u64 = 1;
 		let second_account_id:u64 = 2;
 		// Give the investor role to the accounts
@@ -432,7 +411,6 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
->>>>>>> main
 		// test contribute with sufficient contribution: MinContribution is 10
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(first_account_id), 25));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(second_account_id), 25));
