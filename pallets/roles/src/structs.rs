@@ -56,12 +56,8 @@ where
 		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
 
-		let inv = Investor {
-			account_id: caller.clone(),
-			age: now,
-			share: Zero::zero(),
-			selections: 0,
-		};
+		let inv =
+			Investor { account_id: caller.clone(), age: now, share: Zero::zero(), selections: 0 };
 
 		InvestorLog::<T>::insert(caller, &inv);
 

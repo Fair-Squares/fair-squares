@@ -74,8 +74,6 @@ impl pallet_sudo::Config for Test {
 impl pallet_roles::Config for Test {
 	type Event = Event;
 	type Currency = Balances;
-	
-	
 }
 
 //helper types

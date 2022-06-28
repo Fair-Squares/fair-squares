@@ -52,14 +52,14 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::type_value]
-	pub fn DefaultFundBalance<T: Config>() -> FundInfo<T> { 
+	pub fn DefaultFundBalance<T: Config>() -> FundInfo<T> {
 		FundInfo {
 			total: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 			transferable: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 			reserved: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 			contributed: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 		}
-	 }
+	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn fund_balance)]
@@ -338,7 +338,7 @@ pub mod pallet {
 
 			// Check that the fund can afford the bid
 			let mut fund = FundBalance::<T>::get();
-			
+
 			ensure!(fund.can_take_off(amount.clone()), Error::<T>::NotEnoughAvailableBalance);
 
 			// Checks that each contribution is possible
