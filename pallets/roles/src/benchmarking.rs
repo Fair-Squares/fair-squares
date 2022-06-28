@@ -1,28 +1,114 @@
 #![cfg(feature = "runtime-benchmarks")]
 
 use super::*;
-
-use frame_benchmarking::{account, benchmarks, whitelisted_caller};
-
+use frame_benchmarking::{account, benchmarks};
 use frame_system::RawOrigin;
 
 const SEED: u32 = 0;
 
 benchmarks! {
-	create_account{
-		let caller:T::AccountId = whitelisted_caller();
-		let caller1= account("Kazu", 0, SEED);
+	investor{
+		let b in 0 .. 99;
+		let mut acc = Vec::<T::AccountId>::new();
 
-		//let balance= u32_to_balance_option(3E100).unwrap();
-		let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
-		<T as pallet::Config>::Currency::make_free_balance_be(&caller1,balance);
-
+		for i in 0 .. 100{
+			let caller:T::AccountId= account("Kazu", i, SEED);
+			acc.push(caller.clone());
+			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
+			<T as pallet::Config>::Currency::make_free_balance_be(&caller,balance);
+			}
 		let account1 = Accounts::INVESTOR;
+		let user = acc[b as usize].clone();
 
-	}:create_account(RawOrigin::Signed(caller1.clone()),account1)
+	}:create_account(RawOrigin::Signed(user.clone()),account1.clone())
 	verify{
-		assert!(InvestorLog::<T>::contains_key(&caller1));
+		assert!(InvestorLog::<T>::contains_key(user),"Investor account missing");
 	}
+	
+	#[extra]
+	tenant{
+		let b in 0 .. 99;
+		let mut acc = Vec::<T::AccountId>::new();
+
+		for i in 0 .. 100{
+			let caller:T::AccountId= account("Kazu", i, SEED);
+			acc.push(caller.clone());
+			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
+			<T as pallet::Config>::Currency::make_free_balance_be(&caller,balance);
+			}
+		let  account1 = Accounts::TENANT;
+		let user = acc[b as usize].clone();
+
+	}:create_account(RawOrigin::Signed(user.clone()),account1)
+	verify{
+		assert!(TenantLog::<T>::contains_key(user),"Tenant account missing");
+	}
+	
+	#[extra]
+	seller{
+		let b in 0 .. 99;
+		let mut acc = Vec::<T::AccountId>::new();
+		
+		for i in 0 .. 100{
+			let caller:T::AccountId= account("Kazu", i, SEED);
+			acc.push(caller.clone());
+			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
+			<T as pallet::Config>::Currency::make_free_balance_be(&caller,balance);
+			}
+		let account1 = Accounts::SELLER;
+		let user = acc[b as usize].clone();
+
+	}:create_account(RawOrigin::Signed(user),account1)
+
+
+	approval{
+		let b in 0 .. 99;
+		let mut acc = Vec::<T::AccountId>::new();
+		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
+		
+		for i in 0 .. 100{
+			let caller:T::AccountId= account("Kazu", i, SEED);
+			acc.push(caller.clone());
+			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
+			<T as pallet::Config>::Currency::make_free_balance_be(&caller,balance);
+			}
+		let account1 = Accounts::SELLER;
+		let user = acc[b as usize].clone();
+		Pallet::<T>::create_account(RawOrigin::Signed(user.clone()).into(),account1.clone()).ok();
+
+
+	}:account_approval(RawOrigin::Signed(key_account.clone()),user.clone())
+	verify{
+		ensure!(HouseSellerLog::<T>::contains_key(&user)== true, "Seller not added");
+	}
+
+	rejection{
+		let b in 0 .. 99;
+		let mut acc = Vec::<T::AccountId>::new();
+		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
+		
+		for i in 0 .. 100{
+			let caller:T::AccountId= account("Kazu", i, SEED);
+			acc.push(caller.clone());
+			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
+			<T as pallet::Config>::Currency::make_free_balance_be(&caller,balance);
+			}
+		let account1 = Accounts::SELLER;
+		let user = acc[b as usize].clone();
+		Pallet::<T>::create_account(RawOrigin::Signed(user.clone()).into(),account1.clone()).ok();
+
+
+	}:account_rejection(RawOrigin::Signed(key_account.clone()),user.clone())
+	verify{
+		ensure!(Pallet::<T>::get_pending_approvals().0.len() == 0, "Seller not removed");
+	}
+
+
+
+	
+
+
+
 
 
 

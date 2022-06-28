@@ -5,6 +5,7 @@
 /// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
 
+
 #[cfg(test)]
 mod mock;
 
@@ -23,15 +24,7 @@ pub use pallet_sudo as SUDO;
 pub mod pallet {
 	pub use super::*;
 
-	///This enum contains the roles selectable at account creation
-	#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
-	#[cfg_attr(feature = "std", derive(Debug))]
-	pub enum Accounts {
-		INVESTOR,
-		SELLER,
-		TENANT,
-		SERVICER,
-	}
+	
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -47,21 +40,25 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
+	#[pallet::getter(fn investors)]
 	///Registry of Investors organized by AccountId
 	pub(super) type InvestorLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor<T>, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn sellers)]
 	///Registry of Sellers organized by AccountId
 	pub(super) type HouseSellerLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller<T>, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn tenants)]
 	///Registry of Tenants organized by AccountId
 	pub(super) type TenantLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant<T>, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn servicers)]
 	///Registry of Servicers organized by AccountId
 	pub(super) type ServicerLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer<T>, OptionQuery>;
@@ -71,8 +68,15 @@ pub mod pallet {
 		(Vec::new(), Vec::new())
 	}
 	#[pallet::storage]
+	#[pallet::getter(fn get_pending_approvals)]
 	///Waiting list for Sellers and Servicers
-	pub(super) type WaitingList<T: Config> = StorageValue<_, Idle<T>, ValueQuery, MyDefault<T>>;
+	pub(super) type RoleApprovalList<T: Config> = StorageValue<_, Idle<T>, ValueQuery, MyDefault<T>>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn get_roles)]
+	///Registry of Roles by AccountId
+	pub(super) type AccountsRolesLog<T: Config> =
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;	
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -118,12 +122,13 @@ pub mod pallet {
 					Self::check_storage(caller.clone())?;
 					let _acc = Investor::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
+					AccountsRolesLog::<T>::insert(&caller,Accounts::INVESTOR);
 					Self::deposit_event(Event::InvestorCreated(now, caller));
 					Ok(().into())
 				},
 				Accounts::SELLER => {
 					Self::check_storage(caller.clone())?;
-					Self::check_waitinglist(caller.clone())?;
+					Self::check_role_approval_list(caller.clone())?;
 					let _acc = HouseSeller::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
@@ -133,12 +138,13 @@ pub mod pallet {
 					Self::check_storage(caller.clone())?;
 					let _acc = Tenant::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
+					AccountsRolesLog::<T>::insert(&caller,Accounts::TENANT);
 					Self::deposit_event(Event::TenantCreated(now, caller));
 					Ok(().into())
 				},
 				Accounts::SERVICER => {
 					Self::check_storage(caller.clone())?;
-					Self::check_waitinglist(caller.clone())?;
+					Self::check_role_approval_list(caller.clone())?;
 					let _acc = Servicer::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
@@ -150,7 +156,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		///Approval function for Sellers and Servicers. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			ensure_root(origin.clone())?;
+			let sender = ensure_signed(origin.clone())?;
+			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
 			Self::approve_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
@@ -160,7 +167,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			ensure_root(origin.clone())?;
+			let sender = ensure_signed(origin.clone())?;
+			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
 			Self::reject_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationRejected(now, account));
@@ -173,7 +181,8 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			new: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
-			ensure_root(origin.clone())?;
+			let sender = ensure_signed(origin.clone())?;
+			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
 			Ok(().into())
 		}
