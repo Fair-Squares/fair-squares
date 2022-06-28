@@ -24,7 +24,7 @@ benchmarks! {
 	verify{
 		assert!(InvestorLog::<T>::contains_key(user),"Investor account missing");
 	}
-	
+
 	#[extra]
 	tenant{
 		let b in 0 .. 99;
@@ -43,12 +43,12 @@ benchmarks! {
 	verify{
 		assert!(TenantLog::<T>::contains_key(user),"Tenant account missing");
 	}
-	
+
 	#[extra]
 	seller{
 		let b in 0 .. 99;
 		let mut acc = Vec::<T::AccountId>::new();
-		
+
 		for i in 0 .. 100{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
@@ -65,7 +65,7 @@ benchmarks! {
 		let b in 0 .. 99;
 		let mut acc = Vec::<T::AccountId>::new();
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
-		
+
 		for i in 0 .. 100{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
@@ -86,7 +86,7 @@ benchmarks! {
 		let b in 0 .. 99;
 		let mut acc = Vec::<T::AccountId>::new();
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
-		
+
 		for i in 0 .. 100{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
@@ -105,7 +105,7 @@ benchmarks! {
 
 
 
-	
+
 
 
 

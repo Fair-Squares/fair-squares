@@ -3,24 +3,24 @@ use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 
 #[test]
-fn contribute_with_less_than_minimun_amount_should_fail(){
+fn contribute_with_less_than_minimun_amount_should_fail() {
 	new_test_ext().execute_with(|| {
 		let account_id: u64 = 1;
 		// test contribute with unsufficient contribution: MinContribution is 10
 		assert_noop!(
-			HousingFundModule::contribute_to_fund(Origin::signed(account_id), 5), 
+			HousingFundModule::contribute_to_fund(Origin::signed(account_id), 5),
 			Error::<Test>::ContributionTooSmall
 		);
 	});
 }
 
 #[test]
-fn contribute_with_with_not_enough_free_balance_should_fail(){
+fn contribute_with_with_not_enough_free_balance_should_fail() {
 	new_test_ext().execute_with(|| {
 		let account_id: u64 = 1;
 		// test contribute with unsufficient free balance: balancce is 100
 		assert_noop!(
-			HousingFundModule::contribute_to_fund(Origin::signed(account_id), 110), 
+			HousingFundModule::contribute_to_fund(Origin::signed(account_id), 110),
 			Error::<Test>::NotEnoughToContribute
 		);
 	});
@@ -29,7 +29,7 @@ fn contribute_with_with_not_enough_free_balance_should_fail(){
 #[test]
 fn contribute_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
-		let account_id:u64 = 1;
+		let account_id: u64 = 1;
 		let fund_account_id = HousingFundModule::fund_account_id();
 		let fund_account_balance = Balances::free_balance(&fund_account_id);
 
@@ -38,8 +38,8 @@ fn contribute_with_valid_values_should_succeed() {
 
 		// the fund should have been incremented
 		assert_eq!(
-			HousingFundModule::fund_balance(), 
-			FundInfo{ 
+			HousingFundModule::fund_balance(),
+			FundInfo {
 				total: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
@@ -58,11 +58,10 @@ fn contribute_with_valid_values_should_succeed() {
 				share: 100000,
 				has_withdrawn: false,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
-						block_number: 1
-					}],
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
 				withdraws: Vec::new()
 			})
 		);
@@ -73,18 +72,20 @@ fn contribute_with_valid_values_should_succeed() {
 			HousingFundModule::u64_to_balance_option(75).unwrap()
 		);
 
-		// Check the fund account has received the correct amount => 10 (minimum balance) + 25		
+		// Check the fund account has received the correct amount => 10 (minimum balance) + 25
 		assert_eq!(
 			Balances::free_balance(&fund_account_id),
 			HousingFundModule::u64_to_balance_option(25).unwrap() + fund_account_balance
 		);
-		
-		let event = <frame_system::Pallet<Test>>::events().pop()
-            .expect("Expected at least one EventRecord to be found").event;
-		
+
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
 		// check that the event has been raised
 		assert_eq!(
-			event, 
+			event,
 			mock::Event::HousingFundModule(crate::Event::ContributeSucceeded(1, 25, 1))
 		);
 	});
@@ -93,7 +94,7 @@ fn contribute_with_valid_values_should_succeed() {
 #[test]
 fn contribute_update_contribution_should_succeed() {
 	new_test_ext().execute_with(|| {
-		let account_id:u64 = 1;
+		let account_id: u64 = 1;
 
 		// contribute to the fund
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 20));
@@ -112,14 +113,15 @@ fn contribute_update_contribution_should_succeed() {
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![
-					ContributionLog { 
+					ContributionLog {
 						amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
 						block_number: 1
 					},
-					ContributionLog { 
+					ContributionLog {
 						amount: HousingFundModule::u64_to_balance_option(30).unwrap(),
 						block_number: 1
-					}],
+					}
+				],
 				withdraws: Vec::new()
 			})
 		);
@@ -129,15 +131,15 @@ fn contribute_update_contribution_should_succeed() {
 #[test]
 fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 	new_test_ext().execute_with(|| {
-		let first_account_id:u64 = 1;
-		let second_account_id:u64 = 2;
+		let first_account_id: u64 = 1;
+		let second_account_id: u64 = 2;
 		// test contribute with sufficient contribution: MinContribution is 10
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(first_account_id), 25));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(second_account_id), 25));
 
 		assert_eq!(
-			HousingFundModule::fund_balance(), 
-			FundInfo{ 
+			HousingFundModule::fund_balance(),
+			FundInfo {
 				total: HousingFundModule::u64_to_balance_option(50).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(50).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
@@ -155,11 +157,10 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
-						block_number: 1
-					}],
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
 				withdraws: Vec::new()
 			})
 		);
@@ -174,11 +175,10 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
-						block_number: 1
-					}],
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
 				withdraws: Vec::new()
 			})
 		);
@@ -188,12 +188,12 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 #[test]
 fn withdraw_without_being_contributor_should_fail() {
 	new_test_ext().execute_with(|| {
-		let account_id:u64 = 1;
+		let account_id: u64 = 1;
 		let non_contributor_account_id = 2;
 		// test contribute with sufficient contribution: MinContribution is 10
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
 
-		// Try to withdraw with a non contributor account 
+		// Try to withdraw with a non contributor account
 		assert_noop!(
 			HousingFundModule::withdraw_fund(Origin::signed(non_contributor_account_id), 25),
 			Error::<Test>::NotAContributor
@@ -204,8 +204,8 @@ fn withdraw_without_being_contributor_should_fail() {
 #[test]
 fn withdraw_more_than_contributed_should_fail() {
 	new_test_ext().execute_with(|| {
-		let account_id:u64 = 1;
-		
+		let account_id: u64 = 1;
+
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
 
 		// Try to withdraw more than contributed
@@ -219,17 +219,17 @@ fn withdraw_more_than_contributed_should_fail() {
 #[test]
 fn withdraw_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
-		let account_id:u64 = 1;
+		let account_id: u64 = 1;
 		let fund_account_id = HousingFundModule::fund_account_id();
 		let fund_account_balance = Balances::free_balance(&fund_account_id);
-		
+
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
 		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(account_id), 20));
 
 		// check if balance has been correctly updated
 		assert_eq!(
-			HousingFundModule::fund_balance(), 
-			FundInfo{ 
+			HousingFundModule::fund_balance(),
+			FundInfo {
 				total: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
@@ -248,16 +248,14 @@ fn withdraw_with_valid_values_should_succeed() {
 				share: 100000,
 				has_withdrawn: true,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
-						block_number: 1
-					}],
-				withdraws: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
-						block_number: 1
-					}]
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
+				withdraws: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
+					block_number: 1
+				}]
 			})
 		);
 
@@ -267,19 +265,26 @@ fn withdraw_with_valid_values_should_succeed() {
 			HousingFundModule::u64_to_balance_option(95).unwrap()
 		);
 
-		// Check the fund account has been withdraw the correct amount	
+		// Check the fund account has been withdraw the correct amount
 		assert_eq!(
 			Balances::free_balance(&fund_account_id),
 			HousingFundModule::u64_to_balance_option(5).unwrap() + fund_account_balance
 		);
 
-		let event = <frame_system::Pallet<Test>>::events().pop()
-            .expect("Expected at least one EventRecord to be found").event;
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
 
 		// check the event has been raised
 		assert_eq!(
-			event, 
-			mock::Event::HousingFundModule(crate::Event::WithdrawalSucceeded(1, 20, crate::WithdrawalReason::NotDefined, 1))
+			event,
+			mock::Event::HousingFundModule(crate::Event::WithdrawalSucceeded(
+				1,
+				20,
+				crate::WithdrawalReason::NotDefined,
+				1
+			))
 		);
 	});
 }
@@ -287,8 +292,8 @@ fn withdraw_with_valid_values_should_succeed() {
 #[test]
 fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 	new_test_ext().execute_with(|| {
-		let first_account_id:u64 = 1;
-		let second_account_id:u64 = 2;
+		let first_account_id: u64 = 1;
+		let second_account_id: u64 = 2;
 		// test contribute with sufficient contribution: MinContribution is 10
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(first_account_id), 25));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(second_account_id), 25));
@@ -297,8 +302,8 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(second_account_id), 20));
 
 		assert_eq!(
-			HousingFundModule::fund_balance(), 
-			FundInfo{ 
+			HousingFundModule::fund_balance(),
+			FundInfo {
 				total: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
@@ -316,16 +321,14 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 				share: 50000,
 				has_withdrawn: true,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
-						block_number: 1
-					}],
-				withdraws: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
-						block_number: 1
-					}]
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
+				withdraws: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
+					block_number: 1
+				}]
 			})
 		);
 
@@ -339,16 +342,14 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 				share: 50000,
 				has_withdrawn: true,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
-						block_number: 1
-					}],
-				withdraws: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
-						block_number: 1
-					}]
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
+				withdraws: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(20).unwrap(),
+					block_number: 1
+				}]
 			})
 		);
 	});
@@ -357,18 +358,12 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 #[test]
 fn house_bidding_without_enough_in_fund_should_fail() {
 	new_test_ext().execute_with(|| {
-		let origin:u64 = 1;
-		let account_id:u64 = 1;
+		let origin: u64 = 1;
+		let account_id: u64 = 1;
 
 		// Try to bid for a house without enough in pot
 		assert_noop!(
-			HousingFundModule::house_bidding(
-				Origin::signed(origin), 
-				account_id, 
-				1, 
-				60, 
-				Vec::new()
-			),
+			HousingFundModule::house_bidding(Origin::signed(origin), account_id, 1, 60, Vec::new()),
 			Error::<Test>::NotEnoughAvailableBalance
 		);
 	});
@@ -377,8 +372,8 @@ fn house_bidding_without_enough_in_fund_should_fail() {
 #[test]
 fn house_bidding_with_an_non_contributor_account_should_fail() {
 	new_test_ext().execute_with(|| {
-		let origin:u64 = 1;
-		let account_id:u64 = 1;
+		let origin: u64 = 1;
+		let account_id: u64 = 1;
 
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 60));
 
@@ -386,11 +381,11 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
 		assert_noop!(
 			HousingFundModule::house_bidding(
-				Origin::signed(origin), 
-				account_id, 
-				1, 
-				60, 
-				vec![(1, 20), (2,40)]
+				Origin::signed(origin),
+				account_id,
+				1,
+				60,
+				vec![(1, 20), (2, 40)]
 			),
 			Error::<Test>::NotAContributor
 		);
@@ -400,8 +395,8 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 #[test]
 fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 	new_test_ext().execute_with(|| {
-		let origin:u64 = 1;
-		let account_id:u64 = 1;
+		let origin: u64 = 1;
+		let account_id: u64 = 1;
 
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 20));
@@ -410,11 +405,11 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
 		assert_noop!(
 			HousingFundModule::house_bidding(
-				Origin::signed(origin), 
-				account_id, 
-				1, 
-				60, 
-				vec![(1, 30), (2,30)]
+				Origin::signed(origin),
+				account_id,
+				1,
+				60,
+				vec![(1, 30), (2, 30)]
 			),
 			Error::<Test>::NotEnoughAvailableBalance
 		);
@@ -424,23 +419,23 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 #[test]
 fn house_bidding_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
-		let origin:u64 = 1;
+		let origin: u64 = 1;
 		let fund_account_id = HousingFundModule::fund_account_id();
 
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(
-			Origin::signed(origin), 
-			3, 
-			1, 
-			60, 
-			vec![(1, 30), (2,30)]
+			Origin::signed(origin),
+			3,
+			1,
+			60,
+			vec![(1, 30), (2, 30)]
 		));
-		
+
 		assert_eq!(
-			HousingFundModule::fund_balance(), 
-			FundInfo{ 
+			HousingFundModule::fund_balance(),
+			FundInfo {
 				total: HousingFundModule::u64_to_balance_option(80).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(20).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(60).unwrap(),
@@ -458,11 +453,10 @@ fn house_bidding_with_valid_values_should_succeed() {
 				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(40).unwrap(),
-						block_number: 1
-					}],
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(40).unwrap(),
+					block_number: 1
+				}],
 				withdraws: Vec::new()
 			})
 		);
@@ -477,11 +471,10 @@ fn house_bidding_with_valid_values_should_succeed() {
 				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
-				contributions: vec![
-					ContributionLog { 
-						amount: HousingFundModule::u64_to_balance_option(40).unwrap(),
-						block_number: 1
-					}],
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(40).unwrap(),
+					block_number: 1
+				}],
 				withdraws: Vec::new()
 			})
 		);
@@ -497,17 +490,19 @@ fn house_bidding_with_valid_values_should_succeed() {
 			})
 		);
 
-		// Check the amount reserved for the account		
+		// Check the amount reserved for the account
 		assert_eq!(
 			Balances::reserved_balance(&fund_account_id),
 			HousingFundModule::u64_to_balance_option(60).unwrap()
 		);
 
-		let event = <frame_system::Pallet<Test>>::events().pop()
-            .expect("Expected at least one EventRecord to be found").event;
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
 
 		assert_eq!(
-			event, 
+			event,
 			mock::Event::HousingFundModule(crate::Event::FundReservationSucceeded(1, 1, 60, 1))
 		);
 	});
@@ -519,7 +514,7 @@ fn fund_info_contribute_transferable_should_succeed() {
 		let mut fund_info = HousingFundModule::fund_balance();
 		// contribute to the fund
 		fund_info.contribute_transferable(100);
-		
+
 		// check that the values are valid
 		assert_eq!(fund_info.total, 100);
 		assert_eq!(fund_info.transferable, 100);

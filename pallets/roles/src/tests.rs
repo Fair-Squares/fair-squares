@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-	mock::*,
-	Error,
-};
+use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 
 #[test]
@@ -13,25 +10,14 @@ fn test_struct_methods() {
 		assert!(InvestorLog::<Test>::contains_key(1));
 		assert_eq!(
 			RoleModule::investors(1),
-			Some(Investor {
-				account_id: 1,
-				age: System::block_number(),
-				share: 0,
-				selections: 0,
-			})
+			Some(Investor { account_id: 1, age: System::block_number(), share: 0, selections: 0 })
 		);
 
 		//---HouseSeller-------
 		assert_ok!(HouseSeller::<Test>::new(Origin::signed(1)));
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
-			(
-				vec![HouseSeller {
-					account_id: 1,
-					age: System::block_number(),
-				}],
-				vec![]
-			)
+			(vec![HouseSeller { account_id: 1, age: System::block_number() }], vec![])
 		);
 		//---house seller should fail successfully----
 		assert_ne!(RoleModule::get_pending_approvals(), (vec![], vec![])); //assert_ne! is not supported at the moment, as this expression should panick
@@ -50,10 +36,7 @@ fn test_struct_methods() {
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
 			(
-				vec![HouseSeller {
-					account_id: 1,
-					age: System::block_number(),
-				}],
+				vec![HouseSeller { account_id: 1, age: System::block_number() }],
 				vec![Servicer { account_id: 2, age: System::block_number() }]
 			)
 		)
@@ -75,18 +58,18 @@ fn test_account_approval_rejection() {
 		assert_ok!(HouseSeller::<Test>::new(Origin::signed(3)));
 		assert_ok!(Servicer::<Test>::new(Origin::signed(5)));
 		assert_ok!(HouseSeller::<Test>::new(Origin::signed(6)));
-		
+
 		let wait1 = RoleModule::get_pending_approvals();
 		let serv1 = wait1.1;
 		let sell1 = wait1.0;
 		assert_eq!(serv1.len(), 2);
 		assert_eq!(sell1.len(), 2);
 
-		assert_ok!(RoleModule::account_approval(master.clone(),2));
-		assert_ok!(RoleModule::account_approval(master.clone(),3));
-		assert_ok!(RoleModule::account_rejection(master.clone(),5));
-		assert_ok!(RoleModule::account_rejection(master,6));
-		
+		assert_ok!(RoleModule::account_approval(master.clone(), 2));
+		assert_ok!(RoleModule::account_approval(master.clone(), 3));
+		assert_ok!(RoleModule::account_rejection(master.clone(), 5));
+		assert_ok!(RoleModule::account_rejection(master, 6));
+
 		let wait2 = RoleModule::get_pending_approvals();
 		let serv2 = wait2.1;
 		let sell2 = wait2.0;
@@ -117,11 +100,14 @@ fn test_account_creation() {
 		assert!(TenantLog::<Test>::contains_key(3));
 
 		assert_ok!(RoleModule::create_account(user2.clone(), Acc::SELLER));
-		assert_noop!(RoleModule::create_account(user2.clone(), Acc::SELLER),Error::<Test>::AlreadyWaiting);
+		assert_noop!(
+			RoleModule::create_account(user2.clone(), Acc::SELLER),
+			Error::<Test>::AlreadyWaiting
+		);
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len2 = wait_sell.len();
 		assert_eq!(sell_len2, sell_len + 1);
-		assert_ok!(RoleModule::account_approval(master,2));
+		assert_ok!(RoleModule::account_approval(master, 2));
 		assert!(HouseSellerLog::<Test>::contains_key(2));
 	})
 }
@@ -133,7 +119,7 @@ fn test_set_manager() {
 		assert_eq!(Sudo::key(), Some(4));
 		//---changing--------------------------
 
-		assert_ok!(RoleModule::set_manager(Origin::signed(4),2));
-		assert_eq!(Sudo::key(),Some(2));
+		assert_ok!(RoleModule::set_manager(Origin::signed(4), 2));
+		assert_eq!(Sudo::key(), Some(2));
 	})
 }

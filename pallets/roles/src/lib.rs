@@ -1,10 +1,47 @@
+//! # Roles Pallet
+//!
+//! The Roles Pallet is used For User's Account creation in the FairSquares framework
+//!
+//! ## Overview
+//!
+//! The Roles Pallet provides account management capabilities through the following actions:
+//! - Account creation
+//! - Roles selection
+//! - Account creation approval or rejection
+//! During Account creation, the user selects a role (or account type) from the Accounts enum. each
+//! role has access to specific set of actions used in Fairsquares. there are currently 5 kinds of
+//! roles available for selection:
+//! - INVESTOR
+//! - TENANT
+//! - SERVICER
+//! - SELLER
+//! The 5th role which is the accounts administrator role is not available during account creation.
+//! Sellers and Servicers accounts must be verified/approved by an administrator in order to become
+//! active
+//!
+//! ### Dispatchable Functions
+//! #### Account creation
+//! * `create_account` - Create one of the 4 selectable type of account/role.
+//! In the case of Sellers and Servicers, requests are transfered to a Role approval list
+//!
+//! #### Account management by Administrator
+//! * `account_approval` - This function allows the administrator to verify/approve Seller and
+//!   Servicer accounts creation requests
+//! that are in the approval list.
+//! Verified accounts are activated, i.e., tranfered to the corresponding role storage
+//!
+//! * `account_rejection` - This function allows the administrator to reject Seller and Servicer
+//!   accounts creation requests
+//! that are in the approval list, but do not fullfill the FaiSquares guideline.
+//!
+//! * `set_manager` - This function allows the current manager to tranfer his Administrative
+//!   authority to a different user/account.
+//! Only the current manager can use this function, and he will lose all administrative power by
+//! using this function.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
 pub use pallet::*;
-
 
 #[cfg(test)]
 mod mock;
@@ -15,16 +52,14 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-mod structs;
 mod helpers;
+mod structs;
 
 pub use crate::structs::*;
 pub use pallet_sudo as SUDO;
 #[frame_support::pallet]
 pub mod pallet {
 	pub use super::*;
-
-	
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -64,25 +99,26 @@ pub mod pallet {
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer<T>, OptionQuery>;
 
 	#[pallet::type_value]
+	///Initializing function for the approval waiting list
 	pub(super) fn MyDefault<T: Config>() -> Idle<T> {
 		(Vec::new(), Vec::new())
 	}
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_approvals)]
-	///Waiting list for Sellers and Servicers
-	pub(super) type RoleApprovalList<T: Config> = StorageValue<_, Idle<T>, ValueQuery, MyDefault<T>>;
+	///Approval waiting list for Sellers and Servicers
+	pub(super) type RoleApprovalList<T: Config> =
+		StorageValue<_, Idle<T>, ValueQuery, MyDefault<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_roles)]
 	///Registry of Roles by AccountId
 	pub(super) type AccountsRolesLog<T: Config> =
-		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;	
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
 		InvestorCreated(T::BlockNumber, T::AccountId),
 		TenantCreated(T::BlockNumber, T::AccountId),
 		SellerCreated(T::BlockNumber, T::AccountId),
@@ -96,9 +132,9 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Error names should be descriptive.
-		InitializationError,
 		NoneValue,
+		/// Error on initialization.
+		InitializationError,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 		///One role is allowed
@@ -108,7 +144,7 @@ pub mod pallet {
 		///Require Sudo
 		RequireSudo,
 		/// Account already in the waiting list
-		AlreadyWaiting
+		AlreadyWaiting,
 	}
 
 	#[pallet::call]
@@ -120,32 +156,36 @@ pub mod pallet {
 			match account_type {
 				Accounts::INVESTOR => {
 					Self::check_storage(caller.clone())?;
-					let _acc = Investor::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
+					let _acc =
+						Investor::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
-					AccountsRolesLog::<T>::insert(&caller,Accounts::INVESTOR);
+					AccountsRolesLog::<T>::insert(&caller, Accounts::INVESTOR);
 					Self::deposit_event(Event::InvestorCreated(now, caller));
 					Ok(().into())
 				},
 				Accounts::SELLER => {
 					Self::check_storage(caller.clone())?;
 					Self::check_role_approval_list(caller.clone())?;
-					let _acc = HouseSeller::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
+					let _acc = HouseSeller::<T>::new(origin)
+						.map_err(|_| <Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
 					Ok(().into())
 				},
 				Accounts::TENANT => {
 					Self::check_storage(caller.clone())?;
-					let _acc = Tenant::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
+					let _acc =
+						Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
-					AccountsRolesLog::<T>::insert(&caller,Accounts::TENANT);
+					AccountsRolesLog::<T>::insert(&caller, Accounts::TENANT);
 					Self::deposit_event(Event::TenantCreated(now, caller));
 					Ok(().into())
 				},
 				Accounts::SERVICER => {
 					Self::check_storage(caller.clone())?;
 					Self::check_role_approval_list(caller.clone())?;
-					let _acc = Servicer::<T>::new(origin).map_err(|_|<Error<T>>::InitializationError)?;
+					let _acc =
+						Servicer::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
 					Ok(().into())
@@ -157,7 +197,10 @@ pub mod pallet {
 		///Approval function for Sellers and Servicers. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
+			ensure!(
+				sender == SUDO::Pallet::<T>::key().unwrap(),
+				"only the current sudo key can sudo"
+			);
 			Self::approve_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
@@ -168,7 +211,10 @@ pub mod pallet {
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
+			ensure!(
+				sender == SUDO::Pallet::<T>::key().unwrap(),
+				"only the current sudo key can sudo"
+			);
 			Self::reject_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationRejected(now, account));
@@ -182,11 +228,12 @@ pub mod pallet {
 			new: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			ensure!(sender == SUDO::Pallet::<T>::key().unwrap(), "only the current sudo key can sudo");
+			ensure!(
+				sender == SUDO::Pallet::<T>::key().unwrap(),
+				"only the current sudo key can sudo"
+			);
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
 			Ok(().into())
 		}
 	}
-
-
 }

@@ -1,7 +1,7 @@
 [package]
 name = "pallet-roles"
 version = "4.0.0-dev"
-description = "FRAME pallet template for defining custom runtime logic."
+description = "Account management Pallet"
 authors = ["Fair Squares"]
 homepage = "https://fair-squares.nl"
 edition = "2021"
