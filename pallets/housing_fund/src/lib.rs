@@ -22,7 +22,6 @@ pub use weights::WeightInfo;
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		dispatch::DispatchResult,
 		sp_runtime::traits::AccountIdConversion,
 		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
 		transactional, PalletId,

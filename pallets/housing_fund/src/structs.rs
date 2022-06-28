@@ -11,7 +11,6 @@ pub use frame_support::{
 };
 pub use frame_system::{ensure_signed, pallet_prelude::*};
 use scale_info::TypeInfo;
-use sp_std::vec;
 
 pub type StorageIndex = u32;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
