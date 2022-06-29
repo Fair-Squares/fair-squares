@@ -12,7 +12,7 @@
 //! 
 //! * 'contribute_to_fund' - an account with the investor role can transfer funds to the pot
 //! * 'withdraw_fund' - an account with the investor role can withdraw funds from the pot if the amount is available
-//! * 'house_bidding' - an amount is reserved from the pot for the purchase of a house, for each contributor the share is tagged as reserved form
+//! * 'house_bidding' - an amount is reserved from the pot for the purchase of a house, for each contributor the share is tagged as reserved in
 //!    his contribution
 
 
