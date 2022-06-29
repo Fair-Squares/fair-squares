@@ -1,3 +1,22 @@
+//! # Housing fund pallet
+//! 
+//! The housing fund pallet provides methods to manage the fund used to buy houses
+//! 
+//! ## Overview
+//! 
+//! The housing fund pallet enable third parties to transfer or withdraw funds to a common pot for house purchase
+//! 
+//! ## Interface
+//! 
+//! ### Dispatchable Functions
+//! 
+//! * 'contribute_to_fund' - an account with the investor role can transfer funds to the pot
+//! * 'withdraw_fund' - an account with the investor role can withdraw funds from the pot if the amount is available
+//! * 'house_bidding' - an amount is reserved from the pot for the purchase of a house, for each contributor the share is tagged as reserved in
+//!    his contribution
+
+
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
