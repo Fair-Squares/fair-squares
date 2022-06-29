@@ -20,7 +20,7 @@ fn contribute_with_less_than_minimun_amount_should_fail(){
 		let account_id: u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -39,7 +39,7 @@ fn contribute_with_with_not_enough_free_balance_should_fail() {
 		let account_id: u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -60,7 +60,7 @@ fn contribute_with_valid_values_should_succeed() {
 		let fund_account_balance = Balances::free_balance(&fund_account_id);
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -130,7 +130,7 @@ fn contribute_update_contribution_should_succeed() {
 		let account_id:u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -175,13 +175,13 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 		let second_account_id:u64 = 2;
 		// Give the investor role to the accounts
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(first_account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(second_account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -245,7 +245,7 @@ fn withdraw_without_being_investor_should_fail() {
 		let non_contributor_account_id = 2;
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -268,13 +268,13 @@ fn withdraw_without_being_contributor_should_fail() {
 		let non_contributor_account_id = 2;
 		// Give the investor role to the accounts
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(non_contributor_account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -296,7 +296,7 @@ fn withdraw_more_than_contributed_should_fail() {
 		let account_id:u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -321,7 +321,7 @@ fn withdraw_with_valid_values_should_succeed() {
 
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -400,13 +400,13 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 		let second_account_id:u64 = 2;
 		// Give the investor role to the accounts
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(first_account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(second_account_id), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -494,7 +494,7 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(1), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -525,13 +525,13 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 
 		// Give the investor role to the accounts
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(1), 
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(2), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -563,13 +563,13 @@ fn house_bidding_with_valid_values_should_succeed() {
 
 		// Give the investor role to the accounts
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(1), 
 				crate::ROLES::Accounts::INVESTOR
 			)
 		);
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(2), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -720,7 +720,7 @@ fn contribution_get_total_balance_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(1), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -743,7 +743,7 @@ fn contribution_can_reserve_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(1), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -762,7 +762,7 @@ fn contribution_reserve_amount_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(1), 
 				crate::ROLES::Accounts::INVESTOR
 			)
@@ -783,7 +783,7 @@ fn contribution_unreserve_amount_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
 		assert_ok!(
-			RoleModule::create_account(
+			RoleModule::set_role(
 				Origin::signed(1), 
 				crate::ROLES::Accounts::INVESTOR
 			)

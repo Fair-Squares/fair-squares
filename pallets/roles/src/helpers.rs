@@ -2,14 +2,17 @@ pub use super::*;
 
 impl<T: Config> Pallet<T> {
 	//Helper function for account creation approval by admin only
-	pub fn approve_account(who: T::AccountId) -> DispatchResult {
+	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
 		let waitlist = Self::get_pending_approvals();
 		let sellers = waitlist.0;
 		let servicers = waitlist.1;
 
 		for sell in sellers.iter() {
 			if sell.account_id == who.clone() {
-				HouseSellerLog::<T>::insert(&who, sell.clone());
+				let mut sell0 = sell.clone();
+				sell0.activated = true;
+				sell0.verifier = sender.clone();
+				HouseSellerLog::<T>::insert(&who, sell0);
 				let index = sellers.iter().position(|x| *x == *sell).unwrap();
 				RoleApprovalList::<T>::mutate(|val| {
 					val.0.remove(index);
@@ -21,7 +24,10 @@ impl<T: Config> Pallet<T> {
 		}
 		for serv in servicers.iter() {
 			if serv.account_id == who.clone() {
-				ServicerLog::<T>::insert(&who, serv);
+				let mut serv0 = serv.clone();
+				serv0.activated = true;
+				serv0.verifier = sender.clone();
+				ServicerLog::<T>::insert(&who, serv0);
 				let index = servicers.iter().position(|x| *x == *serv).unwrap();
 				RoleApprovalList::<T>::mutate(|val| {
 					val.1.remove(index);

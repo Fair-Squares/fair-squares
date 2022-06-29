@@ -17,7 +17,7 @@ fn test_struct_methods() {
 		assert_ok!(HouseSeller::<Test>::new(Origin::signed(1)));
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
-			(vec![HouseSeller { account_id: 1, age: System::block_number() }], vec![])
+			(vec![HouseSeller { account_id: 1, age: System::block_number(),activated: false, verifier: 1 }], vec![])
 		);
 		//---house seller should fail successfully----
 		assert_ne!(RoleModule::get_pending_approvals(), (vec![], vec![])); //assert_ne! is not supported at the moment, as this expression should panick
@@ -36,8 +36,8 @@ fn test_struct_methods() {
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
 			(
-				vec![HouseSeller { account_id: 1, age: System::block_number() }],
-				vec![Servicer { account_id: 2, age: System::block_number() }]
+				vec![HouseSeller { account_id: 1, age: System::block_number(),activated: false, verifier: 1 }],
+				vec![Servicer { account_id: 2, age: System::block_number(),activated: false, verifier: 2 }]
 			)
 		)
 	});
@@ -64,6 +64,14 @@ fn test_account_approval_rejection() {
 		let sell1 = wait1.0;
 		assert_eq!(serv1.len(), 2);
 		assert_eq!(sell1.len(), 2);
+		assert_eq!(serv1[0].activated, false);
+		assert_eq!(serv1[1].activated, false);
+		assert_eq!(serv1[0].verifier, serv1[0].account_id);
+		assert_eq!(serv1[1].verifier, serv1[1].account_id);
+		assert_eq!(sell1[0].activated, false);
+		assert_eq!(sell1[1].activated, false);
+		assert_eq!(sell1[0].verifier, sell1[0].account_id);
+		assert_eq!(sell1[1].verifier, sell1[1].account_id);
 
 		assert_ok!(RoleModule::account_approval(master.clone(), 2));
 		assert_ok!(RoleModule::account_approval(master.clone(), 3));
@@ -76,8 +84,12 @@ fn test_account_approval_rejection() {
 		assert_eq!(serv2.len(), 0);
 		assert_eq!(sell2.len(), 0);
 		assert!(ServicerLog::<Test>::contains_key(2));
+		assert_eq!(RoleModule::servicers(2).unwrap().activated,true);
+		assert_eq!(RoleModule::servicers(2).unwrap().verifier,4);
 		assert!(!ServicerLog::<Test>::contains_key(5));
 		assert!(HouseSellerLog::<Test>::contains_key(3));
+		assert_eq!(RoleModule::sellers(3).unwrap().activated,true);
+		assert_eq!(RoleModule::sellers(3).unwrap().verifier,4);
 		assert!(!HouseSellerLog::<Test>::contains_key(6));
 	})
 }
@@ -92,16 +104,16 @@ fn test_account_creation() {
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len = wait_sell.len();
 
-		assert_ok!(RoleModule::create_account(user1.clone(), Acc::INVESTOR));
+		assert_ok!(RoleModule::set_role(user1.clone(), Acc::INVESTOR));
 		assert!(InvestorLog::<Test>::contains_key(1));
-		assert_noop!(RoleModule::create_account(user1, Acc::TENANT), Error::<Test>::OneRoleAllowed);
+		assert_noop!(RoleModule::set_role(user1, Acc::TENANT), Error::<Test>::OneRoleAllowed);
 
-		assert_ok!(RoleModule::create_account(user3.clone(), Acc::TENANT));
+		assert_ok!(RoleModule::set_role(user3.clone(), Acc::TENANT));
 		assert!(TenantLog::<Test>::contains_key(3));
 
-		assert_ok!(RoleModule::create_account(user2.clone(), Acc::SELLER));
+		assert_ok!(RoleModule::set_role(user2.clone(), Acc::SELLER));
 		assert_noop!(
-			RoleModule::create_account(user2.clone(), Acc::SELLER),
+			RoleModule::set_role(user2.clone(), Acc::SELLER),
 			Error::<Test>::AlreadyWaiting
 		);
 		let wait_sell = RoleModule::get_pending_approvals().0;
