@@ -43,8 +43,8 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
+//import fs-pallets
 pub use pallet_housing_fund;
-/// Import the template pallet.
 pub use pallet_roles;
 
 /// An index to a block.
