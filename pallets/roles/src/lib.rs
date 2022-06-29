@@ -1,41 +1,40 @@
 //! # Roles Pallet
 //!
-//! The Roles Pallet is used For User's Account creation in the FairSquares framework
+//! The Roles Pallet is used to set a role for a given AccountId in the FairSquares framework
 //!
 //! ## Overview
 //!
-//! The Roles Pallet provides account management capabilities through the following actions:
-//! - Account creation
-//! - Roles selection
-//! - Account creation approval or rejection
-//! During Account creation, the user selects a role (or account type) from the Accounts enum. each
+//! The Roles Pallet provides roles management capabilities through the following actions:
+//! - Role setting
+//! - Role attribution to an AccountId
+//! - Role attribution approval or rejection
+//! During role setting, the user selects a role from the Accounts enum. Each
 //! role has access to specific set of actions used in Fairsquares. there are currently 5 kinds of
 //! roles available for selection:
 //! - INVESTOR
 //! - TENANT
 //! - SERVICER
 //! - SELLER
-//! The 5th role which is the accounts administrator role is not available during account creation.
-//! Sellers and Servicers accounts must be verified/approved by an administrator in order to become
+//! The 5th role which is the accounts administrator role is not available during role setting.
+//! Sellers and Servicers roles, must be verified/approved by an administrator in order to become
 //! active
 //!
 //! ### Dispatchable Functions
-//! #### Account creation
-//! * `create_account` - Create one of the 4 selectable type of account/role.
+//! #### Role setting
+//! * `set_role` - Create one of the 4 selectable type of role.
 //! In the case of Sellers and Servicers, requests are transfered to a Role approval list
 //!
-//! #### Account management by Administrator
+//! #### Roles management by Administrator
 //! * `account_approval` - This function allows the administrator to verify/approve Seller and
-//!   Servicer accounts creation requests
-//! that are in the approval list.
-//! Verified accounts are activated, i.e., tranfered to the corresponding role storage
+//! Servicer role connection to the requesting AccountId.
+//! Verified AccountId are activated, i.e., the requesting AccountId is stored into the corresponding role storage.
 //!
 //! * `account_rejection` - This function allows the administrator to reject Seller and Servicer
-//!   accounts creation requests
+//! role connection to the requesting AccountId 
 //! that are in the approval list, but do not fullfill the FaiSquares guideline.
 //!
-//! * `set_manager` - This function allows the current manager to tranfer his Administrative
-//!   authority to a different user/account.
+//! * `set_manager` - This function allows the current manager to transfer his Administrative
+//! authority to a different user/account.
 //! Only the current manager can use this function, and he will lose all administrative power by
 //! using this function.
 
@@ -151,7 +150,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		///Account creation function. Only one role per account is permitted.
-		pub fn create_account(origin: OriginFor<T>, account_type: Accounts) -> DispatchResult {
+		pub fn set_role(origin: OriginFor<T>, account_type: Accounts) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
 			match account_type {
 				Accounts::INVESTOR => {
@@ -198,10 +197,10 @@ pub mod pallet {
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			ensure!(
-				sender == SUDO::Pallet::<T>::key().unwrap(),
+				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			Self::approve_account(account.clone())?;
+			Self::approve_account(sender,account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(().into())

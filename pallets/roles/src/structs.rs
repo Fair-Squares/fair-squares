@@ -70,26 +70,28 @@ where
 //-----------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------
-//-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
+//-------------HOUSE SELLER STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct HouseSeller<T: Config> {
 	pub account_id: T::AccountId,
 	pub age: BlockNumberOf<T>,
+	pub activated: bool,
+	pub verifier: T::AccountId,
 }
 impl<T: Config> HouseSeller<T>
 where
 	structs::HouseSeller<T>: EncodeLike<structs::HouseSeller<T>>,
 {
 	//--------------------------------------------------------------------
-	//-------------HOUSE OWNER CREATION METHOD_BEGIN----------------------
+	//-------------HOUSE SELLER CREATION METHOD_BEGIN----------------------
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
 		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
 		ensure!(HouseSellerLog::<T>::contains_key(&caller) == false, Error::<T>::NoneValue);
 
-		let hw = HouseSeller { account_id: caller, age: now };
+		let hw = HouseSeller { account_id: caller.clone(), age: now, activated: false,verifier: caller.clone()};
 
 		RoleApprovalList::<T>::mutate(|val| {
 			val.0.push(hw);
@@ -98,10 +100,10 @@ where
 		Ok(().into())
 	}
 
-	//-------------HOUSE OWNER CREATION METHOD_END----------------------
+	//-------------HOUSE SELLER CREATION METHOD_END----------------------
 	//------------------------------------------------------------------
 }
-//-------------HOUSE OWNER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
+//-------------HOUSE SELLER STRUCT DECLARATION & IMPLEMENTATION_END----------------------
 //--------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------
@@ -134,12 +136,14 @@ impl<T: Config> Tenant<T> {
 pub struct Servicer<T: Config> {
 	pub account_id: T::AccountId,
 	pub age: BlockNumberOf<T>,
+	pub activated: bool,
+	pub verifier: T::AccountId
 }
 impl<T: Config> Servicer<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
 		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
-		let sv = Servicer { account_id: caller, age: now };
+		let sv = Servicer { account_id: caller.clone(), age: now,activated: false, verifier: caller.clone() };
 		RoleApprovalList::<T>::mutate(|val| {
 			val.1.push(sv);
 		});
