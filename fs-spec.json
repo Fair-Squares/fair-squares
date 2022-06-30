@@ -8,7 +8,9 @@
   "telemetryEndpoints": null,
   "protocolId": null,
   "forkId": null,
-  "properties": null,
+  "properties": {
+    "tokenSymbol":"USD"
+  },
   "consensusEngine": null,
   "codeSubstitutes": {},
   "genesis": {
