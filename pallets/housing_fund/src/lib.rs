@@ -148,7 +148,7 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - 'amount': the amount deposited in the fund
 		/// Emits ContributeSucceeded event when successful
-		#[pallet::weight(T::WeightInfo::contribute_to_fund())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::contribute_to_fund())]
 		#[transactional]
 		pub fn contribute_to_fund(
 			origin: OriginFor<T>,
@@ -245,7 +245,7 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - amount : the amount to be withdrawn from the fund
 		/// Emits WithdrawalSucceeded event when successful
-		#[pallet::weight(T::WeightInfo::withdraw_fund())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::withdraw_fund())]
 		#[transactional]
 		pub fn withdraw_fund(
 			origin: OriginFor<T>,
@@ -343,7 +343,7 @@ pub mod pallet {
 		/// - amount : amount used to buy the house
 		/// - contributions : list of investors contributions
 		/// Emits FundReservationSucceeded when successful
-		#[pallet::weight(T::WeightInfo::house_bidding())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::house_bidding())]
 		#[transactional]
 		pub fn house_bidding(
 			origin: OriginFor<T>,

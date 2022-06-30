@@ -53,7 +53,9 @@ mod benchmarking;
 
 mod helpers;
 mod structs;
-
+pub mod weights;
+pub use weights::WeightInfo;
+use sp_std::{fmt::Debug, prelude::*};
 pub use crate::structs::*;
 pub use pallet_sudo as SUDO;
 #[frame_support::pallet]
@@ -66,6 +68,9 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
+		type WeightInfo: WeightInfo;
+		#[pallet::constant]
+		type MaxMembers: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -148,7 +153,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
 		///Account creation function. Only one role per account is permitted.
 		pub fn set_role(origin: OriginFor<T>, account_type: Accounts) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
@@ -192,7 +197,7 @@ pub mod pallet {
 			}
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(T::MaxMembers::get()))]
 		///Approval function for Sellers and Servicers. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
@@ -206,7 +211,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::rejection(T::MaxMembers::get()))]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
@@ -220,7 +225,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_admin(T::MaxMembers::get()))]
 		///The caller will transfer his admin authority to a different account
 		pub fn set_manager(
 			origin: OriginFor<T>,

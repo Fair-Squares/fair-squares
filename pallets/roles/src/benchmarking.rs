@@ -8,10 +8,10 @@ const SEED: u32 = 0;
 
 benchmarks! {
 	investor{
-		let b in 0 .. 99;
+		let b in 0 .. T::MaxMembers::get();
 		let mut acc = Vec::<T::AccountId>::new();
 
-		for i in 0 .. 100{
+		for i in 0 .. T::MaxMembers::get()+1{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
 			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
@@ -27,10 +27,10 @@ benchmarks! {
 
 	#[extra]
 	tenant{
-		let b in 0 .. 99;
+		let b in 0 .. T::MaxMembers::get();
 		let mut acc = Vec::<T::AccountId>::new();
 
-		for i in 0 .. 100{
+		for i in 0 .. T::MaxMembers::get()+1{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
 			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
@@ -46,10 +46,10 @@ benchmarks! {
 
 	#[extra]
 	seller{
-		let b in 0 .. 99;
+		let b in 0 .. T::MaxMembers::get();
 		let mut acc = Vec::<T::AccountId>::new();
 
-		for i in 0 .. 100{
+		for i in 0 .. T::MaxMembers::get()+1{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
 			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
@@ -62,11 +62,11 @@ benchmarks! {
 
 
 	approval{
-		let b in 0 .. 99;
+		let b in 0 .. T::MaxMembers::get();
 		let mut acc = Vec::<T::AccountId>::new();
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
 
-		for i in 0 .. 100{
+		for i in 0 .. T::MaxMembers::get()+1{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
 			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
@@ -83,11 +83,11 @@ benchmarks! {
 	}
 
 	rejection{
-		let b in 0 .. 99;
+		let b in 0 .. T::MaxMembers::get();
 		let mut acc = Vec::<T::AccountId>::new();
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
 
-		for i in 0 .. 100{
+		for i in 0 .. T::MaxMembers::get()+1{
 			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
 			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
@@ -104,11 +104,11 @@ benchmarks! {
 	}
 
 	set_admin{
-		let b in 0 .. 99;
+		let b in 0 .. T::MaxMembers::get();
 		let mut acc = Vec::<T::AccountId>::new();
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
 
-		for i in 0 .. 100{
+		for i in 0 .. T::MaxMembers::get()+1{
 			let caller:T::AccountId= account("Kazu", i, SEED);			
 			acc.push(caller.clone());
 			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
