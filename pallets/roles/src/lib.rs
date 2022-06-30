@@ -27,10 +27,11 @@
 //! #### Roles management by Administrator
 //! * `account_approval` - This function allows the administrator to verify/approve Seller and
 //! Servicer role connection to the requesting AccountId.
-//! Verified AccountId are activated, i.e., the requesting AccountId is stored into the corresponding role storage.
+//! Verified AccountId are activated, i.e., the requesting AccountId is stored into the
+//! corresponding role storage.
 //!
 //! * `account_rejection` - This function allows the administrator to reject Seller and Servicer
-//! role connection to the requesting AccountId 
+//! role connection to the requesting AccountId
 //! that are in the approval list, but do not fullfill the FaiSquares guideline.
 //!
 //! * `set_manager` - This function allows the current manager to transfer his Administrative
@@ -53,9 +54,11 @@ mod benchmarking;
 
 mod helpers;
 mod structs;
-
+pub mod weights;
 pub use crate::structs::*;
 pub use pallet_sudo as SUDO;
+use sp_std::{fmt::Debug, prelude::*};
+pub use weights::WeightInfo;
 #[frame_support::pallet]
 pub mod pallet {
 	pub use super::*;
@@ -66,6 +69,8 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
+		type WeightInfo: WeightInfo;
+		type MaxMembers: Get<u32>;
 	}
 
 	#[pallet::pallet]
@@ -114,6 +119,17 @@ pub mod pallet {
 	pub(super) type AccountsRolesLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
 
+	#[pallet::type_value]
+	///Initializing function for the total number of members
+	pub(super) fn MyDefault1<T: Config>() -> u32 {
+		let t0 = 0;
+		t0
+	}
+
+	#[pallet::storage]
+	#[pallet::getter(fn total_members)]
+	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, MyDefault1<T>>;
+
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -144,55 +160,52 @@ pub mod pallet {
 		RequireSudo,
 		/// Account already in the waiting list
 		AlreadyWaiting,
+		///Maximum limit for number of members exceeded
+		TotalMembersExceeded,
 	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
 		///Account creation function. Only one role per account is permitted.
 		pub fn set_role(origin: OriginFor<T>, account_type: Accounts) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
+			Self::check_storage(caller.clone())?;
+			let now = <frame_system::Pallet<T>>::block_number();
+			let count0 = Self::total_members();
 			match account_type {
 				Accounts::INVESTOR => {
-					Self::check_storage(caller.clone())?;
 					let _acc =
 						Investor::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					let now = <frame_system::Pallet<T>>::block_number();
 					AccountsRolesLog::<T>::insert(&caller, Accounts::INVESTOR);
+					TotalMembers::<T>::put(count0 + 1);
 					Self::deposit_event(Event::InvestorCreated(now, caller));
-					Ok(().into())
 				},
 				Accounts::SELLER => {
-					Self::check_storage(caller.clone())?;
 					Self::check_role_approval_list(caller.clone())?;
 					let _acc = HouseSeller::<T>::new(origin)
 						.map_err(|_| <Error<T>>::InitializationError)?;
-					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
-					Ok(().into())
 				},
 				Accounts::TENANT => {
-					Self::check_storage(caller.clone())?;
 					let _acc =
 						Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					let now = <frame_system::Pallet<T>>::block_number();
 					AccountsRolesLog::<T>::insert(&caller, Accounts::TENANT);
+					TotalMembers::<T>::put(count0 + 1);
 					Self::deposit_event(Event::TenantCreated(now, caller));
-					Ok(().into())
 				},
 				Accounts::SERVICER => {
-					Self::check_storage(caller.clone())?;
 					Self::check_role_approval_list(caller.clone())?;
 					let _acc =
 						Servicer::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
-					Ok(().into())
 				},
 			}
+
+			Ok(().into())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(T::MaxMembers::get()))]
 		///Approval function for Sellers and Servicers. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
@@ -200,13 +213,15 @@ pub mod pallet {
 				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			Self::approve_account(sender,account.clone())?;
+			let count0 = Self::total_members();
+			TotalMembers::<T>::put(count0 + 1);
+			Self::approve_account(sender.clone(), account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(().into())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::rejection(T::MaxMembers::get()))]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
@@ -220,7 +235,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_admin(T::MaxMembers::get()))]
 		///The caller will transfer his admin authority to a different account
 		pub fn set_manager(
 			origin: OriginFor<T>,

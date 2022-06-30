@@ -17,7 +17,15 @@ fn test_struct_methods() {
 		assert_ok!(HouseSeller::<Test>::new(Origin::signed(1)));
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
-			(vec![HouseSeller { account_id: 1, age: System::block_number(),activated: false, verifier: 1 }], vec![])
+			(
+				vec![HouseSeller {
+					account_id: 1,
+					age: System::block_number(),
+					activated: false,
+					verifier: 1
+				}],
+				vec![]
+			)
 		);
 		//---house seller should fail successfully----
 		assert_ne!(RoleModule::get_pending_approvals(), (vec![], vec![])); //assert_ne! is not supported at the moment, as this expression should panick
@@ -36,8 +44,18 @@ fn test_struct_methods() {
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
 			(
-				vec![HouseSeller { account_id: 1, age: System::block_number(),activated: false, verifier: 1 }],
-				vec![Servicer { account_id: 2, age: System::block_number(),activated: false, verifier: 2 }]
+				vec![HouseSeller {
+					account_id: 1,
+					age: System::block_number(),
+					activated: false,
+					verifier: 1
+				}],
+				vec![Servicer {
+					account_id: 2,
+					age: System::block_number(),
+					activated: false,
+					verifier: 2
+				}]
 			)
 		)
 	});
@@ -84,12 +102,12 @@ fn test_account_approval_rejection() {
 		assert_eq!(serv2.len(), 0);
 		assert_eq!(sell2.len(), 0);
 		assert!(ServicerLog::<Test>::contains_key(2));
-		assert_eq!(RoleModule::servicers(2).unwrap().activated,true);
-		assert_eq!(RoleModule::servicers(2).unwrap().verifier,4);
+		assert_eq!(RoleModule::servicers(2).unwrap().activated, true);
+		assert_eq!(RoleModule::servicers(2).unwrap().verifier, 4);
 		assert!(!ServicerLog::<Test>::contains_key(5));
 		assert!(HouseSellerLog::<Test>::contains_key(3));
-		assert_eq!(RoleModule::sellers(3).unwrap().activated,true);
-		assert_eq!(RoleModule::sellers(3).unwrap().verifier,4);
+		assert_eq!(RoleModule::sellers(3).unwrap().activated, true);
+		assert_eq!(RoleModule::sellers(3).unwrap().verifier, 4);
 		assert!(!HouseSellerLog::<Test>::contains_key(6));
 	})
 }
@@ -101,6 +119,8 @@ fn test_account_creation() {
 		let user1 = Origin::signed(1);
 		let user2 = Origin::signed(2);
 		let user3 = Origin::signed(3);
+		let user4 = Origin::signed(5);
+
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len = wait_sell.len();
 
@@ -119,8 +139,11 @@ fn test_account_creation() {
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len2 = wait_sell.len();
 		assert_eq!(sell_len2, sell_len + 1);
+		assert_eq!(RoleModule::total_members(), 2);
 		assert_ok!(RoleModule::account_approval(master, 2));
 		assert!(HouseSellerLog::<Test>::contains_key(2));
+		assert_eq!(RoleModule::total_members(), 3);
+		assert_noop!(RoleModule::set_role(user4, Acc::TENANT), Error::<Test>::TotalMembersExceeded);
 	})
 }
 

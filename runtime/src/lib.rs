@@ -263,16 +263,21 @@ impl pallet_sudo::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinContribution: u128 = 10;
-	pub const FundThreshold: u128 = 100;
-	pub const MaxFundContribution: u128 = 200;
-	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
+	pub const MaxMembers:u32 =200;
 }
-
 /// Configure the pallet-roles in pallets/roles.
 impl pallet_roles::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
+	type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+	type MaxMembers = MaxMembers;
+}
+
+parameter_types! {
+	pub const MinContribution: u128 = 10;
+	pub const FundThreshold: u128 = 100;
+	pub const MaxFundContribution: u128 = 200;
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 }
 
 /// Configure the pallet-housing_fund in pallets/housing_fund.

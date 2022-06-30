@@ -67,10 +67,14 @@ impl pallet_sudo::Config for Test {
 	type Event = Event;
 	type Call = Call;
 }
-
+parameter_types! {
+	pub const MaxMembers:u32 =200;
+}
 impl pallet_roles::Config for Test {
 	type Event = Event;
 	type Currency = Balances;
+	type WeightInfo = ();
+	type MaxMembers = MaxMembers;
 }
 
 impl pallet_housing_fund::Config for Test {
