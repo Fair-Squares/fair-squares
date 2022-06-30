@@ -27,10 +27,11 @@
 //! #### Roles management by Administrator
 //! * `account_approval` - This function allows the administrator to verify/approve Seller and
 //! Servicer role connection to the requesting AccountId.
-//! Verified AccountId are activated, i.e., the requesting AccountId is stored into the corresponding role storage.
+//! Verified AccountId are activated, i.e., the requesting AccountId is stored into the
+//! corresponding role storage.
 //!
 //! * `account_rejection` - This function allows the administrator to reject Seller and Servicer
-//! role connection to the requesting AccountId 
+//! role connection to the requesting AccountId
 //! that are in the approval list, but do not fullfill the FaiSquares guideline.
 //!
 //! * `set_manager` - This function allows the current manager to transfer his Administrative
@@ -54,10 +55,10 @@ mod benchmarking;
 mod helpers;
 mod structs;
 pub mod weights;
-pub use weights::WeightInfo;
-use sp_std::{fmt::Debug, prelude::*};
 pub use crate::structs::*;
 pub use pallet_sudo as SUDO;
+use sp_std::{fmt::Debug, prelude::*};
+pub use weights::WeightInfo;
 #[frame_support::pallet]
 pub mod pallet {
 	pub use super::*;
@@ -118,10 +119,9 @@ pub mod pallet {
 	pub(super) type AccountsRolesLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
 
-
 	#[pallet::type_value]
 	///Initializing function for the total number of members
-	pub(super) fn MyDefault1<T: Config>() -> u32{
+	pub(super) fn MyDefault1<T: Config>() -> u32 {
 		let t0 = 0;
 		t0
 	}
@@ -172,40 +172,36 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 			Self::check_storage(caller.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			let count0= Self::total_members();
+			let count0 = Self::total_members();
 			match account_type {
-				Accounts::INVESTOR => {					
+				Accounts::INVESTOR => {
 					let _acc =
 						Investor::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&caller, Accounts::INVESTOR);
-					TotalMembers::<T>::put(count0+1);
+					TotalMembers::<T>::put(count0 + 1);
 					Self::deposit_event(Event::InvestorCreated(now, caller));
-					
 				},
 				Accounts::SELLER => {
 					Self::check_role_approval_list(caller.clone())?;
 					let _acc = HouseSeller::<T>::new(origin)
 						.map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
-					
 				},
 				Accounts::TENANT => {
 					let _acc =
 						Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&caller, Accounts::TENANT);
-					TotalMembers::<T>::put(count0+1);
+					TotalMembers::<T>::put(count0 + 1);
 					Self::deposit_event(Event::TenantCreated(now, caller));
-					
 				},
 				Accounts::SERVICER => {
 					Self::check_role_approval_list(caller.clone())?;
 					let _acc =
 						Servicer::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
-					
 				},
 			}
-			
+
 			Ok(().into())
 		}
 
@@ -217,10 +213,10 @@ pub mod pallet {
 				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			let count0= Self::total_members();
-			TotalMembers::<T>::put(count0+1);
-			Self::approve_account(sender.clone(),account.clone())?;
-			let now = <frame_system::Pallet<T>>::block_number();			
+			let count0 = Self::total_members();
+			TotalMembers::<T>::put(count0 + 1);
+			Self::approve_account(sender.clone(), account.clone())?;
+			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(().into())
 		}

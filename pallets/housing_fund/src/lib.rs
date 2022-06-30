@@ -1,21 +1,21 @@
 //! # Housing fund pallet
-//! 
+//!
 //! The housing fund pallet provides methods to manage the fund used to buy houses
-//! 
+//!
 //! ## Overview
-//! 
-//! The housing fund pallet enable third parties to transfer or withdraw funds to a common pot for house purchase
-//! 
+//!
+//! The housing fund pallet enable third parties to transfer or withdraw funds to a common pot for
+//! house purchase
+//!
 //! ## Interface
-//! 
+//!
 //! ### Dispatchable Functions
-//! 
+//!
 //! * 'contribute_to_fund' - an account with the investor role can transfer funds to the pot
-//! * 'withdraw_fund' - an account with the investor role can withdraw funds from the pot if the amount is available
-//! * 'house_bidding' - an amount is reserved from the pot for the purchase of a house, for each contributor the share is tagged as reserved in
-//!    his contribution
-
-
+//! * 'withdraw_fund' - an account with the investor role can withdraw funds from the pot if the
+//!   amount is available
+//! * 'house_bidding' - an amount is reserved from the pot for the purchase of a house, for each
+//!   contributor the share is tagged as reserved in his contribution
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -35,8 +35,8 @@ mod functions;
 mod structs;
 
 pub use crate::structs::*;
-pub use weights::WeightInfo;
 pub use pallet_roles as ROLES;
+pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -55,7 +55,8 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + ROLES::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type LocalCurrency: frame_support::traits::Currency<Self::AccountId> + frame_support::traits::ReservableCurrency<Self::AccountId>;
+		type LocalCurrency: frame_support::traits::Currency<Self::AccountId>
+			+ frame_support::traits::ReservableCurrency<Self::AccountId>;
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
@@ -158,7 +159,10 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			// Check that the account has the investor role
-			ensure!(ROLES::Pallet::<T>::investors(who.clone()).is_none() == false, Error::<T>::NotAnInvestor);
+			ensure!(
+				ROLES::Pallet::<T>::investors(who.clone()).is_none() == false,
+				Error::<T>::NotAnInvestor
+			);
 
 			// Check if it is the minimal contribution
 			ensure!(amount.clone() >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
@@ -255,7 +259,10 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			// Check that the account has the investor role
-			ensure!(ROLES::Pallet::<T>::investors(who.clone()).is_none() == false, Error::<T>::NotAnInvestor);
+			ensure!(
+				ROLES::Pallet::<T>::investors(who.clone()).is_none() == false,
+				Error::<T>::NotAnInvestor
+			);
 
 			// Check if the account has contributed to the fund
 			ensure!(Contributions::<T>::contains_key(&who), Error::<T>::NotAContributor);
@@ -385,7 +392,7 @@ pub mod pallet {
 			// The amount is tagged as reserved in the fund for the account_id
 			T::LocalCurrency::reserve(
 				&T::PalletId::get().into_account_truncating(),
-				amount.clone()
+				amount.clone(),
 			)?;
 			fund.reserve(amount.clone());
 

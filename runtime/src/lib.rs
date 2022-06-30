@@ -262,7 +262,7 @@ impl pallet_sudo::Config for Runtime {
 	type Call = Call;
 }
 
-parameter_types!{
+parameter_types! {
 	pub const MaxMembers:u32 =200;
 }
 /// Configure the pallet-roles in pallets/roles.

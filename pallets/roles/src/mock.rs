@@ -1,6 +1,8 @@
 use crate as pallet_roles;
-use frame_support::traits::{ConstU32, ConstU64, GenesisBuild};
-use frame_support::parameter_types;
+use frame_support::{
+	parameter_types,
+	traits::{ConstU32, ConstU64, GenesisBuild},
+};
 use frame_system as system;
 pub use frame_system::RawOrigin;
 //use crate::SUDO::GenesisConfig;
@@ -26,7 +28,6 @@ frame_support::construct_runtime!(
 		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
-
 
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -78,9 +79,9 @@ parameter_types! {
 }
 impl pallet_roles::Config for Test {
 	type Event = Event;
-	type Currency = Balances;	
+	type Currency = Balances;
 	type WeightInfo = ();
-	type MaxMembers = MaxMembers;	
+	type MaxMembers = MaxMembers;
 }
 
 //helper types

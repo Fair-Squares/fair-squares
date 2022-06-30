@@ -109,12 +109,12 @@ benchmarks! {
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
 
 		for i in 0 .. T::MaxMembers::get()+1{
-			let caller:T::AccountId= account("Kazu", i, SEED);			
+			let caller:T::AccountId= account("Kazu", i, SEED);
 			acc.push(caller.clone());
 			let balance = T::Currency::minimum_balance().saturating_mul(1_000_000u32.into());
 			<T as pallet::Config>::Currency::make_free_balance_be(&caller,balance);
 			}
-		
+
 		let account1 = Accounts::SELLER;
 		let user = acc[b as usize].clone();
 		let user_lookup: <T::Lookup as StaticLookup>::Source = T::Lookup::unlookup(user.clone());

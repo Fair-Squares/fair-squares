@@ -5,7 +5,7 @@ impl<T: Config> Pallet<T> {
 	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
 		let waitlist = Self::get_pending_approvals();
 		let sellers = waitlist.0;
-		let servicers = waitlist.1;	
+		let servicers = waitlist.1;
 
 		for sell in sellers.iter() {
 			if sell.account_id == who.clone() {
@@ -45,7 +45,7 @@ impl<T: Config> Pallet<T> {
 		ensure!(InvestorLog::<T>::contains_key(&caller) == false, Error::<T>::OneRoleAllowed);
 		ensure!(ServicerLog::<T>::contains_key(&caller) == false, Error::<T>::OneRoleAllowed);
 		ensure!(TenantLog::<T>::contains_key(&caller) == false, Error::<T>::OneRoleAllowed);
-		ensure!(Self::total_members()< T::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
+		ensure!(Self::total_members() < T::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
 		Ok(().into())
 	}
 

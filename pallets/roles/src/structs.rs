@@ -91,7 +91,12 @@ where
 		let now = <frame_system::Pallet<T>>::block_number();
 		ensure!(HouseSellerLog::<T>::contains_key(&caller) == false, Error::<T>::NoneValue);
 
-		let hw = HouseSeller { account_id: caller.clone(), age: now, activated: false,verifier: caller.clone()};
+		let hw = HouseSeller {
+			account_id: caller.clone(),
+			age: now,
+			activated: false,
+			verifier: caller.clone(),
+		};
 
 		RoleApprovalList::<T>::mutate(|val| {
 			val.0.push(hw);
@@ -137,13 +142,18 @@ pub struct Servicer<T: Config> {
 	pub account_id: T::AccountId,
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
-	pub verifier: T::AccountId
+	pub verifier: T::AccountId,
 }
 impl<T: Config> Servicer<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
 		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
-		let sv = Servicer { account_id: caller.clone(), age: now,activated: false, verifier: caller.clone() };
+		let sv = Servicer {
+			account_id: caller.clone(),
+			age: now,
+			activated: false,
+			verifier: caller.clone(),
+		};
 		RoleApprovalList::<T>::mutate(|val| {
 			val.1.push(sv);
 		});
