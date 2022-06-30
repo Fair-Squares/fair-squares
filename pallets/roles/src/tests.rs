@@ -101,6 +101,8 @@ fn test_account_creation() {
 		let user1 = Origin::signed(1);
 		let user2 = Origin::signed(2);
 		let user3 = Origin::signed(3);
+		let user4 = Origin::signed(5);
+
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len = wait_sell.len();
 
@@ -119,8 +121,11 @@ fn test_account_creation() {
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len2 = wait_sell.len();
 		assert_eq!(sell_len2, sell_len + 1);
+		assert_eq!(RoleModule::total_members(),2);
 		assert_ok!(RoleModule::account_approval(master, 2));
 		assert!(HouseSellerLog::<Test>::contains_key(2));
+		assert_eq!(RoleModule::total_members(),3);
+		assert_noop!(RoleModule::set_role(user4,Acc::TENANT),Error::<Test>::TotalMembersExceeded);
 	})
 }
 

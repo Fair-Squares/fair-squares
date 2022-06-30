@@ -193,6 +193,7 @@ pub mod pallet {
 					let _acc =
 						Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&caller, Accounts::TENANT);
+					TotalMembers::<T>::put(count0+1);
 					Self::deposit_event(Event::TenantCreated(now, caller));
 					
 				},
@@ -216,8 +217,10 @@ pub mod pallet {
 				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			Self::approve_account(sender,account.clone())?;
-			let now = <frame_system::Pallet<T>>::block_number();
+			let count0= Self::total_members();
+			TotalMembers::<T>::put(count0+1);
+			Self::approve_account(sender.clone(),account.clone())?;
+			let now = <frame_system::Pallet<T>>::block_number();			
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(().into())
 		}
