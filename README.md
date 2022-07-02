@@ -56,7 +56,7 @@ by appending your own. A few useful ones are as follow.
 
 ### Connect with Polkadot-Js apps front-end
 
-Once the node template is running locally, you can connect it with **Polkadot-JS Apps** front-end to interact with your chain. [Polkadot.js](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) connects a front-end is the app that can interact with the node by means of extensics calls and can read the chain state of the blockchain.
+Once the node template is running locally, you can connect it with **Polkadot-JS Apps** front-end to interact with your chain. [Polkadot.js](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) connects a front-end is the app that can interact with the node by means of extensics calls and can read the chain state of the blockchain. Click [here](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) to connect to the local blockchain
 ## Run all tests
 
 ```
