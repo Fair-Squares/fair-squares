@@ -6,9 +6,11 @@ impl<T: Config> Pallet<T> {
 		let waitlist = Self::get_pending_approvals();
 		let sellers = waitlist.0;
 		let servicers = waitlist.1;
+		let mut exist: bool = false;
 
 		for sell in sellers.iter() {
 			if sell.account_id == who.clone() {
+				exist = true;
 				let mut sell0 = sell.clone();
 				sell0.activated = true;
 				sell0.verifier = sender.clone();
@@ -24,6 +26,7 @@ impl<T: Config> Pallet<T> {
 		}
 		for serv in servicers.iter() {
 			if serv.account_id == who.clone() {
+				exist = true;
 				let mut serv0 = serv.clone();
 				serv0.activated = true;
 				serv0.verifier = sender.clone();
@@ -37,6 +40,7 @@ impl<T: Config> Pallet<T> {
 				Self::deposit_event(Event::ServicerCreated(now, who.clone()));
 			}
 		}
+		ensure!(exist == true, Error::<T>::NotInWaitingList);
 		Ok(().into())
 	}
 
@@ -54,8 +58,10 @@ impl<T: Config> Pallet<T> {
 		let waitlist = Self::get_pending_approvals();
 		let sellers = waitlist.0;
 		let servicers = waitlist.1;
+		let mut exist: bool = false;
 		for sell in sellers.iter() {
 			if sell.account_id == who.clone() {
+				exist = true;
 				let index = sellers.iter().position(|x| *x == *sell).unwrap();
 				RoleApprovalList::<T>::mutate(|val| {
 					val.0.remove(index);
@@ -67,6 +73,7 @@ impl<T: Config> Pallet<T> {
 
 		for serv in servicers.iter() {
 			if serv.account_id == who.clone() {
+				exist = true;
 				let index = servicers.iter().position(|x| *x == *serv).unwrap();
 				RoleApprovalList::<T>::mutate(|val| {
 					val.1.remove(index);
@@ -75,6 +82,7 @@ impl<T: Config> Pallet<T> {
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who.clone()));
 			}
 		}
+		ensure!(exist == true, Error::<T>::NotInWaitingList);
 		Ok(().into())
 	}
 

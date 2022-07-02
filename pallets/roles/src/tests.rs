@@ -94,7 +94,7 @@ fn test_account_approval_rejection() {
 		assert_ok!(RoleModule::account_approval(master.clone(), 2));
 		assert_ok!(RoleModule::account_approval(master.clone(), 3));
 		assert_ok!(RoleModule::account_rejection(master.clone(), 5));
-		assert_ok!(RoleModule::account_rejection(master, 6));
+		assert_ok!(RoleModule::account_rejection(master.clone(), 6));
 
 		let wait2 = RoleModule::get_pending_approvals();
 		let serv2 = wait2.1;
