@@ -6,7 +6,7 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 
-	// Concersion of BalanceOf<T> to u32
+	// Conversion of BalanceOf<T> to u32
 	pub fn balance_to_u32_option(input: BalanceOf<T>) -> Option<u32> {
 		input.try_into().ok()
 	}

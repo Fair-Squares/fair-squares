@@ -62,7 +62,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
 					get_account_id_from_seed::<sr25519::Public>("Geraldo"),
 					get_account_id_from_seed::<sr25519::Public>("Hans"),
-
 				],
 				true,
 			)

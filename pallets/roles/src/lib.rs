@@ -158,6 +158,8 @@ pub mod pallet {
 		InvalidOperation,
 		///Require Sudo
 		RequireSudo,
+		///Account is not in waiting list
+		NotInWaitingList,
 		/// Account already in the waiting list
 		AlreadyWaiting,
 		///Maximum limit for number of members exceeded
