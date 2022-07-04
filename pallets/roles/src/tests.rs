@@ -22,7 +22,7 @@ fn test_struct_methods() {
 					account_id: 1,
 					age: System::block_number(),
 					activated: false,
-					verifier: 1
+					verifier: 4
 				}],
 				vec![]
 			)
@@ -48,13 +48,13 @@ fn test_struct_methods() {
 					account_id: 1,
 					age: System::block_number(),
 					activated: false,
-					verifier: 1
+					verifier: 4
 				}],
 				vec![Servicer {
 					account_id: 2,
 					age: System::block_number(),
 					activated: false,
-					verifier: 2
+					verifier: 4
 				}]
 			)
 		)
@@ -84,12 +84,12 @@ fn test_account_approval_rejection() {
 		assert_eq!(sell1.len(), 2);
 		assert_eq!(serv1[0].activated, false);
 		assert_eq!(serv1[1].activated, false);
-		assert_eq!(serv1[0].verifier, serv1[0].account_id);
-		assert_eq!(serv1[1].verifier, serv1[1].account_id);
+		assert_eq!(serv1[0].verifier, 4);
+		assert_eq!(serv1[1].verifier, 4);
 		assert_eq!(sell1[0].activated, false);
 		assert_eq!(sell1[1].activated, false);
-		assert_eq!(sell1[0].verifier, sell1[0].account_id);
-		assert_eq!(sell1[1].verifier, sell1[1].account_id);
+		assert_eq!(sell1[0].verifier, 4);
+		assert_eq!(sell1[1].verifier, 4);
 
 		assert_ok!(RoleModule::account_approval(master.clone(), 2));
 		assert_ok!(RoleModule::account_approval(master.clone(), 3));
