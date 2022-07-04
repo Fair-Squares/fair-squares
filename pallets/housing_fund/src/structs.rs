@@ -32,8 +32,6 @@ pub struct FundInfo<T: Config> {
 	pub transferable: BalanceOf<T>,
 	// The amount used project funding
 	pub reserved: BalanceOf<T>,
-	// Amount of the fund used to purchase houses
-	pub contributed: BalanceOf<T>,
 }
 impl<T: Config> FundInfo<T> {
 	// Add amount to the tranferable fund

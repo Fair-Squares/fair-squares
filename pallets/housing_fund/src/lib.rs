@@ -77,7 +77,6 @@ pub mod pallet {
 			total: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 			transferable: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 			reserved: Pallet::<T>::u64_to_balance_option(0).unwrap(),
-			contributed: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 		}
 	}
 
