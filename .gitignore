@@ -20,3 +20,5 @@
 .vscode
 
 shell.nix
+
+/pallets/roles/src/frame-weight-template.hbs
