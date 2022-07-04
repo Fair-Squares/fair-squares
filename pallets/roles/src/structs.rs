@@ -88,14 +88,15 @@ where
 	//-------------HOUSE SELLER CREATION METHOD_BEGIN----------------------
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
 		let caller = ensure_signed(acc)?;
+		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 		ensure!(HouseSellerLog::<T>::contains_key(&caller) == false, Error::<T>::NoneValue);
 
 		let hw = HouseSeller {
-			account_id: caller.clone(),
+			account_id: caller,
 			age: now,
 			activated: false,
-			verifier: caller.clone(),
+			verifier: admin,
 		};
 
 		RoleApprovalList::<T>::mutate(|val| {
@@ -147,12 +148,13 @@ pub struct Servicer<T: Config> {
 impl<T: Config> Servicer<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
 		let caller = ensure_signed(acc)?;
+		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 		let sv = Servicer {
-			account_id: caller.clone(),
+			account_id: caller,
 			age: now,
 			activated: false,
-			verifier: caller.clone(),
+			verifier: admin,
 		};
 		RoleApprovalList::<T>::mutate(|val| {
 			val.1.push(sv);
