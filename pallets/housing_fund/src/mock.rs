@@ -19,13 +19,14 @@ frame_support::construct_runtime!(
 	pub enum Test where
 		Block = Block,
 		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		HousingFundModule: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
-		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
-	}
+		UncheckedExtrinsic = UncheckedExtrinsic,	
+		{
+			System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+			HousingFundModule: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
+			Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+			RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
+			Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
+		}
 );
 
 impl frame_system::Config for Test {
