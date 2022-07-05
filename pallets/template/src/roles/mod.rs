@@ -43,8 +43,8 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
 
     //-------------------------------------------------------------------
     //-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
-    pub fn new(acc:OriginFor<T>) -> Self{
-        let caller = ensure_signed(acc).unwrap();
+    pub fn new(acc:OriginFor<T>) -> DispatchResult{
+        let caller = ensure_signed(acc)?;
         let now = <frame_system::Pallet<T>>::block_number();
             
             let inv = Investor{
@@ -58,13 +58,7 @@ impl<T:Config> Investor<T> where roles::Investor<T>: EncodeLike<roles::Investor<
             InvestorLog::<T>::insert(caller.clone(),inv);
         
         
-        Investor{
-            account_id: caller,
-            nft_index: Vec::new(),
-            age: now,
-            share:Zero::zero(),
-            selections:0,
-        }
+        Ok(())
 
         }
     //-------------NEW INVESTOR CREATION METHOD_END--------------------
@@ -236,15 +230,16 @@ pub struct Tenant<T:Config>{
     pub age:BlockNumberOf<T>,
 }
 impl<T:Config> Tenant<T> {    
-    pub fn new(acc:OriginFor<T>)-> Self{
-        let caller = ensure_signed(acc).unwrap();        
+    pub fn new(acc:OriginFor<T>)-> DispatchResult{
+        let caller = ensure_signed(acc)?;        
         let now = <frame_system::Pallet<T>>::block_number();
-        Tenant{
-            account_id: caller,
+        let tenant = Tenant{
+            account_id: caller.clone(),
             rent: Zero::zero(),
             age:now,
-        }
-        
+        };
+        TenantLog::<T>::insert(caller, &tenant);
+        Ok(())
     }
 }
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
