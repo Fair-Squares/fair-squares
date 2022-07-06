@@ -61,7 +61,7 @@ parameter_types! {
 	pub const FundThreshold: u128 = 100;
 	pub const MaxFundContribution: u128 = 200;
 	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
-
+	pub const MaxInvestorPerHouse: u32 = 10;
 }
 
 impl pallet_sudo::Config for Test {
@@ -86,6 +86,7 @@ impl pallet_housing_fund::Config for Test {
 	type MaxFundContribution = MaxFundContribution;
 	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Test>;
 	type PalletId = HousingFundPalletId;
+	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
 parameter_types! {

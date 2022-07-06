@@ -10,7 +10,6 @@ use frame_system::RawOrigin;
 benchmarks! {
 	contribute_to_fund {
 		let caller: T::AccountId = whitelisted_caller();
-		// let caller: T::AccountId = account("caller", 1, 1000);
 		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
 		let _ = crate::ROLES::Pallet::<T>::set_role(
 			caller_signed.clone(),
@@ -40,7 +39,7 @@ benchmarks! {
 		let mut contributions = Vec::new();
 		let house_id = 1;
 
-		for i in 0 .. 10 {
+		for i in 0 .. T::MaxInvestorPerHouse::get() {
 			let account_id = account("account_id", i, 1000);
 			<T as pallet::Config>::LocalCurrency::make_free_balance_be(&account_id,10_000_000u32.into());
 			contributions.push((

@@ -60,6 +60,7 @@ pub mod pallet {
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
+		type MaxInvestorPerHouse: Get<u32>;
 		type PalletId: Get<PalletId>;
 
 		/// Weight information for extrinsics in this pallet.
@@ -140,6 +141,8 @@ pub mod pallet {
 		NotEnoughAvailableBalance,
 		/// Must have the investor role,
 		NotAnInvestor,
+		/// Must not have more investor than the max acceppted
+		NotMoreThanMaxInvestorPerHouse
 	}
 
 	#[pallet::call]
@@ -365,6 +368,9 @@ pub mod pallet {
 			let mut fund = FundBalance::<T>::get();
 
 			ensure!(fund.can_take_off(amount.clone()), Error::<T>::NotEnoughAvailableBalance);
+
+			// Check the number of investors
+			ensure!(contributions.clone().len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(), Error::<T>::NotMoreThanMaxInvestorPerHouse);
 
 			// Checks that each contribution is possible
 			let contribution_iter = contributions.iter();
