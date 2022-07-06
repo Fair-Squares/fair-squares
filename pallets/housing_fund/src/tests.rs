@@ -70,7 +70,6 @@ fn contribute_with_valid_values_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -184,7 +183,6 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(50).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(50).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -315,7 +313,6 @@ fn withdraw_with_valid_values_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -398,7 +395,6 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -541,7 +537,6 @@ fn house_bidding_with_valid_values_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(80).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(20).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(60).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 

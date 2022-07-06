@@ -277,6 +277,7 @@ parameter_types! {
 	pub const MinContribution: u128 = 10;
 	pub const FundThreshold: u128 = 100;
 	pub const MaxFundContribution: u128 = 200;
+	pub const MaxInvestorPerHouse: u32 = 10;
 	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 }
 
@@ -289,6 +290,7 @@ impl pallet_housing_fund::Config for Runtime {
 	type MaxFundContribution = MaxFundContribution;
 	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
 	type PalletId = HousingFundPalletId;
+	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

@@ -1,7 +1,7 @@
 [package]
 name = "pallet-housing_fund"
 version = "4.0.0-dev"
-description = "Pallet to define the housin fund runtime logic."
+description = "Pallet to define the housing fund runtime logic."
 authors = ["Fair Squares"]
 homepage = "https://fair-squares.nl"
 edition = "2021"
@@ -46,5 +46,9 @@ std = [
 	"pallet-sudo/std",
 ]
 
-runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	]
 try-runtime = ["frame-support/try-runtime"]
