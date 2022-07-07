@@ -85,8 +85,6 @@ pub struct Contribution<T: Config> {
 	pub reserved_balance: BalanceOf<T>,
 	// Amount used to purchase houses
 	pub contributed_balance: BalanceOf<T>,
-	// Share of the housing fund
-	pub share: u32,
 	// Indicate if the contributor has withdrawn from the housing fund
 	pub has_withdrawn: bool,
 	// Block number of the last contribution's update
