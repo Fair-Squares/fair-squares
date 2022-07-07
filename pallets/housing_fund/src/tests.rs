@@ -714,3 +714,23 @@ fn contribution_unreserve_amount_should_succeed() {
 		assert_eq!(contribution.reserved_balance, 10);
 	});
 }
+
+#[test]
+fn get_contribution_share_should_succeed() {
+	new_test_ext().execute_with(|| {
+		// Give the investor role to the accounts
+		assert_ok!(RoleModule::set_role(Origin::signed(1), crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(Origin::signed(2), crate::ROLES::Accounts::INVESTOR));
+
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+
+		assert_eq!(
+			HousingFundModule::get_contribution_share(),
+			vec![
+				ContributionShare { account_id: 1, share: 50000 },
+				ContributionShare { account_id: 2, share: 50000 },
+			]
+		);
+	});
+}

@@ -129,3 +129,13 @@ pub struct FundOperation<T: Config> {
 	// List of (AccountIdOf<T>, BalanceOf<T>) representing the investors and their contribution
 	pub contributions: Vec<(AccountIdOf<T>, BalanceOf<T>)>,
 }
+
+// Contains the share of each investor
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+pub struct ContributionShare<T: Config> {
+	// Account of the contributor
+	pub account_id: AccountIdOf<T>,
+	// Share of the fund
+	pub share: u32,
+}
