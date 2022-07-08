@@ -184,17 +184,12 @@ pub mod pallet {
 			// Get the fund balance
 			let mut fund = FundBalance::<T>::get();
 
-			// Get the total fund to calculate the shares
-			let mut total_fund = amount.clone();
-			total_fund += fund.total.clone();
-
 			if !Contributions::<T>::contains_key(&who) {
 				let contribution = Contribution {
 					account_id: who.clone(),
 					available_balance: amount.clone(),
 					reserved_balance: Self::u64_to_balance_option(0).unwrap(),
 					contributed_balance: Self::u64_to_balance_option(0).unwrap(),
-					share: 0,
 					has_withdrawn: false,
 					block_number: block_number.clone(),
 					contributions: vec![contribution_log.clone()],
@@ -214,7 +209,6 @@ pub mod pallet {
 						available_balance: unwrap_val.available_balance + amount.clone(),
 						reserved_balance: unwrap_val.reserved_balance,
 						contributed_balance: unwrap_val.contributed_balance,
-						share: unwrap_val.share,
 						has_withdrawn: unwrap_val.has_withdrawn,
 						block_number: block_number.clone(),
 						contributions: contribution_logs,
@@ -237,9 +231,6 @@ pub mod pallet {
 				amount.clone(),
 				ExistenceRequirement::AllowDeath,
 			)?;
-
-			// Update the shares of each contributor according to the new total balance
-			Self::update_contribution_share(total_fund.clone());
 
 			// Emit an event.
 			Self::deposit_event(Event::ContributeSucceeded(who, amount, block_number));
@@ -305,7 +296,6 @@ pub mod pallet {
 					available_balance: unwrap_val.available_balance - amount.clone(),
 					reserved_balance: unwrap_val.reserved_balance,
 					contributed_balance: unwrap_val.contributed_balance,
-					share: unwrap_val.share,
 					has_withdrawn: true,
 					block_number: block_number.clone(),
 					contributions: contribution_logs.clone(),
@@ -327,12 +317,6 @@ pub mod pallet {
 				amount.clone(),
 				ExistenceRequirement::AllowDeath,
 			)?;
-
-			// Get the total balance to claculate the updated shares
-			let total_balance = fund.clone().total;
-
-			// Update the shares of each contributor according to the new total balance
-			Self::update_contribution_share(total_balance.clone());
 
 			// Emit an event.
 			Self::deposit_event(Event::WithdrawalSucceeded(

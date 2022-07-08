@@ -85,8 +85,6 @@ pub struct Contribution<T: Config> {
 	pub reserved_balance: BalanceOf<T>,
 	// Amount used to purchase houses
 	pub contributed_balance: BalanceOf<T>,
-	// Share of the housing fund
-	pub share: u32,
 	// Indicate if the contributor has withdrawn from the housing fund
 	pub has_withdrawn: bool,
 	// Block number of the last contribution's update
@@ -130,4 +128,14 @@ pub struct FundOperation<T: Config> {
 	pub block_number: BlockNumberOf<T>,
 	// List of (AccountIdOf<T>, BalanceOf<T>) representing the investors and their contribution
 	pub contributions: Vec<(AccountIdOf<T>, BalanceOf<T>)>,
+}
+
+// Contains the share of each investor
+#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+pub struct ContributionShare<T: Config> {
+	// Account of the contributor
+	pub account_id: AccountIdOf<T>,
+	// Share of the fund
+	pub share: u32,
 }
