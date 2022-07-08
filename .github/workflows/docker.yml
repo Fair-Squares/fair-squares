@@ -25,5 +25,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
+          context: .
+          file: ./Dockerfile
           push: true
-          tags: ilhanu/fs-node:latest
+          tags: ${{ steps.meta.outputs.tags }}
