@@ -133,15 +133,23 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
+		/// Investor role successfully attributed
 		InvestorCreated(T::BlockNumber, T::AccountId),
+		/// Tenant role successfully attributed
 		TenantCreated(T::BlockNumber, T::AccountId),
+		/// Seller role successfully attributed
 		SellerCreated(T::BlockNumber, T::AccountId),
+		/// Servicer role successfully attributed
 		ServicerCreated(T::BlockNumber, T::AccountId),
+		/// Request for new role accepted
 		AccountCreationApproved(T::BlockNumber, T::AccountId),
+		/// Request for new role Rejected
 		AccountCreationRejected(T::BlockNumber, T::AccountId),
+		/// Seller role request rejected
 		SellerAccountCreationRejected(T::BlockNumber, T::AccountId),
+		/// Servicer role request rejected
 		ServicerAccountCreationRejected(T::BlockNumber, T::AccountId),
+		/// Role request added to the role approval waiting list
 		CreationRequestCreated(T::BlockNumber, T::AccountId),
 	}
 
