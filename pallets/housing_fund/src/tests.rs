@@ -306,6 +306,26 @@ fn withdraw_with_valid_values_should_succeed() {
 		));
 
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+
+		// Check the state of the contribution
+		assert_eq!(
+			HousingFundModule::contributions(account_id),
+			Some(Contribution {
+				account_id: 1,
+				available_balance: HousingFundModule::u64_to_balance_option(25).unwrap(),
+				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				share: 100000,
+				has_withdrawn: false,
+				block_number: 1,
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
+				withdraws: Vec::new()
+			})
+		);
+
 		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(account_id), 20));
 
 		// check if balance has been correctly updated
