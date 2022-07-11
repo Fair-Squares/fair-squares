@@ -318,7 +318,7 @@ pub mod pallet {
 				*val = fund.clone();
 			});
 
-			// The amount is transferred from the treasurery to the account
+			// The amount is transferred from the treasury to the account
 			T::LocalCurrency::transfer(
 				&T::PalletId::get().into_account_truncating(),
 				&who,
