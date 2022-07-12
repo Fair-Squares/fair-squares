@@ -70,7 +70,6 @@ fn contribute_with_valid_values_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -82,7 +81,6 @@ fn contribute_with_valid_values_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 100000,
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -141,7 +139,6 @@ fn contribute_update_contribution_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(50).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 100000,
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![
@@ -184,7 +181,6 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(50).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(50).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -195,7 +191,6 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -213,7 +208,6 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -335,7 +329,6 @@ fn withdraw_with_valid_values_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -347,7 +340,6 @@ fn withdraw_with_valid_values_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 100000,
 				has_withdrawn: true,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -418,7 +410,6 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -429,7 +420,6 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 50000,
 				has_withdrawn: true,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -450,7 +440,6 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(5).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 50000,
 				has_withdrawn: true,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -561,7 +550,6 @@ fn house_bidding_with_valid_values_should_succeed() {
 				total: HousingFundModule::u64_to_balance_option(80).unwrap(),
 				transferable: HousingFundModule::u64_to_balance_option(20).unwrap(),
 				reserved: HousingFundModule::u64_to_balance_option(60).unwrap(),
-				contributed: HousingFundModule::u64_to_balance_option(0).unwrap(),
 			}
 		);
 
@@ -572,7 +560,6 @@ fn house_bidding_with_valid_values_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(30).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -590,7 +577,6 @@ fn house_bidding_with_valid_values_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(10).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(30).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 50000,
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![ContributionLog {
@@ -746,5 +732,25 @@ fn contribution_unreserve_amount_should_succeed() {
 		// check that contribution balance is correctly set
 		assert_eq!(contribution.available_balance, 40);
 		assert_eq!(contribution.reserved_balance, 10);
+	});
+}
+
+#[test]
+fn get_contribution_share_should_succeed() {
+	new_test_ext().execute_with(|| {
+		// Give the investor role to the accounts
+		assert_ok!(RoleModule::set_role(Origin::signed(1), crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(Origin::signed(2), crate::ROLES::Accounts::INVESTOR));
+
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+
+		assert_eq!(
+			HousingFundModule::get_contribution_share(),
+			vec![
+				ContributionShare { account_id: 1, share: 50000 },
+				ContributionShare { account_id: 2, share: 50000 },
+			]
+		);
 	});
 }

@@ -15,11 +15,14 @@ impl<T: Config> Pallet<T> {
 		T::PalletId::get().into_account_truncating()
 	}
 
-	// Update the shares of the contributions
-	pub fn update_contribution_share(amount: BalanceOf<T>) {
+	pub fn get_contribution_share() -> Vec<ContributionShare<T>> {
+		let mut contribution_shares = Vec::<ContributionShare<T>>::new();
+		let amount = FundBalance::<T>::get().total;
 		let contributions_iter = Contributions::<T>::iter();
+		let factor = Self::u64_to_balance_option(PERCENT_FACTOR.clone());
 
 		for item in contributions_iter {
+<<<<<<< HEAD
 			let factor = Self::u64_to_balance_option(PERCENT_FACTOR);
 			// Calculate the share according to the new total amount of the fund
 			let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount;
@@ -38,7 +41,15 @@ impl<T: Config> Pallet<T> {
 					withdraws: unwrap_val.withdraws,
 				};
 				*val = Some(contrib);
+=======
+			let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount.clone();
+			contribution_shares.push(ContributionShare {
+				account_id: item.1.account_id.clone(),
+				share: Self::balance_to_u32_option(share).unwrap()
+>>>>>>> origin/main
 			});
 		}
+
+		contribution_shares
 	}
 }

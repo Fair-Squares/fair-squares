@@ -60,6 +60,7 @@ pub mod pallet {
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
+		type MaxInvestorPerHouse: Get<u32>;
 		type PalletId: Get<PalletId>;
 
 		/// Weight information for extrinsics in this pallet.
@@ -77,7 +78,6 @@ pub mod pallet {
 			total: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 			transferable: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 			reserved: Pallet::<T>::u64_to_balance_option(0).unwrap(),
-			contributed: Pallet::<T>::u64_to_balance_option(0).unwrap(),
 		}
 	}
 
@@ -141,6 +141,8 @@ pub mod pallet {
 		NotEnoughAvailableBalance,
 		/// Must have the investor role,
 		NotAnInvestor,
+		/// Must not have more investor than the max acceppted
+		NotMoreThanMaxInvestorPerHouse
 	}
 
 	#[pallet::call]
@@ -182,17 +184,12 @@ pub mod pallet {
 			// Get the fund balance
 			let mut fund = FundBalance::<T>::get();
 
-			// Get the total fund to calculate the shares
-			let mut total_fund = amount;
-			total_fund += fund.total;
-
 			if !Contributions::<T>::contains_key(&who) {
 				let contribution = Contribution {
 					account_id: who.clone(),
 					available_balance: amount,
 					reserved_balance: Self::u64_to_balance_option(0).unwrap(),
 					contributed_balance: Self::u64_to_balance_option(0).unwrap(),
-					share: 0,
 					has_withdrawn: false,
 					block_number,
 					contributions: vec![contribution_log],
@@ -212,7 +209,6 @@ pub mod pallet {
 						available_balance: unwrap_val.available_balance + amount,
 						reserved_balance: unwrap_val.reserved_balance,
 						contributed_balance: unwrap_val.contributed_balance,
-						share: unwrap_val.share,
 						has_withdrawn: unwrap_val.has_withdrawn,
 						block_number,
 						contributions: contribution_logs,
@@ -235,9 +231,6 @@ pub mod pallet {
 				amount,
 				ExistenceRequirement::AllowDeath,
 			)?;
-
-			// Update the shares of each contributor according to the new total balance
-			Self::update_contribution_share(total_fund);
 
 			// Emit an event.
 			Self::deposit_event(Event::ContributeSucceeded(who, amount, block_number));
@@ -303,7 +296,6 @@ pub mod pallet {
 					available_balance: unwrap_val.available_balance - amount,
 					reserved_balance: unwrap_val.reserved_balance,
 					contributed_balance: unwrap_val.contributed_balance,
-					share: unwrap_val.share,
 					has_withdrawn: true,
 					block_number,
 					contributions: contribution_logs,
@@ -325,12 +317,6 @@ pub mod pallet {
 				amount,
 				ExistenceRequirement::AllowDeath,
 			)?;
-
-			// Get the total balance to claculate the updated shares
-			let total_balance = fund.clone().total;
-
-			// Update the shares of each contributor according to the new total balance
-			Self::update_contribution_share(total_balance);
 
 			// Emit an event.
 			Self::deposit_event(Event::WithdrawalSucceeded(
@@ -366,6 +352,9 @@ pub mod pallet {
 			let mut fund = FundBalance::<T>::get();
 
 			ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughAvailableBalance);
+
+			// Check the number of investors
+			ensure!(contributions.clone().len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(), Error::<T>::NotMoreThanMaxInvestorPerHouse);
 
 			// Checks that each contribution is possible
 			let contribution_iter = contributions.iter();

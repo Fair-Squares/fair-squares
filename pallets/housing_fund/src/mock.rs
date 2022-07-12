@@ -19,13 +19,14 @@ frame_support::construct_runtime!(
 	pub enum Test where
 		Block = Block,
 		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,	{
-		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		HousingFundModule: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
-		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
-	}
+		UncheckedExtrinsic = UncheckedExtrinsic,	
+		{
+			System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+			HousingFundModule: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
+			Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+			RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
+			Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
+		}
 );
 
 impl frame_system::Config for Test {
@@ -60,7 +61,7 @@ parameter_types! {
 	pub const FundThreshold: u128 = 100;
 	pub const MaxFundContribution: u128 = 200;
 	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
-
+	pub const MaxInvestorPerHouse: u32 = 10;
 }
 
 impl pallet_sudo::Config for Test {
@@ -85,6 +86,7 @@ impl pallet_housing_fund::Config for Test {
 	type MaxFundContribution = MaxFundContribution;
 	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Test>;
 	type PalletId = HousingFundPalletId;
+	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
 parameter_types! {
