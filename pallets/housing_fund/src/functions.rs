@@ -20,9 +20,9 @@ impl<T: Config> Pallet<T> {
 		let contributions_iter = Contributions::<T>::iter();
 
 		for item in contributions_iter {
-			let factor = Self::u64_to_balance_option(PERCENT_FACTOR.clone());
+			let factor = Self::u64_to_balance_option(PERCENT_FACTOR);
 			// Calculate the share according to the new total amount of the fund
-			let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount.clone();
+			let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount;
 
 			Contributions::<T>::mutate(item.0, |val| {
 				let unwrap_val = val.clone().unwrap();
@@ -35,7 +35,7 @@ impl<T: Config> Pallet<T> {
 					has_withdrawn: unwrap_val.has_withdrawn,
 					block_number: unwrap_val.block_number,
 					contributions: unwrap_val.contributions.clone(),
-					withdraws: unwrap_val.withdraws.clone(),
+					withdraws: unwrap_val.withdraws,
 				};
 				*val = Some(contrib);
 			});

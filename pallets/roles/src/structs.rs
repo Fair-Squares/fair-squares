@@ -90,7 +90,7 @@ where
 		let caller = ensure_signed(acc)?;
 		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
-		ensure!(HouseSellerLog::<T>::contains_key(&caller) == false, Error::<T>::NoneValue);
+		ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
 
 		let hw = HouseSeller {
 			account_id: caller,
@@ -103,7 +103,7 @@ where
 			val.0.push(hw);
 		});
 
-		Ok(().into())
+		Ok(())
 	}
 
 	//-------------HOUSE SELLER CREATION METHOD_END----------------------
@@ -159,7 +159,7 @@ impl<T: Config> Servicer<T> {
 		RoleApprovalList::<T>::mutate(|val| {
 			val.1.push(sv);
 		});
-		Ok(().into())
+		Ok(())
 	}
 }
 //-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_END---------------------------

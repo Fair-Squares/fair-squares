@@ -17,7 +17,7 @@ pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T> = <<T as Config>::LocalCurrency as Currency<AccountIdOf<T>>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
-#[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, RuntimeDebug, TypeInfo)]
 pub enum WithdrawalReason {
 	NotDefined,
 }
@@ -39,29 +39,29 @@ impl<T: Config> FundInfo<T> {
 	// Add amount to the tranferable fund
 	pub fn contribute_transferable(&mut self, amount: BalanceOf<T>) {
 		// add to transferable
-		self.transferable += amount.clone();
+		self.transferable += amount;
 		// update the total amount
-		self.total += amount.clone();
+		self.total += amount;
 	}
 
 	pub fn can_take_off(&self, amount: BalanceOf<T>) -> bool {
 		// check that amount to take off if inferior to the transferable
-		amount.clone() <= self.transferable.clone()
+		amount <= self.transferable
 	}
 
 	// Withdraw from the tranferable
 	pub fn withdraw_transferable(&mut self, amount: BalanceOf<T>) {
 		// remove from transferable
-		self.transferable -= amount.clone();
+		self.transferable -= amount;
 		// update the total amount
-		self.total -= amount.clone();
+		self.total -= amount;
 	}
 
 	pub fn reserve(&mut self, amount: BalanceOf<T>) {
 		// remove the amount from transferable
-		self.transferable -= amount.clone();
+		self.transferable -= amount;
 		// add the amount to reserved
-		self.reserved += amount.clone();
+		self.reserved += amount;
 	}
 }
 
@@ -100,21 +100,21 @@ pub struct Contribution<T: Config> {
 }
 impl<T: Config> Contribution<T> {
 	pub fn get_total_balance(&self) -> BalanceOf<T> {
-		self.available_balance.clone() + self.reserved_balance.clone()
+		self.available_balance + self.reserved_balance
 	}
 
 	pub fn can_reserve(&self, amount: BalanceOf<T>) -> bool {
-		amount.clone() <= self.available_balance.clone()
+		amount <= self.available_balance
 	}
 
 	pub fn reserve_amount(&mut self, amount: BalanceOf<T>) {
-		self.available_balance -= amount.clone();
-		self.reserved_balance += amount.clone();
+		self.available_balance -= amount;
+		self.reserved_balance += amount;
 	}
 
 	pub fn unreserve_amount(&mut self, amount: BalanceOf<T>) {
-		self.reserved_balance -= amount.clone();
-		self.available_balance += amount.clone();
+		self.reserved_balance -= amount;
+		self.available_balance += amount;
 	}
 }
 

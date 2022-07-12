@@ -94,7 +94,7 @@ fn test_account_approval_rejection() {
 		assert_ok!(RoleModule::account_approval(master.clone(), 2));
 		assert_ok!(RoleModule::account_approval(master.clone(), 3));
 		assert_ok!(RoleModule::account_rejection(master.clone(), 5));
-		assert_ok!(RoleModule::account_rejection(master.clone(), 6));
+		assert_ok!(RoleModule::account_rejection(master, 6));
 
 		let wait2 = RoleModule::get_pending_approvals();
 		let serv2 = wait2.1;
@@ -128,12 +128,12 @@ fn test_account_creation() {
 		assert!(InvestorLog::<Test>::contains_key(1));
 		assert_noop!(RoleModule::set_role(user1, Acc::TENANT), Error::<Test>::OneRoleAllowed);
 
-		assert_ok!(RoleModule::set_role(user3.clone(), Acc::TENANT));
+		assert_ok!(RoleModule::set_role(user3, Acc::TENANT));
 		assert!(TenantLog::<Test>::contains_key(3));
 
 		assert_ok!(RoleModule::set_role(user2.clone(), Acc::SELLER));
 		assert_noop!(
-			RoleModule::set_role(user2.clone(), Acc::SELLER),
+			RoleModule::set_role(user2, Acc::SELLER),
 			Error::<Test>::AlreadyWaiting
 		);
 		let wait_sell = RoleModule::get_pending_approvals().0;

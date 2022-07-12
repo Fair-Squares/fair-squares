@@ -122,8 +122,8 @@ pub mod pallet {
 	#[pallet::type_value]
 	///Initializing function for the total number of members
 	pub(super) fn MyDefault1<T: Config>() -> u32 {
-		let t0 = 0;
-		t0
+		
+		0
 	}
 
 	#[pallet::storage]
@@ -185,56 +185,53 @@ pub mod pallet {
 			let count0 = Self::total_members();
 			match account_type {
 				Accounts::INVESTOR => {
-					let _acc =
-						Investor::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
+					Investor::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&caller, Accounts::INVESTOR);
 					TotalMembers::<T>::put(count0 + 1);
 					Self::deposit_event(Event::InvestorCreated(now, caller));
 				},
 				Accounts::SELLER => {
 					Self::check_role_approval_list(caller.clone())?;
-					let _acc = HouseSeller::<T>::new(origin)
+					HouseSeller::<T>::new(origin)
 						.map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
 				},
 				Accounts::TENANT => {
-					let _acc =
-						Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
+					Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&caller, Accounts::TENANT);
 					TotalMembers::<T>::put(count0 + 1);
 					Self::deposit_event(Event::TenantCreated(now, caller));
 				},
 				Accounts::SERVICER => {
 					Self::check_role_approval_list(caller.clone())?;
-					let _acc =
-						Servicer::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
+					Servicer::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, caller));
 				},
 			}
 
-			Ok(().into())
+			Ok(())
 		}
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(T::MaxMembers::get()))]
 		///Approval function for Sellers and Servicers. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			ensure!(
-				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
+				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
 			let count0 = Self::total_members();
 			TotalMembers::<T>::put(count0 + 1);
-			Self::approve_account(sender.clone(), account.clone())?;
+			Self::approve_account(sender, account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
-			Ok(().into())
+			Ok(())
 		}
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::rejection(T::MaxMembers::get()))]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			ensure!(
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
@@ -242,7 +239,7 @@ pub mod pallet {
 			Self::reject_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationRejected(now, account));
-			Ok(().into())
+			Ok(())
 		}
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_admin(T::MaxMembers::get()))]
@@ -257,7 +254,7 @@ pub mod pallet {
 				"only the current sudo key can sudo"
 			);
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
-			Ok(().into())
+			Ok(())
 		}
 	}
 }
