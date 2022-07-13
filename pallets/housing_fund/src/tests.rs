@@ -309,7 +309,6 @@ fn withdraw_with_valid_values_should_succeed() {
 				available_balance: HousingFundModule::u64_to_balance_option(25).unwrap(),
 				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
 				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
-				share: 100000,
 				has_withdrawn: false,
 				block_number: 1,
 				contributions: vec![ContributionLog {
