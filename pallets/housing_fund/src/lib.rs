@@ -162,16 +162,16 @@ pub mod pallet {
 
 			// Check that the account has the investor role
 			ensure!(
-				ROLES::Pallet::<T>::investors(who.clone()).is_none() == false,
+				ROLES::Pallet::<T>::investors(who.clone()).is_some(),
 				Error::<T>::NotAnInvestor
 			);
 
 			// Check if it is the minimal contribution
-			ensure!(amount.clone() >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
+			ensure!(amount >= T::MinContribution::get(), Error::<T>::ContributionTooSmall);
 
 			// Check if account has enough to contribute
 			ensure!(
-				T::LocalCurrency::free_balance(&who) >= amount.clone(),
+				T::LocalCurrency::free_balance(&who) >= amount,
 				Error::<T>::NotEnoughToContribute
 			);
 
@@ -179,7 +179,7 @@ pub mod pallet {
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
 			let contribution_log =
-				ContributionLog { amount: amount.clone(), block_number: block_number.clone() };
+				ContributionLog { amount, block_number };
 
 			// Get the fund balance
 			let mut fund = FundBalance::<T>::get();
@@ -187,12 +187,12 @@ pub mod pallet {
 			if !Contributions::<T>::contains_key(&who) {
 				let contribution = Contribution {
 					account_id: who.clone(),
-					available_balance: amount.clone(),
+					available_balance: amount,
 					reserved_balance: Self::u64_to_balance_option(0).unwrap(),
 					contributed_balance: Self::u64_to_balance_option(0).unwrap(),
 					has_withdrawn: false,
-					block_number: block_number.clone(),
-					contributions: vec![contribution_log.clone()],
+					block_number,
+					contributions: vec![contribution_log],
 					withdraws: Vec::new(),
 				};
 
@@ -206,11 +206,11 @@ pub mod pallet {
 
 					let new_contrib = Contribution {
 						account_id: who.clone(),
-						available_balance: unwrap_val.available_balance + amount.clone(),
+						available_balance: unwrap_val.available_balance + amount,
 						reserved_balance: unwrap_val.reserved_balance,
 						contributed_balance: unwrap_val.contributed_balance,
 						has_withdrawn: unwrap_val.has_withdrawn,
-						block_number: block_number.clone(),
+						block_number,
 						contributions: contribution_logs,
 						withdraws: Vec::new(),
 					};
@@ -219,7 +219,7 @@ pub mod pallet {
 			}
 
 			// Update fund with new transferable amount
-			fund.contribute_transferable(amount.clone());
+			fund.contribute_transferable(amount);
 			FundBalance::<T>::mutate(|val| {
 				*val = fund.clone();
 			});
@@ -228,7 +228,7 @@ pub mod pallet {
 			T::LocalCurrency::transfer(
 				&who,
 				&T::PalletId::get().into_account_truncating(),
-				amount.clone(),
+				amount,
 				ExistenceRequirement::AllowDeath,
 			)?;
 
@@ -253,7 +253,7 @@ pub mod pallet {
 
 			// Check that the account has the investor role
 			ensure!(
-				ROLES::Pallet::<T>::investors(who.clone()).is_none() == false,
+				ROLES::Pallet::<T>::investors(who.clone()).is_some(),
 				Error::<T>::NotAnInvestor
 			);
 
@@ -267,14 +267,14 @@ pub mod pallet {
 			let contribution_amount = contribution.get_total_balance();
 
 			// Check that the amount is not superior to the total balance of the contributor
-			ensure!(amount.clone() <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
+			ensure!(amount <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
 
 			// Get the fund balance
 			let mut fund = FundBalance::<T>::get();
 
 			// Check that the fund has enough transferable for the withdraw
 			ensure!(
-				fund.can_take_off(amount.clone()),
+				fund.can_take_off(amount),
 				Error::<T>::NotEnoughInTransferableForWithdraw
 			);
 
@@ -282,7 +282,7 @@ pub mod pallet {
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
 			let withdraw_log =
-				ContributionLog { amount: amount.clone(), block_number: block_number.clone() };
+				ContributionLog { amount, block_number };
 
 			Contributions::<T>::mutate(&who, |val| {
 				let unwrap_val = val.clone().unwrap();
@@ -293,35 +293,35 @@ pub mod pallet {
 
 				let new_contrib = Contribution {
 					account_id: who.clone(),
-					available_balance: unwrap_val.available_balance - amount.clone(),
+					available_balance: unwrap_val.available_balance - amount,
 					reserved_balance: unwrap_val.reserved_balance,
 					contributed_balance: unwrap_val.contributed_balance,
 					has_withdrawn: true,
-					block_number: block_number.clone(),
-					contributions: contribution_logs.clone(),
+					block_number,
+					contributions: contribution_logs,
 					withdraws: withdraw_logs.clone(),
 				};
 				*val = Some(new_contrib);
 			});
 
 			// Update fund with new transferable amount
-			fund.withdraw_transferable(amount.clone());
+			fund.withdraw_transferable(amount);
 			FundBalance::<T>::mutate(|val| {
 				*val = fund.clone();
 			});
 
-			// The amount is transferred from the treasurery to the account
+			// The amount is transferred from the treasury to the account
 			T::LocalCurrency::transfer(
 				&T::PalletId::get().into_account_truncating(),
 				&who,
-				amount.clone(),
+				amount,
 				ExistenceRequirement::AllowDeath,
 			)?;
 
 			// Emit an event.
 			Self::deposit_event(Event::WithdrawalSucceeded(
 				who,
-				amount.clone(),
+				amount,
 				structs::WithdrawalReason::NotDefined,
 				block_number,
 			));
@@ -351,7 +351,7 @@ pub mod pallet {
 			// Check that the fund can afford the bid
 			let mut fund = FundBalance::<T>::get();
 
-			ensure!(fund.can_take_off(amount.clone()), Error::<T>::NotEnoughAvailableBalance);
+			ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughAvailableBalance);
 
 			// Check the number of investors
 			ensure!(contributions.clone().len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(), Error::<T>::NotMoreThanMaxInvestorPerHouse);
@@ -363,27 +363,27 @@ pub mod pallet {
 
 			for item in contribution_iter {
 				let entry = Contributions::<T>::get(item.0.clone());
-				ensure!(entry.is_none() == false, Error::<T>::NotAContributor);
+				ensure!(entry.is_some(), Error::<T>::NotAContributor);
 				ensure!(
-					entry.unwrap().can_reserve(item.1.clone()),
+					entry.unwrap().can_reserve(item.1),
 					Error::<T>::NotEnoughAvailableBalance
 				);
 
 				Contributions::<T>::mutate(item.0.clone(), |val| {
 					let mut unwrap_val = val.clone().unwrap();
-					unwrap_val.reserve_amount(item.1.clone());
+					unwrap_val.reserve_amount(item.1);
 					let contribution = unwrap_val.clone();
 					*val = Some(contribution);
 				});
-				contribution_list.push((item.0.clone(), item.1.clone()));
+				contribution_list.push((item.0.clone(), item.1));
 			}
 
 			// The amount is tagged as reserved in the fund for the account_id
 			T::LocalCurrency::reserve(
 				&T::PalletId::get().into_account_truncating(),
-				amount.clone(),
+				amount,
 			)?;
-			fund.reserve(amount.clone());
+			fund.reserve(amount);
 
 			// The amount is reserved in the pot
 			FundBalance::<T>::mutate(|val| {
@@ -395,14 +395,14 @@ pub mod pallet {
 
 			let reservation = FundOperation {
 				account_id: account_id.clone(),
-				house_id: house_id.clone(),
-				amount: amount.clone(),
-				block_number: block_number.clone(),
+				house_id,
+				amount,
+				block_number,
 				contributions: contribution_list,
 			};
 
 			// The reservation is added to the storage
-			Reservations::<T>::insert(house_id.clone(), reservation);
+			Reservations::<T>::insert(house_id, reservation);
 
 			// Emit an event.
 			Self::deposit_event(Event::FundReservationSucceeded(

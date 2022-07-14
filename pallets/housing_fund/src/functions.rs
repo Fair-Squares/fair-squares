@@ -19,10 +19,10 @@ impl<T: Config> Pallet<T> {
 		let mut contribution_shares = Vec::<ContributionShare<T>>::new();
 		let amount = FundBalance::<T>::get().total;
 		let contributions_iter = Contributions::<T>::iter();
-		let factor = Self::u64_to_balance_option(PERCENT_FACTOR.clone());
+		let factor = Self::u64_to_balance_option(PERCENT_FACTOR);
 
 		for item in contributions_iter {
-			let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount.clone();
+			let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount;
 			contribution_shares.push(ContributionShare {
 				account_id: item.1.account_id.clone(),
 				share: Self::balance_to_u32_option(share).unwrap()

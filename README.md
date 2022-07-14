@@ -34,7 +34,7 @@ cargo build --release
 The binary will be present in create the binary in `./target/release/fs-node` if not other argument is passed. 
 
 ### Docker build & run
-We added a [Dockerfile](https://github.com/Fair-Squares/fair-squares/blob/main/Dockerfile) in the repo, you can build an image yourself with the following commmand ` Docker build . `
+We added a [Dockerfile](https://github.com/Fair-Squares/fair-squares/blob/main/Dockerfile) in the repo, you can build an image yourself with the following commmand `docker build .`
 
 ### Docker images
 //
@@ -49,6 +49,8 @@ Then run the following command to start a single node development chain.
 ```bash
 ./scripts/docker_run.sh
 ```
+The script above will need a folder in the root of this project called `.local` , you will have to create this folder yourself.
+
 
 This command will firstly compile your code, and then start a local development network. You can also replace the default command
 (`cargo build --release && ./target/release/fs-node --dev --ws-external`)

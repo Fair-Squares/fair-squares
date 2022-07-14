@@ -40,17 +40,17 @@ impl<T: Config> Pallet<T> {
 				Self::deposit_event(Event::ServicerCreated(now, who.clone()));
 			}
 		}
-		ensure!(exist == true, Error::<T>::NotInWaitingList);
-		Ok(().into())
+		ensure!(exist, Error::<T>::NotInWaitingList);
+		Ok(())
 	}
 
 	pub fn check_storage(caller: T::AccountId) -> DispatchResult {
-		ensure!(HouseSellerLog::<T>::contains_key(&caller) == false, Error::<T>::OneRoleAllowed);
-		ensure!(InvestorLog::<T>::contains_key(&caller) == false, Error::<T>::OneRoleAllowed);
-		ensure!(ServicerLog::<T>::contains_key(&caller) == false, Error::<T>::OneRoleAllowed);
-		ensure!(TenantLog::<T>::contains_key(&caller) == false, Error::<T>::OneRoleAllowed);
+		ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		ensure!(!InvestorLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		ensure!(!ServicerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		ensure!(!TenantLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
 		ensure!(Self::total_members() < T::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
-		Ok(().into())
+		Ok(())
 	}
 
 	//Helper function for account creation rejection by admin only
@@ -82,8 +82,8 @@ impl<T: Config> Pallet<T> {
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who.clone()));
 			}
 		}
-		ensure!(exist == true, Error::<T>::NotInWaitingList);
-		Ok(().into())
+		ensure!(exist, Error::<T>::NotInWaitingList);
+		Ok(())
 	}
 
 	pub fn check_role_approval_list(account: AccountIdOf<T>) -> DispatchResult {
@@ -92,18 +92,18 @@ impl<T: Config> Pallet<T> {
 		let sell = waitlists.0;
 		ensure!(!HouseSellerLog::<T>::contains_key(&account), Error::<T>::OneRoleAllowed);
 		ensure!(!ServicerLog::<T>::contains_key(&account), Error::<T>::OneRoleAllowed);
-		if sell.len() > 0 {
+		if !sell.is_empty() {
 			for sellers in sell.iter() {
 				let id = &sellers.account_id;
 				ensure!(&account != id, Error::<T>::AlreadyWaiting);
 			}
 		}
-		if serv.len() > 0 {
+		if !serv.is_empty() {
 			for servicers in serv.iter() {
 				let id = &servicers.account_id;
 				ensure!(&account != id, Error::<T>::AlreadyWaiting);
 			}
 		}
-		Ok(().into())
+		Ok(())
 	}
 }
