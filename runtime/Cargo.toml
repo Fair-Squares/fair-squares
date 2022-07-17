@@ -85,6 +85,7 @@ std = [
 	"sp-session/std",
 	"sp-std/std",
 	"sp-transaction-pool/std",
+	"pallet-uniques/std",
 	"sp-version/std",
 ]
 runtime-benchmarks = [
@@ -93,6 +94,7 @@ runtime-benchmarks = [
 	"frame-system-benchmarking",
 	"frame-system/runtime-benchmarks",
 	"hex-literal",
+	"pallet-uniques/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",
