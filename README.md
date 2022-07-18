@@ -1,12 +1,6 @@
-
-<div class="row" align="center">
-  <div class="column">
-    <img src="https://fair-squares.nl/assets/fs_light.png" alt="fs" style="width:45%">
-  </div>
-  <div class="column">
-    <img src="./assets/img/web3_foundation_grants_badge_white.svg" alt="w3f" style="width:50%">
-  </div>
-</div>
+<p align="center">
+  <img src="https://fair-squares.nl/assets/fs_light.png" width="300">
+</p>
 
 
 <div align="center">
@@ -15,6 +9,10 @@
 [![License](https://img.shields.io/github/license/fair-Squares/fair-squares)](https://github.com/Fair-Squares/fair-squares/blob/main/LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/5u3dxE49V5)
 </div>
+
+<p align="center">
+  <img src="./assets/img/web3_foundation_grants_badge_white.svg" width="250">
+</p>
 
 
 
