@@ -1,11 +1,15 @@
+<p align="center">
+  <img src="https://fair-squares.nl/assets/fs_light.png" width="240">
+</p>
+
+
 <div align="center">
-  <a href="https://discord.gg/5u3dxE49V5">
-    <img alt="Discord" src="https://img.shields.io/discord/899662897003778139?label=Fair%20squares%20&logo=Discord&logoColor=red" />
-  </a>
-  <a href="https://twitter.com/FairSquares">
-    <img alt="Twitter Follow Fair Squares" src="https://twitter.com/FairSquares"/>
-  </a>
+
+[![Twitter URL](https://img.shields.io/twitter/follow/fairsquares?style=social)](https://twitter.com/fairsquares)
+[![License](https://img.shields.io/github/license/fair-Squares/fair-squares)](https://github.com/Fair-Squares/fair-squares/blob/main/LICENSE)
+[![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/5u3dxE49V5)
 </div>
+
 
 
 # Fair Squares (FS)
