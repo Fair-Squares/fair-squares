@@ -27,7 +27,7 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
+		AsEnsureOriginWithArg,ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -35,7 +35,10 @@ pub use frame_support::{
 	},
 	PalletId, StorageValue,
 };
+pub mod constants;
+use constants::currency::*;
 pub use frame_system::Call as SystemCall;
+use frame_system::EnsureSigned;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
@@ -250,6 +253,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
+	type Event = Event;
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
@@ -260,6 +264,43 @@ impl pallet_transaction_payment::Config for Runtime {
 impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
+}
+
+parameter_types! {
+	// Deposit to create a class of assets is 100 Dollars
+	pub const CollectionDeposit: Balance = 100 * DOLLARS;
+	// Deposit to create an item is 1 Dollars
+	pub const ItemDeposit: Balance = 1 * DOLLARS;
+	pub const KeyLimit: u32 = 32;
+	pub const ValueLimit: u32 = 256;
+	// Base deposit to add metadata is 10 CENTS
+	pub const MetadataDepositBase: Balance = 10 *CENTS;
+	// per byte deposit is 1 DOLLARS
+	pub const DepositPerByte: Balance = DOLLARS;
+	// Base deposit to add attribute is 5 DOLLARS
+	pub const AttributeDepositBase: Balance = 5 * DOLLARS;
+	
+}
+
+impl pallet_uniques::Config for Runtime {
+	type Event = Event;
+	type CollectionId = u32;
+	type ItemId = u32;
+	type Currency = Balances;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type AttributeDepositBase = MetadataDepositBase;
+	type DepositPerByte = DepositPerByte;
+	type StringLimit = ValueLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type WeightInfo = pallet_uniques::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type Locker = ();
 }
 
 parameter_types! {
@@ -274,9 +315,9 @@ impl pallet_roles::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinContribution: u128 = 10;
-	pub const FundThreshold: u128 = 100;
-	pub const MaxFundContribution: u128 = 200;
+	pub const MinContribution: u128 = 5000 * DOLLARS;
+	pub const FundThreshold: u128 = 100_000 * DOLLARS;
+	pub const MaxFundContribution: u128 = 20_000 * DOLLARS;
 	pub const MaxInvestorPerHouse: u32 = 10;
 	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 }
@@ -307,6 +348,7 @@ construct_runtime!(
 		Grandpa: pallet_grandpa,
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
+		Uniques: pallet_uniques,
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		RoleModule: pallet_roles,
@@ -355,6 +397,7 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
+		[pallet_uniques, Uniques]
 		[pallet_roles, RoleModule]
 		[pallet_housing_fund, HousingFundModule]
 	);
