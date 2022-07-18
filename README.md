@@ -1,6 +1,12 @@
-<p align="center">
-  <img src="https://fair-squares.nl/assets/fs_light.png" width="240">
-</p>
+
+<div class="row" align="center">
+  <div class="column">
+    <img src="https://fair-squares.nl/assets/fs_light.png" alt="fs" style="width:45%">
+  </div>
+  <div class="column">
+    <img src="./assets/img/web3_foundation_grants_badge_white.svg" alt="w3f" style="width:50%">
+  </div>
+</div>
 
 
 <div align="center">
@@ -21,6 +27,8 @@ It removes the financial barrier of investing in real estate for investors that 
 FS can be positions as a programmed DAO that has the financial tools housing-fund that is programmed to bid on houses as they have been succesfully onboarded. The onboarding is achieved by verfied actors such as a fullfilling tasks to get the truth on-chain. The real world actors the following real-world actors to fullfill tasks and get paid out by the digital society. 
 
 We are zooming much more on the problem definition, stakeholders and the solution in our paper on our [website](https://fair-squares.nl/). To learn more and get in touch with us, please join our [discord channel FS](https://discord.gg/5u3dxE49V5)
+
+Our current development is funded by [Web3 Foundation Grants Program](https://github.com/w3f/Grants-Program)
 
 </br>
 
