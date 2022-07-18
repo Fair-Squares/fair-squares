@@ -1,28 +1,13 @@
-<p align="center">
-  <img src="https://fair-squares.nl/assets/fs_light.png" width="300">
-</p>
 
 
-<div align="center">
+# Fair Squares (FS) &middot; [![Twitter URL](https://img.shields.io/twitter/follow/fairsquares?style=social)](https://twitter.com/fairsquares) [![License](https://img.shields.io/github/license/fair-Squares/fair-squares)](https://github.com/Fair-Squares/fair-squares/blob/main/LICENSE) [![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/5u3dxE49V5)
 
-[![Twitter URL](https://img.shields.io/twitter/follow/fairsquares?style=social)](https://twitter.com/fairsquares)
-[![License](https://img.shields.io/github/license/fair-Squares/fair-squares)](https://github.com/Fair-Squares/fair-squares/blob/main/LICENSE)
-[![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/5u3dxE49V5)
-</div>
 
 <p align="center">
-  <img src="./assets/img/web3_foundation_grants_badge_white.svg" width="250">
+    <img src="https://fair-squares.nl/assets/fs_light.png" width="400" align="center">
 </p>
 
-
-
-# Fair Squares (FS)
-## Description
-FS connects supply and demand of house-owners & renters and houses & investors. Our motive is that we want to create an affordable housing market. Investors of a house get a social return while renters can have cheaper housing. 
-
-It removes the financial barrier of investing in real estate for investors that don't have the means to fully invest in a house themselves. In between the end-users, there is coordination taking place between different stakeholders to achieve the desired outcome. This is where the runtime and the logic of all pallets come together, orchestrating while adhering to strict rules set for a equitable system.  
-
-FS can be positions as a programmed DAO that has the financial tools housing-fund that is programmed to bid on houses as they have been succesfully onboarded. The onboarding is achieved by verfied actors such as a fullfilling tasks to get the truth on-chain. The real world actors the following real-world actors to fullfill tasks and get paid out by the digital society. 
+FS connects supply and demand of house-owners & renters and houses & investors. Our motive is that we want to create an more affordable housing market. Investors of the house get a social return while renters can have cheaper housing. We want to remove the financial barrier of investing in real estate for investors that don't have the means to fully invest in a house themselves for a social return. In between the end-users, there is coordination taking place between different stakeholders to achieve the desired outcome. This is where the runtime and the logic of all pallets come together, orchestrating while adhering to strict rules set for an equitable system. The orchestration towards an equitable housing market is configurable and governable by the stakeholders that are concerend with it and are willing to work for it. 
 
 We are zooming much more on the problem definition, stakeholders and the solution in our paper on our [website](https://fair-squares.nl/). To learn more and get in touch with us, please join our [discord channel FS](https://discord.gg/5u3dxE49V5)
 
@@ -48,7 +33,6 @@ We added a [Dockerfile](https://github.com/Fair-Squares/fair-squares/blob/main/D
 
 ### Docker images
 //
-
 
 ### Run in Docker in linux
 
