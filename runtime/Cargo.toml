@@ -52,6 +52,7 @@ hex-literal = { version = "0.3.4", optional = true }
 # Local Dependencies
 pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
 pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
+pallet-voting = { version = "4.0.0-dev", default-features = false, path = "../pallets/voting" }
 ### add new pallet config
 
 [build-dependencies]
@@ -88,6 +89,7 @@ std = [
 	"sp-transaction-pool/std",
 	"pallet-uniques/std",
 	"sp-version/std",
+	"pallet-voting/std",
 	### add new std
 ]
 runtime-benchmarks = [
@@ -103,6 +105,7 @@ runtime-benchmarks = [
 	"pallet-housing_fund/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+	"pallet-voting/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -118,5 +121,6 @@ try-runtime = [
 	"pallet-housing_fund/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
+	"pallet-voting/try-runtime",
 	### add new try-runtime
 ]
