@@ -34,6 +34,12 @@ pub enum Accounts {
 	SERVICER,
 }
 
+impl Default for Accounts {
+    fn default() -> Self {
+        Accounts::SELLER
+    }
+}
+
 //-------------------------------------------------------------------------------------
 //-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
