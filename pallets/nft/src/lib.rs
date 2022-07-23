@@ -24,13 +24,13 @@ pub use functions::*;
 pub use pallet_roles as Roles;
 //use weights::WeightInfo;
 
-//mod benchmarking;
+mod benchmarking;
 pub mod types;
 pub mod functions;
 //pub mod weights;
 
-//#[cfg(test)]
-//pub mod mock;
+#[cfg(test)]
+pub mod mock;
 
 //#[cfg(test)]
 //mod tests;

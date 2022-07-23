@@ -604,6 +604,7 @@ impl_runtime_apis! {
 			add_benchmarks!(params, batches);
 			add_benchmark!(params, batches, pallet_roles, RoleModule);
 			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
+			add_benchmark!(params, batches, pallet_nft, NftModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
