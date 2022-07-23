@@ -16,7 +16,8 @@ pub type ItemId = u32;
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct CollectionInfo<BoundedVec> {    
+pub struct CollectionInfo<BoundedVec> {
+    pub role_type: Acc,  
     /// Arbitrary data about a collection, e.g. IPFS hash
     pub metadata: BoundedVec,
 }

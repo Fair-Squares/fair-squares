@@ -102,12 +102,7 @@ pub mod pallet {
     pub type Items<T: Config> =
         StorageDoubleMap<_, Twox64Concat, T::NftCollectionId, Twox64Concat, T::NftItemId, ItemInfoOf<T>>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn datas)]
-	/// Stores owner's share of the fractional nft
-	pub type TokenByOwner<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, T::AccountId, Twox64Concat, (T::NftCollectionId,T::NftItemId), TokenByOwnerData<T>>;
-
+	
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Creates an NFT Collection of the given Collection
@@ -171,13 +166,12 @@ pub mod pallet {
             collection_id: T::NftCollectionId,
             item_id: T::NftItemId,
             dest: <T::Lookup as StaticLookup>::Source,
-			share: u32,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
 
             let dest = T::Lookup::lookup(dest)?;
 
-            Self::do_transfer(collection_id, item_id, sender, dest, share)?;
+            Self::do_transfer(collection_id, item_id, sender, dest)?;
 
             Ok(())
         }
@@ -222,6 +216,7 @@ pub mod pallet {
         CollectionCreated {
             owner: T::AccountId,
             collection_id: T::NftCollectionId,
+            role_type: Acc,
         },
         /// An Item was minted
         ItemMinted {

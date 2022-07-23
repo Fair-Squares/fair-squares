@@ -3,6 +3,7 @@
 //! Definition and implementation of the different structs found in FairSquares
 
 pub use super::*;
+pub use serde::{Deserialize, Serialize};
 pub use frame_support::{
 	assert_ok,
 	dispatch::{DispatchResult, EncodeLike},
@@ -25,8 +26,8 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Idle<T> = (Vec<HouseSeller<T>>, Vec<Servicer<T>>);
 
 ///This enum contains the roles selectable at account creation
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo,Copy)]
+#[cfg_attr(feature = "std", derive(Debug,Serialize, Deserialize))]
 pub enum Accounts {
 	INVESTOR,
 	SELLER,

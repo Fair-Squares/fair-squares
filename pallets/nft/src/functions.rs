@@ -2,6 +2,16 @@
 pub use super::*;
 
 
+pub trait CreateTypedCollection<AccountId, CollectionId, Acc>: Create<AccountId> {
+    /// This function create an NFT collection of `role_type` type.
+    fn create_typed_collection(owner: AccountId, collection_id: CollectionId, role_type: Acc) -> DispatchResult;
+}
+
+pub trait ReserveCollectionId<CollectionId> {
+    /// This function returns `true` if collection id is from the reserved range, `false` otherwise.
+    fn is_id_reserved(id: CollectionId) -> bool;
+}
+
 impl<T: Config> Pallet<T> {
     pub fn collection_owner(collection_id: T::NftCollectionId) -> Option<T::AccountId> {
         pallet_uniques::Pallet::<T>::collection_owner(collection_id.clone().into())
@@ -17,6 +27,7 @@ impl<T: Config> Pallet<T> {
         role_type: Acc,
         metadata: BoundedVecOfUnq<T>,
     ) -> DispatchResult {
+        ensure!(T::Permissions::can_create(&role_type), Error::<T>::NotPermitted);
         let deposit_info = match T::Permissions::has_deposit(&role_type) {
             false => (Zero::zero(), true),
             true => (T::CollectionDeposit::get(), false),
@@ -34,11 +45,12 @@ impl<T: Config> Pallet<T> {
             },
         )?;
 
-        Collections::<T>::insert(collection_id, CollectionInfo { metadata });
+        Collections::<T>::insert(collection_id, CollectionInfo { role_type,metadata });
 
         Self::deposit_event(Event::CollectionCreated {
             owner,
             collection_id,
+            role_type,
         });
 
         Ok(())
@@ -50,19 +62,12 @@ impl<T: Config> Pallet<T> {
         item_id: T::NftItemId,
         metadata: BoundedVecOfUnq<T>,
     ) -> DispatchResult {
-        
-        pallet_uniques::Pallet::<T>::do_mint(collection_id.into(), item_id.into(), owner.clone(), |_details| Ok(()))?;
+        let role_type = Self::collections(collection_id)
+            .map(|c| c.role_type)
+            .ok_or(Error::<T>::CollectionUnknown)?;
 
-		let share = TokenByOwnerData::<T>{
-			percent_owned: 100000,
-			item: ItemInfo {
-				metadata: metadata.clone(),
-			},
-		};
-		let key_exists = TokenByOwner::<T>::contains_key(&owner,(&collection_id, &item_id));
-		if key_exists == false{
-			TokenByOwner::<T>::insert(&owner, (&collection_id, &item_id), share);
-		}
+        ensure!(T::Permissions::can_mint(&role_type), Error::<T>::NotPermitted);
+        pallet_uniques::Pallet::<T>::do_mint(collection_id.into(), item_id.into(), owner.clone(), |_details| Ok(()))?;
 
         Items::<T>::insert(collection_id, item_id, ItemInfo { metadata });
 
@@ -80,40 +85,18 @@ impl<T: Config> Pallet<T> {
         item_id: T::NftItemId,
         from: T::AccountId,
         to: T::AccountId,
-		share: u32,
     ) -> DispatchResult {
+        let role_type = Self::collections(collection_id)
+            .map(|c| c.role_type)
+            .ok_or(Error::<T>::CollectionUnknown)?;
+
+        ensure!(T::Permissions::can_transfer(&role_type), Error::<T>::NotPermitted);
+
         
         if from == to {
             return Ok(());
-        }
-
-        
-		let mut owner_data =  TokenByOwner::<T>::get(&from,(&collection_id,&item_id)).unwrap();
-		let oldshare = owner_data.percent_owned;
-		ensure!(oldshare>=share, Error::<T>::NotPermitted);
-		let newshare = oldshare-&share;
-		owner_data.percent_owned = newshare;
-		TokenByOwner::<T>::mutate(&from,(&collection_id,&item_id),|val|{
-			*val = Some(owner_data);
-		});
-
+        }       
 		
-		if TokenByOwner::<T>::contains_key(&to,(&collection_id,&item_id)){
-			let mut owner_data1 =  TokenByOwner::<T>::get(&to,(&collection_id,&item_id)).unwrap();
-			let oldshare1 = owner_data1.percent_owned;
-			let new = &share+oldshare1;
-			ensure!(new <= 100000, Error::<T>::NotPermitted);
-			owner_data1.percent_owned = new;
-			TokenByOwner::<T>::mutate(&to,(&collection_id,&item_id),|val|{
-				*val = Some(owner_data1);
-			});
-		} else{
-			let owner_data1 = TokenByOwnerData::<T>{
-				percent_owned: share,
-				item: Items::<T>::get(&collection_id,&item_id).unwrap(),
-			};
-			TokenByOwner::<T>::insert(&to,(&collection_id,&item_id),owner_data1);
-		}
 		
 
         pallet_uniques::Pallet::<T>::do_transfer(
@@ -256,12 +239,24 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
         Ok(())
     }
 
-    fn burn(collection: &Self::CollectionId, item: &Self::ItemId,maybe_check_owner: Option<&T::AccountId>) -> DispatchResult {
+    fn burn(collection: &Self::CollectionId, item: &Self::ItemId,_maybe_check_owner: Option<&T::AccountId>) -> DispatchResult {
         let owner = Self::owner(*collection, *item).ok_or(Error::<T>::ItemUnknown)?;
 
         Self::do_burn(owner, *collection, *item)?;
 
         Ok(())
+    }
+}
+
+impl<T: Config> CreateTypedCollection<T::AccountId, T::NftCollectionId, Acc> for Pallet<T> {
+    fn create_typed_collection(owner: T::AccountId, collection_id: T::NftCollectionId, role_type: Acc) -> DispatchResult {
+        Self::do_create_collection(owner, collection_id, role_type, Default::default())
+    }
+}
+
+impl<T: Config> ReserveCollectionId<T::NftCollectionId> for Pallet<T> {
+    fn is_id_reserved(id: T::NftCollectionId) -> bool {
+        id <= T::ReserveCollectionIdUpTo::get()
     }
 }
 
