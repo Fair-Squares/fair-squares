@@ -89,6 +89,7 @@ std = [
 	"sp-transaction-pool/std",
 	"pallet-uniques/std",
 	"sp-version/std",
+	### add new std
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -104,6 +105,7 @@ runtime-benchmarks = [
 	"pallet-housing_fund/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+	### add new runtime-benchmarks
 ]
 try-runtime = [
 	"frame-executive/try-runtime",
@@ -119,4 +121,5 @@ try-runtime = [
 	"pallet-housing_fund/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
+	### add new try-runtime
 ]

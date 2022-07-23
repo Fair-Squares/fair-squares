@@ -351,6 +351,8 @@ impl pallet_housing_fund::Config for Runtime {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
+// flag add pallet config
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -419,6 +421,7 @@ mod benches {
 		[pallet_roles, RoleModule]
 		[pallet_nft, NftModule]
 		[pallet_housing_fund, HousingFundModule]
+		// flag add pallet bench_macro
 	);
 }
 
@@ -601,6 +604,7 @@ impl_runtime_apis! {
 			add_benchmarks!(params, batches);
 			add_benchmark!(params, batches, pallet_roles, RoleModule);
 			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
+			// flag add pallet benchmark
 
 			Ok(batches)
 		}
