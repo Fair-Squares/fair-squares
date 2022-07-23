@@ -1818,6 +1818,7 @@ dependencies = [
  "pallet-balances",
  "pallet-grandpa",
  "pallet-housing_fund",
+ "pallet-nft",
  "pallet-randomness-collective-flip",
  "pallet-roles",
  "pallet-sudo",
@@ -4044,6 +4045,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-nft"
+version = "4.0.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-roles",
+ "pallet-sudo",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-randomness-collective-flip"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.26#e8a7d161f39db70cb27fdad6c6e215cf493ebc3b"
@@ -4068,6 +4089,7 @@ dependencies = [
  "pallet-sudo",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",

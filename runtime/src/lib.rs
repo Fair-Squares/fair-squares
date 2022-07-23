@@ -38,10 +38,12 @@ pub use frame_support::{
 pub mod constants;
 use constants::currency::*;
 pub use frame_system::Call as SystemCall;
-use frame_system::EnsureSigned;
+use frame_system::{EnsureSigned, EnsureRoot};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
+use pallet_nft::NftPermissions;
+
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
@@ -49,6 +51,8 @@ pub use sp_runtime::{Perbill, Permill};
 //import fs-pallets
 pub use pallet_housing_fund;
 pub use pallet_roles;
+pub use pallet_nft;
+pub use pallet_nft::{ItemId,CollectionId,Acc,NftPermission};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -315,6 +319,19 @@ impl pallet_roles::Config for Runtime {
 }
 
 parameter_types! {
+	pub ReserveCollectionIdUpTo: u32 = 999_999;
+}
+impl pallet_nft::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = ();
+	type NftCollectionId = CollectionId;
+	type NftItemId = ItemId;
+	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type Permissions = NftPermissions;
+	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
+}
+
+parameter_types! {
 	pub const MinContribution: u128 = 5000 * DOLLARS;
 	pub const FundThreshold: u128 = 100_000 * DOLLARS;
 	pub const MaxFundContribution: u128 = 20_000 * DOLLARS;
@@ -353,6 +370,7 @@ construct_runtime!(
 		// Include the custom logic from the pallet-template in the runtime.
 		RoleModule: pallet_roles,
 		HousingFundModule: pallet_housing_fund,
+		NftModule: pallet_nft,
 	}
 );
 
@@ -399,6 +417,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_uniques, Uniques]
 		[pallet_roles, RoleModule]
+		[pallet_nft, NftModule]
 		[pallet_housing_fund, HousingFundModule]
 	);
 }
