@@ -4,6 +4,8 @@
 use super::*;
 
 use crate as NFT;
+//use crate::Roles::Pallet;
+use pallet_sudo as SUDO;
 use frame_benchmarking::{account, benchmarks, vec};
 use frame_support::traits::{tokens::nonfungibles::InspectEnumerable, Currency, Get};
 use frame_system::RawOrigin;
@@ -41,6 +43,15 @@ fn do_mint<T: Config>(caller: T::AccountId, collection_id: T::NftCollectionId, i
 benchmarks! {
     create_collection {
         let caller = create_account::<T>("caller", 0);
+        let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+        let _ = Roles::Pallet::<T>::set_role(
+			caller_signed.clone(),
+			Roles::Accounts::SELLER
+		);
+        let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
+        let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+        Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
+
         let metadata: BoundedVec<_, _> = vec![0; <T as UNQ::Config>::StringLimit::get() as usize].try_into().unwrap();
     }: _(RawOrigin::Signed(caller.clone()), COLLECTION_ID_0.into(), metadata)
     verify {
@@ -49,6 +60,15 @@ benchmarks! {
 
     mint {
         let caller = create_account::<T>("caller", 0);
+        let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+        let _ = Roles::Pallet::<T>::set_role(
+			caller_signed.clone(),
+			Roles::Accounts::SELLER
+		);
+        let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
+        let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+        Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
+
         do_create_collection::<T>(caller.clone(), 1_000_000u32.into());
         let metadata: BoundedVec<_, _> = vec![0; <T as UNQ::Config>::StringLimit::get() as usize].try_into().unwrap();
     }: _(RawOrigin::Signed(caller.clone()), COLLECTION_ID_0.into(), 0u32.into(), metadata)
@@ -58,6 +78,15 @@ benchmarks! {
 
     transfer {
         let caller = create_account::<T>("caller", 1);
+        let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+        let _ = Roles::Pallet::<T>::set_role(
+			caller_signed.clone(),
+			Roles::Accounts::SERVICER
+		);
+        let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
+        let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+        Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
+
         do_create_collection::<T>(caller.clone(), COLLECTION_ID_0.into());
         let caller_lookup = T::Lookup::unlookup(caller.clone());
         let caller2 = create_account::<T>("caller2", 1);
@@ -70,6 +99,15 @@ benchmarks! {
 
     destroy_collection {
         let caller = create_account::<T>("caller", 1);
+        let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+        let _ = Roles::Pallet::<T>::set_role(
+			caller_signed.clone(),
+			Roles::Accounts::SERVICER
+		);
+        let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
+        let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+        Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
+
         do_create_collection::<T>(caller.clone(), COLLECTION_ID_0.into());
     }: _(RawOrigin::Signed(caller), COLLECTION_ID_0.into())
     verify {
@@ -78,13 +116,22 @@ benchmarks! {
 
     burn {
         let caller = create_account::<T>("caller", 1);
+        let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+        let _ = Roles::Pallet::<T>::set_role(
+			caller_signed.clone(),
+			Roles::Accounts::SERVICER
+		);
+        let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
+        let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+        Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
+
         do_create_collection::<T>(caller.clone(), COLLECTION_ID_0.into());
         do_mint::<T>(caller.clone(), COLLECTION_ID_0.into(), 0u32.into());
     }: _(RawOrigin::Signed(caller.clone()), COLLECTION_ID_0.into(), 0u32.into())
     verify {
         assert_eq!(UNQ::Pallet::<T>::owned(&caller).count(), 0);
     }
-    impl_benchmark_test_suite!(Pallet, super::ExtBuilder::default().build(), super::Test);
+    impl_benchmark_test_suite!(Nft, crate::tests::new_test_ext(), crate::tests::Test);
 }
 
 //#[cfg(test)]

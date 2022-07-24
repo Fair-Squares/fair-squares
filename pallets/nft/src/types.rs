@@ -45,11 +45,11 @@ pub struct NftPermissions;
 
 impl NftPermission<Acc> for NftPermissions {
     fn can_create(role_type: &Acc) -> bool {
-        matches!(*role_type, Acc::SELLER)
+        matches!(*role_type, Acc::SELLER | Acc::SERVICER)
     }
 
     fn can_mint(role_type: &Acc) -> bool {
-        matches!(*role_type, Acc::SERVICER)
+        matches!(*role_type, Acc::SELLER | Acc::SERVICER)
     }
 
     fn can_transfer(role_type: &Acc) -> bool {
