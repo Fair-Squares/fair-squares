@@ -26,8 +26,7 @@ impl<T: Config> Pallet<T> {
         collection_id: T::NftCollectionId,
         role_type: Acc,
         metadata: BoundedVecOfUnq<T>,
-    ) -> DispatchResult {
-        ensure!(T::Permissions::can_create(&role_type), Error::<T>::NotPermitted);
+    ) -> DispatchResult {        
         let deposit_info = match T::Permissions::has_deposit(&role_type) {
             false => (Zero::zero(), true),
             true => (T::CollectionDeposit::get(), false),
@@ -62,11 +61,8 @@ impl<T: Config> Pallet<T> {
         item_id: T::NftItemId,
         metadata: BoundedVecOfUnq<T>,
     ) -> DispatchResult {
-        let role_type = Self::collections(collection_id)
-            .map(|c| c.role_type)
-            .ok_or(Error::<T>::CollectionUnknown)?;
-
-        ensure!(T::Permissions::can_mint(&role_type), Error::<T>::NotPermitted);
+        
+        ensure!(Collections::<T>::contains_key(collection_id), Error::<T>::CollectionUnknown);
         pallet_uniques::Pallet::<T>::do_mint(collection_id.into(), item_id.into(), owner.clone(), |_details| Ok(()))?;
 
         Items::<T>::insert(collection_id, item_id, ItemInfo { metadata });
@@ -86,18 +82,10 @@ impl<T: Config> Pallet<T> {
         from: T::AccountId,
         to: T::AccountId,
     ) -> DispatchResult {
-        let role_type = Self::collections(collection_id)
-            .map(|c| c.role_type)
-            .ok_or(Error::<T>::CollectionUnknown)?;
-
-        ensure!(T::Permissions::can_transfer(&role_type), Error::<T>::NotPermitted);
-
-        
+                
         if from == to {
             return Ok(());
-        }       
-		
-		
+        }	
 
         pallet_uniques::Pallet::<T>::do_transfer(
             collection_id.into(),

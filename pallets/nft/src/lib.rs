@@ -121,8 +121,10 @@ pub mod pallet {
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
 
-            ensure!(T::ReserveCollectionIdUpTo::get() < collection_id, Error::<T>::IdReserved);
+            //ensure!(T::ReserveCollectionIdUpTo::get() < collection_id, Error::<T>::IdReserved);
+            ensure!(!Self::is_id_reserved(collection_id), Error::<T>::IdReserved);
             let role_type = Roles::Pallet::<T>::get_roles(&sender).unwrap();
+            ensure!(T::Permissions::can_create(&role_type), Error::<T>::NotPermitted);
 
             Self::do_create_collection(sender, collection_id,role_type, metadata)?;
 
@@ -145,6 +147,11 @@ pub mod pallet {
             metadata: BoundedVecOfUnq<T>,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+            let role_type = Self::collections(collection_id)
+            .map(|c| c.role_type)
+            .ok_or(Error::<T>::CollectionUnknown)?;            
+        
+            ensure!(T::Permissions::can_mint(&role_type), Error::<T>::NotPermitted);
 
             Self::do_mint(sender, collection_id, item_id, metadata)?;
 
@@ -170,6 +177,11 @@ pub mod pallet {
             let sender = ensure_signed(origin)?;
 
             let dest = T::Lookup::lookup(dest)?;
+            let role_type = Self::collections(collection_id)
+            .map(|c| c.role_type)
+            .ok_or(Error::<T>::CollectionUnknown)?;
+
+            ensure!(T::Permissions::can_transfer(&role_type), Error::<T>::NotPermitted);
 
             Self::do_transfer(collection_id, item_id, sender, dest)?;
 
@@ -186,6 +198,12 @@ pub mod pallet {
         pub fn burn(origin: OriginFor<T>, collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
             let sender = ensure_signed(origin)?;
 
+            let role_type = Self::collections(collection_id)
+            .map(|c| c.role_type)
+            .ok_or(Error::<T>::CollectionUnknown)?;
+
+            ensure!(T::Permissions::can_burn(&role_type), Error::<T>::NotPermitted);
+
             Self::do_burn(sender, collection_id, item_id)?;
 
             Ok(())
@@ -199,6 +217,12 @@ pub mod pallet {
         #[transactional]
         pub fn destroy_collection(origin: OriginFor<T>, collection_id: T::NftCollectionId) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+
+            let role_type = Self::collections(collection_id)
+            .map(|c| c.role_type)
+            .ok_or(Error::<T>::CollectionUnknown)?;
+
+            ensure!(T::Permissions::can_destroy(&role_type), Error::<T>::NotPermitted);
 
             Self::do_destroy_collection(sender, collection_id)?;
 

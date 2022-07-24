@@ -1,10 +1,11 @@
- super::*;
+use super::*;
 use crate as pallet_nft;
 
-use frame_support::traits::Everything;
+use frame_support::traits::{AsEnsureOriginWithArg, ConstU32, Everything, Locker};
 use frame_support::{parameter_types, weights::Weight};
 use frame_system::EnsureRoot;
 use sp_core::{crypto::AccountId32, H256};
+use pallet_roles::GenesisBuild;
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
@@ -32,52 +33,53 @@ frame_support::construct_runtime!(
         Uniques: pallet_uniques::{Pallet, Storage, Event<T>},
         NFT: pallet_nft::{Pallet, Call, Event<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+        Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
+        RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
     }
 );
 
 parameter_types! {
-    pub ReserveCollectionIdUpTo: u128 = 999;
+    pub ReserveCollectionIdUpTo: u32 = 999;
 }
 
 #[derive(Eq, Copy, PartialEq, Clone)]
 pub struct NftTestPermissions;
 
-impl NftPermission<RoleType> for NftTestPermissions {
-    fn can_create(role_type: &RoleType) -> bool {
+impl NftPermission<Acc> for NftTestPermissions {
+    fn can_create(role_type: &Acc) -> bool {
         matches!(
             *role_type,
-            RoleType::SELLER | RoleType::SERVICER 
+            Acc::SELLER | Acc::SERVICER 
         )
     }
 
-    fn can_mint(role_type: &RoleType) -> bool {
-        matches!(*role_type, RoleType::SELLER | RoleType::SERVICER)
+    fn can_mint(role_type: &Acc) -> bool {
+        matches!(*role_type, Acc::SELLER | Acc::SERVICER)
     }
 
-    fn can_transfer(role_type: &RoleType) -> bool {
-        matches!(*role_type, RoleType::SELLER)
+    fn can_transfer(role_type: &Acc) -> bool {
+        matches!(*role_type, Acc::SERVICER)
     }
 
-    fn can_burn(role_type: &RoleType) -> bool {
-        matches!(*role_type, RoleType::SELLER)
+    fn can_burn(role_type: &Acc) -> bool {
+        matches!(*role_type, Acc::SERVICER)
     }
 
-    fn can_destroy(role_type: &RoleType) -> bool {
-        matches!(*role_type, RoleType::SELLER | RoleType::SERVICER)
+    fn can_destroy(role_type: &Acc) -> bool {
+        matches!(*role_type, Acc::SERVICER)
     }
 
-    fn has_deposit(role_type: &RoleType) -> bool {
-        matches!(*role_type, RoleType::SELLER)
+    fn has_deposit(role_type: &Acc) -> bool {
+        matches!(*role_type, Acc::SERVICER)
     }
 }
 
 impl Config for Test {
     type Event = Event;
-    type WeightInfo = pallet_nft::weights::BasiliskWeight<Test>;
+    type WeightInfo = ();
     type NftCollectionId = CollectionId;
-    type NftInstanceId = InstanceId;
+    type NftItemId = ItemId;
     type ProtocolOrigin = EnsureRoot<AccountId>;
-    type RoleType = RoleType;
     type Permissions = NftTestPermissions;
     type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
 }
@@ -96,9 +98,10 @@ parameter_types! {
 impl pallet_uniques::Config for Test {
     type Event = Event;
     type CollectionId = CollectionId;
-    type InstanceId = InstanceId;
+    type ItemId = ItemId;
     type Currency = Balances;
     type ForceOrigin = EnsureRoot<AccountId>;
+    type Locker = ();
     type CollectionDeposit = CollectionDeposit;
     type ItemDeposit = ItemDeposit;
     type MetadataDepositBase = UniquesMetadataDepositBase;
@@ -108,6 +111,7 @@ impl pallet_uniques::Config for Test {
     type KeyLimit = KeyLimit;
     type ValueLimit = ValueLimit;
     type WeightInfo = ();
+    type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
 }
 
 parameter_types! {
@@ -160,6 +164,25 @@ impl pallet_balances::Config for Test {
     type ReserveIdentifier = ();
 }
 
+impl pallet_sudo::Config for Test {
+	type Event = Event;
+	type Call = Call;
+}
+
+parameter_types! {
+	pub const MaxMembers:u32 =3;
+}
+impl pallet_roles::Config for Test {
+	type Event = Event;
+	type Currency = Balances;
+	type WeightInfo = ();
+	type MaxMembers = MaxMembers;
+}
+
+//helper types
+pub type Acc = pallet_roles::Accounts;
+
+
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
@@ -169,9 +192,9 @@ pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 1000
 pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1001;
 pub const COLLECTION_ID_2: <Test as pallet_uniques::Config>::CollectionId = 1002;
 pub const COLLECTION_ID_RESERVED: <Test as pallet_uniques::Config>::CollectionId = 42;
-pub const ITEM_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
-pub const ITEM_ID_1: <Test as pallet_uniques::Config>::InstanceId = 1;
-pub const ITEM_ID_2: <Test as pallet_uniques::Config>::InstanceId = 2;
+pub const ITEM_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
+pub const ITEM_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
+pub const ITEM_ID_2: <Test as pallet_uniques::Config>::ItemId = 2;
 pub const NON_EXISTING_COLLECTION_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
 
 pub struct ExtBuilder;
@@ -190,6 +213,9 @@ impl ExtBuilder {
         }
         .assimilate_storage(&mut t)
         .unwrap();
+        pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
+		.assimilate_storage(&mut t)
+		.unwrap();
 
         let mut ext = sp_io::TestExternalities::new(t);
         ext.execute_with(|| System::set_block_number(1));
@@ -200,3 +226,4 @@ impl ExtBuilder {
 pub fn expect_events(e: Vec<Event>) {
     e.into_iter().for_each(frame_system::Pallet::<Test>::assert_has_event);
 }
+
