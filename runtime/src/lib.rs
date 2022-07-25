@@ -396,43 +396,6 @@ impl pallet_treasury::Config for Runtime {
 	type MaxApprovals = MaxApprovals;
 }
 
-// parameter_types! {
-// 	pub const ChildBountyValueMinimum: Balance = 1 * DOLLARS;
-// }
-
-// impl pallet_child_bounties::Config for Runtime {
-// 	type Event = Event;
-// 	type MaxActiveChildBountyCount = ConstU32<5>;
-// 	type ChildBountyValueMinimum = ChildBountyValueMinimum;
-// 	type WeightInfo = pallet_child_bounties::weights::SubstrateWeight<Runtime>;
-// }
-
-// parameter_types! {
-// 	pub const BountyCuratorDeposit: Permill = Permill::from_percent(50);
-// 	pub const BountyValueMinimum: Balance = 5 * DOLLARS;
-// 	pub const BountyDepositBase: Balance = 1 * DOLLARS;
-// 	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
-// 	pub const CuratorDepositMin: Balance = 1 * DOLLARS;
-// 	pub const CuratorDepositMax: Balance = 100 * DOLLARS;
-// 	pub const BountyDepositPayoutDelay: BlockNumber = 1 * DAYS;
-// 	pub const BountyUpdatePeriod: BlockNumber = 14 * DAYS;
-// }
-
-// impl pallet_bounties::Config for Runtime {
-// 	type Event = Event;
-// 	type BountyDepositBase = BountyDepositBase;
-// 	type BountyDepositPayoutDelay = BountyDepositPayoutDelay;
-// 	type BountyUpdatePeriod = BountyUpdatePeriod;
-// 	type CuratorDepositMultiplier = CuratorDepositMultiplier;
-// 	type CuratorDepositMin = CuratorDepositMin;
-// 	type CuratorDepositMax = CuratorDepositMax;
-// 	type BountyValueMinimum = BountyValueMinimum;
-// 	type DataDepositPerByte = DataDepositPerByte;
-// 	type MaximumReasonLength = MaximumReasonLength;
-// 	type WeightInfo = pallet_bounties::weights::SubstrateWeight<Runtime>;
-// 	type ChildBountyManager = ChildBounties;
-// }
-
 parameter_types! {
 	pub const PreimageMaxSize: u32 = 4096 * 1024;
 	pub const PreimageBaseDeposit: Balance = 1 * DOLLARS;
@@ -563,8 +526,6 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 		Scheduler: pallet_scheduler,
 		Preimage: pallet_preimage,
-		// Bounties: pallet_bounties,
-		// ChildBounties: pallet_child_bounties,
 		HouseCouncil: pallet_collective::<Instance1>,
 		Democracy: pallet_democracy,
 		// flag add pallet runtime
