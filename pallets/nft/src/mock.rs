@@ -46,31 +46,31 @@ parameter_types! {
 pub struct NftTestPermissions;
 
 impl NftPermission<Acc> for NftTestPermissions {
-    fn can_create(role_type: &Acc) -> bool {
+    fn can_create(created_by: &Acc) -> bool {
         matches!(
-            *role_type,
+            *created_by,
             Acc::SELLER | Acc::SERVICER 
         )
     }
 
-    fn can_mint(role_type: &Acc) -> bool {
-        matches!(*role_type, Acc::SELLER | Acc::SERVICER)
+    fn can_mint(created_by: &Acc) -> bool {
+        matches!(*created_by, Acc::SELLER | Acc::SERVICER)
     }
 
-    fn can_transfer(role_type: &Acc) -> bool {
-        matches!(*role_type, Acc::SERVICER)
+    fn can_transfer(created_by: &Acc) -> bool {
+        matches!(*created_by, Acc::SERVICER)
     }
 
-    fn can_burn(role_type: &Acc) -> bool {
-        matches!(*role_type, Acc::SERVICER)
+    fn can_burn(created_by: &Acc) -> bool {
+        matches!(*created_by, Acc::SERVICER)
     }
 
-    fn can_destroy(role_type: &Acc) -> bool {
-        matches!(*role_type, Acc::SERVICER)
+    fn can_destroy(created_by: &Acc) -> bool {
+        matches!(*created_by, Acc::SERVICER)
     }
 
-    fn has_deposit(role_type: &Acc) -> bool {
-        matches!(*role_type, Acc::SERVICER)
+    fn has_deposit(created_by: &Acc) -> bool {
+        matches!(*created_by, Acc::SERVICER)
     }
 }
 
@@ -179,13 +179,13 @@ impl pallet_roles::Config for Test {
 	type MaxMembers = MaxMembers;
 }
 
-//helper types
-pub type Acc = pallet_roles::Accounts;
 
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
+pub const DAVE: AccountId = AccountId::new([4u8; 32]);
+pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE: AccountId = AccountId::new([4u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
 pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 1000;
@@ -209,7 +209,7 @@ impl ExtBuilder {
         let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
         pallet_balances::GenesisConfig::<Test> {
-            balances: vec![(ALICE, 200_000 * BSX), (BOB, 150_000 * BSX), (CHARLIE, 15_000 * BSX)],
+            balances: vec![(ALICE, 200_000 * BSX), (BOB, 150_000 * BSX), (CHARLIE, 150_000 * BSX), (DAVE, 150_000 * BSX)],
         }
         .assimilate_storage(&mut t)
         .unwrap();

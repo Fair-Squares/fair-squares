@@ -3,8 +3,8 @@ pub use super::*;
 
 
 pub trait CreateTypedCollection<AccountId, CollectionId, Acc>: Create<AccountId> {
-    /// This function create an NFT collection of `role_type` type.
-    fn create_typed_collection(owner: AccountId, collection_id: CollectionId, role_type: Acc) -> DispatchResult;
+    /// This function create an NFT collection of `created_by` type.
+    fn create_typed_collection(owner: AccountId, collection_id: CollectionId, created_by: Acc) -> DispatchResult;
 }
 
 pub trait ReserveCollectionId<CollectionId> {
@@ -24,10 +24,10 @@ impl<T: Config> Pallet<T> {
     pub fn do_create_collection(
         owner: T::AccountId,
         collection_id: T::NftCollectionId,
-        role_type: Acc,
+        created_by: Acc,
         metadata: BoundedVecOfUnq<T>,
     ) -> DispatchResult {        
-        let deposit_info = match T::Permissions::has_deposit(&role_type) {
+        let deposit_info = match T::Permissions::has_deposit(&created_by) {
             false => (Zero::zero(), true),
             true => (T::CollectionDeposit::get(), false),
         };
@@ -44,12 +44,12 @@ impl<T: Config> Pallet<T> {
             },
         )?;
 
-        Collections::<T>::insert(collection_id, CollectionInfo { role_type,metadata });
+        Collections::<T>::insert(collection_id, CollectionInfo { created_by,metadata });
 
         Self::deposit_event(Event::CollectionCreated {
             owner,
             collection_id,
-            role_type,
+            created_by,
         });
 
         Ok(())
@@ -237,8 +237,8 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> CreateTypedCollection<T::AccountId, T::NftCollectionId, Acc> for Pallet<T> {
-    fn create_typed_collection(owner: T::AccountId, collection_id: T::NftCollectionId, role_type: Acc) -> DispatchResult {
-        Self::do_create_collection(owner, collection_id, role_type, Default::default())
+    fn create_typed_collection(owner: T::AccountId, collection_id: T::NftCollectionId, created_by: Acc) -> DispatchResult {
+        Self::do_create_collection(owner, collection_id, created_by, Default::default())
     }
 }
 
