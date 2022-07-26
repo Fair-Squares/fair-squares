@@ -1,4 +1,4 @@
-use frame_support::{assert_noop, assert_ok, traits::tokens::nonfungibles::*};
+use frame_support::{assert_noop, assert_ok};
 
 use super::*;
 use mock::*;
@@ -13,8 +13,10 @@ pub fn prep_roles(){
     RoleModule::set_role(Origin::signed(BOB).clone(), Acc::SELLER).ok();
     RoleModule::account_approval(Origin::signed(ALICE),BOB).ok();
     RoleModule::set_role(Origin::signed(DAVE).clone(), Acc::INVESTOR).ok();
-    RoleModule::set_role(Origin::signed(ACCOUNT_WITH_NO_BALANCE).clone(), Acc::SERVICER).ok();
-    RoleModule::account_approval(Origin::signed(ALICE),ACCOUNT_WITH_NO_BALANCE).ok();
+    RoleModule::set_role(Origin::signed(ACCOUNT_WITH_NO_BALANCE0).clone(), Acc::SERVICER).ok();
+    RoleModule::account_approval(Origin::signed(ALICE),ACCOUNT_WITH_NO_BALANCE0).ok();
+    RoleModule::set_role(Origin::signed(ACCOUNT_WITH_NO_BALANCE1).clone(), Acc::SELLER).ok();
+    RoleModule::account_approval(Origin::signed(ALICE),ACCOUNT_WITH_NO_BALANCE1).ok();
 }
 
 #[test]
@@ -29,7 +31,7 @@ fn create_collection_works() {
             metadata.clone()
         ));
         assert_eq!(
-            NFTPallet::collections(COLLECTION_ID_0).unwrap(),
+            NFTPallet::collections(HOUSESTEST).unwrap(),
             CollectionInfo {
                 created_by: Acc::SERVICER,
                 metadata: metadata.clone()
@@ -38,7 +40,7 @@ fn create_collection_works() {
 
         expect_events(vec![crate::Event::CollectionCreated {
             owner: CHARLIE,
-            collection_id: COLLECTION_ID_0,
+            collection_id: HOUSESTEST,
             created_by: Acc::SERVICER,
         }
         .into()]);
@@ -97,7 +99,7 @@ fn mint_works() {
             metadata.clone()
         ));
         assert_eq!(
-            NFTPallet::items(COLLECTION_ID_0, ITEM_ID_0).unwrap(),
+            NFTPallet::items(HOUSESTEST, ITEM_ID_0).unwrap(),
             ItemInfo {
                 metadata: metadata.clone()
             }
@@ -105,7 +107,7 @@ fn mint_works() {
 
         expect_events(vec![crate::Event::ItemMinted {
             owner: BOB,
-            collection_id: COLLECTION_ID_0,
+            collection_id: HOUSESTEST,
             item_id: ITEM_ID_0,
         }
         .into()]);
@@ -184,7 +186,7 @@ fn transfer_works() {
             ITEM_ID_0,
             EVE
         ));
-        assert_eq!(NFTPallet::owner(COLLECTION_ID_0, ITEM_ID_0).unwrap(), EVE);
+        assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), EVE);
 
         assert_ok!(NFTPallet::transfer(
             Origin::signed(EVE),
@@ -192,12 +194,12 @@ fn transfer_works() {
             ITEM_ID_0,
             BOB
         ));
-        assert_eq!(NFTPallet::owner(COLLECTION_ID_0, ITEM_ID_0).unwrap(), BOB);
+        assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), BOB);
 
         expect_events(vec![crate::Event::ItemTransferred {
             from: EVE,
             to: BOB,
-            collection_id: COLLECTION_ID_0,
+            collection_id: HOUSESTEST,
             item_id: ITEM_ID_0,
         }
         .into()]);
@@ -248,11 +250,11 @@ fn burn_works() {
         );
 
         assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST , ITEM_ID_0));
-        assert!(!<Items<Test>>::contains_key(COLLECTION_ID_0, ITEM_ID_0));
+        assert!(!<Items<Test>>::contains_key(HOUSESTEST, ITEM_ID_0));
 
         expect_events(vec![crate::Event::ItemBurned {
             owner: CHARLIE,
-            collection_id: COLLECTION_ID_0,
+            collection_id: HOUSESTEST,
             item_id: ITEM_ID_0,
         }
         .into()]);
@@ -302,11 +304,11 @@ fn destroy_collection_works() {
         );
 
         assert_ok!(NFTPallet::destroy_collection(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST));
-        assert_eq!(NFTPallet::collections(COLLECTION_ID_0), None);
+        assert_eq!(NFTPallet::collections(HOUSESTEST), None);
 
         expect_events(vec![crate::Event::CollectionDestroyed {
             owner: CHARLIE,
-            collection_id: COLLECTION_ID_0,
+            collection_id: HOUSESTEST,
         }
         .into()]);
 
@@ -385,7 +387,7 @@ fn create_typed_collection_should_not_work_without_deposit_when_deposit_is_requi
     ExtBuilder::default().build().execute_with(|| {
         prep_roles();
         assert_noop!(
-            NFTPallet::create_typed_collection(ACCOUNT_WITH_NO_BALANCE, COLLECTION_ID_0),
+            NFTPallet::create_typed_collection(ACCOUNT_WITH_NO_BALANCE0, HOUSESTEST),
             pallet_balances::Error::<Test>::InsufficientBalance
         );
     });
@@ -396,9 +398,45 @@ fn create_typed_collection_should_not_work_when_not_permitted() {
     ExtBuilder::default().build().execute_with(|| {
         prep_roles();
         assert_noop!(
-            NFTPallet::create_typed_collection(DAVE, COLLECTION_ID_0),
+            NFTPallet::create_typed_collection(DAVE, HOUSESTEST),
             Error::<Test>::NotPermitted
         );
+        assert_noop!(
+            NFTPallet::create_typed_collection(ACCOUNT_WITH_NO_BALANCE1, HOUSESTEST),
+            Error::<Test>::NotPermitted
+        );
+        
     });
+}
+
+#[test]
+fn is_id_reserved_should_return_false_when_id_is_not_from_reserved_range() {
+    assert!(
+        !NFTPallet::is_id_reserved(mock::ReserveCollectionIdUpTo::get() + 1),
+        "(ReserveCollectionIdUpTo + 1) should not be part of reserved CollectionId range"
+    );
+
+    assert!(
+        !NFTPallet::is_id_reserved(mock::ReserveCollectionIdUpTo::get() + 50_000_000),
+        "num > ReserveCollectionIdUpTo should not be part of reserved CollectionId range"
+    );
+}
+
+#[test]
+fn is_id_reserved_should_return_true_when_id_is_from_reserved_range() {
+    assert!(
+        NFTPallet::is_id_reserved(0),
+        "0 should be part of reserved CollectionId range"
+    );
+
+    assert!(
+        NFTPallet::is_id_reserved(13),
+        "num <= ReserveCollectionIdUpTo should be part of reserved CollectionId range"
+    );
+
+    assert!(
+        NFTPallet::is_id_reserved(mock::ReserveCollectionIdUpTo::get()),
+        "num == ReserveCollectionIdUpTo should be part of reserved CollectionId range"
+    );
 }
 

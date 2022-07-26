@@ -1,7 +1,7 @@
 use super::*;
 use crate as pallet_nft;
 
-use frame_support::traits::{AsEnsureOriginWithArg, ConstU32, Everything, Locker};
+use frame_support::traits::{AsEnsureOriginWithArg,Everything};
 use frame_support::{parameter_types, weights::Weight};
 use frame_system::EnsureRoot;
 use sp_core::{crypto::AccountId32, H256};
@@ -186,11 +186,12 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const DAVE: AccountId = AccountId::new([6u8; 32]);
 pub const EVE: AccountId = AccountId::new([5u8; 32]);
-pub const ACCOUNT_WITH_NO_BALANCE: AccountId = AccountId::new([4u8; 32]);
+pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
+pub const ACCOUNT_WITH_NO_BALANCE1: AccountId = AccountId::new([7u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
-pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 1000;
-pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1001;
-pub const COLLECTION_ID_2: <Test as pallet_uniques::Config>::CollectionId = 1002;
+pub const HOUSESTEST: <Test as pallet_uniques::Config>::CollectionId = 1000;
+pub const OFFICESTEST: <Test as pallet_uniques::Config>::CollectionId = 1001;
+pub const APPARTMENTSTEST: <Test as pallet_uniques::Config>::CollectionId = 1002;
 pub const COLLECTION_ID_RESERVED: <Test as pallet_uniques::Config>::CollectionId = 42;
 pub const ITEM_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
 pub const ITEM_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
