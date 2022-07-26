@@ -24,36 +24,36 @@ fn create_collection_works() {
             b"metadata".to_vec().try_into().unwrap();
         prep_roles();
         assert_ok!(NFTPallet::create_collection(
-            Origin::signed(BOB),
-            COLLECTION_ID_0,
+            Origin::signed(CHARLIE),
+            PossibleCollections::HOUSESTEST,
             metadata.clone()
         ));
         assert_eq!(
             NFTPallet::collections(COLLECTION_ID_0).unwrap(),
             CollectionInfo {
-                created_by: Acc::SELLER,
+                created_by: Acc::SERVICER,
                 metadata: metadata.clone()
             }
         );
 
         expect_events(vec![crate::Event::CollectionCreated {
-            owner: BOB,
+            owner: CHARLIE,
             collection_id: COLLECTION_ID_0,
-            created_by: Acc::SELLER,
+            created_by: Acc::SERVICER,
         }
         .into()]);
 
         // not allowed in Permissions
         assert_noop!(
-            NFTPallet::create_collection(Origin::signed(DAVE), COLLECTION_ID_2, metadata.clone()),
+            NFTPallet::create_collection(Origin::signed(BOB), PossibleCollections::OFFICESTEST, metadata.clone()),
             Error::<Test>::NotPermitted
         );
 
         // existing collection ID
         assert_noop!(
             NFTPallet::create_collection(
-                Origin::signed(BOB),
-                COLLECTION_ID_0,
+                Origin::signed(CHARLIE),
+                PossibleCollections::HOUSESTEST,
                 metadata.clone()
             ),
             pallet_uniques::Error::<Test>::InUse
@@ -62,8 +62,8 @@ fn create_collection_works() {
         // reserved collection ID
         assert_noop!(
             NFTPallet::create_collection(
-                Origin::signed(BOB),
-                COLLECTION_ID_RESERVED,
+                Origin::signed(CHARLIE),
+                PossibleCollections::APPARTMENTS,
                 metadata
             ),
             Error::<Test>::IdReserved
@@ -81,18 +81,18 @@ fn mint_works() {
 
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_1,
+            PossibleCollections::OFFICESTEST,
             metadata.clone()
         ));
 
         assert_ok!(NFTPallet::mint(
-            Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            Origin::signed(BOB),
+            PossibleCollections::HOUSESTEST,
             ITEM_ID_0,
             metadata.clone()
         ));
@@ -104,7 +104,7 @@ fn mint_works() {
         );
 
         expect_events(vec![crate::Event::ItemMinted {
-            owner: CHARLIE,
+            owner: BOB,
             collection_id: COLLECTION_ID_0,
             item_id: ITEM_ID_0,
         }
@@ -112,20 +112,20 @@ fn mint_works() {
 
         // duplicate item
         assert_noop!(
-            NFTPallet::mint(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0, metadata.clone()),
+            NFTPallet::mint(Origin::signed(BOB), PossibleCollections::HOUSESTEST, ITEM_ID_0, metadata.clone()),
             pallet_uniques::Error::<Test>::AlreadyExists
         );
 
         // not allowed in Permissions
         assert_noop!(
-            NFTPallet::mint(Origin::signed(DAVE), COLLECTION_ID_1, ITEM_ID_0, metadata.clone()),
+            NFTPallet::mint(Origin::signed(DAVE), PossibleCollections::OFFICESTEST, ITEM_ID_0, metadata.clone()),
             Error::<Test>::NotPermitted
         );
 
 
         // invalid collection ID
         assert_noop!(
-            NFTPallet::mint(Origin::signed(BOB), NON_EXISTING_COLLECTION_ID, ITEM_ID_0, metadata),
+            NFTPallet::mint(Origin::signed(BOB), PossibleCollections::NONEXISTING, ITEM_ID_0, metadata),
             Error::<Test>::CollectionUnknown
         );
     });
@@ -139,48 +139,48 @@ fn transfer_works() {
             prep_roles();
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_1,
+            PossibleCollections::OFFICESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
-            Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            Origin::signed(BOB),
+            PossibleCollections::HOUSESTEST,
             ITEM_ID_0,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
-            Origin::signed(CHARLIE),
-            COLLECTION_ID_1,
+            Origin::signed(BOB),
+            PossibleCollections::OFFICESTEST,
             ITEM_ID_0,
             metadata
         ));
 
         // not existing
         assert_noop!(
-            NFTPallet::transfer(Origin::signed(CHARLIE), COLLECTION_ID_2, ITEM_ID_0, BOB),
+            NFTPallet::transfer(Origin::signed(CHARLIE), PossibleCollections::APPARTMENTSTEST, ITEM_ID_0, BOB),
             pallet_uniques::Error::<Test>::UnknownCollection
         );
 
         // not owner
         assert_noop!(
-            NFTPallet::transfer(Origin::signed(BOB), COLLECTION_ID_0, ITEM_ID_0, DAVE),
+            NFTPallet::transfer(Origin::signed(BOB), PossibleCollections::HOUSESTEST, ITEM_ID_0, DAVE),
             Error::<Test>::NotPermitted
         );
 
         // not allowed in Permissions
         assert_noop!(
-            NFTPallet::transfer(Origin::signed(BOB), COLLECTION_ID_1, ITEM_ID_0, DAVE),
+            NFTPallet::transfer(Origin::signed(BOB), PossibleCollections::OFFICESTEST, ITEM_ID_0, DAVE),
             Error::<Test>::NotPermitted
         );
 
         assert_ok!(NFTPallet::transfer(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST ,
             ITEM_ID_0,
             EVE
         ));
@@ -188,7 +188,7 @@ fn transfer_works() {
 
         assert_ok!(NFTPallet::transfer(
             Origin::signed(EVE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             ITEM_ID_0,
             BOB
         ));
@@ -213,46 +213,41 @@ fn burn_works() {
 
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_1,
+            PossibleCollections::OFFICESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
-            Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            Origin::signed(BOB),
+            PossibleCollections::HOUSESTEST,
             ITEM_ID_0,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
-            Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            Origin::signed(BOB),
+            PossibleCollections::HOUSESTEST,
             ITEM_ID_1,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
-            Origin::signed(CHARLIE),
-            COLLECTION_ID_1,
+            Origin::signed(BOB),
+            PossibleCollections::OFFICESTEST,
             ITEM_ID_0,
             metadata
         ));
 
-        // not owner
-        //assert_noop!(
-        //    NFTPallet::burn(Origin::signed(EVE), COLLECTION_ID_0, ITEM_ID_0),
-        //    Error::<Test>::NotPermitted
-        //);
-
+        
         // not allowed in Permissions
         assert_noop!(
-            NFTPallet::burn(Origin::signed(BOB), COLLECTION_ID_1, ITEM_ID_0),
+            NFTPallet::burn(Origin::signed(BOB), PossibleCollections::OFFICESTEST, ITEM_ID_0),
             Error::<Test>::NotPermitted
         );
 
-        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0));
+        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST , ITEM_ID_0));
         assert!(!<Items<Test>>::contains_key(COLLECTION_ID_0, ITEM_ID_0));
 
         expect_events(vec![crate::Event::ItemBurned {
@@ -264,7 +259,7 @@ fn burn_works() {
 
         // not existing
         assert_noop!(
-            NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0),
+            NFTPallet::burn(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST , ITEM_ID_0),
             pallet_uniques::Error::<Test>::UnknownCollection
         );
     });
@@ -278,35 +273,35 @@ fn destroy_collection_works() {
         prep_roles();
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_1,
+            PossibleCollections::OFFICESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
-            Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            Origin::signed(BOB),
+            PossibleCollections::HOUSESTEST ,
             ITEM_ID_0,
             metadata
         ));
 
         // existing item
         assert_noop!(
-            NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0),
+            NFTPallet::destroy_collection(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST ),
             Error::<Test>::TokenCollectionNotEmpty
         );
-        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0));
+        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST , ITEM_ID_0));
 
         // not allowed in Permissions
         assert_noop!(
-            NFTPallet::destroy_collection(Origin::signed(BOB), COLLECTION_ID_1),
+            NFTPallet::destroy_collection(Origin::signed(BOB), PossibleCollections::OFFICESTEST),
             Error::<Test>::NotPermitted
         );
 
-        assert_ok!(NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0));
+        assert_ok!(NFTPallet::destroy_collection(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST));
         assert_eq!(NFTPallet::collections(COLLECTION_ID_0), None);
 
         expect_events(vec![crate::Event::CollectionDestroyed {
@@ -317,7 +312,7 @@ fn destroy_collection_works() {
 
         // not existing
         assert_noop!(
-            NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0),
+            NFTPallet::destroy_collection(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST),
             Error::<Test>::CollectionUnknown
         );
     });
@@ -337,7 +332,7 @@ fn deposit_works() {
         
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             metadata.clone()
         ));
         assert_eq!(
@@ -349,7 +344,7 @@ fn deposit_works() {
             collection_deposit
         );
 
-        assert_ok!(NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0));
+        assert_ok!(NFTPallet::destroy_collection(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST));
         assert_eq!(
             <Test as pallet_uniques::Config>::Currency::free_balance(&CHARLIE),
             initial_balance
@@ -359,12 +354,12 @@ fn deposit_works() {
         // no deposit
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
-            COLLECTION_ID_0,
+            PossibleCollections::HOUSESTEST,
             ITEM_ID_0,
             metadata
         ));
@@ -374,7 +369,7 @@ fn deposit_works() {
         );
         assert_eq!(<Test as pallet_uniques::Config>::Currency::reserved_balance(&BOB), 0);
 
-        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0));
+        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST, ITEM_ID_0));
         assert_eq!(
             <Test as pallet_uniques::Config>::Currency::free_balance(&BOB),
             initial_balance
@@ -406,8 +401,4 @@ fn create_typed_collection_should_not_work_when_not_permitted() {
         );
     });
 }
-
-
-
-
 

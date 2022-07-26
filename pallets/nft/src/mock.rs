@@ -49,12 +49,12 @@ impl NftPermission<Acc> for NftTestPermissions {
     fn can_create(created_by: &Acc) -> bool {
         matches!(
             *created_by,
-            Acc::SELLER | Acc::SERVICER 
+            Acc::SERVICER 
         )
     }
 
     fn can_mint(created_by: &Acc) -> bool {
-        matches!(*created_by, Acc::SELLER | Acc::SERVICER)
+        matches!(*created_by, Acc::SELLER)
     }
 
     fn can_transfer(created_by: &Acc) -> bool {

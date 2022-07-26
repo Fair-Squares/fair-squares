@@ -116,17 +116,18 @@ pub mod pallet {
         #[transactional]
         pub fn create_collection(
             origin: OriginFor<T>,
-            collection_id: T::NftCollectionId,
+            collection_id: PossibleCollections,
             metadata: BoundedVecOfUnq<T>,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+            let coll_id: CollectionId = collection_id.value();
 
             //ensure!(T::ReserveCollectionIdUpTo::get() < collection_id, Error::<T>::IdReserved);
-            ensure!(!Self::is_id_reserved(collection_id), Error::<T>::IdReserved);
+            ensure!(!Self::is_id_reserved(coll_id.clone().into()), Error::<T>::IdReserved);
             let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
             ensure!(T::Permissions::can_create(&created_by), Error::<T>::NotPermitted);
-
-            Self::do_create_collection(sender, collection_id,created_by, metadata)?;
+            
+            Self::do_create_collection(sender, coll_id.into(),created_by, metadata)?;
 
             Ok(())
         }
@@ -142,16 +143,17 @@ pub mod pallet {
         #[transactional]
         pub fn mint(
             origin: OriginFor<T>,
-            collection_id: T::NftCollectionId,
+            collection_id: PossibleCollections,
             item_id: T::NftItemId,
             metadata: BoundedVecOfUnq<T>,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+            let coll_id: CollectionId = collection_id.value();
             let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();            
         
             ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
 
-            Self::do_mint(sender, collection_id, item_id, metadata)?;
+            Self::do_mint(sender, coll_id.into(), item_id, metadata)?;
 
             Ok(())
         }
@@ -168,18 +170,19 @@ pub mod pallet {
         #[transactional]
         pub fn transfer(
             origin: OriginFor<T>,
-            collection_id: T::NftCollectionId,
+            collection_id: PossibleCollections,
             item_id: T::NftItemId,
             dest: <T::Lookup as StaticLookup>::Source,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+            let coll_id: CollectionId = collection_id.value();
 
             let dest = T::Lookup::lookup(dest)?;
             let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
 
             ensure!(T::Permissions::can_transfer(&created_by), Error::<T>::NotPermitted);
 
-            Self::do_transfer(collection_id, item_id, sender, dest)?;
+            Self::do_transfer(coll_id.into(), item_id, sender, dest)?;
 
             Ok(())
         }
@@ -191,14 +194,15 @@ pub mod pallet {
         /// - `item_id`: The Item of the asset to be burned.
         #[pallet::weight(<T as pallet::Config>::WeightInfo::burn())]
         #[transactional]
-        pub fn burn(origin: OriginFor<T>, collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
+        pub fn burn(origin: OriginFor<T>, collection_id: PossibleCollections, item_id: T::NftItemId) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+            let coll_id: CollectionId = collection_id.value();
 
             let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
 
             ensure!(T::Permissions::can_burn(&created_by), Error::<T>::NotPermitted);
 
-            Self::do_burn(sender, collection_id, item_id)?;
+            Self::do_burn(sender, coll_id.into(), item_id)?;
 
             Ok(())
         }
@@ -209,14 +213,15 @@ pub mod pallet {
         /// - `collection_id`: The identifier of the asset Collection to be destroyed.
         #[pallet::weight(<T as pallet::Config>::WeightInfo::destroy_collection())]
         #[transactional]
-        pub fn destroy_collection(origin: OriginFor<T>, collection_id: T::NftCollectionId) -> DispatchResult {
+        pub fn destroy_collection(origin: OriginFor<T>, collection_id: PossibleCollections,) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+            let coll_id: CollectionId = collection_id.value();
 
             let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
 
             ensure!(T::Permissions::can_destroy(&created_by), Error::<T>::NotPermitted);
 
-            Self::do_destroy_collection(sender, collection_id)?;
+            Self::do_destroy_collection(sender, coll_id.into())?;
 
             Ok(())
         }
