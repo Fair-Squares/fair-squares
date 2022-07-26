@@ -170,7 +170,7 @@ impl pallet_sudo::Config for Test {
 }
 
 parameter_types! {
-	pub const MaxMembers:u32 =3;
+	pub const MaxMembers:u32 =7;
 }
 impl pallet_roles::Config for Test {
 	type Event = Event;
@@ -184,7 +184,7 @@ impl pallet_roles::Config for Test {
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
-pub const DAVE: AccountId = AccountId::new([4u8; 32]);
+pub const DAVE: AccountId = AccountId::new([6u8; 32]);
 pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE: AccountId = AccountId::new([4u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
@@ -209,7 +209,7 @@ impl ExtBuilder {
         let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
         pallet_balances::GenesisConfig::<Test> {
-            balances: vec![(ALICE, 200_000 * BSX), (BOB, 150_000 * BSX), (CHARLIE, 150_000 * BSX), (DAVE, 150_000 * BSX)],
+            balances: vec![(ALICE, 200_000 * BSX), (BOB, 200_000 * BSX), (CHARLIE, 200_000 * BSX), (DAVE, 150_000 * BSX), (EVE, 150_000 * BSX)],
         }
         .assimilate_storage(&mut t)
         .unwrap();

@@ -2,9 +2,9 @@
 pub use super::*;
 
 
-pub trait CreateTypedCollection<AccountId, CollectionId, Acc>: Create<AccountId> {
+pub trait CreateTypedCollection<AccountId, CollectionId>: Create<AccountId> {
     /// This function create an NFT collection of `created_by` type.
-    fn create_typed_collection(owner: AccountId, collection_id: CollectionId, created_by: Acc) -> DispatchResult;
+    fn create_typed_collection(owner: AccountId, collection_id: CollectionId) -> DispatchResult;
 }
 
 pub trait ReserveCollectionId<CollectionId> {
@@ -111,8 +111,8 @@ impl<T: Config> Pallet<T> {
             collection_id.into(),
             item_id.into(),
             |_collection_details, _item_details| {
-                let iowner = Self::owner(collection_id, item_id).ok_or(Error::<T>::ItemUnknown)?;
-                ensure!(owner == iowner, Error::<T>::NotPermitted);
+                //let iowner = Self::owner(collection_id, item_id).ok_or(Error::<T>::ItemUnknown)?;
+                //ensure!(owner == iowner, Error::<T>::NotPermitted);
                 Ok(())
             },
         )?;
@@ -236,8 +236,10 @@ impl<T: Config> Mutate<T::AccountId> for Pallet<T> {
     }
 }
 
-impl<T: Config> CreateTypedCollection<T::AccountId, T::NftCollectionId, Acc> for Pallet<T> {
-    fn create_typed_collection(owner: T::AccountId, collection_id: T::NftCollectionId, created_by: Acc) -> DispatchResult {
+impl<T: Config> CreateTypedCollection<T::AccountId, T::NftCollectionId> for Pallet<T> {
+    fn create_typed_collection(owner: T::AccountId, collection_id: T::NftCollectionId) -> DispatchResult {
+        let created_by = Roles::Pallet::<T>::get_roles(&owner).unwrap();
+        ensure!(T::Permissions::can_create(&created_by), Error::<T>::NotPermitted);
         Self::do_create_collection(owner, collection_id, created_by, Default::default())
     }
 }

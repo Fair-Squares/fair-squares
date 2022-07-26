@@ -5,16 +5,26 @@ use mock::*;
 use std::convert::TryInto;
 
 type NFTPallet = Pallet<Test>;
+pub fn prep_roles(){
+    RoleModule::set_role(Origin::signed(CHARLIE).clone(), Acc::SERVICER).ok();
+    RoleModule::account_approval(Origin::signed(ALICE),CHARLIE).ok();
+    RoleModule::set_role(Origin::signed(EVE).clone(), Acc::SERVICER).ok();
+    RoleModule::account_approval(Origin::signed(ALICE),EVE).ok();
+    RoleModule::set_role(Origin::signed(BOB).clone(), Acc::SELLER).ok();
+    RoleModule::account_approval(Origin::signed(ALICE),BOB).ok();
+    RoleModule::set_role(Origin::signed(DAVE).clone(), Acc::INVESTOR).ok();
+    RoleModule::set_role(Origin::signed(ACCOUNT_WITH_NO_BALANCE).clone(), Acc::SERVICER).ok();
+    RoleModule::account_approval(Origin::signed(ALICE),ACCOUNT_WITH_NO_BALANCE).ok();
+}
 
 #[test]
 fn create_collection_works() {
     ExtBuilder::default().build().execute_with(|| {
         let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
             b"metadata".to_vec().try_into().unwrap();
-        RoleModule::set_role(Origin::signed(CHARLIE).clone(), Acc::SELLER).ok();
-        RoleModule::account_approval(Origin::signed(ALICE),CHARLIE).ok();
+        prep_roles();
         assert_ok!(NFTPallet::create_collection(
-            Origin::signed(CHARLIE),
+            Origin::signed(BOB),
             COLLECTION_ID_0,
             metadata.clone()
         ));
@@ -27,23 +37,22 @@ fn create_collection_works() {
         );
 
         expect_events(vec![crate::Event::CollectionCreated {
-            owner: CHARLIE,
+            owner: BOB,
             collection_id: COLLECTION_ID_0,
             created_by: Acc::SELLER,
         }
         .into()]);
 
         // not allowed in Permissions
-        RoleModule::set_role(Origin::signed(BOB).clone(), Acc::INVESTOR).ok();
         assert_noop!(
-            NFTPallet::create_collection(Origin::signed(BOB), COLLECTION_ID_2, metadata.clone()),
+            NFTPallet::create_collection(Origin::signed(DAVE), COLLECTION_ID_2, metadata.clone()),
             Error::<Test>::NotPermitted
         );
 
         // existing collection ID
         assert_noop!(
             NFTPallet::create_collection(
-                Origin::signed(CHARLIE),
+                Origin::signed(BOB),
                 COLLECTION_ID_0,
                 metadata.clone()
             ),
@@ -53,7 +62,7 @@ fn create_collection_works() {
         // reserved collection ID
         assert_noop!(
             NFTPallet::create_collection(
-                Origin::signed(CHARLIE),
+                Origin::signed(BOB),
                 COLLECTION_ID_RESERVED,
                 metadata
             ),
@@ -68,11 +77,7 @@ fn mint_works() {
     ExtBuilder::default().build().execute_with(|| {
         let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
             b"metadata".to_vec().try_into().unwrap();
-        RoleModule::set_role(Origin::signed(CHARLIE).clone(), Acc::SERVICER).ok();
-        RoleModule::account_approval(Origin::signed(ALICE),CHARLIE).ok();
-        RoleModule::set_role(Origin::signed(BOB).clone(), Acc::SELLER).ok();
-        RoleModule::account_approval(Origin::signed(ALICE),BOB).ok();
-        RoleModule::set_role(Origin::signed(DAVE).clone(), Acc::INVESTOR).ok();
+            prep_roles();
 
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
@@ -131,13 +136,7 @@ fn transfer_works() {
     ExtBuilder::default().build().execute_with(|| {
         let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
             b"metadata".to_vec().try_into().unwrap();
-            RoleModule::set_role(Origin::signed(CHARLIE).clone(), Acc::SERVICER).ok();
-            RoleModule::account_approval(Origin::signed(ALICE),CHARLIE).ok();
-            RoleModule::set_role(Origin::signed(EVE).clone(), Acc::SERVICER).ok();
-            RoleModule::account_approval(Origin::signed(ALICE),EVE).ok();
-            RoleModule::set_role(Origin::signed(BOB).clone(), Acc::SELLER).ok();
-            RoleModule::account_approval(Origin::signed(ALICE),BOB).ok();
-            RoleModule::set_role(Origin::signed(DAVE).clone(), Acc::INVESTOR).ok();
+            prep_roles();
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
             COLLECTION_ID_0,
@@ -162,10 +161,10 @@ fn transfer_works() {
         ));
 
         // not existing
-        //assert_noop!(
-        //    NFTPallet::transfer(Origin::signed(CHARLIE), COLLECTION_ID_2, ITEM_ID_0, BOB),
-        //    Error::<Test>::CollectionUnknown
-        //);
+        assert_noop!(
+            NFTPallet::transfer(Origin::signed(CHARLIE), COLLECTION_ID_2, ITEM_ID_0, BOB),
+            pallet_uniques::Error::<Test>::UnknownCollection
+        );
 
         // not owner
         assert_noop!(
@@ -204,6 +203,211 @@ fn transfer_works() {
         .into()]);
     });
 }
+
+#[test]
+fn burn_works() {
+    ExtBuilder::default().build().execute_with(|| {
+        let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+            b"metadata".to_vec().try_into().unwrap();
+            prep_roles();
+
+        assert_ok!(NFTPallet::create_collection(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_0,
+            metadata.clone()
+        ));
+        assert_ok!(NFTPallet::create_collection(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_1,
+            metadata.clone()
+        ));
+        assert_ok!(NFTPallet::mint(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_0,
+            ITEM_ID_0,
+            metadata.clone()
+        ));
+        assert_ok!(NFTPallet::mint(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_0,
+            ITEM_ID_1,
+            metadata.clone()
+        ));
+        assert_ok!(NFTPallet::mint(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_1,
+            ITEM_ID_0,
+            metadata
+        ));
+
+        // not owner
+        //assert_noop!(
+        //    NFTPallet::burn(Origin::signed(EVE), COLLECTION_ID_0, ITEM_ID_0),
+        //    Error::<Test>::NotPermitted
+        //);
+
+        // not allowed in Permissions
+        assert_noop!(
+            NFTPallet::burn(Origin::signed(BOB), COLLECTION_ID_1, ITEM_ID_0),
+            Error::<Test>::NotPermitted
+        );
+
+        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0));
+        assert!(!<Items<Test>>::contains_key(COLLECTION_ID_0, ITEM_ID_0));
+
+        expect_events(vec![crate::Event::ItemBurned {
+            owner: CHARLIE,
+            collection_id: COLLECTION_ID_0,
+            item_id: ITEM_ID_0,
+        }
+        .into()]);
+
+        // not existing
+        assert_noop!(
+            NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0),
+            pallet_uniques::Error::<Test>::UnknownCollection
+        );
+    });
+}
+
+#[test]
+fn destroy_collection_works() {
+    ExtBuilder::default().build().execute_with(|| {
+        let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+            b"metadata".to_vec().try_into().unwrap();
+        prep_roles();
+        assert_ok!(NFTPallet::create_collection(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_0,
+            metadata.clone()
+        ));
+        assert_ok!(NFTPallet::create_collection(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_1,
+            metadata.clone()
+        ));
+        assert_ok!(NFTPallet::mint(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_0,
+            ITEM_ID_0,
+            metadata
+        ));
+
+        // existing item
+        assert_noop!(
+            NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0),
+            Error::<Test>::TokenCollectionNotEmpty
+        );
+        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0));
+
+        // not allowed in Permissions
+        assert_noop!(
+            NFTPallet::destroy_collection(Origin::signed(BOB), COLLECTION_ID_1),
+            Error::<Test>::NotPermitted
+        );
+
+        assert_ok!(NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0));
+        assert_eq!(NFTPallet::collections(COLLECTION_ID_0), None);
+
+        expect_events(vec![crate::Event::CollectionDestroyed {
+            owner: CHARLIE,
+            collection_id: COLLECTION_ID_0,
+        }
+        .into()]);
+
+        // not existing
+        assert_noop!(
+            NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0),
+            Error::<Test>::CollectionUnknown
+        );
+    });
+}
+
+#[test]
+fn deposit_works() {
+    ExtBuilder::default().build().execute_with(|| {
+        let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+            b"metadata".to_vec().try_into().unwrap();
+        
+        prep_roles();
+        let collection_deposit = <Test as pallet_uniques::Config>::CollectionDeposit::get();
+        let initial_balance = <Test as pallet_uniques::Config>::Currency::free_balance(&CHARLIE);
+        // has deposit
+        assert_eq!(<Test as pallet_uniques::Config>::Currency::reserved_balance(&CHARLIE), 0);
+        
+        assert_ok!(NFTPallet::create_collection(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_0,
+            metadata.clone()
+        ));
+        assert_eq!(
+            <Test as pallet_uniques::Config>::Currency::free_balance(&CHARLIE),
+            initial_balance - collection_deposit
+        );
+        assert_eq!(
+            <Test as pallet_uniques::Config>::Currency::reserved_balance(&CHARLIE),
+            collection_deposit
+        );
+
+        assert_ok!(NFTPallet::destroy_collection(Origin::signed(CHARLIE), COLLECTION_ID_0));
+        assert_eq!(
+            <Test as pallet_uniques::Config>::Currency::free_balance(&CHARLIE),
+            initial_balance
+        );
+        assert_eq!(<Test as pallet_uniques::Config>::Currency::reserved_balance(&CHARLIE), 0);
+
+        // no deposit
+        assert_ok!(NFTPallet::create_collection(
+            Origin::signed(CHARLIE),
+            COLLECTION_ID_0,
+            metadata.clone()
+        ));
+        assert_ok!(NFTPallet::mint(
+            Origin::signed(BOB),
+            COLLECTION_ID_0,
+            ITEM_ID_0,
+            metadata
+        ));
+        assert_eq!(
+            <Test as pallet_uniques::Config>::Currency::free_balance(&BOB),
+            initial_balance
+        );
+        assert_eq!(<Test as pallet_uniques::Config>::Currency::reserved_balance(&BOB), 0);
+
+        assert_ok!(NFTPallet::burn(Origin::signed(CHARLIE), COLLECTION_ID_0, ITEM_ID_0));
+        assert_eq!(
+            <Test as pallet_uniques::Config>::Currency::free_balance(&BOB),
+            initial_balance
+        );
+        assert_eq!(<Test as pallet_uniques::Config>::Currency::reserved_balance(&BOB), 0);
+
+        
+    })
+}
+
+#[test]
+fn create_typed_collection_should_not_work_without_deposit_when_deposit_is_required() {
+    ExtBuilder::default().build().execute_with(|| {
+        prep_roles();
+        assert_noop!(
+            NFTPallet::create_typed_collection(ACCOUNT_WITH_NO_BALANCE, COLLECTION_ID_0),
+            pallet_balances::Error::<Test>::InsufficientBalance
+        );
+    });
+}
+
+#[test]
+fn create_typed_collection_should_not_work_when_not_permitted() {
+    ExtBuilder::default().build().execute_with(|| {
+        prep_roles();
+        assert_noop!(
+            NFTPallet::create_typed_collection(DAVE, COLLECTION_ID_0),
+            Error::<Test>::NotPermitted
+        );
+    });
+}
+
+
 
 
 
