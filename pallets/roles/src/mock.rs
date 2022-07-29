@@ -5,7 +5,6 @@ use frame_support::{
 };
 use frame_system as system;
 pub use frame_system::RawOrigin;
-//use crate::SUDO::GenesisConfig;
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,

@@ -38,10 +38,14 @@ pub use frame_support::{
 pub mod constants;
 use constants::currency::*;
 pub use frame_system::Call as SystemCall;
-use frame_system::EnsureSigned;
+use frame_system::{EnsureSigned, EnsureRoot};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
+use pallet_nft::NftPermissions;
+pub use pallet_onboarding;
+// flag add pallet use
+
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
@@ -49,7 +53,8 @@ pub use sp_runtime::{Perbill, Permill};
 //import fs-pallets
 pub use pallet_housing_fund;
 pub use pallet_roles;
-// flag add pallet use
+pub use pallet_nft;
+pub use pallet_nft::{ItemId,CollectionId,Acc,NftPermission};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -316,6 +321,19 @@ impl pallet_roles::Config for Runtime {
 }
 
 parameter_types! {
+	pub ReserveCollectionIdUpTo: u32 = 999_999;
+}
+impl pallet_nft::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_nft::weights::SubstrateWeight<Runtime>;
+	type NftCollectionId = CollectionId;
+	type NftItemId = ItemId;
+	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type Permissions = NftPermissions;
+	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
+}
+
+parameter_types! {
 	pub const MinContribution: u128 = 5000 * DOLLARS;
 	pub const FundThreshold: u128 = 100_000 * DOLLARS;
 	pub const MaxFundContribution: u128 = 20_000 * DOLLARS;
@@ -333,6 +351,12 @@ impl pallet_housing_fund::Config for Runtime {
 	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
 	type PalletId = HousingFundPalletId;
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
+}
+
+
+impl pallet_onboarding::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_onboarding::weights::SubstrateWeight<Runtime>;
 }
 
 // flag add pallet config
@@ -356,6 +380,8 @@ construct_runtime!(
 		// Include the custom logic from the pallet-template in the runtime.
 		RoleModule: pallet_roles,
 		HousingFundModule: pallet_housing_fund,
+		NftModule: pallet_nft,
+		OnboardingModule: pallet_onboarding,
 		// flag add pallet runtime
 	}
 );
@@ -403,7 +429,9 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_uniques, Uniques]
 		[pallet_roles, RoleModule]
+		[pallet_nft, NftModule]
 		[pallet_housing_fund, HousingFundModule]
+		[pallet_onboarding, OnboardingModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -587,6 +615,8 @@ impl_runtime_apis! {
 			add_benchmarks!(params, batches);
 			add_benchmark!(params, batches, pallet_roles, RoleModule);
 			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
+			add_benchmark!(params, batches, pallet_nft, NftModule);
+			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
