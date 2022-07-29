@@ -1819,6 +1819,7 @@ dependencies = [
  "pallet-grandpa",
  "pallet-housing_fund",
  "pallet-nft",
+ "pallet-onboarding",
  "pallet-randomness-collective-flip",
  "pallet-roles",
  "pallet-sudo",
@@ -4052,6 +4053,27 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-balances",
+ "pallet-roles",
+ "pallet-sudo",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-onboarding"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-nft",
  "pallet-roles",
  "pallet-sudo",
  "pallet-uniques",

@@ -52,10 +52,10 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-mod helpers;
-mod structs;
+mod functions;
+mod types;
 pub mod weights;
-pub use crate::structs::*;
+pub use crate::types::*;
 pub use pallet_sudo as SUDO;
 use sp_std::{fmt::Debug, prelude::*};
 pub use weights::WeightInfo;

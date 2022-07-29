@@ -43,6 +43,8 @@ pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 use pallet_nft::NftPermissions;
+pub use pallet_onboarding;
+// flag add pallet use
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -351,6 +353,12 @@ impl pallet_housing_fund::Config for Runtime {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
+
+impl pallet_onboarding::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_onboarding::weights::SubstrateWeight<Runtime>;
+}
+
 // flag add pallet config
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -373,6 +381,8 @@ construct_runtime!(
 		RoleModule: pallet_roles,
 		HousingFundModule: pallet_housing_fund,
 		NftModule: pallet_nft,
+		OnboardingModule: pallet_onboarding,
+		// flag add pallet runtime
 	}
 );
 
@@ -421,6 +431,7 @@ mod benches {
 		[pallet_roles, RoleModule]
 		[pallet_nft, NftModule]
 		[pallet_housing_fund, HousingFundModule]
+		[pallet_onboarding, OnboardingModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -605,6 +616,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_roles, RoleModule);
 			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 			add_benchmark!(params, batches, pallet_nft, NftModule);
+			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

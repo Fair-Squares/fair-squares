@@ -55,7 +55,7 @@ pub struct Investor<T: Config> {
 
 impl<T: Config> Investor<T>
 where
-	structs::Investor<T>: EncodeLike<structs::Investor<T>>,
+	types::Investor<T>: EncodeLike<types::Investor<T>>,
 {
 	//-------------------------------------------------------------------
 	//-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
@@ -89,7 +89,7 @@ pub struct HouseSeller<T: Config> {
 }
 impl<T: Config> HouseSeller<T>
 where
-	structs::HouseSeller<T>: EncodeLike<structs::HouseSeller<T>>,
+	types::HouseSeller<T>: EncodeLike<types::HouseSeller<T>>,
 {
 	//--------------------------------------------------------------------
 	//-------------HOUSE SELLER CREATION METHOD_BEGIN----------------------
