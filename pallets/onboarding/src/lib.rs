@@ -1,8 +1,27 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(clippy::unused_unit)]
+#![allow(clippy::upper_case_acronyms)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/v3/runtime/frame>
+use codec::HasCompact;
+use frame_support::{
+    dispatch::DispatchResult,
+    ensure,
+    traits::{Currency,ReservableCurrency,tokens::nonfungibles::*, Get},
+    transactional, BoundedVec,
+};
+use frame_system::ensure_signed;
+
+use sp_runtime::{
+    traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
+    DispatchError,
+};
+use sp_std::boxed::Box;
+mod types;
+
+pub use types::*;
+
+pub use pallet_roles as Roles;
+pub use pallet_nft as Nft;
 
 pub use pallet::*;
 
@@ -17,6 +36,10 @@ mod benchmarking;
 pub mod weights;
 pub use weights::WeightInfo;
 
+
+type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -25,9 +48,10 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + Roles::Config + Nft::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Currency: ReservableCurrency<Self::AccountId>;
 		type WeightInfo: WeightInfo;
 	}
 
@@ -44,6 +68,32 @@ pub mod pallet {
 	// https://docs.substrate.io/v3/runtime/storage#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn prices)]
+	/// Stores token info
+	pub(super) type Prices<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::NftCollectionId,
+		Blake2_128Concat,
+		T::NftItemId,
+		BalanceOf<T>,
+		OptionQuery,
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn houses)]
+	/// Stores token info
+	pub(super) type Houses<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::NftCollectionId,
+		Blake2_128Concat,
+		T::NftItemId,
+		Asset<AssetStatus, BlockNumberFor<T>,BalanceOf<T>,ItemInfoOf<T>>,
+		OptionQuery,
+	>;
+
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
 	#[pallet::event]
@@ -52,6 +102,14 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+
+		/// The price for a token was updated
+		TokenPriceUpdated {
+			who: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			price: Option<BalanceOf<T>>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -61,6 +119,10 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// The acting account does not correspond to the token owner
+		NotTheTokenOwner,
+		/// Class or instance does not exist
+		CollectionOrItemUnknown,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -86,6 +148,35 @@ pub mod pallet {
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn set_price(
+			origin: OriginFor<T>,
+			collection: NftCollectionOf,
+			item_id: T::NftItemId,
+			new_price: Option<BalanceOf<T>>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+			let collection_id: T::NftCollectionId = collection.value().into();
+
+			ensure!(
+				pallet_nft::Pallet::<T>::owner(collection_id, item_id) == Some(sender.clone()),
+				Error::<T>::NotTheTokenOwner
+			);
+
+			Prices::<T>::mutate_exists(collection_id, item_id, |price| *price = new_price);
+
+			Self::deposit_event(Event::TokenPriceUpdated {
+				who: sender,
+				collection: collection_id,
+				item: item_id,
+				price: new_price,
+			});
+
+			Ok(())
+		}
+
 
 		/// An example dispatchable that may throw a custom error.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
