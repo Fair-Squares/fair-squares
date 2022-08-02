@@ -40,6 +40,12 @@ sp-std = { version = "4.0.0-dev", default-features = false, git = "https://githu
 sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 sp-version = { version = "5.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-treasury = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-preimage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
@@ -54,6 +60,7 @@ pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pal
 pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
 pallet-nft = { version = "4.0.0-dev", default-features = false, path = "../pallets/nft" }
 pallet-onboarding = { version = "4.0.0-dev", default-features = false, path = "../pallets/onboarding" }
+pallet-voting = { version = "4.0.0-dev", default-features = false, path = "../pallets/voting" }
 ### add new pallet config
 
 [build-dependencies]
@@ -92,6 +99,11 @@ std = [
 	"pallet-uniques/std",
 	"sp-version/std",
 	"pallet-onboarding/std",
+	"pallet-voting/std",
+	"pallet-collective/std",
+	"pallet-scheduler/std",
+	"pallet-preimage/std",
+	"pallet-treasury/std",
 	### add new std
 ]
 runtime-benchmarks = [
@@ -109,6 +121,7 @@ runtime-benchmarks = [
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-onboarding/runtime-benchmarks",
+	"pallet-voting/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -126,5 +139,6 @@ try-runtime = [
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-onboarding/try-runtime",
+	"pallet-voting/try-runtime",
 	### add new try-runtime
 ]
