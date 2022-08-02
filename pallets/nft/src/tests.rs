@@ -27,7 +27,7 @@ fn create_collection_works() {
         prep_roles();
         assert_ok!(NFTPallet::create_collection(
             Origin::signed(CHARLIE),
-            PossibleCollections::HOUSESTEST,
+            PossibleCollections::HOUSESTEST.into(),
             metadata.clone()
         ));
         assert_eq!(
@@ -95,7 +95,6 @@ fn mint_works() {
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::HOUSESTEST,
-            ITEM_ID_0,
             metadata.clone()
         ));
         assert_eq!(
@@ -112,22 +111,17 @@ fn mint_works() {
         }
         .into()]);
 
-        // duplicate item
-        assert_noop!(
-            NFTPallet::mint(Origin::signed(BOB), PossibleCollections::HOUSESTEST, ITEM_ID_0, metadata.clone()),
-            pallet_uniques::Error::<Test>::AlreadyExists
-        );
-
+        
         // not allowed in Permissions
         assert_noop!(
-            NFTPallet::mint(Origin::signed(DAVE), PossibleCollections::OFFICESTEST, ITEM_ID_0, metadata.clone()),
+            NFTPallet::mint(Origin::signed(DAVE), PossibleCollections::OFFICESTEST, metadata.clone()),
             Error::<Test>::NotPermitted
         );
 
 
         // invalid collection ID
         assert_noop!(
-            NFTPallet::mint(Origin::signed(BOB), PossibleCollections::NONEXISTING, ITEM_ID_0, metadata),
+            NFTPallet::mint(Origin::signed(BOB), PossibleCollections::NONEXISTING, metadata),
             Error::<Test>::CollectionUnknown
         );
     });
@@ -152,13 +146,11 @@ fn transfer_works() {
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::HOUSESTEST,
-            ITEM_ID_0,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::OFFICESTEST,
-            ITEM_ID_0,
             metadata
         ));
 
@@ -226,19 +218,16 @@ fn burn_works() {
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::HOUSESTEST,
-            ITEM_ID_0,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::HOUSESTEST,
-            ITEM_ID_1,
             metadata.clone()
         ));
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::OFFICESTEST,
-            ITEM_ID_0,
             metadata
         ));
 
@@ -286,7 +275,6 @@ fn destroy_collection_works() {
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::HOUSESTEST ,
-            ITEM_ID_0,
             metadata
         ));
 
@@ -362,7 +350,6 @@ fn deposit_works() {
         assert_ok!(NFTPallet::mint(
             Origin::signed(BOB),
             PossibleCollections::HOUSESTEST,
-            ITEM_ID_0,
             metadata
         ));
         assert_eq!(
@@ -430,7 +417,7 @@ fn is_id_reserved_should_return_true_when_id_is_from_reserved_range() {
     );
 
     assert!(
-        NFTPallet::is_id_reserved(13),
+        NFTPallet::is_id_reserved(2),
         "num <= ReserveCollectionIdUpTo should be part of reserved CollectionId range"
     );
 

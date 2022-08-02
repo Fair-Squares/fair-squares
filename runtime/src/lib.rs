@@ -321,7 +321,7 @@ impl pallet_roles::Config for Runtime {
 }
 
 parameter_types! {
-	pub ReserveCollectionIdUpTo: u32 = 999_999;
+	pub ReserveCollectionIdUpTo: u32 = 3;
 }
 impl pallet_nft::Config for Runtime {
 	type Event = Event;

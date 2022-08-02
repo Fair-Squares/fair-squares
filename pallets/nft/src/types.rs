@@ -1,11 +1,11 @@
 
 use frame_support::pallet_prelude::*;
 pub use super::*;
-
+pub use frame_support::inherent::Vec;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
-use scale_info::TypeInfo;
+pub use scale_info::{prelude::vec, TypeInfo};
 
 /// NFT Collection ID
 pub type CollectionId = u32;
@@ -18,22 +18,25 @@ pub enum PossibleCollections {
     HOUSESTEST,
     OFFICESTEST,
     APPARTMENTSTEST,
-    NONEXISTING,	
+    NONEXISTING,
 }
+
+
 
 impl PossibleCollections{
     pub fn value(&self) -> CollectionId {
         match *self {
-            PossibleCollections::HOUSES => 100,
-            PossibleCollections::OFFICES => 101,
-            PossibleCollections::APPARTMENTS => 102,
-            PossibleCollections::HOUSESTEST => 1000,
-            PossibleCollections::OFFICESTEST => 1001,
-            PossibleCollections::APPARTMENTSTEST => 1002,
-            PossibleCollections::NONEXISTING => 999,
+            PossibleCollections::HOUSES => 0,
+            PossibleCollections::OFFICES => 1,
+            PossibleCollections::APPARTMENTS => 2,
+            PossibleCollections::HOUSESTEST => 4,
+            PossibleCollections::OFFICESTEST => 5,
+            PossibleCollections::APPARTMENTSTEST => 6,
+            PossibleCollections::NONEXISTING => 3,
         }
     }
 }
+
 
 
 

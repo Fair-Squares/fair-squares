@@ -50,13 +50,6 @@ pub mod pallet {
     use frame_support::{pallet_prelude::*, traits::EnsureOrigin};
     use frame_system::pallet_prelude::OriginFor;
 
-	#[derive(Encode, Decode, Clone, Eq, PartialEq, RuntimeDebug)]
-	#[derive(TypeInfo)]
-	#[scale_info(skip_type_params(T))]
-	pub struct TokenByOwnerData<T:Config> {
-		pub percent_owned: u32,
-		pub item: ItemInfoOf<T>,
-	}
 
     #[pallet::pallet]
     #[pallet::without_storage_info]
@@ -101,6 +94,17 @@ pub mod pallet {
     pub type Items<T: Config> =
         StorageDoubleMap<_, Twox64Concat, T::NftCollectionId, Twox64Concat, T::NftItemId, ItemInfoOf<T>>;
 
+    #[pallet::type_value]
+    ///Initializing function for the approval waiting list
+    pub fn InitDefault<T: Config>() -> Vec<u32> {
+        vec![0,0,0,0,0,0,0]
+    }
+  
+    #[pallet::storage]
+    #[pallet::getter(fn itemid)]
+    /// Update Item ID
+    pub type ItemsCount<T:Config> = StorageValue<_, Vec<u32>, ValueQuery,InitDefault<T>>;
+
 	
     #[pallet::call]
     impl<T: Config> Pallet<T> {
@@ -144,16 +148,20 @@ pub mod pallet {
         pub fn mint(
             origin: OriginFor<T>,
             collection_id: PossibleCollections,
-            item_id: T::NftItemId,
             metadata: BoundedVecOfUnq<T>,
         ) -> DispatchResult {
             let sender = ensure_signed(origin)?;
-            let coll_id: CollectionId = collection_id.value();
-            let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();            
+            let coll_id: CollectionId = collection_id.clone().value();
+            let idx = collection_id.value() as usize;
+            let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap(); 
+            let item_id = Self::itemid()[idx];           
         
             ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
-
-            Self::do_mint(sender, coll_id.into(), item_id, metadata)?;
+            
+            Self::do_mint(sender, coll_id.into(), item_id.into(), metadata)?;
+            ItemsCount::<T>::mutate(|x|{
+                x[idx] += 1;
+            });
 
             Ok(())
         }

@@ -2,23 +2,12 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::HasCompact;
-use frame_support::{
-    dispatch::DispatchResult,
-    ensure,
-    traits::{Currency,ReservableCurrency,tokens::nonfungibles::*, Get},
-    transactional, BoundedVec,
-};
-use frame_system::ensure_signed;
 
-use sp_runtime::{
-    traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
-    DispatchError,
-};
-use sp_std::boxed::Box;
 mod types;
+mod functions;
 
 pub use types::*;
+pub use functions::*;
 
 pub use pallet_roles as Roles;
 pub use pallet_nft as Nft;
@@ -38,13 +27,13 @@ pub use weights::WeightInfo;
 
 
 type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
+	use frame_support::pallet_prelude::*;	
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -90,7 +79,7 @@ pub mod pallet {
 		T::NftCollectionId,
 		Blake2_128Concat,
 		T::NftItemId,
-		Asset<AssetStatus, BlockNumberFor<T>,BalanceOf<T>,ItemInfoOf<T>>,
+		Asset<T>,
 		OptionQuery,
 	>;
 
@@ -110,6 +99,15 @@ pub mod pallet {
 			item: T::NftItemId,
 			price: Option<BalanceOf<T>>,
 		},
+
+		/// Token was sold to a new owner
+		TokenSold {
+			owner: T::AccountId,
+			buyer: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			price: BalanceOf<T>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -123,6 +121,9 @@ pub mod pallet {
 		NotTheTokenOwner,
 		/// Class or instance does not exist
 		CollectionOrItemUnknown,
+		/// 
+		BuyFromSelf,
+		NotForSale,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -176,6 +177,10 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		
+
+
 
 
 		/// An example dispatchable that may throw a custom error.

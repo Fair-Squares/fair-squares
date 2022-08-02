@@ -1,6 +1,6 @@
 use super::*;
 use crate as pallet_nft;
-
+#[cfg(feature = "std")]
 use frame_support::traits::{AsEnsureOriginWithArg,Everything};
 use frame_support::{parameter_types, weights::Weight};
 use frame_system::EnsureRoot;
@@ -39,7 +39,7 @@ frame_support::construct_runtime!(
 );
 
 parameter_types! {
-    pub ReserveCollectionIdUpTo: u32 = 999;
+    pub ReserveCollectionIdUpTo: u32 = 3;
 }
 
 #[derive(Eq, Copy, PartialEq, Clone)]
@@ -189,12 +189,14 @@ pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE1: AccountId = AccountId::new([7u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
-pub const HOUSESTEST: <Test as pallet_uniques::Config>::CollectionId = 1000;
+pub const HOUSESTEST: <Test as pallet_uniques::Config>::CollectionId = 4;
 pub const COLLECTION_ID_RESERVED: <Test as pallet_uniques::Config>::CollectionId = 42;
 pub const ITEM_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
 pub const ITEM_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
 pub const ITEM_ID_2: <Test as pallet_uniques::Config>::ItemId = 2;
 pub const NON_EXISTING_COLLECTION_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
+
+
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
