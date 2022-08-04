@@ -1,14 +1,13 @@
 use crate as pallet_voting;
 use super::*;
 use frame_support::{
-	assert_noop, assert_ok, parameter_types,
-	traits::{ConstU32, ConstU64, GenesisBuild, StorageVersion,EqualPrivilegeOnly,StorageMapShim},
-	weights::Pays,
-	Hashable,
+	parameter_types,
+	traits::{ConstU32, ConstU64, EqualPrivilegeOnly},
+
 };
-use pallet_balances::AccountData;
-use pallet_collective::{EnsureProportionAtLeast,PrimeDefaultVote};
-use frame_system::{EventRecord, Phase,EnsureRoot,EnsureSigned,Account};
+
+use pallet_collective::PrimeDefaultVote;
+use frame_system::{EnsureRoot,EnsureSigned};
 use frame_support::pallet_prelude::Weight;
 
 use frame_system;
@@ -16,7 +15,6 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
-	BuildStorage,
 	Perbill,
 };
 

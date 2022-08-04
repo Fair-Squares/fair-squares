@@ -13,7 +13,7 @@ mod mock;
 mod tests;
 
 pub use pallet_collective as COLL;
-use crate::COLL::{Instance1,Instance2,MoreThanMajorityThenPrimeDefaultVote};
+use crate::COLL::{Instance1};
 pub use pallet_democracy as DEMO;
 pub use pallet_scheduler;
 
