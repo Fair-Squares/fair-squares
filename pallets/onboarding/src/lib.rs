@@ -11,6 +11,7 @@ pub use functions::*;
 
 pub use pallet_roles as Roles;
 pub use pallet_nft as Nft;
+pub use pallet_sudo as Sudo;
 
 pub use pallet::*;
 
@@ -37,10 +38,11 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Roles::Config + Nft::Config {
+	pub trait Config: frame_system::Config + Roles::Config + Nft::Config +Sudo::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
+		type Prop: Parameter + Dispatchable<Origin = Self::Origin> + From<Call<Self>>;
 		type WeightInfo: WeightInfo;
 	}
 
@@ -150,6 +152,33 @@ pub mod pallet {
 			Ok(())
 		}
 
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
+		pub fn do_buy(
+            origin: OriginFor<T>,
+            collection: NftCollectionOf,
+            item_id: T::NftItemId,
+        ) -> DispatchResult {
+			let buyer = ensure_signed(origin.clone()).unwrap();
+            let collection_id: T::NftCollectionId = collection.clone().value().into();
+            let owner = Nft::Pallet::<T>::owner(collection_id, item_id).ok_or(Error::<T>::CollectionOrItemUnknown)?;
+            ensure!(buyer != owner, Error::<T>::BuyFromSelf);
+    
+            let owner_origin = T::Origin::from(RawOrigin::Signed(owner.clone()));
+
+            let price = Prices::<T>::get(collection_id, item_id).unwrap();
+            <T as Config>::Currency::transfer(&buyer, &owner, price, ExistenceRequirement::KeepAlive)?;
+            let to = T::Lookup::unlookup(buyer.clone());
+            Nft::Pallet::<T>::transfer(owner_origin, collection, item_id, to)?;
+            Self::deposit_event(Event::TokenSold {
+                owner,
+                buyer,
+                collection: collection_id,
+                item: item_id,
+                price,
+            });
+            Ok(())
+        }
+
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn set_price(
@@ -158,25 +187,40 @@ pub mod pallet {
 			item_id: T::NftItemId,
 			new_price: Option<BalanceOf<T>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
-			let collection_id: T::NftCollectionId = collection.value().into();
-
-			ensure!(
-				pallet_nft::Pallet::<T>::owner(collection_id, item_id) == Some(sender.clone()),
-				Error::<T>::NotTheTokenOwner
-			);
-
-			Prices::<T>::mutate_exists(collection_id, item_id, |price| *price = new_price);
-
-			Self::deposit_event(Event::TokenPriceUpdated {
-				who: sender,
-				collection: collection_id,
-				item: item_id,
-				price: new_price,
-			});
+			
+			Self::price(origin,collection,item_id,new_price).ok();
 
 			Ok(())
 		}
+		
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn submit_proposal(
+            origin: OriginFor<T>,
+            collection: NftCollectionOf,
+            price: Option<BalanceOf<T>>,
+			metadata: Nft::BoundedVecOfUnq<T>,
+            )-> DispatchResult {
+				let _caller = ensure_signed(origin.clone()).unwrap();
+				let idx = collection.clone().value() as usize;
+				
+				// Get itemId and infos from minted nft
+				let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
+
+				//Create asset
+				Self::create_asset(origin,collection.clone(),metadata,price,item_id.clone()).ok();
+			
+				//Create Call for the buy
+				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id}.into();
+
+				Ok(())
+                
+            }
+
+			
+
+		
 
 		
 

@@ -16,7 +16,7 @@ pub use frame_support::{
 	},
 	PalletId,
 };
-pub use frame_system::{ensure_signed, pallet_prelude::*};
+pub use frame_system::{ensure_signed, RawOrigin,pallet_prelude::*};
 pub use scale_info::{prelude::vec, TypeInfo};
 
 pub type BalanceOf<T> =

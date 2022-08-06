@@ -362,6 +362,7 @@ impl pallet_housing_fund::Config for Runtime {
 impl pallet_onboarding::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
+	type Prop = Call;
 	type WeightInfo = pallet_onboarding::weights::SubstrateWeight<Runtime>;
 }
 parameter_types! {

@@ -96,6 +96,22 @@ pub mod pallet {
 	pub(super) type TenantLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant<T>, OptionQuery>;
 
+	#[pallet::type_value]
+	//Give Servicer role to Sudo account
+	pub(super) fn Serv<T: Config>()-> (AccountIdOf<T>,Servicer<T>){
+		let sender = SUDO::Pallet::<T>::key().unwrap();
+		let now = <frame_system::Pallet<T>>::block_number();
+		let sv = Servicer {
+			account_id: sender.clone(),
+			age: now,
+			activated: false,
+			verifier: sender.clone(),
+		};
+		(sender,sv)
+	}
+
+
+	
 	#[pallet::storage]
 	#[pallet::getter(fn servicers)]
 	///Registry of Servicers organized by AccountId
@@ -174,6 +190,8 @@ pub mod pallet {
 		TotalMembersExceeded,
 	}
 
+	
+
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
@@ -249,10 +267,22 @@ pub mod pallet {
 			new: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			let new0= T::Lookup::lookup(new.clone())?;
+			let new_origin = T::Origin::from(RawOrigin::Signed(new0.clone()));
 			ensure!(
-				sender == SUDO::Pallet::<T>::key().unwrap(),
+				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
+			//Remove current Sudo from Servicers list
+			if ServicerLog::<T>::contains_key(sender.clone()) == true{
+				ServicerLog::<T>::remove(sender.clone());
+			}
+			
+			//create Servicer & approve a servicer account for new Sudo
+			Servicer::<T>::new(new_origin).ok();
+			Self::approve_account(sender.clone(),new0.clone()).ok();
+
+			//Change sudo key owner to new owner
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
 			Ok(())
 		}
