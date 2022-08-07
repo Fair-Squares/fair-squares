@@ -123,9 +123,14 @@ pub mod pallet {
 		NotTheTokenOwner,
 		/// Class or instance does not exist
 		CollectionOrItemUnknown,
-		/// 
+		/// Cannot buy from yourself
 		BuyFromSelf,
+		/// Item is not for sale 
 		NotForSale,
+		///NFT Item cannot be edited
+		CannotEditItem,
+		///Nft Item has not been approved for sell
+		ItemNotApproved,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -152,19 +157,50 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
+		
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn set_price(
+			origin: OriginFor<T>,
+			collection: NftCollectionOf,
+			item_id: T::NftItemId,
+			new_price: Option<BalanceOf<T>>,
+		) -> DispatchResult {
+			let collection_id: T::NftCollectionId = collection.clone().value().into();
+			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
+			
+			let asset = Self::houses(collection_id,item_id.clone()).unwrap();
+			let status = asset.status;
+			ensure!(status == AssetStatus::EDITING || status == AssetStatus::REJECTEDIT,Error::<T>::CannotEditItem);
+
+			Self::price(origin,collection,item_id,new_price).ok();
+
+			Ok(())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn do_buy(
             origin: OriginFor<T>,
             collection: NftCollectionOf,
             item_id: T::NftItemId,
+			_infos: ItemInfoOf<T>,
         ) -> DispatchResult {
 			let buyer = ensure_signed(origin.clone()).unwrap();
             let collection_id: T::NftCollectionId = collection.clone().value().into();
+
+			//Chaeck that the house item exists and has the correct status
+			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);			
+			let asset = Self::houses(collection_id,item_id.clone()).unwrap();
+			let status = asset.status;
+			ensure!(status == AssetStatus::APPROVED,Error::<T>::ItemNotApproved);
+
+			//Check that the owner is not the buyer 
             let owner = Nft::Pallet::<T>::owner(collection_id, item_id).ok_or(Error::<T>::CollectionOrItemUnknown)?;
             ensure!(buyer != owner, Error::<T>::BuyFromSelf);
-    
+			
+			//Execute transaction
             let owner_origin = T::Origin::from(RawOrigin::Signed(owner.clone()));
-
             let price = Prices::<T>::get(collection_id, item_id).unwrap();
             <T as Config>::Currency::transfer(&buyer, &owner, price, ExistenceRequirement::KeepAlive)?;
             let to = T::Lookup::unlookup(buyer.clone());
@@ -178,20 +214,7 @@ pub mod pallet {
             });
             Ok(())
         }
-
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		#[transactional]
-		pub fn set_price(
-			origin: OriginFor<T>,
-			collection: NftCollectionOf,
-			item_id: T::NftItemId,
-			new_price: Option<BalanceOf<T>>,
-		) -> DispatchResult {
-			
-			Self::price(origin,collection,item_id,new_price).ok();
-
-			Ok(())
-		}
+        
 		
 
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
@@ -210,9 +233,21 @@ pub mod pallet {
 
 				//Create asset
 				Self::create_asset(origin,collection.clone(),metadata,price,item_id.clone()).ok();
+
+				//Change asset status to REVIEWING
+				let collection_id: T::NftCollectionId = collection.clone().value().into();
+				Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
+					let mut v0 =val.clone().unwrap();
+					v0.status = AssetStatus::REVIEWING;
+
+					*val = Some(v0);
+				});
+				let house = Self::houses(collection_id,item_id.clone()).unwrap();
+				let infos = house.infos;
 			
-				//Create Call for the buy
-				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id}.into();
+				//Create Call for the sell/buy transaction
+				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id,infos:infos}.into();
+				
 
 				Ok(())
                 

@@ -39,8 +39,7 @@ impl<T: Config> Pallet<T> {
 		}
 
         
-
-        
+		
 
         pub fn price(
 			origin: OriginFor<T>,
