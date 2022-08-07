@@ -1,3 +1,29 @@
+//! # Onboarding Pallet
+//!
+//! The Onboarding Pallet allows the Seller role to create an asset proposal
+//! and submit it for a Review by a Council in the FairSquares framework.
+//!
+//! ## Overview
+//!
+//! The Onboarding Pallet the following actions to the Seller role:
+//! - Create and Submit a proposal
+//! - Create a proposal without submission phase
+//! - Edit unsubmitted proposal price
+//! - Submit an awaiting proposal
+//!
+//! ### Dispatchable Functions
+//! #### Role setting
+//! * `set_price` - Modify the price of an Existing proposal
+//!
+//! * `do_buy` - Execute the buy/sell transaction
+//!
+//! * `create_and_submit_proposal` - Creation and submission of a proposal.
+//! the proposal submission is optionnal, and can be disabled through the value 
+//! of the boolean `submit`.
+//!
+//! * `submit_awaiting` - Submit an awaiting proposal for review
+
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
@@ -127,10 +153,12 @@ pub mod pallet {
 		BuyFromSelf,
 		/// Item is not for sale 
 		NotForSale,
-		///NFT Item cannot be edited
+		/// NFT Item cannot be edited
 		CannotEditItem,
-		///Nft Item has not been approved for sell
+		/// NFT Item has not been approved for sell
 		ItemNotApproved,
+		/// NFT Item Cannot be submitted for review
+		CannotSubmitItem
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -158,7 +186,7 @@ pub mod pallet {
 		}
 
 		
-
+		/// Modify the price of an Existing proposal
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn set_price(
@@ -167,29 +195,37 @@ pub mod pallet {
 			item_id: T::NftItemId,
 			new_price: Option<BalanceOf<T>>,
 		) -> DispatchResult {
+			let _caller = ensure_signed(origin.clone()).unwrap();
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
+			Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
+				let mut v0 = val.clone().unwrap();
+				v0.price = new_price;
+				*val = Some(v0)
+			});
 			
 			let asset = Self::houses(collection_id,item_id.clone()).unwrap();
 			let status = asset.status;
 			ensure!(status == AssetStatus::EDITING || status == AssetStatus::REJECTEDIT,Error::<T>::CannotEditItem);
 
 			Self::price(origin,collection,item_id,new_price).ok();
+			
 
 			Ok(())
 		}
 
+		///Execute the buy/sell transaction
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn do_buy(
             origin: OriginFor<T>,
             collection: NftCollectionOf,
             item_id: T::NftItemId,
-			_infos: ItemInfoOf<T>,
+			_infos: Asset<T>,
         ) -> DispatchResult {
 			let buyer = ensure_signed(origin.clone()).unwrap();
             let collection_id: T::NftCollectionId = collection.clone().value().into();
 
-			//Chaeck that the house item exists and has the correct status
+			//Check that the house item exists and has the correct status
 			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);			
 			let asset = Self::houses(collection_id,item_id.clone()).unwrap();
 			let status = asset.status;
@@ -216,14 +252,17 @@ pub mod pallet {
         }
         
 		
-
+		/// `create_and_submit_proposal` - Creation and submission of a proposal.
+		/// the proposal submission is optionnal, and can be disabled through the value 
+		/// of the boolean `submit`.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn submit_proposal(
+		pub fn create_and_submit_proposal(
             origin: OriginFor<T>,
             collection: NftCollectionOf,
             price: Option<BalanceOf<T>>,
 			metadata: Nft::BoundedVecOfUnq<T>,
+			submit: bool,
             )-> DispatchResult {
 				let _caller = ensure_signed(origin.clone()).unwrap();
 				let idx = collection.clone().value() as usize;
@@ -234,6 +273,7 @@ pub mod pallet {
 				//Create asset
 				Self::create_asset(origin,collection.clone(),metadata,price,item_id.clone()).ok();
 
+				if submit==true{
 				//Change asset status to REVIEWING
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
 				Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
@@ -243,22 +283,47 @@ pub mod pallet {
 					*val = Some(v0);
 				});
 				let house = Self::houses(collection_id,item_id.clone()).unwrap();
-				let infos = house.infos;
 			
 				//Create Call for the sell/buy transaction
-				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id,infos:infos}.into();
+				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id,infos:house}.into();
+				}
 				
 
 				Ok(())
                 
             }
 
+		///Submit an awaiting proposal for review
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn submit_awaiting(
+            origin: OriginFor<T>,
+            collection: NftCollectionOf,
+            item_id: T::NftItemId,
+            )-> DispatchResult {
+				let _caller = ensure_signed(origin.clone()).unwrap();
+				let collection_id: T::NftCollectionId = collection.clone().value().into();
+				ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
+				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
+				ensure!(house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTEDIT,Error::<T>::CannotSubmitItem);
+		
+				//Change asset status to REVIEWING
+				Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
+					let mut v0 =val.clone().unwrap();
+					v0.status = AssetStatus::REVIEWING;
+
+					*val = Some(v0);
+				});
+				let house = Self::houses(collection_id,item_id.clone()).unwrap();
 			
+				//Create Call for the sell/buy transaction
+				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id,infos:house}.into();
+				
+				
 
-		
-
-		
-
+				Ok(())
+                
+            }
 
 
 

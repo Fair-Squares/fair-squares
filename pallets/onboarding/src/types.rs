@@ -22,7 +22,7 @@ pub enum AssetStatus {
     REJECTBURN,
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebugNoBound, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct Asset<T:Config> {
@@ -30,16 +30,18 @@ pub struct Asset<T:Config> {
 	pub(super) status: AssetStatus,
 	/// Asset creation block
 	pub(super) created: BlockNumberOf<T>,
-	/// nft infos
+	/// NFT infos
 	pub(super) infos: ItemInfoOf<T>,
+	/// NFT Price
+	pub(super) price: Option<BalanceOf<T>>,
 }
 
 impl<T: Config> Asset<T>
 	{
-	pub fn new(collection:T::NftCollectionId,item:T::NftItemId,infos:ItemInfoOf<T>) -> DispatchResult{
+	pub fn new(collection:T::NftCollectionId,item:T::NftItemId,infos:ItemInfoOf<T>, price: Option<BalanceOf<T>>) -> DispatchResult{
 		let status = AssetStatus::EDITING;
 		let created = <frame_system::Pallet<T>>::block_number();
-		let house = Asset::<T>{status: status, created: created,infos: infos};
+		let house = Asset::<T>{status: status, created: created,infos: infos, price: price};
 		Houses::<T>::insert(collection,item,house);
 
 		Ok(())

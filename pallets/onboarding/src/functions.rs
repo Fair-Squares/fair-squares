@@ -30,10 +30,10 @@ impl<T: Config> Pallet<T> {
 			Nft::Pallet::<T>::mint(origin.clone(),collection.clone(),metadata).ok();
 			
 			let infos = Nft::Items::<T>::get(coll_id.clone(),item_id.clone()).unwrap();
-            // Set asset
-            Self::price(origin,collection,item_id.clone(),new_price).ok();
+            // Set asset price
+            Self::price(origin,collection,item_id.clone(),new_price.clone()).ok();
 			// Create Asset
-			Asset::<T>::new(coll_id,item_id,infos).ok();
+			Asset::<T>::new(coll_id,item_id,infos,new_price).ok();
 
 			Ok(())
 		}

@@ -1,4 +1,33 @@
 
+//! # NFT Pallet
+//!
+//! The NFT Pallet is used to manage & perform diverse actions on NFTs
+//! in the FairSquares framework.
+//!
+//! ## Overview
+//!
+//! Management of NFTs assets is made possible through the following actions:
+//! - NFT Collection creation
+//! - NFT asset creation or Minting
+//! - NFT asset transfer
+//! - NFT asset burning
+//! - NFT collection destruction
+//! Access to each action is restricted to a specific role.
+//!
+//! ### Dispatchable Functions
+
+//! * `create_collection` - Restricted to Servicer role, this function
+//! creates an NFT Collection of the given collection and sets its metadata
+
+//! * `mint` - Restricted to Seller role, this function mints a NFT in the 
+//! specified collection, and sets its metadata
+
+//! * `transfer` - Restricted to Servicer role, this function transfers
+//!  NFT from account A to account B. 
+
+//! * `burn` - Restricted to Servicer role, this function Removes a NFT item from existence
+
+//! * `destroy_collection` - Restricted to Servicer role, this function Removes a Collection from existence
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -136,7 +165,7 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Mints an NFT in the specified Collection
+        /// Mints a NFT in the specified Collection
         /// and sets its metadata
         ///
         /// Parameters:
@@ -167,8 +196,6 @@ pub mod pallet {
         }
 
         /// Transfers NFT from account A to account B
-        /// Only the ProtocolOrigin can send NFT to another account
-        /// This is to prevent creating deposit burden for others
         ///
         /// Parameters:
         /// - `collection_id`: The Collection of the asset to be transferred.
