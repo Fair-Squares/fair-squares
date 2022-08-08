@@ -165,7 +165,10 @@ fn testnet_genesis(
 		treasury: Default::default(),
 		house_council: HouseCouncilConfig {
 			members: vec![
-				get_account_id_from_seed::<sr25519::Public>("Alice")
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Bob"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				get_account_id_from_seed::<sr25519::Public>("Dave"),
 			],
 			phantom: Default::default(),
 		}
