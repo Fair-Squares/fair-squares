@@ -340,7 +340,8 @@ impl pallet_housing_fund::Config for Runtime {
 }
 
 parameter_types! {
-	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
+	// pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
+	pub const CouncilMotionDuration: BlockNumber = 1 * MINUTES;
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
 }
@@ -436,9 +437,9 @@ impl pallet_scheduler::Config for Runtime {
 
 parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 1 * MINUTES;//28 * 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
-	pub const MinimumDeposit: Balance = 100 * DOLLARS;
+	pub const MinimumDeposit: Balance = 1 * DOLLARS;
 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxProposals: u32 = 100;
@@ -496,9 +497,19 @@ impl pallet_democracy::Config for Runtime {
 	type MaxProposals = MaxProposals;
 }
 
+parameter_types! {
+	pub const Delay: BlockNumber = 0 * MINUTES;//3 * MINUTES;
+	pub const InvestorVoteAmount: u128 = 10 * DOLLARS;
+}
+
 impl pallet_voting::Config for Runtime {
 	type Event = Event;
+	type Call = Call;
 	type WeightInfo = pallet_voting::weights::SubstrateWeight<Runtime>;
+	type Delay = Delay;
+	type InvestorVoteAmount = InvestorVoteAmount;
+	type Currency = Balances;
+	type CollectiveProposal = Call;
 }
 
 // flag add pallet config
