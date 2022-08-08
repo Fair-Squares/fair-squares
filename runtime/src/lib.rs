@@ -505,6 +505,7 @@ parameter_types! {
 impl pallet_voting::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
+	type Redirection = Call;
 	type WeightInfo = pallet_voting::weights::SubstrateWeight<Runtime>;
 	type Delay = Delay;
 	type InvestorVoteAmount = InvestorVoteAmount;
