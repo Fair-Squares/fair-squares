@@ -15,6 +15,7 @@ mod tests;
 pub use pallet_collective as COLL;
 use COLL::Instance1;
 pub use pallet_democracy as DEMO;
+pub use pallet_roles as ROLES;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -47,7 +48,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config+COLL::Config::<Instance1>+DEMO::Config {
+	pub trait Config: frame_system::Config + COLL::Config::<Instance1>+DEMO::Config + ROLES::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Call: Parameter + Dispatchable<Origin = <Self as frame_system::Config>::Origin> + From<Call<Self>>;
@@ -103,6 +104,10 @@ pub mod pallet {
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 		ProposalNotExists,
+		/// Must have the investor role,
+		NotAnInvestor,
+		/// Must have the seller role
+		NotASeller,
 	}
 
 
@@ -146,6 +151,25 @@ pub mod pallet {
 
 		#[pallet::weight(10_000)]
 		pub fn submit_proposal(
+			origin: OriginFor<T>,
+			amount: BalanceOf<T>,
+			proposal: Box<<T as Config>::Call>
+		) -> DispatchResultWithPostInfo {
+			
+			// Check that the extrinsic was signed and get the signer
+			let who = ensure_signed(origin.clone())?;
+
+			// Check that the account has the investor role
+			ensure!(
+				ROLES::Pallet::<T>::sellers(who.clone()).is_some(),
+				Error::<T>::NotASeller
+			);
+
+			Ok(().into())
+		}
+
+		#[pallet::weight(10_000)]
+		pub fn submit_proposal_bis(
 			origin: OriginFor<T>,
 			proposal: Box<<T as COLL::Config::<Instance1>>::Proposal>,
 		) -> DispatchResultWithPostInfo {
