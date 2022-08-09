@@ -26,6 +26,8 @@ mod structs;
 
 pub use crate::structs::*;
 
+use frame_support::inherent::Vec;
+
 type DemoBalanceOf<T> =
 	<<T as DEMO::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
@@ -67,7 +69,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + COLL::Config::<Instance1> + DEMO::Config + ROLES::Config {
+	pub trait Config: frame_system::Config + COLL::Config::<Instance1> + DEMO::Config + ROLES::Config  {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Call: Parameter + Dispatchable<Origin = <Self as frame_system::Config>::Origin> + From<Call<Self>>;
@@ -140,6 +142,8 @@ pub mod pallet {
 		NotAHouseCouncilMember,
 		/// The proposal must exists
 		ProposalDoesNotExist,
+		/// The collective proposal have failed
+		FailedToCreateCollectiveProposal
 	}
 
 
@@ -196,14 +200,29 @@ pub mod pallet {
 			);
 
 			// create the final dispatch call of the proposal in democracy
-			// let call_dispatch = Call::<T>::call_dispatch{account_id: who.clone(), proposal: proposal.clone()};
-			let call_dispatch = Call::<T>::call_dispatch{account_id: who.clone(), proposal: proposal.clone()};
-			let box_call_dispatch = Box::new(call_dispatch.clone());
+			let call_dispatch = Box::new(Call::<T>::call_dispatch{account_id: who.clone(), proposal: proposal.clone()});
 			let proposal_hash= T::Hashing::hash_of(&proposal);
+
 			// create the democracy call to be propose in collective
-			// let demo: <T as COLL::Config::<Instance1>>::Proposal = Self::get_proposal(call_dispatch.clone());
+			let democracy_call = Call::<T>::call_democracy_proposal{proposal_id: proposal_hash.clone(), proposal: call_dispatch.clone()};
+
 			// create the VotingProposal
 			// call the collective propose
+			let democracy_call_formatted_wrap = Self::get_formatted_collective_proposal(democracy_call.clone().into());
+
+			ensure!(
+				democracy_call_formatted_wrap.is_none() == false,
+				Error::<T>::FailedToCreateCollectiveProposal
+			);
+
+			let democracy_call_formatted = democracy_call_formatted_wrap.unwrap();
+
+			let result = COLL::Pallet::<T, Instance1>::propose(
+				origin.clone(), 
+				2, 
+				democracy_call_formatted.clone().into(), 
+				democracy_call_formatted.clone().encoded_size() as u32
+			);
 
 			// deposit event
 			let block_number = <frame_system::Pallet<T>>::block_number();
@@ -406,7 +425,7 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(10_000)]
-		pub fn call_democracy_proposal(origin: OriginFor<T>, proposal_hash: T::Hash, proposal: Box<Call<T>>) -> DispatchResultWithPostInfo {
+		pub fn call_democracy_proposal(origin: OriginFor<T>, proposal_id: T::Hash, proposal: Box<Call<T>>) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin.clone())?;
 
 			ensure!(
@@ -415,11 +434,11 @@ pub mod pallet {
 			);
 
 			ensure!(
-				VotingProposals::<T>::contains_key(&proposal_hash),
+				VotingProposals::<T>::contains_key(&proposal_id),
 				Error::<T>::ProposalDoesNotExist
 			);
 
-			// let proposal_hash = T::Hashing::hash_of(&proposal);
+			let proposal_hash = T::Hashing::hash_of(&proposal);
 			let proposal_encoded: Vec<u8> = proposal.encode();
 
 			// Call Democracy note_pre_image
@@ -435,10 +454,10 @@ pub mod pallet {
 			// Start Democracy referendum
             let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash.clone(), threshold,delay);
 
-			let mut proposal = VotingProposals::<T>::get(proposal_hash.clone()).unwrap();
+			let mut proposal = VotingProposals::<T>::get(proposal_id.clone()).unwrap();
 			proposal.democracy_referendum_index = referendum_index;
 
-			VotingProposals::<T>::mutate(&proposal_hash, |val| {
+			VotingProposals::<T>::mutate(&proposal_id, |val| {
 				*val = Some(proposal);
 			});
 
@@ -471,10 +490,14 @@ impl<T: Config> Pallet<T>
 		input.try_into().ok()
 	}
 
-	// pub fn get_proposal<S: pallet_collective::Config::<Instance1>, U>(prop: <U as frame_system>::Call) 	
-	//  -> <T as pallet_collective::Config::<Instance1>>::Proposal 
-	//  where <T as pallet_collective::Config<pallet_collective::Instance1>>::Proposal: From<<U as frame_system>::Call> {
+	pub fn get_formatted_collective_proposal(call: <T as Config>::Call) -> Option<<T as COLL::Config::<Instance1>>::Proposal> {
+		let call_encoded: Vec<u8> = call.encode();
+		let mut ref_call_encoded = &call_encoded;
 
-	// 	prop.into()
-	// }
+		if let Ok(call_formatted) = <T as pallet_collective::Config::<Instance1>>::Proposal::decode(&mut &ref_call_encoded[..]) {
+			Some(call_formatted)
+		}else {
+			None
+		}
+	}
 }
