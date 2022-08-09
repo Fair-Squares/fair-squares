@@ -75,11 +75,11 @@ pub mod pallet {
 		type Delay: Get<Self::BlockNumber>;
 		type InvestorVoteAmount: Get<u128>;
 		type Currency: ReservableCurrency<Self::AccountId>;
-		type Redirection: Parameter + Dispatchable<Origin = <Self as frame_system::Config>::Origin> + From<Call<Self>>;
-		type CollectiveProposal: Parameter 
-			+ Dispatchable<Origin = <Self as pallet_collective::Config::<Instance1>>::Origin, PostInfo = PostDispatchInfo>
-			+ From<frame_system::Call<Self>>
-			+ GetDispatchInfo;
+		// type Redirection: Parameter + Dispatchable<Origin = <Self as frame_system::Config>::Origin> + From<Call<Self>>;
+		// type CollectiveProposal: Parameter 
+		// 	+ Dispatchable<Origin = <Self as pallet_collective::Config::<Instance1>>::Origin, PostInfo = PostDispatchInfo>
+		// 	+ From<frame_system::Call<Self>>
+		// 	+ GetDispatchInfo;
 	}
 
 	#[pallet::pallet]
@@ -147,17 +147,15 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_something(origin: OriginFor<T>, account_id: AccountIdOf<T>, something: u32) -> DispatchResultWithPostInfo {
+		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResultWithPostInfo {
 
-			// ensure_root(origin.clone())?;
-			// let who = ensure_signed(origin.clone())?;
+			let who = ensure_signed(origin.clone())?;
 
 			// Update storage.
 			<Something<T>>::put(something);
 
 			// Emit an event.
-			// Self::deposit_event(Event::SomethingStored(something, who));
-			Self::deposit_event(Event::SomethingStored(something, account_id));
+			Self::deposit_event(Event::SomethingStored(something, who));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(().into())
 		}
