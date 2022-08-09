@@ -97,21 +97,6 @@ pub mod pallet {
 	pub(super) type TenantLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant<T>, OptionQuery>;
 
-	#[pallet::type_value]
-	//Give Servicer role to Sudo account
-	pub(super) fn Serv<T: Config>()-> (AccountIdOf<T>,Servicer<T>){
-		let sender = SUDO::Pallet::<T>::key().unwrap();
-		let now = <frame_system::Pallet<T>>::block_number();
-		let sv = Servicer {
-			account_id: sender.clone(),
-			age: now,
-			activated: false,
-			verifier: sender.clone(),
-		};
-		(sender,sv)
-	}
-
-
 	
 	#[pallet::storage]
 	#[pallet::getter(fn servicers)]

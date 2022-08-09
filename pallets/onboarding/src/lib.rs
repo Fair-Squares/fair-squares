@@ -5,23 +5,41 @@
 //!
 //! ## Overview
 //!
-//! The Onboarding Pallet the following actions to the Seller role:
+//! The Onboarding Pallet the following actions available to the Seller role:
 //! - Create and Submit a proposal
 //! - Create a proposal without submission phase
 //! - Edit unsubmitted proposal price
 //! - Submit an awaiting proposal
 //!
+//!And the following actions sent to pallet voting through calls
+//! - Execute NFT & funds transfer
+//! - Reject a proposal for price editing purpose (asset is marked as REJECTEDIT and re-submission is possible)
+//! - Reject a proposal for destruction (NFT is burned, asset is marked as REJECTBURN)
+//!
 //! ### Dispatchable Functions
 //! #### Role setting
-//! * `set_price` - Modify the price of an Existing proposal
 //!
-//! * `do_buy` - Execute the buy/sell transaction
+//! * `do_something` - Used in a Call to initialize the fields of the VotingCalls struct.
+//!  
+//! * `set_price` - Modify the price of an Existing proposal with the status EDIT or REJECTEDIT
+//! Proposal price is the only part that can be edited
+//! 
+//! * `do_buy` - Execute the buy/sell transaction.
+//! Sent to the voting pallet as a Call.
+//!
+//! * `reject_edit` - Reject a submitted proposal for price editing.
+//! Sent to the voting pallet as a Call.
+//!
+//! * `reject_destroy` - Reject a submitted proposal for destruction.
+//! Sent to the voting pallet as a Call.
 //!
 //! * `create_and_submit_proposal` - Creation and submission of a proposal.
+//! A struct containing Calls for the voting pallet is also created and stored.
 //! the proposal submission is optionnal, and can be disabled through the value 
 //! of the boolean `submit`.
 //!
-//! * `submit_awaiting` - Submit an awaiting proposal for review
+//! * `submit_awaiting` - Submit/edit an awaiting proposal for review.
+//! This is also used for re-submission of rejected proposals. 
 
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -100,7 +118,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn houses)]
-	/// Stores token info
+	/// Stores Asset info
 	pub(super) type Houses<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
@@ -108,6 +126,19 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::NftItemId,
 		Asset<T>,
+		OptionQuery,
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn voting_calls)]
+	/// Stores Calls
+	pub(super) type Vcalls<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::NftCollectionId,
+		Blake2_128Concat,
+		T::NftItemId,
+		VotingCalls<T>,
 		OptionQuery,
 	>;
 
@@ -158,7 +189,11 @@ pub mod pallet {
 		/// NFT Item has not been approved for sell
 		ItemNotApproved,
 		/// NFT Item Cannot be submitted for review
-		CannotSubmitItem
+		CannotSubmitItem,
+		/// NFT ITEM must be reviewed first
+		ReviewNedeed,
+		/// Investors vote is needed first
+		VoteNedeed
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -185,7 +220,19 @@ pub mod pallet {
 			Ok(())
 		}
 
-		
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn change_status(
+			origin: OriginFor<T>,
+			collection: NftCollectionOf,
+			item_id: T::NftItemId,
+			status:AssetStatus,
+		)-> DispatchResult {
+			let _caller = ensure_signed(origin.clone()).unwrap();
+			Self::status(collection,item_id,status);
+			Ok(())
+		}
+
 		/// Modify the price of an Existing proposal
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
@@ -198,6 +245,7 @@ pub mod pallet {
 			let _caller = ensure_signed(origin.clone()).unwrap();
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
+
 			Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
 				let mut v0 = val.clone().unwrap();
 				v0.price = new_price;
@@ -227,30 +275,70 @@ pub mod pallet {
 
 			//Check that the house item exists and has the correct status
 			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);			
-			let asset = Self::houses(collection_id,item_id.clone()).unwrap();
+			let asset = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
 			let status = asset.status;
-			ensure!(status == AssetStatus::APPROVED,Error::<T>::ItemNotApproved);
-
+			ensure!(status == AssetStatus::VOTING,Error::<T>::VoteNedeed);
+			
 			//Check that the owner is not the buyer 
-            let owner = Nft::Pallet::<T>::owner(collection_id, item_id).ok_or(Error::<T>::CollectionOrItemUnknown)?;
+            let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone()).ok_or(Error::<T>::CollectionOrItemUnknown)?;
             ensure!(buyer != owner, Error::<T>::BuyFromSelf);
 			
 			//Execute transaction
             let owner_origin = T::Origin::from(RawOrigin::Signed(owner.clone()));
-            let price = Prices::<T>::get(collection_id, item_id).unwrap();
+            let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
             <T as Config>::Currency::transfer(&buyer, &owner, price, ExistenceRequirement::KeepAlive)?;
             let to = T::Lookup::unlookup(buyer.clone());
-            Nft::Pallet::<T>::transfer(owner_origin, collection, item_id, to)?;
+            Nft::Pallet::<T>::transfer(owner_origin, collection, item_id.clone(), to)?;
             Self::deposit_event(Event::TokenSold {
                 owner,
                 buyer,
-                collection: collection_id,
-                item: item_id,
+                collection: collection_id.clone(),
+                item: item_id.clone(),
                 price,
             });
+
+			//change status
+			Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::APPROVED).ok();
+
+
             Ok(())
         }
-        
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn reject_edit(
+			origin: OriginFor<T>,
+            collection: NftCollectionOf,
+            item_id: T::NftItemId,
+			_infos: Asset<T>,
+		) -> DispatchResult{
+			let _caller = ensure_signed(origin.clone()).unwrap();
+				let collection_id: T::NftCollectionId = collection.clone().value().into();
+				ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
+				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
+				ensure!(house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,Error::<T>::CannotSubmitItem);
+				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REJECTEDIT).ok();
+
+				Ok(())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn reject_destroy(
+			origin: OriginFor<T>,
+            collection: NftCollectionOf,
+            item_id: T::NftItemId,
+			_infos: Asset<T>,
+		) -> DispatchResult{
+			let _caller = ensure_signed(origin.clone()).unwrap();
+				let collection_id: T::NftCollectionId = collection.clone().value().into();
+				ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
+				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
+				ensure!(house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,Error::<T>::CannotSubmitItem);
+				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REJECTBURN).ok();
+				Nft::Pallet::<T>::burn(origin,collection,item_id).ok();
+
+				Ok(())
+		}
+       
 		
 		/// `create_and_submit_proposal` - Creation and submission of a proposal.
 		/// the proposal submission is optionnal, and can be disabled through the value 
@@ -264,6 +352,7 @@ pub mod pallet {
 			metadata: Nft::BoundedVecOfUnq<T>,
 			submit: bool,
             )-> DispatchResult {
+
 				let _caller = ensure_signed(origin.clone()).unwrap();
 				let idx = collection.clone().value() as usize;
 				
@@ -271,27 +360,57 @@ pub mod pallet {
 				let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
 
 				//Create asset
-				Self::create_asset(origin,collection.clone(),metadata,price,item_id.clone()).ok();
+				Self::create_asset(origin.clone(),collection.clone(),metadata,price,item_id.clone()).ok();
 
-				if submit==true{
+				
 				//Change asset status to REVIEWING
+				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
-				Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
-					let mut v0 =val.clone().unwrap();
-					v0.status = AssetStatus::REVIEWING;
-
-					*val = Some(v0);
-				});
-				let house = Self::houses(collection_id,item_id.clone()).unwrap();
+				
+				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
 			
 				//Create Call for the sell/buy transaction
-				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id,infos:house}.into();
-				}
+				let _new_call = VotingCalls::<T>::new(collection_id.clone(),item_id.clone()).ok();
+				let call0:T::Prop = Call::<T>::do_buy{collection: collection.clone(),item_id: item_id.clone(),infos:house.clone()}.into();
+				Vcalls::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
+					let mut v0 = val.clone().unwrap();
+					v0.buy = call0;
+					*val = Some(v0);
+				});
 				
+				//Create Call for collective-to-democracy status change
+				let call1:T::Prop = Call::<T>::change_status{collection: collection.clone(),item_id: item_id.clone(),status: AssetStatus::VOTING}.into();
+				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
+					let mut v0 = val.clone().unwrap();
+					v0.democracy_status = call1;
+					*val = Some(v0);
+				});
+
+				//Create Call for proposal reject_edit
+				let call2:T::Prop = Call::<T>::reject_edit{collection: collection.clone(),item_id: item_id.clone(),infos: house.clone()}.into();
+				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
+					let mut v0 = val.clone().unwrap();
+					v0.reject_edit = call2;
+					*val = Some(v0);
+				});
+
+
+				//Create Call for proposal reject_destroy
+				let call3:T::Prop = Call::<T>::reject_destroy{collection: collection.clone(),item_id: item_id.clone(),infos: house.clone()}.into();
+				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
+					let mut v0 = val.clone().unwrap();
+					v0.reject_destroy = call3;
+					*val = Some(v0);
+				});
+
+				if submit == true{
+					//Send Proposal struct to voting pallet
+				}	
 
 				Ok(())
-                
-            }
+
+				}
+				
 
 		///Submit an awaiting proposal for review
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
@@ -300,32 +419,34 @@ pub mod pallet {
             origin: OriginFor<T>,
             collection: NftCollectionOf,
             item_id: T::NftItemId,
+			price: Option<BalanceOf<T>>,
             )-> DispatchResult {
 				let _caller = ensure_signed(origin.clone()).unwrap();
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
 				ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
 				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
 				ensure!(house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTEDIT,Error::<T>::CannotSubmitItem);
+
+				//Edit asset price
+				Self::set_price(origin.clone(),collection.clone(),item_id.clone(),price).ok();
 		
 				//Change asset status to REVIEWING
-				Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
-					let mut v0 =val.clone().unwrap();
-					v0.status = AssetStatus::REVIEWING;
-
+				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
+				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
+			
+				//Update Call for the sell/buy transaction
+				let call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id.clone(),infos:house}.into();
+				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
+					let mut v0 = val.clone().unwrap();
+					v0.buy = call;
 					*val = Some(v0);
 				});
-				let house = Self::houses(collection_id,item_id.clone()).unwrap();
-			
-				//Create Call for the sell/buy transaction
-				let _call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id,infos:house}.into();
 				
-				
+				//Send Calls struct to voting pallet
 
 				Ok(())
                 
             }
-
-
 
 		/// An example dispatchable that may throw a custom error.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]

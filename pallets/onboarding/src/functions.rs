@@ -38,7 +38,18 @@ impl<T: Config> Pallet<T> {
 			Ok(())
 		}
 
-        
+        pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status:AssetStatus ){
+			let collection_id: T::NftCollectionId = collection.clone().value().into();
+			Houses::<T>::mutate(collection_id,item_id.clone(),|val|{
+				let mut v0=val.clone().unwrap();
+				v0.status = status;
+				*val = Some(v0);
+
+			});
+
+		}
+		
+		
 		
 
         pub fn price(

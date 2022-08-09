@@ -48,3 +48,27 @@ impl<T: Config> Asset<T>
 		
 	}
 }
+
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebugNoBound, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct VotingCalls<T:Config> {
+	/// Asset status
+	pub(super) buy: T::Prop,
+	/// Asset creation block
+	pub(super) reject_edit: T::Prop,
+	/// NFT infos
+	pub(super) reject_destroy: T::Prop,
+	/// NFT Price
+	pub(super) democracy_status: T::Prop,
+}
+
+impl<T: Config> VotingCalls<T>{
+	pub fn new(collection:T::NftCollectionId,item:T::NftItemId) -> DispatchResult{
+		let nbr:u32 = 0;
+		let call:T::Prop = Call::<T>::do_something{something: nbr}.into();
+		let calls = VotingCalls::<T>{buy:call.clone(),reject_edit:call.clone(),reject_destroy:call.clone(),democracy_status:call.clone()};
+		Vcalls::<T>::insert(collection,item,calls);
+		Ok(())
+	}
+}
