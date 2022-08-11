@@ -66,11 +66,7 @@ pub mod pallet {
 		type Delay: Get<Self::BlockNumber>;
 		type InvestorVoteAmount: Get<u128>;
 		type Currency: ReservableCurrency<Self::AccountId>;
-		// type Redirection: Parameter + Dispatchable<Origin = <Self as frame_system::Config>::Origin> + From<Call<Self>>;
-		// type CollectiveProposal: Parameter 
-		// 	+ Dispatchable<Origin = <Self as pallet_collective::Config::<Instance1>>::Origin, PostInfo = PostDispatchInfo>
-		// 	+ From<frame_system::Call<Self>>
-		// 	+ GetDispatchInfo;
+		type HouseCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::Origin>;
 	}
 
 	#[pallet::pallet]
@@ -296,12 +292,13 @@ pub mod pallet {
 
 		#[pallet::weight(10_000)]
 		pub fn call_democracy_proposal(origin: OriginFor<T>, account_id: AccountIdOf<T>, proposal_id: T::Hash, proposal: Box<<T as Config>::Call>) -> DispatchResultWithPostInfo {
-			// let who = ensure_signed(origin.clone())?;
+			
+			ensure!(
+				COLL::Pallet::<T, Instance1>::members().contains(&who),
+				Error::<T>::NotAHouseCouncilMember
+			);
 
-			// ensure!(
-			// 	COLL::Pallet::<T, Instance1>::members().contains(&who),
-			// 	Error::<T>::NotAHouseCouncilMember
-			// );
+			T::HouseCouncilOrigin::ensure_origin(origin.clone())?;
 
 			ensure!(
 				VotingProposals::<T>::contains_key(&proposal_id),
@@ -338,7 +335,6 @@ pub mod pallet {
 		pub fn call_dispatch(origin: OriginFor<T>, account_id: AccountIdOf<T>, proposal: Box<<T as Config>::Call>) -> DispatchResultWithPostInfo {
 			
 			ensure_root(origin.clone())?;
-			// let who = ensure_signed(origin.clone())?;
 
 			let res = proposal.dispatch(frame_system::RawOrigin::Signed(account_id.clone()).into());
 

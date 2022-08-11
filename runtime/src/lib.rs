@@ -505,12 +505,11 @@ parameter_types! {
 impl pallet_voting::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
-	// type Redirection = Call;
 	type WeightInfo = pallet_voting::weights::SubstrateWeight<Runtime>;
 	type Delay = Delay;
 	type InvestorVoteAmount = InvestorVoteAmount;
 	type Currency = Balances;
-	// type CollectiveProposal = Call;
+	type HouseCouncilOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 }
 
 // flag add pallet config
