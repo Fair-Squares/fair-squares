@@ -337,7 +337,7 @@ pub mod pallet {
 		#[pallet::weight(10_000)]
 		pub fn call_dispatch(origin: OriginFor<T>, account_id: AccountIdOf<T>, proposal: Box<<T as Config>::Call>) -> DispatchResultWithPostInfo {
 			
-			// ensure_root(origin.clone())?;
+			ensure_root(origin.clone())?;
 			// let who = ensure_signed(origin.clone())?;
 
 			let res = proposal.dispatch(frame_system::RawOrigin::Signed(account_id.clone()).into());
