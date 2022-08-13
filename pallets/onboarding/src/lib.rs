@@ -56,14 +56,15 @@ pub use functions::*;
 pub use pallet_roles as Roles;
 pub use pallet_nft as Nft;
 pub use pallet_sudo as Sudo;
+pub use pallet_voting as Votes; 
 
 pub use pallet::*;
 
-//#[cfg(test)]
-//mod mock;
+#[cfg(test)]
+mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -71,7 +72,7 @@ pub mod weights;
 pub use weights::WeightInfo;
 
 
-type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+pub type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 
@@ -82,11 +83,12 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Roles::Config + Nft::Config +Sudo::Config{
+	pub trait Config: frame_system::Config + Roles::Config + Nft::Config + Sudo::Config + Votes::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
-		type Prop: Parameter + Dispatchable<Origin = Self::Origin> + From<Call<Self>>;
+		type Prop: Parameter + Dispatchable<Origin = <Self as frame_system::Config>::Origin> + From<Call<Self>>;
+		type ProposalFee: Get<BalanceOf<Self>>;
 		type WeightInfo: WeightInfo;
 	}
 
@@ -193,7 +195,9 @@ pub mod pallet {
 		/// NFT ITEM must be reviewed first
 		ReviewNedeed,
 		/// Investors vote is needed first
-		VoteNedeed
+		VoteNedeed,
+		/// Insufficient balance for proposal creation
+		InsufficientBalance
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -246,7 +250,7 @@ pub mod pallet {
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
 
-			Houses::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
+			Houses::<T>::mutate_exists(collection_id.clone(),item_id.clone(),|val|{
 				let mut v0 = val.clone().unwrap();
 				v0.price = new_price;
 				*val = Some(v0)
@@ -284,7 +288,7 @@ pub mod pallet {
             ensure!(buyer != owner, Error::<T>::BuyFromSelf);
 			
 			//Execute transaction
-            let owner_origin = T::Origin::from(RawOrigin::Signed(owner.clone()));
+            let owner_origin = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(owner.clone()));
             let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
             <T as Config>::Currency::transfer(&buyer, &owner, price, ExistenceRequirement::KeepAlive)?;
             let to = T::Lookup::unlookup(buyer.clone());
@@ -334,7 +338,10 @@ pub mod pallet {
 				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
 				ensure!(house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,Error::<T>::CannotSubmitItem);
 				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REJECTBURN).ok();
-				Nft::Pallet::<T>::burn(origin,collection,item_id).ok();
+				let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
+				Nft::Pallet::<T>::burn(origin,collection,item_id.clone()).ok();				
+				let balance = <T as Config>::Currency::reserved_balance(&owner);
+				<T as Config>::Currency::slash_reserved(&owner,balance);
 
 				Ok(())
 		}
@@ -353,18 +360,17 @@ pub mod pallet {
 			submit: bool,
             )-> DispatchResult {
 
-				let _caller = ensure_signed(origin.clone()).unwrap();
+				let caller = ensure_signed(origin.clone()).unwrap();
 				let idx = collection.clone().value() as usize;
 				
 				// Get itemId and infos from minted nft
 				let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
 
 				//Create asset
+				ensure!(<T as Config>::Currency::can_reserve(&caller,T::ProposalFee::get())==true,Error::<T>::InsufficientBalance);
 				Self::create_asset(origin.clone(),collection.clone(),metadata,price,item_id.clone()).ok();
-
+			
 				
-				//Change asset status to REVIEWING
-				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
 				
 				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
@@ -404,6 +410,8 @@ pub mod pallet {
 				});
 
 				if submit == true{
+					//Change asset status to REVIEWING
+					Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
 					//Send Proposal struct to voting pallet
 				}	
 
@@ -428,7 +436,11 @@ pub mod pallet {
 				ensure!(house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTEDIT,Error::<T>::CannotSubmitItem);
 
 				//Edit asset price
-				Self::set_price(origin.clone(),collection.clone(),item_id.clone(),price).ok();
+				let price0 = Prices::<T>::get(collection_id.clone(),item_id.clone()).unwrap();
+				let b = price.unwrap_or(price0);
+				if price0 != b{
+				Self::set_price(origin.clone(),collection.clone(),item_id.clone(),Some(b)).ok();
+				}
 		
 				//Change asset status to REVIEWING
 				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();

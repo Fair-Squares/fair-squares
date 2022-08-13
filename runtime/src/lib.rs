@@ -358,11 +358,15 @@ impl pallet_housing_fund::Config for Runtime {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
+parameter_types! {
+	pub const ProposalFee: Balance = 100 * DOLLARS;	
+}
 
 impl pallet_onboarding::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type Prop = Call;
+	type ProposalFee = ProposalFee;
 	type WeightInfo = pallet_onboarding::weights::SubstrateWeight<Runtime>;
 }
 parameter_types! {
