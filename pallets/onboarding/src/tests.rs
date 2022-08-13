@@ -28,25 +28,55 @@ fn create_proposal() {
 		assert_ok!(NftModule::create_collection(Origin::signed(CHARLIE),NftColl::OFFICESTEST,metadata0));
 		// Bob creates a proposal without submiting for review
 		let price =  100_000_000;
-		assert_ok!(OnboardingModule::create_and_submit_proposal(Origin::signed(BOB), NftColl::OFFICESTEST,Some(price),metadata1,false));
+		assert_ok!(OnboardingModule::create_and_submit_proposal(Origin::signed(BOB), NftColl::OFFICESTEST,Some(price.clone()),metadata1,false));
+
         let coll_id = NftColl::OFFICESTEST.value();
         let item_id = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] -1;
         let status: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id.clone()).unwrap().status;
+
+        expect_events(vec![crate::Event::ProposalCreated {
+            who: BOB,
+            collection: coll_id.clone(),
+            item: item_id.clone(),
+            price: Some(price.clone())
+        }
+        .into()]);
+
+        
         assert_eq!( status, AssetStatus::EDITING);
 
         // Bob changes the price of created proposal
         let new_price =  150_000_000;        
-        assert_ok!(OnboardingModule::set_price(Origin::signed(BOB),NftColl::OFFICESTEST,item_id.clone(),Some(new_price)));
+        assert_ok!(OnboardingModule::set_price(Origin::signed(BOB),NftColl::OFFICESTEST,item_id.clone(),Some(new_price.clone())));
+        
+        expect_events(vec![crate::Event::TokenPriceUpdated {
+            who: BOB,
+            collection: coll_id.clone(),
+            item: item_id.clone(),
+            price: Some(new_price.clone())
+        }
+        .into()]);
+
         let house_price = Houses::<Test>::get(coll_id.clone(),item_id.clone()).unwrap().price;
-        assert_eq!(new_price,Prices::<Test>::get(coll_id.clone(),item_id.clone()).unwrap());
+        assert_eq!(new_price.clone(),Prices::<Test>::get(coll_id.clone(),item_id.clone()).unwrap());
         assert_eq!(house_price,Prices::<Test>::get(coll_id.clone(),item_id.clone()));
 
         //Bob finally submit the proposal without changing the price a second time
         assert_ok!(OnboardingModule::submit_awaiting(Origin::signed(BOB),NftColl::OFFICESTEST,item_id,None));
+
+       
         let house_price = Houses::<Test>::get(coll_id.clone(),item_id.clone()).unwrap().price;
         assert_eq!(house_price, Some(150_000_000));
         let status: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id.clone()).unwrap().status;
         assert_eq!( status, AssetStatus::REVIEWING);
+
+        //expect_events(vec![crate::Event::ProposalSubmitted {
+         //   who: BOB,
+          //  collection: coll_id.clone(),
+           // item: item_id.clone(),
+           // price: Some(new_price.clone())
+       // }
+        //.into()]);
 
 		
 	});
@@ -61,9 +91,11 @@ fn proposal_rejections(){
             let metadata2: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
             b"metadata2".to_vec().try_into().unwrap();
         prep_roles();
-		//Charlie creates a collection
+		
+        //Charlie creates a collection
 		assert_ok!(NftModule::create_collection(Origin::signed(CHARLIE),NftColl::OFFICESTEST,metadata0));
-		// Bob creates 2 proposals and submit them for review
+		
+        // Bob creates 2 proposals and submit them for review
 		let price0 =  100_000_000;
         let price1 =  150_000_000;
 		assert_ok!(OnboardingModule::create_and_submit_proposal(Origin::signed(BOB), NftColl::OFFICESTEST,Some(price0),metadata1,true));
@@ -72,20 +104,44 @@ fn proposal_rejections(){
         let status_0: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id0.clone()).unwrap().status;
         assert_eq!( status_0, AssetStatus::REVIEWING);
 
+        let initial_balance = <Test as pallet_uniques::Config>::Currency::free_balance(&BOB);
+
+
         assert_ok!(OnboardingModule::create_and_submit_proposal(Origin::signed(BOB), NftColl::OFFICESTEST,Some(price1),metadata2,true));
         let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] -1;
         let status_1: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id0.clone()).unwrap().status;
+        let balance0 = <Test as pallet_uniques::Config>::Currency::free_balance(&BOB);
+
         assert_eq!( status_1, AssetStatus::REVIEWING);
         
         //Chalie Reject_Edit first proposal
         let house0 = Houses::<Test>::get(coll_id.clone(),item_id0.clone()).unwrap();
         assert_ok!(OnboardingModule::reject_edit(Origin::signed(CHARLIE),NftColl::OFFICESTEST,item_id0.clone(),house0));
+        
+        expect_events(vec![crate::Event::RejectedForEditing {
+            by_who: CHARLIE,
+            collection: coll_id.clone(),
+            item: item_id0.clone(),
+        }
+        .into()]);
+        
         let status0: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id0.clone()).unwrap().status;
         assert_eq!( status0, AssetStatus::REJECTEDIT);
 
         //Charlie Reject_Destroy second proposal
         let house1 = Houses::<Test>::get(coll_id.clone(),item_id1.clone()).unwrap();
         assert_ok!(OnboardingModule::reject_destroy(Origin::signed(CHARLIE),NftColl::OFFICESTEST,item_id1.clone(),house1));
+
+        expect_events(vec![crate::Event::RejectedForDestruction {
+            by_who: CHARLIE,
+            collection: coll_id.clone(),
+            item: item_id1.clone(),
+        }
+        .into()]);
+        // Bob reserved funds are 100% slashed
+        let diff = initial_balance-balance0;
+        assert_eq!(diff,<Test as Config>::ProposalFee::get());
+
         let status1: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id1.clone()).unwrap().status;
         assert_eq!( status1, AssetStatus::REJECTBURN);
 

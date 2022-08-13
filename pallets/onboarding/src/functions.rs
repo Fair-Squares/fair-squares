@@ -78,6 +78,16 @@ impl<T: Config> Pallet<T> {
 			Ok(())
 		}
 
+		// Conversion of u64 to BalanxceOf<T>
+	pub fn u64_to_balance_option(input: u64) -> Option<BalanceOf<T>> {
+		input.try_into().ok()
+	}
+
+	// Conversion of BalanceOf<T> to u32
+	pub fn balance_to_u64_option(input: BalanceOf<T>) -> Option<u64> {
+		input.try_into().ok()
+	}
+
     
     }
 

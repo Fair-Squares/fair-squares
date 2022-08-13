@@ -169,6 +169,33 @@ pub mod pallet {
 			item: T::NftItemId,
 			price: BalanceOf<T>,
 		},
+
+		/// Proposal Created
+		ProposalCreated {
+			who: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			price: Option<BalanceOf<T>>,
+		},
+		/// Proposal submited for review
+		ProposalSubmitted {
+			who: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			price: Option<BalanceOf<T>>,
+		},
+		/// Proposal rejected for editing
+		RejectedForEditing {
+			by_who: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+		},
+		/// Proposal rejected for destruction
+		RejectedForDestruction {
+			by_who: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -246,7 +273,7 @@ pub mod pallet {
 			item_id: T::NftItemId,
 			new_price: Option<BalanceOf<T>>,
 		) -> DispatchResult {
-			let _caller = ensure_signed(origin.clone()).unwrap();
+			let caller = ensure_signed(origin.clone()).unwrap();
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 			ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
 
@@ -256,12 +283,18 @@ pub mod pallet {
 				*val = Some(v0)
 			});
 			
-			let asset = Self::houses(collection_id,item_id.clone()).unwrap();
+			let asset = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
 			let status = asset.status;
 			ensure!(status == AssetStatus::EDITING || status == AssetStatus::REJECTEDIT,Error::<T>::CannotEditItem);
 
-			Self::price(origin,collection,item_id,new_price).ok();
+			Self::price(origin,collection,item_id.clone(),new_price.clone()).ok();
 			
+			Self::deposit_event(Event::TokenPriceUpdated {
+                who: caller,
+                collection: collection_id.clone(),
+                item: item_id.clone(),
+                price: new_price,
+            });
 
 			Ok(())
 		}
@@ -315,12 +348,25 @@ pub mod pallet {
             item_id: T::NftItemId,
 			_infos: Asset<T>,
 		) -> DispatchResult{
-			let _caller = ensure_signed(origin.clone()).unwrap();
+				let caller = ensure_signed(origin.clone()).unwrap();
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
 				ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
 				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
 				ensure!(house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,Error::<T>::CannotSubmitItem);
 				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REJECTEDIT).ok();
+
+				let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone()).unwrap();
+				let balance = <T as Config>::Currency::reserved_balance(&owner);
+				let wrap_balance = Self::balance_to_u64_option(balance).unwrap();
+				let slash = wrap_balance*10/100;
+				let fees = Self::u64_to_balance_option(slash).unwrap();
+				<T as Config>::Currency::slash_reserved(&owner,fees);
+
+				Self::deposit_event(Event::RejectedForEditing {
+					by_who: caller,
+					collection: collection_id.clone(),
+					item: item_id.clone(),
+				});
 
 				Ok(())
 		}
@@ -332,7 +378,7 @@ pub mod pallet {
             item_id: T::NftItemId,
 			_infos: Asset<T>,
 		) -> DispatchResult{
-			let _caller = ensure_signed(origin.clone()).unwrap();
+			let caller = ensure_signed(origin.clone()).unwrap();
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
 				ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
 				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
@@ -341,7 +387,14 @@ pub mod pallet {
 				let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 				Nft::Pallet::<T>::burn(origin,collection,item_id.clone()).ok();				
 				let balance = <T as Config>::Currency::reserved_balance(&owner);
+				ensure!(balance>Zero::zero(),Error::<T>::NoneValue);
 				<T as Config>::Currency::slash_reserved(&owner,balance);
+
+				Self::deposit_event(Event::RejectedForDestruction {
+					by_who: caller,
+					collection: collection_id.clone(),
+					item: item_id.clone(),
+				});
 
 				Ok(())
 		}
@@ -367,8 +420,12 @@ pub mod pallet {
 				let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
 
 				//Create asset
-				ensure!(<T as Config>::Currency::can_reserve(&caller,T::ProposalFee::get())==true,Error::<T>::InsufficientBalance);
-				Self::create_asset(origin.clone(),collection.clone(),metadata,price,item_id.clone()).ok();
+				let balance0 = T::ProposalFee::get();
+				let balance1 = <T as Config>::Currency::free_balance(&caller);
+				ensure!(balance1>balance0,Error::<T>::InsufficientBalance);
+
+				<T as Config>::Currency::reserve(&caller,T::ProposalFee::get()).ok();
+				Self::create_asset(origin.clone(),collection.clone(),metadata,price.clone(),item_id.clone()).ok();
 			
 				
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
@@ -403,16 +460,30 @@ pub mod pallet {
 
 				//Create Call for proposal reject_destroy
 				let call3:T::Prop = Call::<T>::reject_destroy{collection: collection.clone(),item_id: item_id.clone(),infos: house.clone()}.into();
-				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
+				Vcalls::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
 					let mut v0 = val.clone().unwrap();
 					v0.reject_destroy = call3;
 					*val = Some(v0);
+				});
+
+				Self::deposit_event(Event::ProposalCreated {
+					who: caller.clone(),
+					collection: collection_id.clone(),
+					item: item_id.clone(),
+					price: price.clone(),
 				});
 
 				if submit == true{
 					//Change asset status to REVIEWING
 					Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
 					//Send Proposal struct to voting pallet
+
+					Self::deposit_event(Event::ProposalSubmitted {
+						who: caller,
+						collection: collection_id.clone(),
+						item: item_id.clone(),
+						price: price,
+					});
 				}	
 
 				Ok(())
@@ -429,7 +500,7 @@ pub mod pallet {
             item_id: T::NftItemId,
 			price: Option<BalanceOf<T>>,
             )-> DispatchResult {
-				let _caller = ensure_signed(origin.clone()).unwrap();
+				let caller = ensure_signed(origin.clone()).unwrap();
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
 				ensure!(Houses::<T>::contains_key(collection_id.clone(),item_id.clone()),Error::<T>::CollectionOrItemUnknown);
 				let house = Self::houses(collection_id.clone(),item_id.clone()).unwrap();
@@ -455,6 +526,13 @@ pub mod pallet {
 				});
 				
 				//Send Calls struct to voting pallet
+
+				Self::deposit_event(Event::ProposalSubmitted {
+					who: caller,
+					collection: collection_id.clone(),
+					item: item_id.clone(),
+					price: price,
+				});
 
 				Ok(())
                 
