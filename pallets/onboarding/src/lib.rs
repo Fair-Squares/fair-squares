@@ -357,10 +357,12 @@ pub mod pallet {
 
 				let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone()).unwrap();
 				let balance = <T as Config>::Currency::reserved_balance(&owner);
+
 				let wrap_balance = Self::balance_to_u64_option(balance).unwrap();
 				let slash = wrap_balance*10/100;
 				let fees = Self::u64_to_balance_option(slash).unwrap();
 				<T as Config>::Currency::slash_reserved(&owner,fees);
+				//<T as Config>::Currency::rapatriate_reserved(&owner,beneficiary,fees,BalanceStatus::free);
 
 				Self::deposit_event(Event::RejectedForEditing {
 					by_who: caller,
@@ -389,6 +391,7 @@ pub mod pallet {
 				let balance = <T as Config>::Currency::reserved_balance(&owner);
 				ensure!(balance>Zero::zero(),Error::<T>::NoneValue);
 				<T as Config>::Currency::slash_reserved(&owner,balance);
+				//<T as Config>::Currency::rapatriate_reserved(&owner,beneficiary,balance,BalanceStatus::free);
 
 				Self::deposit_event(Event::RejectedForDestruction {
 					by_who: caller,
