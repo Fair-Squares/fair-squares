@@ -516,7 +516,6 @@ impl pallet_voting::Config for Runtime {
 	type CheckPeriod = CheckPeriod;
 	type MinimumDepositVote = MinimumDeposit;
 }
-
 // flag add pallet config
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
