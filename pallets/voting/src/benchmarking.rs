@@ -7,13 +7,17 @@ use crate::Pallet as Voting;
 use frame_benchmarking::{benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
 
+// fn make_proposal(value: u64) -> Call {
+// 	Call::System(frame_system::Call::remark { remark: value.encode() })
+// }
+
 benchmarks! {
 	submit_proposal {
 		let caller: T::AccountId = whitelisted_caller();
-		let proposal = Box::new(Call::System(frame_system::Call::remark { remark: 1 }));
-		let collective_passed = Box::new(Call::System(frame_system::Call::remark { remark: 2 }));
-		let collective_failed = Box::new(Call::System(frame_system::Call::remark { remark: 3 }));
-		let democracy_failed = Box::new(Call::System(frame_system::Call::remark { remark: 4 }));
+		let proposal = Box::new(Call::System(frame_system::Call::remark { remark: 1_i32.encode() }));
+		let collective_passed = Box::new(Call::System(frame_system::Call::remark { remark: 2_i32.encode() }));
+		let collective_failed = Box::new(Call::System(frame_system::Call::remark { remark: 3_i32.encode() }));
+		let democracy_failed = Box::new(Call::System(frame_system::Call::remark { remark: 4_i32.encode() }));
 	}: _(
 		RawOrigin::Signed(caller), 
 		proposal,
