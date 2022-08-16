@@ -7,7 +7,7 @@
 //! This pallet manage the voting of a proposal by the House Council and an investor assemblee
 //! 
 //! #### Dispatchable Functions
-//! * 'submit_proposal' - an account with the investor role submit a proposal for a house purchase
+//! * 'submit_proposal' - an account with the seller role submit a proposal for a house purchase
 //! * 'call_democracy_proposal' - configure a proposal to go through the democracy vote processing
 //! * 'call_dispatch' - execute the house purchase proposal
 //! * 'council_vote' - a member of the House Council vote for the first step going through the Collective pallet
@@ -121,8 +121,6 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		SomethingStored(u32, T::AccountId),
-		SomethingStored2(u32),
 		/// A proposal has been added by a House coucil member
 		HouseCouncilAddedProposal(T::AccountId, T::Hash, BlockNumberOf<T>),
 		/// A proposal has been closed by a House coucil member
@@ -173,54 +171,12 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResultWithPostInfo {
-
-			let who = ensure_signed(origin)?;
-
-			// Update storage.
-			<Something<T>>::put(something);
-
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
-			// Return a successful DispatchResultWithPostInfo
-			Ok(().into())
-		}
-
-
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_collective_passed(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
-
-			let block_number = <frame_system::Pallet<T>>::block_number();
-
-			// Emit an event.
-			Self::deposit_event(Event::CollectiveMotionPassed(block_number));
-			
-			Ok(().into())
-		}
-
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_collective_failed(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
-
-			let block_number = <frame_system::Pallet<T>>::block_number();
-
-			// Emit an event.
-			Self::deposit_event(Event::CollectiveMotionFailed(block_number));
-			
-			Ok(().into())
-		}
-
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_democracy_failed(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
-
-			let block_number = <frame_system::Pallet<T>>::block_number();
-
-			// Emit an event.
-			Self::deposit_event(Event::DemocracyMotionFailed(block_number));
-			
-			Ok(().into())
-		}
-
+		/// Submit a proposal through the voting process
+		/// The origin must be signed and have the Seller role
+		/// - proposal : the proposal to be executed at the end of the vote process
+		/// - collective_passed_call : action to be executed when the proposal pass the collective vote
+		/// - collective_failed_call : action to be executed when the proposal fail the collective vote
+		/// - democracy_failed_call : action to be executed when the proposal fail the democracy vote
 		#[pallet::weight(10_000)]
 		pub fn submit_proposal(
 			origin: OriginFor<T>,
