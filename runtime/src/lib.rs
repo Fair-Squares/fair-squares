@@ -359,7 +359,8 @@ impl pallet_housing_fund::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ProposalFee: Balance = 100 * DOLLARS;	
+	pub const ProposalFee: Balance = 100 * DOLLARS;
+	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
 impl pallet_onboarding::Config for Runtime {
@@ -368,6 +369,7 @@ impl pallet_onboarding::Config for Runtime {
 	type Prop = Call;
 	type ProposalFee = ProposalFee;
 	type WeightInfo = pallet_onboarding::weights::SubstrateWeight<Runtime>;
+	type FeesAccount = FeesAccount;
 }
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;

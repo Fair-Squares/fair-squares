@@ -39,7 +39,7 @@ frame_support::construct_runtime!(
 );
 
 parameter_types! {
-    pub ReserveCollectionIdUpTo: u32 = 3;
+    pub ReserveCollectionIdUpTo: u32 = 45;
 }
 
 #[derive(Eq, Copy, PartialEq, Clone)]
@@ -189,6 +189,7 @@ pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE1: AccountId = AccountId::new([7u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
+pub const HOUSES: <Test as pallet_uniques::Config>::CollectionId = 0;
 pub const HOUSESTEST: <Test as pallet_uniques::Config>::CollectionId = 4;
 pub const HOUSESRES: <Test as pallet_uniques::Config>::CollectionId = 3;
 pub const COLLECTION_ID_RESERVED: <Test as pallet_uniques::Config>::CollectionId = 42;

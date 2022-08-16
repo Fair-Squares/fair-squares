@@ -2,6 +2,7 @@ use super::*;
 use crate as pallet_onboarding;
 use frame_support::traits::{ConstU16, ConstU64, ConstU32, AsEnsureOriginWithArg, EqualPrivilegeOnly};
 use frame_support::{parameter_types, weights::Weight};
+use frame_support::PalletId;
 use frame_system;
 
 use pallet_roles::GenesisBuild;
@@ -14,6 +15,7 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
+
 use pallet_collective;
 use pallet_democracy;
 
@@ -226,7 +228,8 @@ impl pallet_voting::Config for Test {
 
 
 parameter_types! {
-	pub const ProposalFee:u64 = 100;	
+	pub const ProposalFee:u64 = 100;
+	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
 impl pallet_onboarding::Config for Test {
@@ -235,6 +238,7 @@ impl pallet_onboarding::Config for Test {
 	type Prop = Call;
 	type ProposalFee = ProposalFee;
 	type WeightInfo = ();
+	type FeesAccount = FeesAccount;
 }
 
 //---implementing pallet sudo---------

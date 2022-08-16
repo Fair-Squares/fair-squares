@@ -1,4 +1,4 @@
-use frame_support::{assert_ok};
+use frame_support::{assert_noop, assert_ok};
 
 use super::*;
 use mock::*;
@@ -61,15 +61,6 @@ fn create_collection_works() {
             pallet_uniques::Error::<Test>::InUse
         );
 
-        // reserved collection ID
-        assert_noop!(
-            NFTPallet::create_collection(
-                Origin::signed(CHARLIE),
-                PossibleCollections::NONEXISTING,
-                metadata
-            ),
-            Error::<Test>::IdReserved
-        );
 
     })
 }

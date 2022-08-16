@@ -5,13 +5,13 @@ pub use codec::HasCompact;
 pub use frame_support::{
     dispatch::{DispatchResult, EncodeLike,Dispatchable},
     ensure,
-    traits::{Currency,ReservableCurrency,ExistenceRequirement,tokens::nonfungibles::*, Get},
+    traits::{Currency,ReservableCurrency,BalanceStatus ,ExistenceRequirement,tokens::nonfungibles::*, Get},
     transactional, BoundedVec,
 };
 pub use frame_system::{ensure_signed, RawOrigin};
 
 pub use sp_runtime::{
-    traits::{AtLeast32BitUnsigned, StaticLookup, Zero,Saturating},
+    traits::{AtLeast32BitUnsigned, StaticLookup, Zero,Saturating,AccountIdConversion},
     DispatchError,
 };
 pub use sp_std::boxed::Box;

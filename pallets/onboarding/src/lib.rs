@@ -83,7 +83,8 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;	
+	use frame_support::pallet_prelude::*;
+	use frame_support::PalletId;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -94,6 +95,7 @@ pub mod pallet {
 		type Prop: Parameter + Dispatchable<Origin = <Self as frame_system::Config>::Origin> + From<Call<Self>>;
 		type ProposalFee: Get<BalanceOf<Self>>;
 		type WeightInfo: WeightInfo;
+		type FeesAccount: Get<PalletId>;
 	}
 
 	#[pallet::pallet]
@@ -368,8 +370,8 @@ pub mod pallet {
 				let wrap_balance = Self::balance_to_u64_option(balance).unwrap();
 				let slash = wrap_balance*10/100;
 				let fees = Self::u64_to_balance_option(slash).unwrap();
-				<T as Config>::Currency::slash_reserved(&owner,fees);
-				//<T as Config>::Currency::rapatriate_reserved(&owner,beneficiary,fees,BalanceStatus::free);
+				let feeaccount = T::FeesAccount::get().into_account_truncating();
+				let _res = <T as pallet::Config>::Currency::repatriate_reserved(&owner,&feeaccount,fees,BalanceStatus::Free);
 
 				Self::deposit_event(Event::RejectedForEditing {
 					by_who: caller,
@@ -397,8 +399,8 @@ pub mod pallet {
 				Nft::Pallet::<T>::burn(origin,collection,item_id.clone()).ok();				
 				let balance = <T as Config>::Currency::reserved_balance(&owner);
 				ensure!(balance>Zero::zero(),Error::<T>::NoneValue);
-				<T as Config>::Currency::slash_reserved(&owner,balance);
-				//<T as Config>::Currency::rapatriate_reserved(&owner,beneficiary,balance,BalanceStatus::free);
+				let feeaccount = T::FeesAccount::get().into_account_truncating();
+				let _res = <T as pallet::Config>::Currency::repatriate_reserved(&owner,&feeaccount,balance,BalanceStatus::Free);
 
 				Self::deposit_event(Event::RejectedForDestruction {
 					by_who: caller,
@@ -518,10 +520,14 @@ pub mod pallet {
 
 				//Edit asset price
 				let price0 = Prices::<T>::get(collection_id.clone(),item_id.clone()).unwrap();
-				let b = price.unwrap_or(price0);
-				if price0 != b{
-				Self::set_price(origin.clone(),collection.clone(),item_id.clone(),Some(b)).ok();
+				
+				let mut b = price.unwrap_or(price0);
+				if b == Zero::zero(){
+					b = price0;
+				}else{
+					Self::set_price(origin.clone(),collection.clone(),item_id.clone(),Some(b)).ok();
 				}
+				
 		
 				//Change asset status to REVIEWING
 				Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
@@ -541,30 +547,13 @@ pub mod pallet {
 					who: caller,
 					collection: collection_id.clone(),
 					item: item_id.clone(),
-					price: price,
+					price: Some(b),
 				});
 
 				Ok(())
                 
             }
 
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
 
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
-		}
 	}
 }

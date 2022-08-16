@@ -246,7 +246,7 @@ impl<T: Config> CreateTypedCollection<T::AccountId, T::NftCollectionId> for Pall
 
 impl<T: Config> ReserveCollectionId<T::NftCollectionId> for Pallet<T> {
     fn is_id_reserved(id: T::NftCollectionId) -> bool {
-        id <= T::ReserveCollectionIdUpTo::get()
+        id == T::ReserveCollectionIdUpTo::get()
     }
 }
 
