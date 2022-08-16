@@ -189,7 +189,7 @@ pub mod pallet {
 			// Check that the extrinsic was signed and get the signer
 			let who = ensure_signed(origin)?;
 
-			// Check that the account has the investor role
+			// Check that the account has the seller role
 			ensure!(
 				ROLES::Pallet::<T>::sellers(who.clone()).is_some(),
 				Error::<T>::NotASeller
@@ -317,7 +317,7 @@ pub mod pallet {
 			let block_number = <frame_system::Pallet<T>>::block_number();
 			let democration_motion_duration = block_number.saturating_add(<T as DEMO::Config>::VotingPeriod::get()).saturating_add(delay);
 
-			// Set the the storage to be wathed for the democracy process
+			// Set the the storage to be watched for the democracy process
 			DemocracyProposals::<T>::insert(proposal_id, democration_motion_duration);
 
 			// Execute the dispatch for collective vote passed
