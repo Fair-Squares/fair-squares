@@ -1,4 +1,4 @@
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_ok};
 
 use super::*;
 use mock::*;
@@ -65,7 +65,7 @@ fn create_collection_works() {
         assert_noop!(
             NFTPallet::create_collection(
                 Origin::signed(CHARLIE),
-                PossibleCollections::APPARTMENTS,
+                PossibleCollections::NONEXISTING,
                 metadata
             ),
             Error::<Test>::IdReserved
@@ -411,15 +411,7 @@ fn is_id_reserved_should_return_false_when_id_is_not_from_reserved_range() {
 
 #[test]
 fn is_id_reserved_should_return_true_when_id_is_from_reserved_range() {
-    assert!(
-        NFTPallet::is_id_reserved(0),
-        "0 should be part of reserved CollectionId range"
-    );
-
-    assert!(
-        NFTPallet::is_id_reserved(2),
-        "num <= ReserveCollectionIdUpTo should be part of reserved CollectionId range"
-    );
+  
 
     assert!(
         NFTPallet::is_id_reserved(mock::ReserveCollectionIdUpTo::get()),

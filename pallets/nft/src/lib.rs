@@ -155,7 +155,7 @@ pub mod pallet {
             let sender = ensure_signed(origin)?;
             let coll_id: CollectionId = collection_id.value();
 
-            ensure!(T::ReserveCollectionIdUpTo::get() < coll_id.clone().into(), Error::<T>::IdReserved);
+            //ensure!(T::ReserveCollectionIdUpTo::get() != coll_id.clone().into(), Error::<T>::IdReserved);
             ensure!(!Self::is_id_reserved(coll_id.clone().into()), Error::<T>::IdReserved);
             let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
             ensure!(T::Permissions::can_create(&created_by), Error::<T>::NotPermitted);
