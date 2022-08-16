@@ -25,18 +25,22 @@
 //! Proposal price is the only part that can be edited
 //! 
 //! * `do_buy` - Execute the buy/sell transaction.
+//! Funds reserved during proposal creation are unreserved.
 //! Sent to the voting pallet as a Call.
 //!
-//! * `reject_edit` - Reject a submitted proposal for price editing.
+//! * `reject_edit` - Reject a submitted proposal for price editing, 
+//! and a portion of the amount reserved during proposal creation is slashed.
 //! Sent to the voting pallet as a Call.
 //!
-//! * `reject_destroy` - Reject a submitted proposal for destruction.
+//! * `reject_destroy` - Reject a submitted proposal for destruction,
+//! and all of the amount reserved during proposal creation is slashed.
 //! Sent to the voting pallet as a Call.
 //!
 //! * `create_and_submit_proposal` - Creation and submission of a proposal.
 //! A struct containing Calls for the voting pallet is also created and stored.
 //! the proposal submission is optionnal, and can be disabled through the value 
-//! of the boolean `submit`.
+//! of the boolean `submit`. A defined amount that will be slashed in case of 
+//! proposal rejection is also reserved.
 //!
 //! * `submit_awaiting` - Submit/edit an awaiting proposal for review.
 //! This is also used for re-submission of rejected proposals. 
@@ -316,9 +320,12 @@ pub mod pallet {
 			let status = asset.status;
 			ensure!(status == AssetStatus::VOTING,Error::<T>::VoteNedeed);
 			
+			
 			//Check that the owner is not the buyer 
             let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone()).ok_or(Error::<T>::CollectionOrItemUnknown)?;
-            ensure!(buyer != owner, Error::<T>::BuyFromSelf);
+            ensure!(buyer != owner.clone(), Error::<T>::BuyFromSelf);
+			let balance = <T as Config>::Currency::reserved_balance(&owner);
+			let _returned = <T as Config>::Currency::unreserve(&owner,balance);
 			
 			//Execute transaction
             let owner_origin = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(owner.clone()));

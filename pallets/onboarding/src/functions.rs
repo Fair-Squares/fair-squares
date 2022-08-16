@@ -16,6 +16,7 @@ pub use sp_runtime::{
 };
 pub use sp_std::boxed::Box;
 
+
 impl<T: Config> Pallet<T> {
 		pub fn create_asset(
 			origin: OriginFor<T>,
