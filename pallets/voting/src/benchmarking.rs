@@ -1,11 +1,6 @@
 //! Benchmarking setup for pallet-template
 
 use super::*;
-use ic_types::{
-    crypto::CryptoHash,
-    state_sync::{decode_manifest, encode_manifest, ChunkInfo, FileInfo, Manifest},
-    CryptoHashOfState,
-};
 
 #[allow(unused)]
 use crate::Pallet as Voting;
@@ -13,11 +8,19 @@ use frame_benchmarking::{benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
 
 benchmarks! {
-	investor_vote {
-		let hash = CryptoHashOfState::from(CryptoHash(vec![1u8; 32]));
-		let approve = true;
+	submit_proposal {
 		let caller: T::AccountId = whitelisted_caller();
-	}: _(RawOrigin::Signed(caller), hash, approve)
+		let proposal = Box::new(Call::System(frame_system::Call::remark { remark: 1 }));
+		let collective_passed = Box::new(Call::System(frame_system::Call::remark { remark: 2 }));
+		let collective_failed = Box::new(Call::System(frame_system::Call::remark { remark: 3 }));
+		let democracy_failed = Box::new(Call::System(frame_system::Call::remark { remark: 4 }));
+	}: _(
+		RawOrigin::Signed(caller), 
+		proposal,
+		collective_passed,
+		collective_failed,
+		democracy_failed_call
+	)
 	verify {
 		assert_eq!(Some(2), Some(2));
 	}
