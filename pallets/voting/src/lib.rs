@@ -31,7 +31,6 @@ mod tests;
 
 pub use pallet_collective as COLL;
 use COLL::Instance1;
-use COLL::ensure_members;
 pub use pallet_democracy as DEMO;
 pub use pallet_roles as ROLES;
 
@@ -61,12 +60,11 @@ pub mod pallet {
 	use super::*;
 	use frame_support::{
 		dispatch::Dispatchable,
-		weights::{PostDispatchInfo,GetDispatchInfo},
+		weights::{GetDispatchInfo},
 		inherent::Vec,
-		traits::{ReservableCurrency, UnfilteredDispatchable},
+		traits::{ReservableCurrency},
 		pallet_prelude::*,
-		sp_runtime::{traits::{Hash}, SaturatedConversion},
-		error::BadOrigin,
+		sp_runtime::{traits::{Hash}},
 	};
 	use frame_system::{
 		RawOrigin,
@@ -74,9 +72,7 @@ pub mod pallet {
 	};
 
 	use scale_info::{
-		Type,
 		prelude::boxed::Box};
-	use frame_system::Call as SystemCall;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -182,7 +178,7 @@ pub mod pallet {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
 		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResultWithPostInfo {
 
-			let who = ensure_signed(origin.clone())?;
+			let who = ensure_signed(origin)?;
 
 			// Update storage.
 			<Something<T>>::put(something);
@@ -195,7 +191,7 @@ pub mod pallet {
 
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_collective_passed(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn do_collective_passed(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
@@ -206,7 +202,7 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_collective_failed(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn do_collective_failed(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
@@ -217,7 +213,7 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
-		pub fn do_democracy_failed(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+		pub fn do_democracy_failed(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
@@ -235,7 +231,7 @@ pub mod pallet {
 			// Read a value from storage.
 			match <Something<T>>::get() {
 				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
+				None => Err(Error::<T>::NoneValue.into()),
 				Some(old) => {
 					// Increment the value read from storage; will error in the event of overflow.
 					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
@@ -256,7 +252,7 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			
 			// Check that the extrinsic was signed and get the signer
-			let who = ensure_signed(origin.clone())?;
+			let who = ensure_signed(origin)?;
 
 			// Check that the account has the investor role
 			ensure!(
@@ -267,20 +263,20 @@ pub mod pallet {
 			let proposal_hash= T::Hashing::hash_of(&proposal);
 
 			// create the final dispatch call of the proposal in democracy
-			let call = Call::<T>::call_dispatch{account_id: who.clone(), proposal_hash:proposal_hash, proposal: proposal.clone()};
-			let call_formatted = Self::get_formatted_call(call.clone().into());
-			let call_dispatch = Box::new(call_formatted.clone());
+			let call = Call::<T>::call_dispatch{account_id: who.clone(), proposal_hash, proposal: proposal.clone()};
+			let call_formatted = Self::get_formatted_call(call.into());
+			let call_dispatch = Box::new(call_formatted);
 			
 
 			// create the democracy call to be proposed in collective
-			let democracy_call = Call::<T>::call_democracy_proposal{account_id: who.clone(), proposal_id: proposal_hash.clone(), proposal: call_dispatch.clone()};			
+			let democracy_call = Call::<T>::call_democracy_proposal{account_id: who.clone(), proposal_id: proposal_hash, proposal: call_dispatch.clone()};			
 
 			// call the collective propose
-			let democracy_call_formatted_wrap = Self::get_formatted_collective_proposal(democracy_call.clone().into());
+			let democracy_call_formatted_wrap = Self::get_formatted_collective_proposal(democracy_call.into());
 
 			// Check that the call to the democracy pallet is correctly created
 			ensure!(
-				democracy_call_formatted_wrap.is_none() == false,
+				democracy_call_formatted_wrap.is_some(),
 				Error::<T>::FailedToCreateCollectiveProposal
 			);
 
@@ -292,14 +288,14 @@ pub mod pallet {
 			let collective_origin = Self::get_origin(COLL::Pallet::<T, Instance1>::members()[0].clone());
 
 			let result = COLL::Pallet::<T, Instance1>::propose(
-				collective_origin.clone(), 
+				collective_origin, 
 				2, 
-				democracy_call_formatted.clone().into(), 
-				democracy_call_formatted.clone().encoded_size() as u32
+				democracy_call_formatted.clone(), 
+				democracy_call_formatted.encoded_size() as u32
 			);
 
 			match result {
-				Ok(n) => {					
+				Ok(_) => {					
 				},
 				Err(e) => { return Err(e); },
 			}
@@ -307,28 +303,28 @@ pub mod pallet {
 			// create the VotingProposal
 			let voting_proposal: VotingProposal<T, Box<<T as COLL::Config::<Instance1>>::Proposal>> = VotingProposal::new(
 				who.clone(), 
-				proposal.clone(), 
-				collective_passed_call.clone(),
-				collective_failed_call.clone(),
-				democracy_failed_call.clone(),
-				proposal_hash.clone(), 
-				collective_index.clone(),
+				proposal, 
+				collective_passed_call,
+				collective_failed_call,
+				democracy_failed_call,
+				proposal_hash, 
+				collective_index,
 				democracy_call_formatted.clone(),
 				T::Hashing::hash_of(&democracy_call_formatted),
 				T::Hashing::hash_of(&call_dispatch)
 			);
 
-			VotingProposals::<T>::insert(proposal_hash.clone(), voting_proposal.clone());
+			VotingProposals::<T>::insert(proposal_hash, voting_proposal);
 
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
 			let collective_motion_duration = block_number.saturating_add(<T as COLL::Config<Instance1>>::MotionDuration::get()).saturating_add(T::CheckDelay::get());
 
 			// Add the proposal to the collective watchlist
-			CollectiveProposals::<T>::insert(proposal_hash.clone(), collective_motion_duration);
+			CollectiveProposals::<T>::insert(proposal_hash, collective_motion_duration);
 
 			// deposit event			
-			Self::deposit_event(Event::HouseCouncilAddedProposal(who.clone(), proposal_hash.clone(), block_number.clone()));
+			Self::deposit_event(Event::HouseCouncilAddedProposal(who, proposal_hash, block_number));
 
 			Ok(().into())
 		}
@@ -346,7 +342,7 @@ pub mod pallet {
 			proposal: Box<<T as Config>::Call>
 		) -> DispatchResultWithPostInfo {
 			
-			T::HouseCouncilOrigin::ensure_origin(origin.clone())?;
+			T::HouseCouncilOrigin::ensure_origin(origin)?;
 
 			ensure!(
 				VotingProposals::<T>::contains_key(&proposal_id),
@@ -357,25 +353,25 @@ pub mod pallet {
 			let proposal_encoded: Vec<u8> = proposal.encode();
 
 			// Call Democracy note_pre_image
-			let mut result = DEMO::Pallet::<T>::note_preimage(RawOrigin::Signed(account_id.clone()).into(),proposal_encoded.into())?;
+			DEMO::Pallet::<T>::note_preimage(RawOrigin::Signed(account_id.clone()).into(),proposal_encoded)?;
 			
 			let deposit = T::MinimumDepositVote::get();
 			let propose_deposit = <T as DEMO::Config>::MinimumDeposit::get();
 
 			// A part of the initial deposit is freed to be reserved in the Democracy::propose() function
-			T::LocalCurrency::unreserve(&account_id, deposit.clone());
+			T::LocalCurrency::unreserve(&account_id, deposit);
 
 			// Call Democracy propose
-			result = DEMO::Pallet::<T>::propose(RawOrigin::Signed(account_id.clone()).into(),proposal_hash.clone(),propose_deposit.clone())?;
+			DEMO::Pallet::<T>::propose(RawOrigin::Signed(account_id.clone()).into(),proposal_hash, propose_deposit)?;
 
 			let threshold = DEMO::VoteThreshold::SimpleMajority;
             let delay = <T as Config>::Delay::get();
 
 			// Start Democracy referendum
-            let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash.clone(), threshold,delay);
+            let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash, threshold,delay);
 
 			// Update the voting
-			let mut proposal = VotingProposals::<T>::get(proposal_id.clone()).unwrap();
+			let mut proposal = VotingProposals::<T>::get(proposal_id).unwrap();
 			proposal.democracy_referendum_index = referendum_index;
 			proposal.collective_step = true;
 
@@ -384,13 +380,13 @@ pub mod pallet {
 			});
 
 			let block_number = <frame_system::Pallet<T>>::block_number();
-			let democration_motion_duration = block_number.saturating_add(<T as DEMO::Config>::VotingPeriod::get()).saturating_add(delay.clone());
+			let democration_motion_duration = block_number.saturating_add(<T as DEMO::Config>::VotingPeriod::get()).saturating_add(delay);
 
 			// Set the the storage to be wathed for the democracy process
-			DemocracyProposals::<T>::insert(proposal_id.clone(), democration_motion_duration);
+			DemocracyProposals::<T>::insert(proposal_id, democration_motion_duration);
 
 			// Execute the dispatch for collective vote passed
-			proposal.collective_passed_call.dispatch(frame_system::RawOrigin::Signed(account_id.clone()).into());
+			proposal.collective_passed_call.dispatch(frame_system::RawOrigin::Signed(account_id).into());
 
 			Ok(().into())
 		}
@@ -408,10 +404,10 @@ pub mod pallet {
 			proposal: Box<<T as Config>::Call>
 		) -> DispatchResultWithPostInfo {
 			
-			ensure_root(origin.clone())?;
+			ensure_root(origin)?;
 
 			// We set the flag making the democracy pass vote
-			let mut vote_proposal = VotingProposals::<T>::get(proposal_hash.clone()).unwrap();
+			let mut vote_proposal = VotingProposals::<T>::get(proposal_hash).unwrap();
 			vote_proposal.proposal_executed = true;
 
 			VotingProposals::<T>::mutate(&proposal_hash, |val| {
@@ -419,7 +415,7 @@ pub mod pallet {
 			});
 
 			// The proposal is executed
-			let res = proposal.dispatch(frame_system::RawOrigin::Signed(account_id.clone()).into());
+			proposal.dispatch(frame_system::RawOrigin::Signed(account_id).into());
 
 			Ok(().into())
 		}
@@ -445,15 +441,15 @@ pub mod pallet {
 				Error::<T>::ProposalDoesNotExist
 			);
 
-			let proposal = VotingProposals::<T>::get(proposal_hash.clone()).unwrap();
+			let proposal = VotingProposals::<T>::get(proposal_hash).unwrap();
 
 			// Execute the collective vote
-			let result = COLL::Pallet::<T, Instance1>::vote(origin.clone(), proposal.collective_hash, proposal.collective_index, approve.clone());
+			let result = COLL::Pallet::<T, Instance1>::vote(origin, proposal.collective_hash, proposal.collective_index, approve);
 
 			match result {
-				Ok(n) => {
+				Ok(_) => {
 					let block_number = <frame_system::Pallet<T>>::block_number();
-					Self::deposit_event(Event::HouseCouncilVoted(who.clone(), proposal_hash.clone(), block_number.clone()));
+					Self::deposit_event(Event::HouseCouncilVoted(who, proposal_hash, block_number));
 				},
 				Err(e) => { return Err(e); },
 			}
@@ -481,28 +477,28 @@ pub mod pallet {
 				Error::<T>::ProposalDoesNotExist
 			);
 
-			let proposal = VotingProposals::<T>::get(proposal_hash.clone()).unwrap();
+			let proposal = VotingProposals::<T>::get(proposal_hash).unwrap();
 			let proposal_len = proposal.collective_call.encoded_size();
 			let proposal_weight = proposal.collective_call.get_dispatch_info().weight;
 
 			let result = COLL::Pallet::<T, Instance1>::close(
-				origin.clone(), 
+				origin, 
 				proposal.collective_hash, 
 				proposal.collective_index, 
-				proposal_weight.clone(), 
-				proposal_len.clone() as u32
+				proposal_weight, 
+				proposal_len as u32
 			);
 
 			match result {
-				Ok(n) => {
+				Ok(_) => {
 					let block_number = <frame_system::Pallet<T>>::block_number();
-					Self::deposit_event(Event::HouseCouncilClosedProposal(who.clone(), proposal_hash.clone(), block_number.clone()));
+					Self::deposit_event(Event::HouseCouncilClosedProposal(who, proposal_hash, block_number));
 				},
 				Err(e) => { return Err(e); },
 			}
 
 			// We set the flag making the democracy pass vote
-			let mut vote_proposal = VotingProposals::<T>::get(proposal_hash.clone()).unwrap();
+			let mut vote_proposal = VotingProposals::<T>::get(proposal_hash).unwrap();
 			vote_proposal.collective_closed = true;
 
 			VotingProposals::<T>::mutate(&proposal_hash, |val| {
@@ -533,7 +529,7 @@ pub mod pallet {
 				Error::<T>::ProposalDoesNotExist
 			);
 
-			let proposal = VotingProposals::<T>::get(proposal_hash.clone()).unwrap();
+			let proposal = VotingProposals::<T>::get(proposal_hash).unwrap();
 			let amount_wrap = Self::u128_to_balance_option(T::InvestorVoteAmount::get());
 
 			ensure!(amount_wrap.is_some(), Error::<T>::NoneValue);
@@ -548,12 +544,12 @@ pub mod pallet {
 				balance: amount
 			};
 
-			let result = DEMO::Pallet::<T>::vote(origin.clone(), proposal.democracy_referendum_index, democracy_vote.clone());
+			let result = DEMO::Pallet::<T>::vote(origin, proposal.democracy_referendum_index, democracy_vote);
 
 			match result {
-				Ok(n) => {
+				Ok(_) => {
 					let block_number = <frame_system::Pallet<T>>::block_number();
-					Self::deposit_event(Event::InvestorVoted(who.clone(), proposal_hash.clone(), block_number.clone()));
+					Self::deposit_event(Event::InvestorVoted(who, proposal_hash, block_number));
 				},
 				Err(e) => { return Err(e.into()); },
 			}
@@ -579,7 +575,7 @@ impl<T: Config> Pallet<T>
 
 	pub fn get_formatted_collective_proposal(call: <T as Config>::Call) -> Option<<T as COLL::Config::<Instance1>>::Proposal> {
 		let call_encoded: Vec<u8> = call.encode();
-		let mut ref_call_encoded = &call_encoded;
+		let ref_call_encoded = &call_encoded;
 
 		if let Ok(call_formatted) = <T as pallet_collective::Config::<Instance1>>::Proposal::decode(&mut &ref_call_encoded[..]) {
 			Some(call_formatted)
@@ -594,7 +590,7 @@ impl<T: Config> Pallet<T>
 	}
 
 	pub fn get_origin(account_id: AccountIdOf<T>) -> <T as frame_system::Config>::Origin {
-		frame_system::RawOrigin::Signed(account_id.clone().into()).into()
+		frame_system::RawOrigin::Signed(account_id).into()
 	}
 
 	/// Current era is ending; check if the proposal has passed some steps
@@ -603,13 +599,13 @@ impl<T: Config> Pallet<T>
 	fn begin_block(now: T::BlockNumber) -> Weight {
 		let max_block_weight:u64 = 1000;
 
-		if (now.clone() % T::CheckPeriod::get()).is_zero() {
+		if (now % T::CheckPeriod::get()).is_zero() {
 
 			let collectives_iter = CollectiveProposals::<T>::iter();
 			let mut collectives_hash = Vec::new();
 
 			for elt in collectives_iter {
-				if elt.1 < now.clone() {
+				if elt.1 < now {
 					let voting = VotingProposals::<T>::get(elt.0).unwrap();
 					
 					if voting.collective_closed {
@@ -633,7 +629,7 @@ impl<T: Config> Pallet<T>
 			let mut democracies_hash = Vec::new();
 
 			for elt in democracies_iter {
-				if elt.1 < now.clone() {
+				if elt.1 < now {
 					let voting = VotingProposals::<T>::get(elt.0).unwrap();
 
 					if !voting.proposal_executed {
