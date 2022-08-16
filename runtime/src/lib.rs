@@ -591,7 +591,7 @@ mod benches {
 		[pallet_uniques, Uniques]
 		[pallet_roles, RoleModule]
 		[pallet_housing_fund, HousingFundModule]
-		[pallet_voting, VotingModule]
+		// [pallet_voting, VotingModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -775,7 +775,7 @@ impl_runtime_apis! {
 			add_benchmarks!(params, batches);
 			add_benchmark!(params, batches, pallet_roles, RoleModule);
 			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
-			add_benchmark!(params, batches, pallet_voting, VotingModule);
+			// add_benchmark!(params, batches, pallet_voting, VotingModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
