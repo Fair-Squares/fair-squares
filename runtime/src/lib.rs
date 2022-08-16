@@ -499,7 +499,9 @@ impl pallet_democracy::Config for Runtime {
 
 parameter_types! {
 	pub const Delay: BlockNumber = 0 * MINUTES;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber = 1 * MINUTES;//3 * MINUTES;
 	pub const InvestorVoteAmount: u128 = 10 * DOLLARS;
+	pub const CheckPeriod: BlockNumber = 1 * MINUTES;
 }
 
 impl pallet_voting::Config for Runtime {
@@ -507,9 +509,12 @@ impl pallet_voting::Config for Runtime {
 	type Call = Call;
 	type WeightInfo = pallet_voting::weights::SubstrateWeight<Runtime>;
 	type Delay = Delay;
+	type CheckDelay = CheckDelay;
 	type InvestorVoteAmount = InvestorVoteAmount;
-	type Currency = Balances;
+	type LocalCurrency = Balances;
 	type HouseCouncilOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	type CheckPeriod = CheckPeriod;
+	type MinimumDepositVote = MinimumDeposit;
 }
 
 // flag add pallet config
