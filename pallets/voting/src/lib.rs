@@ -6,8 +6,6 @@
 //! 
 //! This pallet manage the voting of a proposal by the House Council and an investor assemblee
 //! 
-//! ### Interface
-//! 
 //! #### Dispatchable Functions
 //! * 'submit_proposal' - an account with the investor role submit a proposal for a house purchase
 //! * 'call_democracy_proposal' - configure a proposal to go through the democracy vote processing
@@ -221,25 +219,6 @@ pub mod pallet {
 			Self::deposit_event(Event::DemocracyMotionFailed(block_number));
 			
 			Ok(().into())
-		}
-
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
-
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
 		}
 
 		#[pallet::weight(10_000)]
