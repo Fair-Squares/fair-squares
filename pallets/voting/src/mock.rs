@@ -93,7 +93,9 @@ impl pallet_roles::Config for Test {
 
 parameter_types! {
 	pub const Delay: BlockNumber = 0;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber = 1 * 60_000;//3 * MINUTES;
 	pub const InvestorVoteAmount: u128 = 10 * 1000000;
+	pub const CheckPeriod: BlockNumber = 1 * 60_000;
 }
 
 impl pallet_voting::Config for Test {
@@ -102,9 +104,15 @@ impl pallet_voting::Config for Test {
 	type WeightInfo = ();
 	type Delay = Delay;
 	type InvestorVoteAmount = InvestorVoteAmount;
-	type Currency = Balances;
+	type LocalCurrency = Balances;
+	type CheckDelay = CheckDelay;
+	type HouseCouncilOrigin = pallet_collective::EnsureProportionAtLeast<AccountIdOf<Test>, CouncilCollective, 1, 2>;
+	type MinimumDepositVote = MinimumDeposit;
+	type CheckPeriod = CheckPeriod;
+	
 }
 
+type CouncilCollective = pallet_collective::Instance1;
 impl COLL::Config<Instance1> for Test {
 	type Origin = Origin;
 	type Proposal = Call;
