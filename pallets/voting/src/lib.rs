@@ -306,7 +306,7 @@ pub mod pallet {
 
 			// Start Democracy referendum
 
-      let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash.clone(), threshold,delay);
+      		let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash.clone(), threshold,delay);
 
 			// Update the voting
 			let mut proposal = VotingProposals::<T>::get(proposal_id).unwrap();
