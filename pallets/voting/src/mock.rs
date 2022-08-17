@@ -6,6 +6,7 @@ use frame_support::{
 
 };
 
+use pallet_roles::GenesisBuild;
 use pallet_collective::PrimeDefaultVote;
 use frame_system::{EnsureRoot,EnsureSigned};
 use frame_support::pallet_prelude::Weight;
@@ -46,7 +47,7 @@ pub type BlockNumber = u64;
 pub type Balance = u128;
 
 parameter_types! {
-	pub const MotionDuration: u64 = 3;
+	pub const MotionDuration: u64 = 2;
 	pub const MaxProposals: u32 = 100;
 	pub BlockWeights: frame_system::limits::BlockWeights =
 		frame_system::limits::BlockWeights::simple_max(1024);
@@ -93,9 +94,9 @@ impl pallet_roles::Config for Test {
 
 parameter_types! {
 	pub const Delay: BlockNumber = 0;//3 * MINUTES;
-	pub const CheckDelay: BlockNumber = 1 * 60_000;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber = 1;//3 * MINUTES;
 	pub const InvestorVoteAmount: u128 = 10 * 1000000;
-	pub const CheckPeriod: BlockNumber = 1 * 60_000;
+	pub const CheckPeriod: BlockNumber = 1;
 }
 
 impl pallet_voting::Config for Test {
@@ -112,12 +113,16 @@ impl pallet_voting::Config for Test {
 	
 }
 
+parameter_types! {
+	pub const CouncilMotionDuration: BlockNumber = 2;
+}
+
 type CouncilCollective = pallet_collective::Instance1;
 impl COLL::Config<Instance1> for Test {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
-	type MotionDuration = ConstU64<3>;
+	type MotionDuration = CouncilMotionDuration;
 	type MaxProposals = MaxProposals;
 	type MaxMembers = MaxMembers;
 	type DefaultVote = PrimeDefaultVote;
@@ -200,9 +205,38 @@ impl pallet_democracy::Config for Test {
 }
 
 
+pub const ALICE: u64 = 1;
+pub const BOB: u64 = 2;
+pub const CHARLIE: u64 = 3;
+pub const DAVE: u64 = 4;
+pub const EVE: u64 = 5;
 
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	// frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+
+	let mut storage = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+	// Initialize balances
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![(ALICE, 200_000 ), (BOB, 200_000_000 ), (CHARLIE, 200_000_000 ), (DAVE, 150_000), (EVE, 150_000 )],
+	}
+	.assimilate_storage(&mut storage)
+	.unwrap();
+
+	pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
+		members: vec![ALICE, BOB, CHARLIE, DAVE],
+		phantom: Default::default(),
+	}
+	.assimilate_storage(&mut storage)
+	.unwrap();
+
+	pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
+	.assimilate_storage(&mut storage)
+	.unwrap();
+
+	let mut externalities = sp_io::TestExternalities::new(storage);
+	externalities.execute_with(|| System::set_block_number(1));
+	externalities
 }
