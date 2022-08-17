@@ -305,7 +305,8 @@ pub mod pallet {
             let delay = <T as Config>::Delay::get();
 
 			// Start Democracy referendum
-            let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash.clone(), threshold,delay);
+
+      let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash.clone(), threshold,delay);
 
 			// Update the voting
 			let mut proposal = VotingProposals::<T>::get(proposal_id).unwrap();
@@ -545,6 +546,7 @@ impl<T: Config> Pallet<T>
 
 			for elt in collectives_iter {
 				if elt.1 <= now {
+
 					let voting = VotingProposals::<T>::get(elt.0).unwrap();
 					
 					if voting.collective_closed {
