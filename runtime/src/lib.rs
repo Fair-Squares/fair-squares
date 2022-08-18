@@ -359,7 +359,7 @@ impl pallet_housing_fund::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ProposalFee: Balance = 100 * DOLLARS;
+	pub const ProposalFee: u64= 5;
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 

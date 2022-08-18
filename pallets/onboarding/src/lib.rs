@@ -434,13 +434,18 @@ pub mod pallet {
 				let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
 
 				//Create asset
-				let balance0 = T::ProposalFee::get();
+				
 				let balance1 = <T as Config>::Currency::free_balance(&caller);
-				ensure!(balance1>balance0,Error::<T>::InsufficientBalance);
+				
+				let res0 = Self::balance_to_u64_option(price.unwrap()).unwrap();
+				let perc = Self::balance_to_u64_option(T::ProposalFee::get()).unwrap();
+				let res1 = perc*res0/100;
+				let balance0 = Self::u64_to_balance_option(res1).unwrap();
+				ensure!(balance1>balance0.clone(),Error::<T>::InsufficientBalance);
 
-				<T as Config>::Currency::reserve(&caller,T::ProposalFee::get()).ok();
+				<T as Config>::Currency::reserve(&caller,balance0).ok();
 				Self::create_asset(origin.clone(),collection.clone(),metadata,price.clone(),item_id.clone()).ok();
-			
+				
 				
 				let collection_id: T::NftCollectionId = collection.clone().value().into();
 				
