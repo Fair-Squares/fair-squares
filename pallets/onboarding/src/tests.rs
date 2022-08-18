@@ -140,7 +140,11 @@ fn proposal_rejections(){
         .into()]);
         // Bob reserved funds are 100% slashed
         let diff = initial_balance-balance0;
-        assert_eq!(diff,<Test as Config>::ProposalFee::get());
+        let res0 = OnboardingModule::balance_to_u64_option(price1).unwrap();
+		let perc = 5;
+		let res1 = perc*res0/100;
+		let reserved = OnboardingModule::u64_to_balance_option(res1).unwrap();
+        assert_eq!(diff,reserved);
 
         let status1: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id1.clone()).unwrap().status;
         assert_eq!( status1, AssetStatus::REJECTBURN);

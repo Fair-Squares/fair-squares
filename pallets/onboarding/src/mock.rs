@@ -245,7 +245,7 @@ impl pallet_voting::Config for Test {
 
 
 parameter_types! {
-	pub const ProposalFee:u64 = 100;
+	pub const ProposalFee:u64 = 5;
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
