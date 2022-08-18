@@ -34,11 +34,8 @@ frame_support::construct_runtime!(
 		Collective: pallet_collective::<Instance1>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
-<<<<<<< HEAD
-=======
 		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
 		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
->>>>>>> main
 	}
 );
 
@@ -82,13 +79,6 @@ impl frame_system::Config for Test {
 	type MaxConsumers = ConstU32<16>;
 }
 
-<<<<<<< HEAD
-impl pallet_voting::Config for Test {
-	type Event = Event;
-	type WeightInfo = ();
-}
-
-=======
 impl pallet_sudo::Config for Test {
 	type Event = Event;
 	type Call = Call;
@@ -123,7 +113,6 @@ impl pallet_voting::Config for Test {
 }
 
 type CouncilCollective = pallet_collective::Instance1;
->>>>>>> main
 impl COLL::Config<Instance1> for Test {
 	type Origin = Origin;
 	type Proposal = Call;
@@ -212,15 +201,8 @@ impl pallet_democracy::Config for Test {
 
 
 
-<<<<<<< HEAD
-// Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
-}
-=======
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	frame_system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
 }
->>>>>>> main

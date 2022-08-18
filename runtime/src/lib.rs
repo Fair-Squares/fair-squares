@@ -372,7 +372,7 @@ impl pallet_onboarding::Config for Runtime {
 	type FeesAccount = FeesAccount;
 }
 parameter_types! {
-	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
+	// pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
 	pub const CouncilMotionDuration: BlockNumber = 1 * MINUTES;
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
@@ -575,7 +575,7 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 		Scheduler: pallet_scheduler,
 		Preimage: pallet_preimage,
-		HouseCouncil: pallet_collective::<Instance1>,
+		Council: pallet_collective::<Instance1>,
 		Democracy: pallet_democracy,
 		// flag add pallet runtime
 	}

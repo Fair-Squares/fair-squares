@@ -19,6 +19,7 @@ use sp_runtime::{
 use pallet_collective;
 use pallet_democracy;
 
+type CouncilCollective = pallet_collective::Instance1;
 type AccountId = AccountId32;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -220,9 +221,25 @@ impl pallet_nft::Config for Test {
 }
 
 
+parameter_types! {
+	pub const Delay: BlockNumber = 0;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber = 1;//3 * MINUTES;
+	pub const InvestorVoteAmount: u128 = 1;
+	pub const CheckPeriod: BlockNumber = 1;
+}
+
 impl pallet_voting::Config for Test {
 	type Event = Event;
+	type Call = Call;
 	type WeightInfo = ();
+	type Delay = Delay;
+	type InvestorVoteAmount = InvestorVoteAmount;
+	type LocalCurrency = Balances;
+	type CheckDelay = CheckDelay;
+	type HouseCouncilOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	type MinimumDepositVote = MinimumDeposit;
+	type CheckPeriod = CheckPeriod;
+	
 }
 
 
@@ -281,9 +298,18 @@ impl ExtBuilder {
         }
         .assimilate_storage(&mut t)
         .unwrap();
+
         pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
 		.assimilate_storage(&mut t)
 		.unwrap();
+
+		pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
+			members: vec![ALICE, BOB, CHARLIE, DAVE],
+			phantom: Default::default(),
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+	
 
         let mut ext = sp_io::TestExternalities::new(t);
         ext.execute_with(|| System::set_block_number(1));

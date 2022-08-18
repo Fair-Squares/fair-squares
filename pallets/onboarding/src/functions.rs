@@ -3,6 +3,8 @@ use super::*;
 pub use frame_system::pallet_prelude::*;
 pub use codec::HasCompact;
 pub use frame_support::{
+	codec::{Decode, Encode},
+	inherent::Vec,
     dispatch::{DispatchResult, EncodeLike,Dispatchable},
     ensure,
     traits::{Currency,ReservableCurrency,BalanceStatus ,ExistenceRequirement,tokens::nonfungibles::*, Get},
@@ -77,6 +79,17 @@ impl<T: Config> Pallet<T> {
 			});
 
 			Ok(())
+		}
+
+		pub fn get_formatted_collective_proposal(call: <T as Config>::Prop) -> Option<<T as Votes::Config>::Call> {
+			let call_encoded: Vec<u8> = call.encode();
+			let ref_call_encoded = &call_encoded;
+	
+			if let Ok(call_formatted) = <T as Votes::Config>::Call::decode(&mut &ref_call_encoded[..]) {
+				Some(call_formatted)
+			}else {
+				None
+			}
 		}
 
 		// Conversion of u64 to BalanxceOf<T>

@@ -64,6 +64,7 @@ pub use pallet_voting as Votes;
 
 pub use pallet::*;
 
+
 #[cfg(test)]
 mod mock;
 
@@ -78,6 +79,7 @@ pub use weights::WeightInfo;
 
 pub type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
+pub type CallOf<T> = <T as Votes::Config>::Call;
 
 
 #[frame_support::pallet]
@@ -447,34 +449,38 @@ pub mod pallet {
 				//Create Call for the sell/buy transaction
 				let _new_call = VotingCalls::<T>::new(collection_id.clone(),item_id.clone()).ok();
 				let call0:T::Prop = Call::<T>::do_buy{collection: collection.clone(),item_id: item_id.clone(),infos:house.clone()}.into();
+				let call0_wrap = Box::new(call0);
 				Vcalls::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
 					let mut v0 = val.clone().unwrap();
-					v0.buy = call0;
+					v0.buy = call0_wrap;
 					*val = Some(v0);
 				});
 				
 				//Create Call for collective-to-democracy status change
 				let call1:T::Prop = Call::<T>::change_status{collection: collection.clone(),item_id: item_id.clone(),status: AssetStatus::VOTING}.into();
+				let call1_wrap = Box::new(call1);
 				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
 					let mut v0 = val.clone().unwrap();
-					v0.democracy_status = call1;
+					v0.democracy_status = call1_wrap;
 					*val = Some(v0);
 				});
 
 				//Create Call for proposal reject_edit
 				let call2:T::Prop = Call::<T>::reject_edit{collection: collection.clone(),item_id: item_id.clone(),infos: house.clone()}.into();
+				let call2_wrap = Box::new(call2);
 				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
 					let mut v0 = val.clone().unwrap();
-					v0.reject_edit = call2;
+					v0.reject_edit = call2_wrap;
 					*val = Some(v0);
 				});
 
 
 				//Create Call for proposal reject_destroy
 				let call3:T::Prop = Call::<T>::reject_destroy{collection: collection.clone(),item_id: item_id.clone(),infos: house.clone()}.into();
+				let call3_wrap = Box::new(call3);
 				Vcalls::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
 					let mut v0 = val.clone().unwrap();
-					v0.reject_destroy = call3;
+					v0.reject_destroy = call3_wrap;
 					*val = Some(v0);
 				});
 
@@ -489,6 +495,14 @@ pub mod pallet {
 					//Change asset status to REVIEWING
 					Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
 					//Send Proposal struct to voting pallet
+					//get the needed call and convert them to pallet_voting format
+				let out_call = Vcalls::<T>::get(collection_id.clone(),item_id.clone()).unwrap();
+				let w_buy = Box::new(Self::get_formatted_collective_proposal(*out_call.buy).unwrap());
+				let w_status = Box::new(Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap());
+				let w_r_destroy = Box::new(Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap());
+				let w_r_edit = Box::new(Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap());
+				//Send Calls struct to voting pallet
+				Votes::Pallet::<T>::submit_proposal(origin,w_buy,w_status,w_r_destroy,w_r_edit).ok();
 
 					Self::deposit_event(Event::ProposalSubmitted {
 						who: caller,
@@ -535,13 +549,20 @@ pub mod pallet {
 			
 				//Update Call for the sell/buy transaction
 				let call:T::Prop = Call::<T>::do_buy{collection: collection,item_id: item_id.clone(),infos:house}.into();
-				Vcalls::<T>::mutate(collection_id,item_id.clone(),|val|{
+				let call0 = Box::new(call);
+				Vcalls::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
 					let mut v0 = val.clone().unwrap();
-					v0.buy = call;
+					v0.buy = call0;
 					*val = Some(v0);
 				});
-				
+				//get the needed call and convert them to pallet_voting format
+				let out_call = Vcalls::<T>::get(collection_id.clone(),item_id.clone()).unwrap();
+				let w_buy = Box::new(Self::get_formatted_collective_proposal(*out_call.buy).unwrap());
+				let w_status = Box::new(Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap());
+				let w_r_destroy = Box::new(Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap());
+				let w_r_edit = Box::new(Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap());
 				//Send Calls struct to voting pallet
+				Votes::Pallet::<T>::submit_proposal(origin,w_buy,w_status,w_r_destroy,w_r_edit).ok();
 
 				Self::deposit_event(Event::ProposalSubmitted {
 					who: caller,

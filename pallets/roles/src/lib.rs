@@ -132,6 +132,33 @@ pub mod pallet {
 	#[pallet::getter(fn total_members)]
 	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, MyDefault1<T>>;
 
+	
+	#[pallet::genesis_config]
+    pub struct GenesisConfig<T:Config> {
+	    pub new_admin: Option<T::AccountId>,
+    }
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+	fn default() -> Self {
+		Self { 
+            new_admin: Default::default(),
+            }
+	    }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+	fn build(&self) {
+		let servicer0 = self.new_admin.clone().unwrap(); // AccountId
+		let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
+		let source = T::Lookup::unlookup(servicer0); //Source
+		crate::Pallet::<T>::set_manager(
+            origin,
+            source            
+        ).ok();
+	    }
+    }
+
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -265,11 +292,15 @@ pub mod pallet {
 			}
 			
 			//create Servicer & approve a servicer account for new Sudo
-			Servicer::<T>::new(new_origin).ok();
-			Self::approve_account(sender.clone(),new0.clone()).ok();
-
+			//if the new Sudo has no role yet
+			if AccountsRolesLog::<T>::contains_key(&new0) == false{
+				Servicer::<T>::new(new_origin).ok();
+				Self::approve_account(sender.clone(),new0.clone()).ok();
+			}
+			
+			if new0.clone() != SUDO::Pallet::<T>::key().unwrap(){
 			//Change sudo key owner to new owner
-			SUDO::Pallet::<T>::set_key(origin, new).ok();
+			SUDO::Pallet::<T>::set_key(origin, new).ok();}
 			Ok(())
 		}
 	}

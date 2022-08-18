@@ -134,6 +134,41 @@ pub mod pallet {
     /// Update Item ID
     pub type ItemsCount<T:Config> = StorageValue<_, Vec<u32>, ValueQuery,InitDefault<T>>;
 
+    #[pallet::genesis_config]
+    pub struct GenesisConfig<T: Config> {
+	    pub owner: Option<T::AccountId>,
+	    pub collection_id: Option<u32>,
+        pub created_by: Option<Acc>,
+        pub metadata: Option<BoundedVecOfUnq<T>>,
+    }
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+	fn default() -> Self {
+		Self { 
+            owner: Default::default(), 
+            collection_id: Default::default(), 
+            created_by: Default::default(),
+            metadata: Default::default() 
+            }
+	    }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+	fn build(&self) {
+        let index = self.collection_id.clone().unwrap();
+        for n in 0..index{
+            crate::Pallet::<T>::do_create_collection(
+                self.owner.clone().unwrap(),
+                n.into(),
+                self.created_by.clone().unwrap(),
+                self.metadata.clone().unwrap()
+            ).ok();
+        }
+		
+	    }
+    }
+
 	
     #[pallet::call]
     impl<T: Config> Pallet<T> {

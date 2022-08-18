@@ -1,6 +1,6 @@
 use fs_node_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY, HouseCouncilConfig
+	SystemConfig, WASM_BINARY, CouncilConfig,NftModuleConfig,RoleModuleConfig,pallet_roles
 };
 use sc_service::Properties;
 use sc_service::ChainType;
@@ -9,6 +9,9 @@ use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sc_telemetry::serde_json::json;
+//use pallet_nft::{CollectionId,Acc,BoundedVecOfUnq};
+//use fs_node_runtime::NftModuleConfig;
+//use frame_benchmarking::frame_support::BoundedVec;
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -163,7 +166,7 @@ fn testnet_genesis(
 		transaction_payment: Default::default(),
 		democracy: Default::default(),
 		treasury: Default::default(),
-		house_council: HouseCouncilConfig {
+		council: CouncilConfig {
 			members: vec![
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),
@@ -171,6 +174,17 @@ fn testnet_genesis(
 				get_account_id_from_seed::<sr25519::Public>("Dave"),
 			],
 			phantom: Default::default(),
+		},
+
+		role_module: RoleModuleConfig{
+			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice"))
+		},
+
+		nft_module: NftModuleConfig{
+			owner: Some(get_account_id_from_seed::<sr25519::Public>("Alice")), 
+            collection_id: Some(3), 
+            created_by: Some(pallet_roles::Accounts::SERVICER),
+            metadata: Some(b"metadata".to_vec().try_into().unwrap())
 		}
 	}
 }
