@@ -1,6 +1,6 @@
 use fs_node_runtime::{
 	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY, HouseCouncilConfig
+	SystemConfig, WASM_BINARY, CouncilConfig
 };
 use sc_service::Properties;
 use sc_service::ChainType;
@@ -163,7 +163,7 @@ fn testnet_genesis(
 		transaction_payment: Default::default(),
 		democracy: Default::default(),
 		treasury: Default::default(),
-		house_council: HouseCouncilConfig {
+		council: CouncilConfig {
 			members: vec![
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),

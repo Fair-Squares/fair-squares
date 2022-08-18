@@ -541,7 +541,7 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 		Scheduler: pallet_scheduler,
 		Preimage: pallet_preimage,
-		HouseCouncil: pallet_collective::<Instance1>,
+		Council: pallet_collective::<Instance1>,
 		Democracy: pallet_democracy,
 		// flag add pallet runtime
 	}
