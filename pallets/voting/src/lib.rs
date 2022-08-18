@@ -129,6 +129,8 @@ pub mod pallet {
 		HouseCouncilVoted(T::AccountId, T::Hash, BlockNumberOf<T>),
 		/// A investor has voted
 		InvestorVoted(T::AccountId, T::Hash, BlockNumberOf<T>),
+		/// The investor vote session has started
+		InvestorVoteSessionStarted(T::Hash, BlockNumberOf<T>),
 		/// TODO: to remove, Event for test purpose
 		CollectiveMotionChecked(BlockNumberOf<T>),
 		/// TODO: to remove, Event for test purpose
@@ -253,7 +255,7 @@ pub mod pallet {
 
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
-			let collective_motion_duration = block_number.saturating_add(<T as COLL::Config<Instance1>>::MotionDuration::get()).saturating_add(T::CheckDelay::get());
+			let collective_motion_duration = block_number.saturating_add(<T as COLL::Config<Instance1>>::MotionDuration::get()).saturating_add(T::Delay::get());
 
 			// Add the proposal to the collective watchlist
 			CollectiveProposals::<T>::insert(proposal_hash, collective_motion_duration);
@@ -303,7 +305,8 @@ pub mod pallet {
             let delay = <T as Config>::Delay::get();
 
 			// Start Democracy referendum
-            let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash, threshold,delay);
+
+      		let referendum_index = DEMO::Pallet::<T>::internal_start_referendum(proposal_hash.clone(), threshold,delay);
 
 			// Update the voting
 			let mut proposal = VotingProposals::<T>::get(proposal_id).unwrap();
@@ -322,6 +325,8 @@ pub mod pallet {
 
 			// Execute the dispatch for collective vote passed
 			proposal.collective_passed_call.dispatch(frame_system::RawOrigin::Signed(account_id).into());
+
+			Self::deposit_event(Event::InvestorVoteSessionStarted(proposal_hash, block_number));
 
 			Ok(().into())
 		}
@@ -540,7 +545,8 @@ impl<T: Config> Pallet<T>
 			let mut collectives_hash = Vec::new();
 
 			for elt in collectives_iter {
-				if elt.1 < now {
+				if elt.1 <= now {
+
 					let voting = VotingProposals::<T>::get(elt.0).unwrap();
 					
 					if voting.collective_closed {
@@ -564,7 +570,7 @@ impl<T: Config> Pallet<T>
 			let mut democracies_hash = Vec::new();
 
 			for elt in democracies_iter {
-				if elt.1 < now {
+				if elt.1 <= now {
 					let voting = VotingProposals::<T>::get(elt.0).unwrap();
 
 					if !voting.proposal_executed {
