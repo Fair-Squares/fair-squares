@@ -704,16 +704,5 @@ fn investor_vote_proposal_fail_should_succeed() {
 			VotingModule::democracy_proposals(hash.clone()).is_none(),
 			true
 		);
-
-		let mut event = <frame_system::Pallet<Test>>::events()
-			.pop()
-			.expect("Expected at least one EventRecord to be found")
-			.event;
-
-		// check that the event has been raised
-		assert_eq!(
-			event,
-			crate::mock::Event::Democracy(Event::NotPassed{ref_index: 1}),
-		);
 	});
 }

@@ -298,9 +298,6 @@ pub mod pallet {
 			// A part of the initial deposit is freed to be reserved in the Democracy::propose() function
 			T::LocalCurrency::unreserve(&account_id, deposit);
 
-			// Call Democracy propose
-			DEMO::Pallet::<T>::propose(RawOrigin::Signed(account_id.clone()).into(),proposal_hash, propose_deposit)?;
-
 			let threshold = DEMO::VoteThreshold::SimpleMajority;
             let delay = <T as Config>::Delay::get();
 
