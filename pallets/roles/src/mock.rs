@@ -74,7 +74,7 @@ impl pallet_sudo::Config for Test {
 }
 
 parameter_types! {
-	pub const MaxMembers:u32 =3;
+	pub const MaxMembers:u32 =5;
 }
 impl pallet_roles::Config for Test {
 	type Event = Event;

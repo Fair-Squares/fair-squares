@@ -50,6 +50,7 @@ benchmarks! {
         let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
         let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
+            caller.clone(),
 			Roles::Accounts::SELLER
 		);
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
@@ -67,6 +68,7 @@ benchmarks! {
         let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
         let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
+            caller.clone(),
 			Roles::Accounts::SELLER
 		);
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
@@ -85,6 +87,7 @@ benchmarks! {
         let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
         let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
+            caller.clone(),
 			Roles::Accounts::SERVICER
 		);
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
@@ -106,6 +109,7 @@ benchmarks! {
         let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
         let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
+            caller.clone(),
 			Roles::Accounts::SERVICER
 		);
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
@@ -123,6 +127,7 @@ benchmarks! {
         let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
         let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
+            caller.clone(),
 			Roles::Accounts::SERVICER
 		);
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();

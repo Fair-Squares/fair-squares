@@ -13,6 +13,7 @@ benchmarks! {
 		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
 		let _ = crate::ROLES::Pallet::<T>::set_role(
 			caller_signed.clone(),
+			caller.clone(),
 			crate::ROLES::Accounts::INVESTOR
 		);
 		<T as pallet::Config>::LocalCurrency::make_free_balance_be(&caller,10_000_000u32.into());
@@ -24,6 +25,7 @@ benchmarks! {
 		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
 		let _ = crate::ROLES::Pallet::<T>::set_role(
 			caller_signed.clone(),
+			caller.clone(),
 			crate::ROLES::Accounts::INVESTOR
 		);
 		<T as pallet::Config>::LocalCurrency::make_free_balance_be(&caller,10_000_000u32.into());
@@ -49,6 +51,7 @@ benchmarks! {
 			let account_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id.clone()));
 			let _ = crate::ROLES::Pallet::<T>::set_role(
 				account_signed.clone(),
+				account_id.clone(),
 				crate::ROLES::Accounts::INVESTOR
 			);
 			let res = HousingFund::<T>::contribute_to_fund(account_signed.clone(), 500u32.into());

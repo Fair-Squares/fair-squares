@@ -1,5 +1,8 @@
 
 //! # NFT Pallet
+//! This NFT pallet is directly inspired from the Galactic Council nft pallet.
+//! Url: `https://github.com/galacticcouncil/warehouse`
+//!
 //!
 //! The NFT Pallet is used to manage & perform diverse actions on NFTs
 //! in the FairSquares framework.

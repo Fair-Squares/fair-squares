@@ -3,14 +3,14 @@ use super::*;
 use frame_support::{assert_noop, assert_ok};
 
 pub fn prep_roles(){
-    RoleModule::set_role(Origin::signed(CHARLIE).clone(), Acc::SERVICER).ok();
+    RoleModule::set_role(Origin::signed(CHARLIE).clone(), CHARLIE,Acc::SERVICER).ok();
     RoleModule::account_approval(Origin::signed(ALICE),CHARLIE).ok();
-    RoleModule::set_role(Origin::signed(EVE).clone(), Acc::SERVICER).ok();
+    RoleModule::set_role(Origin::signed(EVE).clone(),EVE, Acc::SERVICER).ok();
     RoleModule::account_approval(Origin::signed(ALICE),EVE).ok();
-    RoleModule::set_role(Origin::signed(BOB).clone(), Acc::SELLER).ok();
+    RoleModule::set_role(Origin::signed(BOB).clone(),BOB, Acc::SELLER).ok();
     RoleModule::account_approval(Origin::signed(ALICE),BOB).ok();
-    RoleModule::set_role(Origin::signed(DAVE).clone(), Acc::INVESTOR).ok();
-    RoleModule::set_role(Origin::signed(ACCOUNT_WITH_NO_BALANCE0).clone(), Acc::SERVICER).ok();
+    RoleModule::set_role(Origin::signed(DAVE).clone(),DAVE, Acc::INVESTOR).ok();
+    RoleModule::set_role(Origin::signed(ACCOUNT_WITH_NO_BALANCE0).clone(),ACCOUNT_WITH_NO_BALANCE0, Acc::SERVICER).ok();
     RoleModule::account_approval(Origin::signed(ALICE),ACCOUNT_WITH_NO_BALANCE0).ok();
 
 }

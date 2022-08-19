@@ -20,7 +20,7 @@ benchmarks! {
 		let account1 = Accounts::INVESTOR;
 		let user = acc[b as usize].clone();
 
-	}:set_role(RawOrigin::Signed(user.clone()),account1.clone())
+	}:set_role(RawOrigin::Signed(user.clone()),user.clone(),account1.clone())
 	verify{
 		assert!(InvestorLog::<T>::contains_key(user),"Investor account missing");
 	}
@@ -39,7 +39,7 @@ benchmarks! {
 		let  account1 = Accounts::TENANT;
 		let user = acc[b as usize].clone();
 
-	}:set_role(RawOrigin::Signed(user.clone()),account1)
+	}:set_role(RawOrigin::Signed(user.clone()),user.clone(),account1)
 	verify{
 		assert!(TenantLog::<T>::contains_key(user),"Tenant account missing");
 	}
@@ -58,7 +58,7 @@ benchmarks! {
 		let account1 = Accounts::SELLER;
 		let user = acc[b as usize].clone();
 
-	}:set_role(RawOrigin::Signed(user),account1)
+	}:set_role(RawOrigin::Signed(user.clone()),user.clone(),account1)
 
 	#[extra]
 	servicers{
@@ -74,7 +74,7 @@ benchmarks! {
 		let account1 = Accounts::SERVICER;
 		let user = acc[b as usize].clone();
 
-	}:set_role(RawOrigin::Signed(user),account1)
+	}:set_role(RawOrigin::Signed(user.clone()),user.clone(),account1)
 
 
 	approval{
@@ -90,7 +90,7 @@ benchmarks! {
 			}
 		let account1 = Accounts::SELLER;
 		let user = acc[b as usize].clone();
-		Pallet::<T>::set_role(RawOrigin::Signed(user.clone()).into(),account1.clone()).ok();
+		Pallet::<T>::set_role(RawOrigin::Signed(user.clone()).into(),user.clone(),account1.clone()).ok();
 
 
 	}:account_approval(RawOrigin::Signed(key_account.clone()),user.clone())
@@ -111,7 +111,7 @@ benchmarks! {
 			}
 		let account1 = Accounts::SELLER;
 		let user = acc[b as usize].clone();
-		Pallet::<T>::set_role(RawOrigin::Signed(user.clone()).into(),account1.clone()).ok();
+		Pallet::<T>::set_role(RawOrigin::Signed(user.clone()).into(),user.clone(),account1.clone()).ok();
 
 
 	}:account_rejection(RawOrigin::Signed(key_account.clone()),user.clone())

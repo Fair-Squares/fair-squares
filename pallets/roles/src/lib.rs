@@ -22,7 +22,8 @@
 //! ### Dispatchable Functions
 //! #### Role setting
 //! * `set_role` - Create one of the 4 selectable type of role.
-//! In the case of Sellers and Servicers, requests are transfered to a Role approval list
+//! In the case of Sellers and Servicers, requests are transfered to a Role approval list.
+//! Servicer role (and only Servicer role) can also assign roles to a different user account.
 //!
 //! #### Roles management by Administrator
 //! * `account_approval` - This function allows the administrator to verify/approve Seller and
@@ -201,6 +202,8 @@ pub mod pallet {
 		AlreadyWaiting,
 		///Maximum limit for number of members exceeded
 		TotalMembersExceeded,
+		/// Action reserved to servicers
+		OnlyForServicers
 	}
 
 	
@@ -209,34 +212,37 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
 		///Account creation function. Only one role per account is permitted.
-		pub fn set_role(origin: OriginFor<T>, account_type: Accounts) -> DispatchResult {
+		pub fn set_role(origin: OriginFor<T>, account: AccountIdOf<T>, account_type: Accounts) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
-			Self::check_storage(caller.clone())?;
+			if caller != account{
+				ensure!(ServicerLog::<T>::contains_key(&caller),Error::<T>::OnlyForServicers);
+			}
+			Self::check_storage(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			let count0 = Self::total_members();
 			match account_type {
 				Accounts::INVESTOR => {
 					Investor::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					AccountsRolesLog::<T>::insert(&caller, Accounts::INVESTOR);
+					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
 					TotalMembers::<T>::put(count0 + 1);
-					Self::deposit_event(Event::InvestorCreated(now, caller));
+					Self::deposit_event(Event::InvestorCreated(now, account));
 				},
 				Accounts::SELLER => {
-					Self::check_role_approval_list(caller.clone())?;
+					Self::check_role_approval_list(account.clone())?;
 					HouseSeller::<T>::new(origin)
 						.map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, caller));
+					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 				Accounts::TENANT => {
 					Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					AccountsRolesLog::<T>::insert(&caller, Accounts::TENANT);
+					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					TotalMembers::<T>::put(count0 + 1);
-					Self::deposit_event(Event::TenantCreated(now, caller));
+					Self::deposit_event(Event::TenantCreated(now, account));
 				},
 				Accounts::SERVICER => {
-					Self::check_role_approval_list(caller.clone())?;
+					Self::check_role_approval_list(account.clone())?;
 					Servicer::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, caller));
+					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 			}
 

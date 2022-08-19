@@ -120,30 +120,43 @@ fn test_account_creation() {
 		let user2 = Origin::signed(2);
 		let user3 = Origin::signed(3);
 		let user4 = Origin::signed(5);
+		let user5 = Origin::signed(6);
 
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len = wait_sell.len();
 
-		assert_ok!(RoleModule::set_role(user1.clone(), Acc::INVESTOR));
-		assert!(InvestorLog::<Test>::contains_key(1));
-		assert_noop!(RoleModule::set_role(user1, Acc::TENANT), Error::<Test>::OneRoleAllowed);
+		assert_ok!(RoleModule::set_role(user5.clone(),6, Acc::SERVICER));
+		assert_ok!(RoleModule::account_approval(master.clone(), 6));
 
-		assert_ok!(RoleModule::set_role(user3, Acc::TENANT));
+		assert_ok!(RoleModule::set_role(user1.clone(),1, Acc::INVESTOR));
+		assert!(InvestorLog::<Test>::contains_key(1));
+		assert_noop!(RoleModule::set_role(user1.clone(),1, Acc::TENANT), Error::<Test>::OneRoleAllowed);
+
+		assert_ok!(RoleModule::set_role(user3,3, Acc::TENANT));
 		assert!(TenantLog::<Test>::contains_key(3));
 
-		assert_ok!(RoleModule::set_role(user2.clone(), Acc::SELLER));
+		assert_ok!(RoleModule::set_role(user2.clone(),2, Acc::SELLER));
 		assert_noop!(
-			RoleModule::set_role(user2, Acc::SELLER),
+			RoleModule::set_role(user2,2, Acc::SELLER),
 			Error::<Test>::AlreadyWaiting
 		);
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len2 = wait_sell.len();
 		assert_eq!(sell_len2, sell_len + 1);
-		assert_eq!(RoleModule::total_members(), 2);
+		assert_eq!(RoleModule::total_members(), 3);
 		assert_ok!(RoleModule::account_approval(master, 2));
 		assert!(HouseSellerLog::<Test>::contains_key(2));
-		assert_eq!(RoleModule::total_members(), 3);
-		assert_noop!(RoleModule::set_role(user4, Acc::TENANT), Error::<Test>::TotalMembersExceeded);
+		assert_eq!(RoleModule::total_members(), 4);
+		
+		//Non Servicer user1 try to assign Investor role to 7 and fail
+		assert_noop!(RoleModule::set_role(user1,7, Acc::INVESTOR),Error::<Test>::OnlyForServicers);
+		assert_eq!(RoleModule::total_members(), 4);
+		//Servicer user5 successfully assign Investor role to 7
+		assert_ok!(RoleModule::set_role(user5,7, Acc::INVESTOR));
+		//No additional member can be added
+		assert_noop!(RoleModule::set_role(user4,5, Acc::TENANT), Error::<Test>::TotalMembersExceeded);
+
+		
 	})
 }
 
