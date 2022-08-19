@@ -627,7 +627,7 @@ mod benches {
 		[pallet_nft, NftModule]
 		[pallet_housing_fund, HousingFundModule]
 		[pallet_onboarding, OnboardingModule]
-		[pallet_voting, VotingModule]
+		//[pallet_voting, VotingModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -813,7 +813,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
-			add_benchmark!(params, batches, pallet_voting, VotingModule);
+			//add_benchmark!(params, batches, pallet_voting, VotingModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
