@@ -228,7 +228,7 @@ fn burn_works() {
         assert!(!<Items<Test>>::contains_key(HOUSESTEST, ITEM_ID_0));
 
         expect_events(vec![crate::Event::ItemBurned {
-            owner: CHARLIE,
+            owner: BOB,
             collection_id: HOUSESTEST,
             item_id: ITEM_ID_0,
         }
@@ -237,7 +237,7 @@ fn burn_works() {
         // not existing
         assert_noop!(
             NFTPallet::burn(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST , ITEM_ID_0),
-            pallet_uniques::Error::<Test>::UnknownCollection
+            Error::<Test>::ItemUnknown
         );
     });
 }

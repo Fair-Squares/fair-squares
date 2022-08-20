@@ -25,8 +25,8 @@
 //! * `mint` - Restricted to Seller role, this function mints a NFT in the 
 //! specified collection, and sets its metadata
 
-//! * `transfer` - Restricted to Servicer role, this function transfers
-//!  NFT from account A to account B. 
+//! * `transfer` - Restricted to Servicer role, this function called by A(servicer) 
+//!  transfers NFT from account B(seller) to account C. 
 
 //! * `burn` - Restricted to Servicer role, this function Removes a NFT item from existence
 
@@ -272,13 +272,16 @@ pub mod pallet {
         #[transactional]
         pub fn burn(origin: OriginFor<T>, collection_id: PossibleCollections, item_id: T::NftItemId) -> DispatchResult {
             let sender = ensure_signed(origin)?;
+            let triggered_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
+            ensure!(T::Permissions::can_burn(&triggered_by), Error::<T>::NotPermitted);
+
+
             let coll_id: CollectionId = collection_id.value();
+            let owner = Self::owner(coll_id.clone().into(), item_id.clone()).ok_or(Error::<T>::ItemUnknown)?;
 
-            let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
+            
 
-            ensure!(T::Permissions::can_burn(&created_by), Error::<T>::NotPermitted);
-
-            Self::do_burn(sender, coll_id.into(), item_id)?;
+            Self::do_burn(owner, coll_id.into(), item_id)?;
 
             Ok(())
         }
