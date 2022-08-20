@@ -247,15 +247,18 @@ pub mod pallet {
             item_id: T::NftItemId,
             dest: <T::Lookup as StaticLookup>::Source,
         ) -> DispatchResult {
+            //
             let sender = ensure_signed(origin)?;
+            let triggered_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
+            ensure!(T::Permissions::can_transfer(&triggered_by), Error::<T>::NotPermitted);
+
             let coll_id: CollectionId = collection_id.value();
-
             let dest = T::Lookup::lookup(dest)?;
-            let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
+            let owner = Self::owner(coll_id.clone().into(), item_id.clone()).ok_or(Error::<T>::ItemUnknown)?;
+            
+            
 
-            ensure!(T::Permissions::can_transfer(&created_by), Error::<T>::NotPermitted);
-
-            Self::do_transfer(coll_id.into(), item_id, sender, dest)?;
+            Self::do_transfer(coll_id.into(), item_id, owner, dest)?;
 
             Ok(())
         }

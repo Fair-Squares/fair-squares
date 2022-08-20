@@ -343,11 +343,10 @@ pub mod pallet {
 			let _returned = <T as Config>::Currency::unreserve(&owner,balance);
 			
 			//Execute transaction
-            let owner_origin = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(owner.clone()));
             let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
             <T as Config>::Currency::transfer(&buyer, &owner, price, ExistenceRequirement::KeepAlive)?;
             let to = T::Lookup::unlookup(buyer.clone());
-            Nft::Pallet::<T>::transfer(owner_origin, collection, item_id.clone(), to)?;
+            Nft::Pallet::<T>::transfer(origin.clone(), collection, item_id.clone(), to)?;
             Self::deposit_event(Event::TokenSold {
                 owner,
                 buyer,

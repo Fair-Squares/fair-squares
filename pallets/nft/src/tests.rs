@@ -148,14 +148,9 @@ fn transfer_works() {
         // not existing
         assert_noop!(
             NFTPallet::transfer(Origin::signed(CHARLIE), PossibleCollections::APPARTMENTSTEST, ITEM_ID_0, BOB),
-            pallet_uniques::Error::<Test>::UnknownCollection
+            Error::<Test>::ItemUnknown
         );
 
-        // not owner
-        assert_noop!(
-            NFTPallet::transfer(Origin::signed(BOB), PossibleCollections::HOUSESTEST, ITEM_ID_0, DAVE),
-            Error::<Test>::NotPermitted
-        );
 
         // not allowed in Permissions
         assert_noop!(
@@ -167,9 +162,9 @@ fn transfer_works() {
             Origin::signed(CHARLIE),
             PossibleCollections::HOUSESTEST ,
             ITEM_ID_0,
-            EVE
+            DAVE
         ));
-        assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), EVE);
+        assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), DAVE);
 
         assert_ok!(NFTPallet::transfer(
             Origin::signed(EVE),
@@ -180,7 +175,7 @@ fn transfer_works() {
         assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), BOB);
 
         expect_events(vec![crate::Event::ItemTransferred {
-            from: EVE,
+            from: DAVE,
             to: BOB,
             collection_id: HOUSESTEST,
             item_id: ITEM_ID_0,
