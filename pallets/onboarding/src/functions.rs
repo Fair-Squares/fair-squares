@@ -102,6 +102,10 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 
+	pub fn account_id() -> T::AccountId {
+		T::FeesAccount::get().into_account_truncating()
+	}
+
     
     }
 

@@ -204,6 +204,17 @@ pub mod pallet {
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
 		},
+		///Funds reserved
+		FundsReserved{
+			from_who: T::AccountId,
+			amount: Option<BalanceOf<T>>,
+		},
+		///Funds slashed
+		SlashedFunds{
+			from_who: T::AccountId,
+			amount: Option<BalanceOf<T>>,
+		},
+
 	}
 
 	// Errors inform users that something went wrong.
@@ -370,15 +381,28 @@ pub mod pallet {
 				let balance = <T as Config>::Currency::reserved_balance(&owner);
 
 				let wrap_balance = Self::balance_to_u64_option(balance).unwrap();
-				let slash = wrap_balance*10/100;
+				let slash = wrap_balance.clone()*10/100;
+				let wrap_remain = wrap_balance-slash.clone();
 				let fees = Self::u64_to_balance_option(slash).unwrap();
-				let feeaccount = T::FeesAccount::get().into_account_truncating();
-				let _res = <T as pallet::Config>::Currency::repatriate_reserved(&owner,&feeaccount,fees,BalanceStatus::Free);
+				let remain = Self::u64_to_balance_option(wrap_remain).unwrap();
+				
+				<T as pallet::Config>::Currency::unreserve(&owner,fees.clone());
+				let res = <T as pallet::Config>::Currency::transfer(&owner,&Self::account_id(),fees.clone(),ExistenceRequirement::AllowDeath);
+				debug_assert!(res.is_ok());
+				
+				let res1 = <T as pallet::Config>::Currency::reserve(&owner,remain);
+				debug_assert!(res1.is_ok());
 
 				Self::deposit_event(Event::RejectedForEditing {
-					by_who: caller,
+					by_who: caller.clone(),
 					collection: collection_id.clone(),
 					item: item_id.clone(),
+				});
+
+				Self::deposit_event(Event::SlashedFunds {
+					from_who: caller,
+					amount: Some(fees),
+					
 				});
 
 				Ok(())
@@ -401,13 +425,20 @@ pub mod pallet {
 				Nft::Pallet::<T>::burn(origin,collection,item_id.clone()).ok();				
 				let balance = <T as Config>::Currency::reserved_balance(&owner);
 				ensure!(balance>Zero::zero(),Error::<T>::NoneValue);
-				let feeaccount = T::FeesAccount::get().into_account_truncating();
-				let _res = <T as pallet::Config>::Currency::repatriate_reserved(&owner,&feeaccount,balance,BalanceStatus::Free);
+				<T as pallet::Config>::Currency::unreserve(&owner,balance.clone());
+				let res = <T as pallet::Config>::Currency::transfer(&owner,&Self::account_id(),balance.clone(),ExistenceRequirement::AllowDeath);
+				debug_assert!(res.is_ok());
 
 				Self::deposit_event(Event::RejectedForDestruction {
-					by_who: caller,
+					by_who: caller.clone(),
 					collection: collection_id.clone(),
 					item: item_id.clone(),
+				});
+
+				Self::deposit_event(Event::SlashedFunds {
+					from_who: caller,
+					amount: Some(balance),
+					
 				});
 
 				Ok(())
@@ -443,7 +474,7 @@ pub mod pallet {
 				let balance0 = Self::u64_to_balance_option(res1).unwrap();
 				ensure!(balance1>balance0.clone(),Error::<T>::InsufficientBalance);
 
-				<T as Config>::Currency::reserve(&caller,balance0).ok();
+				<T as Config>::Currency::reserve(&caller,balance0.clone()).ok();
 				Self::create_asset(origin.clone(),collection.clone(),metadata,price.clone(),item_id.clone()).ok();
 				
 				
@@ -496,6 +527,11 @@ pub mod pallet {
 					price: price.clone(),
 				});
 
+				Self::deposit_event(Event::FundsReserved {
+					from_who: caller.clone(),
+					amount: Some(balance0),
+				});
+
 				if submit == true{
 					//Change asset status to REVIEWING
 					Self::change_status(origin.clone(),collection.clone(),item_id.clone(),AssetStatus::REVIEWING).ok();
@@ -510,11 +546,14 @@ pub mod pallet {
 				Votes::Pallet::<T>::submit_proposal(origin,w_buy,w_status,w_r_destroy,w_r_edit).ok();
 
 					Self::deposit_event(Event::ProposalSubmitted {
-						who: caller,
+						who: caller.clone(),
 						collection: collection_id.clone(),
 						item: item_id.clone(),
-						price: price,
+						price: price.clone(),
 					});
+
+			
+
 				}	
 
 				Ok(())

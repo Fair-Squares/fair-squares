@@ -40,6 +40,11 @@ fn create_proposal() {
             item: item_id.clone(),
             price: Some(price.clone())
         }
+        .into(),
+        crate::Event::FundsReserved {
+            from_who: BOB,
+            amount: Some(5_000_000),
+        }
         .into()]);
 
         
@@ -69,14 +74,8 @@ fn create_proposal() {
         assert_eq!(house_price, Some(150_000_000));
         let status: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id.clone()).unwrap().status;
         assert_eq!( status, AssetStatus::REVIEWING);
-
-        //expect_events(vec![crate::Event::ProposalSubmitted {
-         //   who: BOB,
-          //  collection: coll_id.clone(),
-           // item: item_id.clone(),
-           // price: Some(new_price.clone())
-       // }
-        //.into()]);
+        
+        
 
 		
 	});
@@ -103,8 +102,8 @@ fn proposal_rejections(){
         let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] -1;
         let status_0: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id0.clone()).unwrap().status;
         assert_eq!( status_0, AssetStatus::REVIEWING);
-
         let initial_balance = <Test as pallet_uniques::Config>::Currency::free_balance(&BOB);
+        let fees_balance0 =  <Test as pallet_uniques::Config>::Currency::total_balance(&OnboardingModule::account_id());
 
 
         assert_ok!(OnboardingModule::create_and_submit_proposal(Origin::signed(BOB), NftColl::OFFICESTEST,Some(price1),metadata2,true));
@@ -128,6 +127,9 @@ fn proposal_rejections(){
         let status0: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id0.clone()).unwrap().status;
         assert_eq!( status0, AssetStatus::REJECTEDIT);
 
+        let fees_balance1 =  <Test as pallet_uniques::Config>::Currency::total_balance(&OnboardingModule::account_id());
+        assert_ne!(fees_balance1,fees_balance0);
+
         //Charlie Reject_Destroy second proposal
         let house1 = Houses::<Test>::get(coll_id.clone(),item_id1.clone()).unwrap();
         assert_ok!(OnboardingModule::reject_destroy(Origin::signed(CHARLIE),NftColl::OFFICESTEST,item_id1.clone(),house1));
@@ -138,6 +140,7 @@ fn proposal_rejections(){
             item: item_id1.clone(),
         }
         .into()]);
+        
         // Bob reserved funds are 100% slashed
         let diff = initial_balance-balance0;
         let res0 = OnboardingModule::balance_to_u64_option(price1).unwrap();
@@ -145,6 +148,8 @@ fn proposal_rejections(){
 		let res1 = perc*res0/100;
 		let reserved = OnboardingModule::u64_to_balance_option(res1).unwrap();
         assert_eq!(diff,reserved);
+        let fees_balance2 =  <Test as pallet_uniques::Config>::Currency::total_balance(&OnboardingModule::account_id());
+        assert_ne!(fees_balance1,fees_balance2);
 
         let status1: AssetStatus = Houses::<Test>::get(coll_id.clone(),item_id1.clone()).unwrap().status;
         assert_eq!( status1, AssetStatus::REJECTBURN);
