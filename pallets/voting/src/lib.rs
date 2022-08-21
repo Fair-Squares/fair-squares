@@ -199,8 +199,9 @@ pub mod pallet {
 
 			let proposal_hash= T::Hashing::hash_of(&proposal);
 
+			let council_member = COLL::Pallet::<T, Instance1>::members()[0].clone();
 			// create the final dispatch call of the proposal in democracy
-			let call = Call::<T>::call_dispatch{account_id: who.clone(), proposal_hash, proposal: proposal.clone()};
+			let call = Call::<T>::call_dispatch{account_id: council_member, proposal_hash, proposal: proposal.clone()};
 			let call_formatted = Self::get_formatted_call(call.into());
 			let call_dispatch = Box::new(call_formatted);
 			
@@ -330,7 +331,7 @@ pub mod pallet {
 
 		/// Build the call to be executed when the proposal pass the democracy vote
 		/// The origin must come from the collective palllet
-		/// - account_id : the account of the issuer of the proposal
+		/// - account_id : the account of a member of the House Council
 		/// - proposal_hash : hash of the initial proposal call
 		/// - proposal : call encapsulating the inital proposal
 		#[pallet::weight(10_000)]
