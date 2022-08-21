@@ -22,7 +22,8 @@
 //! ### Dispatchable Functions
 //! #### Role setting
 //! * `set_role` - Create one of the 4 selectable type of role.
-//! In the case of Sellers and Servicers, requests are transfered to a Role approval list
+//! In the case of Sellers and Servicers, requests are transfered to a Role approval list.
+//! Servicer role (and only Servicer role) can also assign roles to a different user account.
 //!
 //! #### Roles management by Administrator
 //! * `account_approval` - This function allows the administrator to verify/approve Seller and
@@ -34,10 +35,11 @@
 //! role connection to the requesting AccountId
 //! that are in the approval list, but do not fullfill the FaiSquares guideline.
 //!
-//! * `set_manager` - This function allows the current manager to transfer his Administrative
+//! * `set_manager` - This function allows the current manager/Sudo_Account to transfer his Administrative
 //! authority to a different user/account.
 //! Only the current manager can use this function, and he will lose all administrative power by
-//! using this function.
+//! using this function. The Servicer Role is affected to new manager account during this transfer.
+//! Previous manager account Servicer Role is revoked. 
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -52,10 +54,10 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-mod helpers;
-mod structs;
+mod functions;
+mod types;
 pub mod weights;
-pub use crate::structs::*;
+pub use crate::types::*;
 pub use pallet_sudo as SUDO;
 use sp_std::{fmt::Debug, prelude::*};
 pub use weights::WeightInfo;
@@ -96,6 +98,7 @@ pub mod pallet {
 	pub(super) type TenantLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant<T>, OptionQuery>;
 
+	
 	#[pallet::storage]
 	#[pallet::getter(fn servicers)]
 	///Registry of Servicers organized by AccountId
@@ -129,6 +132,33 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn total_members)]
 	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, MyDefault1<T>>;
+
+	
+	#[pallet::genesis_config]
+    pub struct GenesisConfig<T:Config> {
+	    pub new_admin: Option<T::AccountId>,
+    }
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+	fn default() -> Self {
+		Self { 
+            new_admin: Default::default(),
+            }
+	    }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+	fn build(&self) {
+		let servicer0 = self.new_admin.clone().unwrap(); // AccountId
+		let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
+		let source = T::Lookup::unlookup(servicer0); //Source
+		crate::Pallet::<T>::set_manager(
+            origin,
+            source            
+        ).ok();
+	    }
+    }
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -172,40 +202,51 @@ pub mod pallet {
 		AlreadyWaiting,
 		///Maximum limit for number of members exceeded
 		TotalMembersExceeded,
+		/// Action reserved to servicers
+		OnlyForServicers
 	}
+
+	
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
 		///Account creation function. Only one role per account is permitted.
-		pub fn set_role(origin: OriginFor<T>, account_type: Accounts) -> DispatchResult {
+		pub fn set_role(origin: OriginFor<T>, account: AccountIdOf<T>, account_type: Accounts) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
-			Self::check_storage(caller.clone())?;
+			if caller != account{
+				ensure!(ServicerLog::<T>::contains_key(&caller),Error::<T>::OnlyForServicers);
+			}
+			Self::check_storage(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			let count0 = Self::total_members();
 			match account_type {
 				Accounts::INVESTOR => {
-					Investor::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					AccountsRolesLog::<T>::insert(&caller, Accounts::INVESTOR);
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
+					Investor::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
+					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
 					TotalMembers::<T>::put(count0 + 1);
-					Self::deposit_event(Event::InvestorCreated(now, caller));
+					Self::deposit_event(Event::InvestorCreated(now, account));
 				},
 				Accounts::SELLER => {
-					Self::check_role_approval_list(caller.clone())?;
-					HouseSeller::<T>::new(origin)
+					Self::check_role_approval_list(account.clone())?;
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
+					HouseSeller::<T>::new(origin0)
 						.map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, caller));
+					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 				Accounts::TENANT => {
-					Tenant::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					AccountsRolesLog::<T>::insert(&caller, Accounts::TENANT);
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
+					Tenant::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
+					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					TotalMembers::<T>::put(count0 + 1);
-					Self::deposit_event(Event::TenantCreated(now, caller));
+					Self::deposit_event(Event::TenantCreated(now, account));
 				},
 				Accounts::SERVICER => {
-					Self::check_role_approval_list(caller.clone())?;
-					Servicer::<T>::new(origin).map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, caller));
+					Self::check_role_approval_list(account.clone())?;
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
+					Servicer::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
+					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 			}
 
@@ -249,11 +290,27 @@ pub mod pallet {
 			new: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			let new0= T::Lookup::lookup(new.clone())?;
+			let new_origin = T::Origin::from(RawOrigin::Signed(new0.clone()));
 			ensure!(
-				sender == SUDO::Pallet::<T>::key().unwrap(),
+				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			SUDO::Pallet::<T>::set_key(origin, new).ok();
+			//Remove current Sudo from Servicers list
+			if ServicerLog::<T>::contains_key(sender.clone()) == true{
+				ServicerLog::<T>::remove(sender.clone());
+			}
+			
+			//create Servicer & approve a servicer account for new Sudo
+			//if the new Sudo has no role yet
+			if AccountsRolesLog::<T>::contains_key(&new0) == false{
+				Servicer::<T>::new(new_origin).ok();
+				Self::approve_account(sender.clone(),new0.clone()).ok();
+			}
+			
+			if new0.clone() != SUDO::Pallet::<T>::key().unwrap(){
+			//Change sudo key owner to new owner
+			SUDO::Pallet::<T>::set_key(origin, new).ok();}
 			Ok(())
 		}
 	}

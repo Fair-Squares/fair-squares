@@ -46,7 +46,6 @@ pallet-treasury = { git = "https://github.com/paritytech/substrate", branch = "p
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 pallet-preimage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 
-
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
@@ -59,6 +58,8 @@ hex-literal = { version = "0.3.4", optional = true }
 # Local Dependencies
 pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
 pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
+pallet-nft = { version = "4.0.0-dev", default-features = false, path = "../pallets/nft" }
+pallet-onboarding = { version = "4.0.0-dev", default-features = false, path = "../pallets/onboarding" }
 pallet-voting = { version = "4.0.0-dev", default-features = false, path = "../pallets/voting" }
 ### add new pallet config
 
@@ -80,6 +81,7 @@ std = [
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
 	"pallet-roles/std",
+	"pallet-nft/std",
 	"pallet-housing_fund/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
@@ -96,6 +98,7 @@ std = [
 	"sp-transaction-pool/std",
 	"pallet-uniques/std",
 	"sp-version/std",
+	"pallet-onboarding/std",
 	"pallet-voting/std",
 	"pallet-collective/std",
 	"pallet-scheduler/std",
@@ -113,9 +116,11 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",
+	"pallet-nft/runtime-benchmarks",
 	"pallet-housing_fund/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+	"pallet-onboarding/runtime-benchmarks",
 	"pallet-voting/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
@@ -129,9 +134,11 @@ try-runtime = [
 	"pallet-randomness-collective-flip/try-runtime",
 	"pallet-sudo/try-runtime",
 	"pallet-roles/try-runtime",
+	"pallet-nft/try-runtime",
 	"pallet-housing_fund/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
+	"pallet-onboarding/try-runtime",
 	"pallet-voting/try-runtime",
 	### add new try-runtime
 ]

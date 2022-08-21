@@ -1,4 +1,6 @@
+
 #![cfg(feature = "runtime-benchmarks")]
+
 
 use super::*;
 
@@ -9,11 +11,3 @@ use frame_system::RawOrigin;
 use frame_system::{Call as SystemCall};
 
 use pallet_roles::Hash;
-
-
-// benchmarks! {
-
-	
-
-// 	impl_benchmark_test_suite!(Voting, crate::mock::new_test_ext(), crate::mock::Test);
-// }

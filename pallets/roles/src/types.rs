@@ -3,6 +3,7 @@
 //! Definition and implementation of the different structs found in FairSquares
 
 pub use super::*;
+pub use serde::{Deserialize, Serialize};
 pub use frame_support::{
 	assert_ok,
 	dispatch::{DispatchResult, EncodeLike},
@@ -15,7 +16,7 @@ pub use frame_support::{
 	},
 	PalletId,
 };
-pub use frame_system::{ensure_signed, pallet_prelude::*};
+pub use frame_system::{ensure_signed, RawOrigin,pallet_prelude::*};
 pub use scale_info::{prelude::vec, TypeInfo};
 
 pub type BalanceOf<T> =
@@ -25,13 +26,19 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Idle<T> = (Vec<HouseSeller<T>>, Vec<Servicer<T>>);
 
 ///This enum contains the roles selectable at account creation
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Debug))]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo,Copy)]
+#[cfg_attr(feature = "std", derive(Debug,Serialize, Deserialize))]
 pub enum Accounts {
 	INVESTOR,
 	SELLER,
 	TENANT,
 	SERVICER,
+}
+
+impl Default for Accounts {
+    fn default() -> Self {
+        Accounts::SELLER
+    }
 }
 
 //-------------------------------------------------------------------------------------
@@ -48,7 +55,7 @@ pub struct Investor<T: Config> {
 
 impl<T: Config> Investor<T>
 where
-	structs::Investor<T>: EncodeLike<structs::Investor<T>>,
+	types::Investor<T>: EncodeLike<types::Investor<T>>,
 {
 	//-------------------------------------------------------------------
 	//-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
@@ -82,7 +89,7 @@ pub struct HouseSeller<T: Config> {
 }
 impl<T: Config> HouseSeller<T>
 where
-	structs::HouseSeller<T>: EncodeLike<structs::HouseSeller<T>>,
+	types::HouseSeller<T>: EncodeLike<types::HouseSeller<T>>,
 {
 	//--------------------------------------------------------------------
 	//-------------HOUSE SELLER CREATION METHOD_BEGIN----------------------
