@@ -233,7 +233,7 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Transfers NFT from account A to account B
+        /// Triggered by a servicer(`origin`), this transfers NFT from owner account to `dest` account
         ///
         /// Parameters:
         /// - `collection_id`: The Collection of the asset to be transferred.
@@ -247,11 +247,12 @@ pub mod pallet {
             item_id: T::NftItemId,
             dest: <T::Lookup as StaticLookup>::Source,
         ) -> DispatchResult {
-            //
+            //the transaction is triggered by a servicer
             let sender = ensure_signed(origin)?;
             let triggered_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
             ensure!(T::Permissions::can_transfer(&triggered_by), Error::<T>::NotPermitted);
 
+            //Nft transfered from old to new owner
             let coll_id: CollectionId = collection_id.value();
             let dest = T::Lookup::lookup(dest)?;
             let owner = Self::owner(coll_id.clone().into(), item_id.clone()).ok_or(Error::<T>::ItemUnknown)?;
@@ -263,7 +264,7 @@ pub mod pallet {
             Ok(())
         }
 
-        /// Removes a token from existence
+        /// Triggered by a servicer (`origin`) this removes a token from existence
         ///
         /// Parameters:
         /// - `collection_id`: The Collection of the asset to be burned.

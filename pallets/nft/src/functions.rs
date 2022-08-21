@@ -92,8 +92,6 @@ impl<T: Config> Pallet<T> {
             item_id.into(),
             to.clone(),
             |_collection_details, _item_details| {
-                //let owner = Self::owner(collection_id, item_id).ok_or(Error::<T>::ItemUnknown)?;
-                //ensure!(owner == from, Error::<T>::NotPermitted);
                 Self::deposit_event(Event::ItemTransferred {
                     from,
                     to,
@@ -111,8 +109,6 @@ impl<T: Config> Pallet<T> {
             collection_id.into(),
             item_id.into(),
             |_collection_details, _item_details| {
-                //let iowner = Self::owner(collection_id, item_id).ok_or(Error::<T>::ItemUnknown)?;
-                //ensure!(owner == iowner, Error::<T>::NotPermitted);
                 Ok(())
             },
         )?;

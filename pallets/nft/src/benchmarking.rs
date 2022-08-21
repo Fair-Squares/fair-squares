@@ -51,7 +51,7 @@ benchmarks! {
         let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
             caller.clone(),
-			Roles::Accounts::SELLER
+			Roles::Accounts::SERVICER
 		);
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
         let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
@@ -83,23 +83,32 @@ benchmarks! {
     }
 
     transfer {
-        let caller = create_account::<T>("caller", 1);
-        let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+        let caller1 = create_account::<T>("caller", 1);
+        let caller1_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller1.clone()));
         let _ = Roles::Pallet::<T>::set_role(
-			caller_signed.clone(),
-            caller.clone(),
+			caller1_signed.clone(),
+            caller1.clone(),
 			Roles::Accounts::SERVICER
 		);
+
+        let caller3 = create_account::<T>("caller3", 1);
+        let caller3_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller3.clone()));
+        let _ = Roles::Pallet::<T>::set_role(
+			caller3_signed.clone(),
+            caller3.clone(),
+			Roles::Accounts::SELLER
+		);
+
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
         let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
-        Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
+        Roles::Pallet::<T>::account_approval(key_signed.clone(),caller1.clone()).ok();
+        Roles::Pallet::<T>::account_approval(key_signed,caller3.clone()).ok();
 
-        do_create_collection::<T>(caller.clone());
-        let caller_lookup = T::Lookup::unlookup(caller.clone());
+        do_create_collection::<T>(caller1.clone());
         let caller2 = create_account::<T>("caller2", 1);
         let caller2_lookup = T::Lookup::unlookup(caller2.clone());
-        do_mint::<T>(caller.clone());
-    }: _(RawOrigin::Signed(caller), PossibleCollections::HOUSESTEST, 0u32.into(), caller2_lookup)
+        do_mint::<T>(caller3.clone());
+    }: _(RawOrigin::Signed(caller1), PossibleCollections::HOUSESTEST, 0u32.into(), caller2_lookup)
     verify {
         assert_eq!(UNQ::Pallet::<T>::owner(T::NftCollectionId::from(COLLECTION_ID_0).into(), T::NftItemId::from(0u32).into()), Some(caller2));
     }
@@ -123,22 +132,31 @@ benchmarks! {
     }
 
     burn {
-        let caller = create_account::<T>("caller", 1);
-        let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+        let caller1 = create_account::<T>("caller", 0);
+        let caller1_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller1.clone()));
         let _ = Roles::Pallet::<T>::set_role(
-			caller_signed.clone(),
-            caller.clone(),
+			caller1_signed.clone(),
+            caller1.clone(),
 			Roles::Accounts::SERVICER
+		);
+
+        let caller3 = create_account::<T>("caller3", 2);
+        let caller3_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller3.clone()));
+        let _ = Roles::Pallet::<T>::set_role(
+			caller3_signed.clone(),
+            caller3.clone(),
+			Roles::Accounts::SELLER
 		);
         let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
         let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
-        Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
+        Roles::Pallet::<T>::account_approval(key_signed.clone(),caller1.clone()).ok();
+        Roles::Pallet::<T>::account_approval(key_signed,caller3.clone()).ok();
 
-        do_create_collection::<T>(caller.clone());
-        do_mint::<T>(caller.clone());
-    }: _(RawOrigin::Signed(caller.clone()), PossibleCollections::HOUSESTEST, 0u32.into())
+        do_create_collection::<T>(caller1.clone());
+        do_mint::<T>(caller3.clone());
+    }: _(RawOrigin::Signed(caller1.clone()), PossibleCollections::HOUSESTEST, 0u32.into())
     verify {
-        assert_eq!(UNQ::Pallet::<T>::owned(&caller).count(), 0);
+        assert_eq!(UNQ::Pallet::<T>::owned(&caller3).count(), 0);
     }
     impl_benchmark_test_suite!(Nft, crate::tests::new_test_ext(), crate::tests::Test);
 }
