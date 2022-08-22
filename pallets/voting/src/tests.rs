@@ -3,29 +3,6 @@ use frame_support::{assert_noop, assert_ok};
 use codec::Encode;
 use pallet_roles::Hash;
 use pallet_roles::Hooks;
-use pallet_democracy::Event;
-
-#[test]
-fn it_works_for_default_value() {
-	new_test_ext().execute_with(|| {
-<<<<<<< HEAD
-		// Dispatch a signed extrinsic.
-		assert_ok!(VotingModule::do_something(Origin::signed(1), 42));
-		// Read pallet storage and assert an expected result.
-		assert_eq!(VotingModule::something(), Some(42));
-	});
-}
-
-#[test]
-fn correct_error_for_none_value() {
-	new_test_ext().execute_with(|| {
-		// Ensure the expected error is thrown when no value is present.
-		assert_noop!(VotingModule::cause_error(Origin::signed(1)), Error::<Test>::NoneValue);
-=======
-		assert_eq!(Some(42), Some(42));
->>>>>>> main
-	});
-}
 
 fn make_proposal(value: i32) -> Box<Call> {
 	Box::new(Call::System(frame_system::Call::remark { remark: value.encode() }))
@@ -53,6 +30,7 @@ fn submit_proposal_should_succeed() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -116,6 +94,7 @@ fn council_vote_not_house_council_member_should_fail() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -155,6 +134,7 @@ fn council_vote_proposal_not_exist_should_fail() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -183,6 +163,7 @@ fn council_vote_proposal_should_succeed() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -232,6 +213,7 @@ fn council_close_vote_not_house_council_member_should_fail() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -259,6 +241,7 @@ fn council_close_vote_proposal_not_exist_should_fail() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -288,6 +271,7 @@ fn council_close_vote_proposal_not_pass_should_succeed() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -360,6 +344,7 @@ fn council_close_vote_proposal_pass_should_succeed() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -444,7 +429,7 @@ fn council_close_vote_proposal_pass_should_succeed() {
 		);
 
 		let mut events = <frame_system::Pallet<Test>>::events();
-		let mut event = events
+		let event = events
 			.pop()
 			.expect("Expected at least one EventRecord to be found")
 			.event;
@@ -464,6 +449,7 @@ fn investor_vote_without_having_invetsor_role_should_fail() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -503,10 +489,12 @@ fn investor_vote_with_bad_proposal_should_fail() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(ALICE),
+			ALICE,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -535,10 +523,12 @@ fn investor_vote_should_succeed() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(ALICE),
+			ALICE,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
@@ -611,7 +601,7 @@ fn investor_vote_should_succeed() {
 			)
 		);
 
-		let mut event = <frame_system::Pallet<Test>>::events()
+		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
 			.expect("Expected at least one EventRecord to be found")
 			.event;
@@ -631,10 +621,12 @@ fn investor_vote_proposal_fail_should_succeed() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(ALICE),
+			ALICE,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(EVE),
+			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
