@@ -29,6 +29,7 @@ pub use frame_support::{
 	traits::{
 		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU64, ConstU8, EitherOfDiverse,
 		EqualPrivilegeOnly, KeyOwnerProofSystem, Randomness, StorageInfo,
+		Contains,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -163,7 +164,7 @@ parameter_types! {
 
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = frame_support::traits::Everything;
+	type BaseCallFilter = DontAllowCollectiveAndDemocracy;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = BlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -526,6 +527,17 @@ impl pallet_democracy::Config for Runtime {
 	type MaxVotes = ConstU32<100>;
 	type WeightInfo = pallet_democracy::weights::SubstrateWeight<Runtime>;
 	type MaxProposals = MaxProposals;
+}
+
+pub struct DontAllowCollectiveAndDemocracy;
+impl Contains<Call> for DontAllowCollectiveAndDemocracy {
+	fn contains(c: &Call) -> bool {
+		match c {
+			Call::Democracy(_) => false,
+			Call::Council(_) => false,
+			_ => true,
+		}
+	}
 }
 
 parameter_types! {
