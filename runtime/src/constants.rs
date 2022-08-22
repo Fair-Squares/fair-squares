@@ -29,4 +29,3 @@ pub mod currency {
 		items as Balance * 15 * CENTS + (bytes as Balance) * 6 * CENTS
 	}
 }
-

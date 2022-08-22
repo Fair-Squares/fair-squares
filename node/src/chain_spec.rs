@@ -1,14 +1,15 @@
 use fs_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY, CouncilConfig,NftModuleConfig,RoleModuleConfig,pallet_roles
+	pallet_roles, AccountId, AuraConfig, BalancesConfig, CouncilConfig, GenesisConfig,
+	GrandpaConfig, NftModuleConfig, RoleModuleConfig, Signature, SudoConfig, SystemConfig,
+	WASM_BINARY,
 };
-use sc_service::Properties;
 use sc_service::ChainType;
+use sc_service::Properties;
+use sc_telemetry::serde_json::json;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
-use sc_telemetry::serde_json::json;
 //use pallet_nft::{CollectionId,Acc,BoundedVecOfUnq};
 //use fs_node_runtime::NftModuleConfig;
 //use frame_benchmarking::frame_support::BoundedVec;
@@ -43,9 +44,9 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-	let mut props : Properties = Properties::new();
-	let value = json!("USD");                        
-    props.insert("tokenSymbol".to_string(), value);   
+	let mut props: Properties = Properties::new();
+	let value = json!("USD");
+	props.insert("tokenSymbol".to_string(), value);
 
 	Ok(ChainSpec::from_genesis(
 		// Name
@@ -175,15 +176,15 @@ fn testnet_genesis(
 			phantom: Default::default(),
 		},
 
-		role_module: RoleModuleConfig{
-			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice"))
+		role_module: RoleModuleConfig {
+			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 		},
 
-		nft_module: NftModuleConfig{
-			owner: Some(get_account_id_from_seed::<sr25519::Public>("Alice")), 
-            collection_id: Some(3), 
-            created_by: Some(pallet_roles::Accounts::SERVICER),
-            metadata: Some(b"metadata".to_vec().try_into().unwrap())
-		}
+		nft_module: NftModuleConfig {
+			owner: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			collection_id: Some(3),
+			created_by: Some(pallet_roles::Accounts::SERVICER),
+			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
+		},
 	}
 }

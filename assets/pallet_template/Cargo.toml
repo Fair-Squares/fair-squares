@@ -2,12 +2,12 @@
 name = "pallet-template"
 version = "4.0.0-dev"
 description = "FRAME pallet template for defining custom runtime logic."
-authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
-homepage = "https://substrate.io/"
+authors = ["Fair Squares"]
+homepage = "https://fair-squares.nl"
 edition = "2021"
-license = "Unlicense"
+license = "Apache 2.0"
 publish = false
-repository = "https://github.com/letodunc/substrate-node/"
+repository = "https://github.com/Fair-Squares/fair-squares/"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

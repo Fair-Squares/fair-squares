@@ -4,7 +4,7 @@ use super::*;
 
 #[allow(unused)]
 use crate::Pallet as HousingFund;
-use frame_benchmarking::{benchmarks, account, whitelisted_caller};
+use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_system::RawOrigin;
 
 benchmarks! {
@@ -17,7 +17,7 @@ benchmarks! {
 			crate::ROLES::Accounts::INVESTOR
 		);
 		<T as pallet::Config>::LocalCurrency::make_free_balance_be(&caller,10_000_000u32.into());
-		
+
 	}: _(RawOrigin::Signed(caller.clone()), 500u32.into())
 
 	withdraw_fund {
@@ -45,7 +45,7 @@ benchmarks! {
 			let account_id = account("account_id", i, 1000);
 			<T as pallet::Config>::LocalCurrency::make_free_balance_be(&account_id,10_000_000u32.into());
 			contributions.push((
-				account_id.clone(), 
+				account_id.clone(),
 				HousingFund::<T>::u64_to_balance_option(100).unwrap())
 			);
 			let account_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id.clone()));

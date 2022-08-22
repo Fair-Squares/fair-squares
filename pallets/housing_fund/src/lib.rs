@@ -142,7 +142,7 @@ pub mod pallet {
 		/// Must have the investor role,
 		NotAnInvestor,
 		/// Must not have more investor than the max acceppted
-		NotMoreThanMaxInvestorPerHouse
+		NotMoreThanMaxInvestorPerHouse,
 	}
 
 	#[pallet::call]
@@ -178,8 +178,7 @@ pub mod pallet {
 			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
-			let contribution_log =
-				ContributionLog { amount, block_number };
+			let contribution_log = ContributionLog { amount, block_number };
 
 			// Get the fund balance
 			let mut fund = FundBalance::<T>::get();
@@ -273,16 +272,12 @@ pub mod pallet {
 			let mut fund = FundBalance::<T>::get();
 
 			// Check that the fund has enough transferable for the withdraw
-			ensure!(
-				fund.can_take_off(amount),
-				Error::<T>::NotEnoughInTransferableForWithdraw
-			);
+			ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughInTransferableForWithdraw);
 
 			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
-			let withdraw_log =
-				ContributionLog { amount, block_number };
+			let withdraw_log = ContributionLog { amount, block_number };
 
 			Contributions::<T>::mutate(&who, |val| {
 				let unwrap_val = val.clone().unwrap();
@@ -354,7 +349,10 @@ pub mod pallet {
 			ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughAvailableBalance);
 
 			// Check the number of investors
-			ensure!(contributions.clone().len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(), Error::<T>::NotMoreThanMaxInvestorPerHouse);
+			ensure!(
+				contributions.clone().len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(),
+				Error::<T>::NotMoreThanMaxInvestorPerHouse
+			);
 
 			// Checks that each contribution is possible
 			let contribution_iter = contributions.iter();
@@ -364,10 +362,7 @@ pub mod pallet {
 			for item in contribution_iter {
 				let entry = Contributions::<T>::get(item.0.clone());
 				ensure!(entry.is_some(), Error::<T>::NotAContributor);
-				ensure!(
-					entry.unwrap().can_reserve(item.1),
-					Error::<T>::NotEnoughAvailableBalance
-				);
+				ensure!(entry.unwrap().can_reserve(item.1), Error::<T>::NotEnoughAvailableBalance);
 
 				Contributions::<T>::mutate(item.0.clone(), |val| {
 					let mut unwrap_val = val.clone().unwrap();
@@ -379,10 +374,7 @@ pub mod pallet {
 			}
 
 			// The amount is tagged as reserved in the fund for the account_id
-			T::LocalCurrency::reserve(
-				&T::PalletId::get().into_account_truncating(),
-				amount,
-			)?;
+			T::LocalCurrency::reserve(&T::PalletId::get().into_account_truncating(), amount)?;
 			fund.reserve(amount);
 
 			// The amount is reserved in the pot

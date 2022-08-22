@@ -3,7 +3,6 @@
 //! Definition and implementation of the different structs found in FairSquares
 
 pub use super::*;
-pub use serde::{Deserialize, Serialize};
 pub use frame_support::{
 	assert_ok,
 	dispatch::{DispatchResult, EncodeLike},
@@ -16,8 +15,9 @@ pub use frame_support::{
 	},
 	PalletId,
 };
-pub use frame_system::{ensure_signed, RawOrigin,pallet_prelude::*};
+pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 pub use scale_info::{prelude::vec, TypeInfo};
+pub use serde::{Deserialize, Serialize};
 
 pub type BalanceOf<T> =
 	<<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -26,8 +26,8 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Idle<T> = (Vec<HouseSeller<T>>, Vec<Servicer<T>>);
 
 ///This enum contains the roles selectable at account creation
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo,Copy)]
-#[cfg_attr(feature = "std", derive(Debug,Serialize, Deserialize))]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
+#[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum Accounts {
 	INVESTOR,
 	SELLER,
@@ -36,9 +36,9 @@ pub enum Accounts {
 }
 
 impl Default for Accounts {
-    fn default() -> Self {
-        Accounts::SELLER
-    }
+	fn default() -> Self {
+		Accounts::SELLER
+	}
 }
 
 //-------------------------------------------------------------------------------------
@@ -99,12 +99,7 @@ where
 		let now = <frame_system::Pallet<T>>::block_number();
 		ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
 
-		let hw = HouseSeller {
-			account_id: caller,
-			age: now,
-			activated: false,
-			verifier: admin,
-		};
+		let hw = HouseSeller { account_id: caller, age: now, activated: false, verifier: admin };
 
 		RoleApprovalList::<T>::mutate(|val| {
 			val.0.push(hw);
@@ -157,12 +152,7 @@ impl<T: Config> Servicer<T> {
 		let caller = ensure_signed(acc)?;
 		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
-		let sv = Servicer {
-			account_id: caller,
-			age: now,
-			activated: false,
-			verifier: admin,
-		};
+		let sv = Servicer { account_id: caller, age: now, activated: false, verifier: admin };
 		RoleApprovalList::<T>::mutate(|val| {
 			val.1.push(sv);
 		});

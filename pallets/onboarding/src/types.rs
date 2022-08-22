@@ -1,5 +1,5 @@
-use frame_support::pallet_prelude::*;
 pub use super::*;
+use frame_support::pallet_prelude::*;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -9,23 +9,22 @@ use scale_info::TypeInfo;
 pub type NftCollectionOf = Nft::PossibleCollections;
 pub use Nft::ItemInfoOf;
 
-
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo,Copy)]
-#[cfg_attr(feature = "std", derive(Debug,Serialize, Deserialize))]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
+#[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum AssetStatus {
 	EDITING,
-    REVIEWING,
+	REVIEWING,
 	VOTING,
-    FINALIZING,
+	FINALIZING,
 	APPROVED,
-    REJECTEDIT,
-    REJECTBURN,
+	REJECTEDIT,
+	REJECTBURN,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebugNoBound, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct Asset<T:Config> {
+pub struct Asset<T: Config> {
 	/// Asset status
 	pub(super) status: AssetStatus,
 	/// Asset creation block
@@ -36,23 +35,26 @@ pub struct Asset<T:Config> {
 	pub(super) price: Option<BalanceOf<T>>,
 }
 
-impl<T: Config> Asset<T>
-	{
-	pub fn new(collection:T::NftCollectionId,item:T::NftItemId,infos:ItemInfoOf<T>, price: Option<BalanceOf<T>>) -> DispatchResult{
+impl<T: Config> Asset<T> {
+	pub fn new(
+		collection: T::NftCollectionId,
+		item: T::NftItemId,
+		infos: ItemInfoOf<T>,
+		price: Option<BalanceOf<T>>,
+	) -> DispatchResult {
 		let status = AssetStatus::EDITING;
 		let created = <frame_system::Pallet<T>>::block_number();
-		let house = Asset::<T>{status: status, created: created,infos: infos, price: price};
-		Houses::<T>::insert(collection,item,house);
+		let house = Asset::<T> { status, created, infos, price };
+		Houses::<T>::insert(collection, item, house);
 
 		Ok(())
-		
 	}
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebugNoBound, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 //#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct VotingCalls<T:Config> {
+pub struct VotingCalls<T: Config> {
 	/// Asset status
 	pub(super) buy: Box<T::Prop>,
 	/// Asset creation block
@@ -63,13 +65,18 @@ pub struct VotingCalls<T:Config> {
 	pub(super) democracy_status: Box<T::Prop>,
 }
 
-impl<T: Config> VotingCalls<T>{
-	pub fn new(collection:T::NftCollectionId,item:T::NftItemId) -> DispatchResult{
-		let nbr:u32 = 0;
-		let call:T::Prop = Call::<T>::do_something{something: nbr}.into();
+impl<T: Config> VotingCalls<T> {
+	pub fn new(collection: T::NftCollectionId, item: T::NftItemId) -> DispatchResult {
+		let nbr: u32 = 0;
+		let call: T::Prop = Call::<T>::do_something { something: nbr }.into();
 
-		let calls = VotingCalls::<T>{buy:Box::new(call.clone()),reject_edit:Box::new(call.clone()),reject_destroy:Box::new(call.clone()),democracy_status:Box::new(call.clone())};
-		Vcalls::<T>::insert(collection,item,calls);
+		let calls = VotingCalls::<T> {
+			buy: Box::new(call.clone()),
+			reject_edit: Box::new(call.clone()),
+			reject_destroy: Box::new(call.clone()),
+			democracy_status: Box::new(call.clone()),
+		};
+		Vcalls::<T>::insert(collection, item, calls);
 		Ok(())
 	}
 }

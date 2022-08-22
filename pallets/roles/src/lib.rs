@@ -39,7 +39,7 @@
 //! authority to a different user/account.
 //! Only the current manager can use this function, and he will lose all administrative power by
 //! using this function. The Servicer Role is affected to new manager account during this transfer.
-//! Previous manager account Servicer Role is revoked. 
+//! Previous manager account Servicer Role is revoked.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -98,7 +98,6 @@ pub mod pallet {
 	pub(super) type TenantLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant<T>, OptionQuery>;
 
-	
 	#[pallet::storage]
 	#[pallet::getter(fn servicers)]
 	///Registry of Servicers organized by AccountId
@@ -125,7 +124,6 @@ pub mod pallet {
 	#[pallet::type_value]
 	///Initializing function for the total number of members
 	pub(super) fn MyDefault1<T: Config>() -> u32 {
-		
 		0
 	}
 
@@ -133,32 +131,26 @@ pub mod pallet {
 	#[pallet::getter(fn total_members)]
 	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, MyDefault1<T>>;
 
-	
 	#[pallet::genesis_config]
-    pub struct GenesisConfig<T:Config> {
-	    pub new_admin: Option<T::AccountId>,
-    }
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-	fn default() -> Self {
-		Self { 
-            new_admin: Default::default(),
-            }
-	    }
-    }
+	pub struct GenesisConfig<T: Config> {
+		pub new_admin: Option<T::AccountId>,
+	}
+	#[cfg(feature = "std")]
+	impl<T: Config> Default for GenesisConfig<T> {
+		fn default() -> Self {
+			Self { new_admin: Default::default() }
+		}
+	}
 
-    #[pallet::genesis_build]
-    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
-	fn build(&self) {
-		let servicer0 = self.new_admin.clone().unwrap(); // AccountId
-		let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
-		let source = T::Lookup::unlookup(servicer0); //Source
-		crate::Pallet::<T>::set_manager(
-            origin,
-            source            
-        ).ok();
-	    }
-    }
+	#[pallet::genesis_build]
+	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+		fn build(&self) {
+			let servicer0 = self.new_admin.clone().unwrap(); // AccountId
+			let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
+			let source = T::Lookup::unlookup(servicer0); //Source
+			crate::Pallet::<T>::set_manager(origin, source).ok();
+		}
+	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -203,26 +195,30 @@ pub mod pallet {
 		///Maximum limit for number of members exceeded
 		TotalMembersExceeded,
 		/// Action reserved to servicers
-		OnlyForServicers
+		OnlyForServicers,
 	}
-
-	
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
 		///Account creation function. Only one role per account is permitted.
-		pub fn set_role(origin: OriginFor<T>, account: AccountIdOf<T>, account_type: Accounts) -> DispatchResult {
-			let caller = ensure_signed(origin.clone())?;
-			if caller != account{
-				ensure!(ServicerLog::<T>::contains_key(&caller),Error::<T>::OnlyForServicers);
+		pub fn set_role(
+			origin: OriginFor<T>,
+			account: AccountIdOf<T>,
+			account_type: Accounts,
+		) -> DispatchResult {
+			let caller = ensure_signed(origin)?;
+			if caller != account {
+				ensure!(ServicerLog::<T>::contains_key(&caller), Error::<T>::OnlyForServicers);
 			}
 			Self::check_storage(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			let count0 = Self::total_members();
 			match account_type {
 				Accounts::INVESTOR => {
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+						account.clone(),
+					));
 					Investor::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
 					TotalMembers::<T>::put(count0 + 1);
@@ -230,13 +226,16 @@ pub mod pallet {
 				},
 				Accounts::SELLER => {
 					Self::check_role_approval_list(account.clone())?;
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
-					HouseSeller::<T>::new(origin0)
-						.map_err(|_| <Error<T>>::InitializationError)?;
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+						account.clone(),
+					));
+					HouseSeller::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 				Accounts::TENANT => {
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+						account.clone(),
+					));
 					Tenant::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					TotalMembers::<T>::put(count0 + 1);
@@ -244,7 +243,9 @@ pub mod pallet {
 				},
 				Accounts::SERVICER => {
 					Self::check_role_approval_list(account.clone())?;
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(account.clone()));
+					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+						account.clone(),
+					));
 					Servicer::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
@@ -290,27 +291,28 @@ pub mod pallet {
 			new: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			let new0= T::Lookup::lookup(new.clone())?;
+			let new0 = T::Lookup::lookup(new.clone())?;
 			let new_origin = T::Origin::from(RawOrigin::Signed(new0.clone()));
 			ensure!(
-				sender.clone() == SUDO::Pallet::<T>::key().unwrap(),
+				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
 			//Remove current Sudo from Servicers list
-			if ServicerLog::<T>::contains_key(sender.clone()) == true{
+			if ServicerLog::<T>::contains_key(sender.clone()) == true {
 				ServicerLog::<T>::remove(sender.clone());
 			}
-			
+
 			//create Servicer & approve a servicer account for new Sudo
 			//if the new Sudo has no role yet
-			if AccountsRolesLog::<T>::contains_key(&new0) == false{
+			if AccountsRolesLog::<T>::contains_key(&new0) == false {
 				Servicer::<T>::new(new_origin).ok();
-				Self::approve_account(sender.clone(),new0.clone()).ok();
+				Self::approve_account(sender, new0.clone()).ok();
 			}
-			
-			if new0.clone() != SUDO::Pallet::<T>::key().unwrap(){
-			//Change sudo key owner to new owner
-			SUDO::Pallet::<T>::set_key(origin, new).ok();}
+
+			if new0 != SUDO::Pallet::<T>::key().unwrap() {
+				//Change sudo key owner to new owner
+				SUDO::Pallet::<T>::set_key(origin, new).ok();
+			}
 			Ok(())
 		}
 	}

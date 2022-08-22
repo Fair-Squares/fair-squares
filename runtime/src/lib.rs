@@ -27,8 +27,8 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		AsEnsureOriginWithArg,ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo, EitherOfDiverse,
-		EqualPrivilegeOnly,
+		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU64, ConstU8, EitherOfDiverse,
+		EqualPrivilegeOnly, KeyOwnerProofSystem, Randomness, StorageInfo,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -39,12 +39,12 @@ pub use frame_support::{
 pub mod constants;
 use constants::currency::*;
 pub use frame_system::Call as SystemCall;
-use frame_system::{EnsureSigned, EnsureRoot};
+use frame_system::{EnsureRoot, EnsureSigned};
 pub use pallet_balances::Call as BalancesCall;
-pub use pallet_timestamp::Call as TimestampCall;
-use pallet_transaction_payment::CurrencyAdapter;
 use pallet_nft::NftPermissions;
 pub use pallet_onboarding;
+pub use pallet_timestamp::Call as TimestampCall;
+use pallet_transaction_payment::CurrencyAdapter;
 // flag add pallet use
 
 #[cfg(any(feature = "std", test))]
@@ -55,9 +55,9 @@ pub use pallet_democracy;
 
 //import fs-pallets
 pub use pallet_housing_fund;
-pub use pallet_roles;
 pub use pallet_nft;
-pub use pallet_nft::{ItemId,CollectionId,Acc,NftPermission};
+pub use pallet_nft::{Acc, CollectionId, ItemId, NftPermission};
+pub use pallet_roles;
 pub use pallet_voting;
 // flag add pallet use
 
@@ -290,7 +290,7 @@ parameter_types! {
 	pub const DepositPerByte: Balance = DOLLARS;
 	// Base deposit to add attribute is 5 DOLLARS
 	pub const AttributeDepositBase: Balance = 5 * DOLLARS;
-	
+
 }
 
 impl pallet_uniques::Config for Runtime {
@@ -478,7 +478,6 @@ parameter_types! {
 }
 
 impl pallet_democracy::Config for Runtime {
-	
 	type Proposal = Call;
 	type Event = Event;
 	type Currency = Balances;
@@ -544,7 +543,8 @@ impl pallet_voting::Config for Runtime {
 	type CheckDelay = CheckDelay;
 	type InvestorVoteAmount = InvestorVoteAmount;
 	type LocalCurrency = Balances;
-	type HouseCouncilOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	type HouseCouncilOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 	type CheckPeriod = CheckPeriod;
 	type MinimumDepositVote = MinimumDeposit;
 }

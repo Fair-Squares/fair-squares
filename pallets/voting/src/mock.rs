@@ -1,15 +1,14 @@
-use crate as pallet_voting;
 use super::*;
+use crate as pallet_voting;
 use frame_support::{
 	parameter_types,
 	traits::{ConstU32, ConstU64, EqualPrivilegeOnly},
-
 };
 
-use pallet_roles::GenesisBuild;
-use pallet_collective::PrimeDefaultVote;
-use frame_system::{EnsureRoot,EnsureSigned};
 use frame_support::pallet_prelude::Weight;
+use frame_system::{EnsureRoot, EnsureSigned};
+use pallet_collective::PrimeDefaultVote;
+use pallet_roles::GenesisBuild;
 
 use frame_system;
 use sp_core::H256;
@@ -39,8 +38,6 @@ frame_support::construct_runtime!(
 		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
-
-
 
 pub type MaxMembers = ConstU32<100>;
 pub type BlockNumber = u64;
@@ -107,10 +104,10 @@ impl pallet_voting::Config for Test {
 	type InvestorVoteAmount = InvestorVoteAmount;
 	type LocalCurrency = Balances;
 	type CheckDelay = CheckDelay;
-	type HouseCouncilOrigin = pallet_collective::EnsureProportionAtLeast<AccountIdOf<Test>, CouncilCollective, 1, 2>;
+	type HouseCouncilOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountIdOf<Test>, CouncilCollective, 1, 2>;
 	type MinimumDepositVote = MinimumDeposit;
 	type CheckPeriod = CheckPeriod;
-	
 }
 
 parameter_types! {
@@ -174,43 +171,41 @@ parameter_types! {
 }
 
 impl pallet_democracy::Config for Test {
-    type Proposal = Call;
-    type Event = Event;
-    type Currency = Balances;
-    type EnactmentPeriod = EnactmentPeriod; //ok
-    type LaunchPeriod = LaunchPeriod; //ok
-    type VotingPeriod = VotingPeriod; //ok
-    type VoteLockingPeriod = EnactmentPeriod; //ok
-    type MinimumDeposit = MinimumDeposit; //ok
-    type ExternalOrigin = EnsureRoot<Self::AccountId>;
-    type ExternalMajorityOrigin = EnsureRoot<Self::AccountId>;
-    type ExternalDefaultOrigin = EnsureRoot<Self::AccountId>;
-    type FastTrackOrigin = EnsureRoot<Self::AccountId>;
-    type InstantOrigin = EnsureRoot<Self::AccountId>;
-    type InstantAllowed = InstantAllowed; //ok
-    type FastTrackVotingPeriod = FastTrackVotingPeriod; //ok
-    type CancellationOrigin = EnsureRoot<Self::AccountId>;
-    type BlacklistOrigin = EnsureRoot<Self::AccountId>;
-    type CancelProposalOrigin = EnsureRoot<Self::AccountId>;
-    type VetoOrigin = EnsureSigned<Self::AccountId>;
-    type CooloffPeriod = CooloffPeriod; //ok
-    type PreimageByteDeposit = PreimageByteDeposit; //ok
-    type OperationalPreimageOrigin = EnsureSigned<Self::AccountId>;
-    type Slash = ();
-    type Scheduler = Scheduler;
-    type PalletsOrigin = OriginCaller;
-    type MaxVotes = MaxVotes; //ok
-    type WeightInfo = ();
-    type MaxProposals = MaxProposals;
+	type Proposal = Call;
+	type Event = Event;
+	type Currency = Balances;
+	type EnactmentPeriod = EnactmentPeriod; //ok
+	type LaunchPeriod = LaunchPeriod; //ok
+	type VotingPeriod = VotingPeriod; //ok
+	type VoteLockingPeriod = EnactmentPeriod; //ok
+	type MinimumDeposit = MinimumDeposit; //ok
+	type ExternalOrigin = EnsureRoot<Self::AccountId>;
+	type ExternalMajorityOrigin = EnsureRoot<Self::AccountId>;
+	type ExternalDefaultOrigin = EnsureRoot<Self::AccountId>;
+	type FastTrackOrigin = EnsureRoot<Self::AccountId>;
+	type InstantOrigin = EnsureRoot<Self::AccountId>;
+	type InstantAllowed = InstantAllowed; //ok
+	type FastTrackVotingPeriod = FastTrackVotingPeriod; //ok
+	type CancellationOrigin = EnsureRoot<Self::AccountId>;
+	type BlacklistOrigin = EnsureRoot<Self::AccountId>;
+	type CancelProposalOrigin = EnsureRoot<Self::AccountId>;
+	type VetoOrigin = EnsureSigned<Self::AccountId>;
+	type CooloffPeriod = CooloffPeriod; //ok
+	type PreimageByteDeposit = PreimageByteDeposit; //ok
+	type OperationalPreimageOrigin = EnsureSigned<Self::AccountId>;
+	type Slash = ();
+	type Scheduler = Scheduler;
+	type PalletsOrigin = OriginCaller;
+	type MaxVotes = MaxVotes; //ok
+	type WeightInfo = ();
+	type MaxProposals = MaxProposals;
 }
-
 
 pub const ALICE: u64 = 1;
 pub const BOB: u64 = 2;
 pub const CHARLIE: u64 = 3;
 pub const DAVE: u64 = 4;
 pub const EVE: u64 = 5;
-
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
@@ -220,7 +215,13 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 	// Initialize balances
 	pallet_balances::GenesisConfig::<Test> {
-		balances: vec![(ALICE, 200_000 ), (BOB, 200_000_000 ), (CHARLIE, 200_000_000 ), (DAVE, 150_000), (EVE, 150_000 )],
+		balances: vec![
+			(ALICE, 200_000),
+			(BOB, 200_000_000),
+			(CHARLIE, 200_000_000),
+			(DAVE, 150_000),
+			(EVE, 150_000),
+		],
 	}
 	.assimilate_storage(&mut storage)
 	.unwrap();
@@ -233,8 +234,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	.unwrap();
 
 	pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
-	.assimilate_storage(&mut storage)
-	.unwrap();
+		.assimilate_storage(&mut storage)
+		.unwrap();
 
 	let mut externalities = sp_io::TestExternalities::new(storage);
 	externalities.execute_with(|| System::set_block_number(1));

@@ -25,7 +25,7 @@ impl<T: Config> Pallet<T> {
 			let share = factor.unwrap() * (item.1.clone().get_total_balance()) / amount;
 			contribution_shares.push(ContributionShare {
 				account_id: item.1.account_id.clone(),
-				share: Self::balance_to_u32_option(share).unwrap()
+				share: Self::balance_to_u32_option(share).unwrap(),
 			});
 		}
 

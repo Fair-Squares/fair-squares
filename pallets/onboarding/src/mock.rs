@@ -1,15 +1,17 @@
 use super::*;
 use crate as pallet_onboarding;
-use frame_support::traits::{ConstU16, ConstU64, ConstU32, AsEnsureOriginWithArg, EqualPrivilegeOnly};
-use frame_support::{parameter_types, weights::Weight};
+use frame_support::traits::{
+	AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly,
+};
 use frame_support::PalletId;
+use frame_support::{parameter_types, weights::Weight};
 use frame_system;
 
-use pallet_roles::GenesisBuild;
-use pallet_collective::{Instance1, PrimeDefaultVote};
+use crate::Nft::NftPermissions;
 use frame_system::{EnsureRoot, EnsureSigned};
+use pallet_collective::{Instance1, PrimeDefaultVote};
+use pallet_roles::GenesisBuild;
 use sp_core::{crypto::AccountId32, H256};
-use crate::Nft::{NftPermissions};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -31,7 +33,6 @@ pub type BlockNumber = u64;
 pub type CollectionId = u32;
 pub type ItemId = u32;
 pub type NftColl = Nft::PossibleCollections;
-
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -87,34 +88,34 @@ impl frame_system::Config for Test {
 }
 
 parameter_types! {
-    pub const CollectionDeposit: Balance = 10_000 ; // 1 UNIT deposit to create asset class
-    pub const ItemDeposit: Balance = 100 ; // 1/100 UNIT deposit to create asset instance
-    pub const KeyLimit: u32 = 32;	// Max 32 bytes per key
-    pub const ValueLimit: u32 = 64;	// Max 64 bytes per value
-    pub const UniquesMetadataDepositBase: Balance = 1000 ;
-    pub const AttributeDepositBase: Balance = 100 ;
-    pub const DepositPerByte: Balance = 10 ;
-    pub const UniquesStringLimit: u32 = 32;
+	pub const CollectionDeposit: Balance = 10_000 ; // 1 UNIT deposit to create asset class
+	pub const ItemDeposit: Balance = 100 ; // 1/100 UNIT deposit to create asset instance
+	pub const KeyLimit: u32 = 32;	// Max 32 bytes per key
+	pub const ValueLimit: u32 = 64;	// Max 64 bytes per value
+	pub const UniquesMetadataDepositBase: Balance = 1000 ;
+	pub const AttributeDepositBase: Balance = 100 ;
+	pub const DepositPerByte: Balance = 10 ;
+	pub const UniquesStringLimit: u32 = 32;
 
 }
 
 impl pallet_uniques::Config for Test {
-    type Event = Event;
-    type CollectionId = CollectionId;
-    type ItemId = ItemId;
-    type Currency = Balances;
-    type ForceOrigin = EnsureRoot<AccountId>;
-    type Locker = ();
-    type CollectionDeposit = CollectionDeposit;
-    type ItemDeposit = ItemDeposit;
-    type MetadataDepositBase = UniquesMetadataDepositBase;
-    type AttributeDepositBase = AttributeDepositBase;
-    type DepositPerByte = DepositPerByte;
-    type StringLimit = UniquesStringLimit;
-    type KeyLimit = KeyLimit;
-    type ValueLimit = ValueLimit;
-    type WeightInfo = ();
-    type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
+	type Event = Event;
+	type CollectionId = CollectionId;
+	type ItemId = ItemId;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type Locker = ();
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = UniquesMetadataDepositBase;
+	type AttributeDepositBase = AttributeDepositBase;
+	type DepositPerByte = DepositPerByte;
+	type StringLimit = UniquesStringLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type WeightInfo = ();
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
 }
 
 parameter_types! {
@@ -134,7 +135,7 @@ impl pallet_scheduler::Config for Test {
 	type NoPreimagePostponement = ();
 }
 
-parameter_types!{
+parameter_types! {
 	pub const MaxProposal:MaxProposals = 7;
 }
 impl pallet_collective::Config<Instance1> for Test {
@@ -161,37 +162,35 @@ parameter_types! {
 }
 
 impl pallet_democracy::Config for Test {
-    type Proposal = Call;
-    type Event = Event;
-    type Currency = Balances;
-    type EnactmentPeriod = EnactmentPeriod; //ok
-    type LaunchPeriod = LaunchPeriod; //ok
-    type VotingPeriod = VotingPeriod; //ok
-    type VoteLockingPeriod = EnactmentPeriod; //ok
-    type MinimumDeposit = MinimumDeposit; //ok
-    type ExternalOrigin = EnsureRoot<Self::AccountId>;
-    type ExternalMajorityOrigin = EnsureRoot<Self::AccountId>;
-    type ExternalDefaultOrigin = EnsureRoot<Self::AccountId>;
-    type FastTrackOrigin = EnsureRoot<Self::AccountId>;
-    type InstantOrigin = EnsureRoot<Self::AccountId>;
-    type InstantAllowed = InstantAllowed; //ok
-    type FastTrackVotingPeriod = FastTrackVotingPeriod; //ok
-    type CancellationOrigin = EnsureRoot<Self::AccountId>;
-    type BlacklistOrigin = EnsureRoot<Self::AccountId>;
-    type CancelProposalOrigin = EnsureRoot<Self::AccountId>;
-    type VetoOrigin = EnsureSigned<Self::AccountId>;
-    type CooloffPeriod = CooloffPeriod; //ok
-    type PreimageByteDeposit = PreimageByteDeposit; //ok
-    type OperationalPreimageOrigin = EnsureSigned<Self::AccountId>;
-    type Slash = ();
-    type Scheduler = Scheduler;
-    type PalletsOrigin = OriginCaller;
-    type MaxVotes = MaxVotes; //ok
-    type WeightInfo = ();
-    type MaxProposals = MaxProposal;
+	type Proposal = Call;
+	type Event = Event;
+	type Currency = Balances;
+	type EnactmentPeriod = EnactmentPeriod; //ok
+	type LaunchPeriod = LaunchPeriod; //ok
+	type VotingPeriod = VotingPeriod; //ok
+	type VoteLockingPeriod = EnactmentPeriod; //ok
+	type MinimumDeposit = MinimumDeposit; //ok
+	type ExternalOrigin = EnsureRoot<Self::AccountId>;
+	type ExternalMajorityOrigin = EnsureRoot<Self::AccountId>;
+	type ExternalDefaultOrigin = EnsureRoot<Self::AccountId>;
+	type FastTrackOrigin = EnsureRoot<Self::AccountId>;
+	type InstantOrigin = EnsureRoot<Self::AccountId>;
+	type InstantAllowed = InstantAllowed; //ok
+	type FastTrackVotingPeriod = FastTrackVotingPeriod; //ok
+	type CancellationOrigin = EnsureRoot<Self::AccountId>;
+	type BlacklistOrigin = EnsureRoot<Self::AccountId>;
+	type CancelProposalOrigin = EnsureRoot<Self::AccountId>;
+	type VetoOrigin = EnsureSigned<Self::AccountId>;
+	type CooloffPeriod = CooloffPeriod; //ok
+	type PreimageByteDeposit = PreimageByteDeposit; //ok
+	type OperationalPreimageOrigin = EnsureSigned<Self::AccountId>;
+	type Slash = ();
+	type Scheduler = Scheduler;
+	type PalletsOrigin = OriginCaller;
+	type MaxVotes = MaxVotes; //ok
+	type WeightInfo = ();
+	type MaxProposals = MaxProposal;
 }
-
-
 
 //----implememting pallet_balances-----
 impl pallet_balances::Config for Test {
@@ -206,7 +205,6 @@ impl pallet_balances::Config for Test {
 	type WeightInfo = ();
 }
 
-
 parameter_types! {
 	pub ReserveCollectionIdUpTo: u32 = 3;
 }
@@ -219,7 +217,6 @@ impl pallet_nft::Config for Test {
 	type Permissions = NftPermissions;
 	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
 }
-
 
 parameter_types! {
 	pub const Delay: BlockNumber = 0;//3 * MINUTES;
@@ -236,13 +233,11 @@ impl pallet_voting::Config for Test {
 	type InvestorVoteAmount = InvestorVoteAmount;
 	type LocalCurrency = Balances;
 	type CheckDelay = CheckDelay;
-	type HouseCouncilOrigin = pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	type HouseCouncilOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 	type MinimumDepositVote = MinimumDeposit;
 	type CheckPeriod = CheckPeriod;
-	
 }
-
-
 
 parameter_types! {
 	pub const ProposalFee:u64 = 5;
@@ -274,7 +269,6 @@ impl pallet_roles::Config for Test {
 	type MaxMembers = MaxMembers;
 }
 
-
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
@@ -284,24 +278,30 @@ pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
-    fn default() -> Self {
-        ExtBuilder
-    }
+	fn default() -> Self {
+		ExtBuilder
+	}
 }
 
 impl ExtBuilder {
-    pub fn build(self) -> sp_io::TestExternalities {
-        let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	pub fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
-        pallet_balances::GenesisConfig::<Test> {
-            balances: vec![(ALICE, 200_000 ), (BOB, 200_000_000 ), (CHARLIE, 200_000_000 ), (DAVE, 150_000), (EVE, 150_000 )],
-        }
-        .assimilate_storage(&mut t)
-        .unwrap();
-
-        pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
+		pallet_balances::GenesisConfig::<Test> {
+			balances: vec![
+				(ALICE, 200_000),
+				(BOB, 200_000_000),
+				(CHARLIE, 200_000_000),
+				(DAVE, 150_000),
+				(EVE, 150_000),
+			],
+		}
 		.assimilate_storage(&mut t)
 		.unwrap();
+
+		pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
+			.assimilate_storage(&mut t)
+			.unwrap();
 
 		pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
 			members: vec![ALICE, BOB, CHARLIE, DAVE],
@@ -309,14 +309,13 @@ impl ExtBuilder {
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
-	
 
-        let mut ext = sp_io::TestExternalities::new(t);
-        ext.execute_with(|| System::set_block_number(1));
-        ext
-    }
+		let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
+	}
 }
 
 pub fn expect_events(e: Vec<Event>) {
-    e.into_iter().for_each(frame_system::Pallet::<Test>::assert_has_event);
+	e.into_iter().for_each(frame_system::Pallet::<Test>::assert_has_event);
 }
