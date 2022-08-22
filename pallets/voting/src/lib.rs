@@ -21,11 +21,11 @@
 
 pub use pallet::*;
 
-//#[cfg(test)]
-//mod mock;
+#[cfg(test)]
+mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 pub use pallet_collective as COLL;
 use COLL::Instance1;
