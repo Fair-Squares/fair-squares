@@ -496,8 +496,7 @@ pub mod pallet {
 			submit: bool,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
-			let role: Roles::HouseSeller<T> = Roles::Pallet::sellers(&caller).unwrap();
-			ensure!(role.account_id==caller.clone(),Error::<T>::ReservedToSeller);
+			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(),Error::<T>::ReservedToSeller);
 			let idx = collection.clone().value() as usize;
 
 			// Get itemId and infos from minted nft
@@ -644,8 +643,7 @@ pub mod pallet {
 			price: Option<BalanceOf<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
-			let role: Roles::HouseSeller<T> = Roles::Pallet::sellers(&caller).unwrap();
-			ensure!(role.account_id==caller.clone(),Error::<T>::ReservedToSeller);
+			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(),Error::<T>::ReservedToSeller);
 			
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 			ensure!(
