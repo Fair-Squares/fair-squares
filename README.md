@@ -33,7 +33,12 @@ The binary will be present in create the binary in `./target/release/fs-node` if
 We added a [Dockerfile](https://github.com/Fair-Squares/fair-squares/blob/main/Dockerfile) in the repo, you can build an image yourself with the following commmand `docker build .`
 
 ### Docker images
-//
+
+The images that are tagged starting with `v0.x.x` generate a docker image. You can see the available containers [here](https://github.com/Fair-Squares/fair-squares/pkgs/container/fs-node)
+
+The command to run the docker image: `docker run  --publish=127.0.0.1:9944:9944/tcp ghcr.io/fair-squares/fs-node:{$VERSION} fs-node  --dev`
+
+You have to change the `$VERSION` in the line above.
 
 ### Run in Docker in linux
 

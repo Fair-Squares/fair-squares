@@ -1,4 +1,8 @@
 # Nft pallet
+This NFT pallet is directly inspired from the Galactic Council nft pallet.
+Url: `https://github.com/galacticcouncil/warehouse`
+
+
 SPDX-License-Identifier: Apache-2.0
 
  Licensed under the Apache License, Version 2.0 (the "License");
