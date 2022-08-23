@@ -237,6 +237,8 @@ pub mod pallet {
 		VoteNedeed,
 		/// Insufficient balance for proposal creation
 		InsufficientBalance,
+		/// Action reserved to Seller role
+		ReservedToSeller
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -494,6 +496,7 @@ pub mod pallet {
 			submit: bool,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
+			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(),Error::<T>::ReservedToSeller);
 			let idx = collection.clone().value() as usize;
 
 			// Get itemId and infos from minted nft
@@ -640,6 +643,8 @@ pub mod pallet {
 			price: Option<BalanceOf<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
+			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(),Error::<T>::ReservedToSeller);
+			
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 			ensure!(
 				Houses::<T>::contains_key(collection_id.clone(), item_id.clone()),

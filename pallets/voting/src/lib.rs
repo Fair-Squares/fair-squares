@@ -325,7 +325,7 @@ pub mod pallet {
 			// Execute the dispatch for collective vote passed
 			proposal
 				.collective_passed_call
-				.dispatch(frame_system::RawOrigin::Signed(account_id).into());
+				.dispatch(frame_system::RawOrigin::Signed(account_id).into()).ok();
 
 			Self::deposit_event(Event::InvestorVoteSessionStarted(proposal_hash, block_number));
 
@@ -355,7 +355,7 @@ pub mod pallet {
 			});
 
 			// The proposal is executed
-			proposal.dispatch(frame_system::RawOrigin::Signed(account_id).into());
+			proposal.dispatch(frame_system::RawOrigin::Signed(account_id).into()).ok();
 
 			Ok(().into())
 		}
@@ -578,7 +578,7 @@ impl<T: Config> Pallet<T> {
 						if !voting.collective_step {
 							voting.collective_failed_call.dispatch(
 								frame_system::RawOrigin::Signed(voting.account_id.clone()).into(),
-							);
+							).ok();
 						}
 
 						// the vote doesn't need to be watched in the collective proposal storage for this step anymore
@@ -602,7 +602,7 @@ impl<T: Config> Pallet<T> {
 					if !voting.proposal_executed {
 						voting.democracy_failed_call.dispatch(
 							frame_system::RawOrigin::Signed(voting.account_id.clone()).into(),
-						);
+						).ok();
 					}
 
 					// the democracy doesn't need to be watched in the democracy proposal storage for this step anymore
