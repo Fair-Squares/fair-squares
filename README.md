@@ -34,9 +34,10 @@ We added a [Dockerfile](https://github.com/Fair-Squares/fair-squares/blob/main/D
 
 ### Docker images
 
-The images that are tagged starting with `v0.x.x` generate a docker image. You can see the available containers [here](https://github.com/Fair-Squares/fair-squares/pkgs/container/fs-node)
+The images that are tagged starting with `v0.x.x` generate a docker image. You can see the available images [here](https://github.com/Fair-Squares/fair-squares/pkgs/container/fs-node)
 
-The command to run the docker image: `docker run  --publish=127.0.0.1:9944:9944/tcp ghcr.io/fair-squares/fs-node:{$VERSION} fs-node  --dev`
+run command: </br> 
+`docker run  --publish=127.0.0.1:9944:9944/tcp ghcr.io/fair-squares/fs-node:{$VERSION} fs-node  --dev --ws-external`
 
 You have to change the `$VERSION` in the line above.
 
