@@ -27,9 +27,8 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU64, ConstU8, EitherOfDiverse,
+		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU64, ConstU8, Contains, EitherOfDiverse,
 		EqualPrivilegeOnly, KeyOwnerProofSystem, Randomness, StorageInfo,
-		Contains,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -536,11 +535,11 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 			Call::Democracy(_) => false,
 			Call::Council(_) => false,
 			Call::NftModule(_) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::do_something{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::change_status{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::do_buy{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::reject_edit{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy{..}) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::do_buy { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::reject_edit { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy { .. }) => false,
 			_ => true,
 		}
 	}
@@ -566,6 +565,14 @@ impl pallet_voting::Config for Runtime {
 	type CheckPeriod = CheckPeriod;
 	type MinimumDepositVote = MinimumDeposit;
 }
+
+impl pallet_utility::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 // flag add pallet config
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -595,6 +602,7 @@ construct_runtime!(
 		Preimage: pallet_preimage,
 		Council: pallet_collective::<Instance1>,
 		Democracy: pallet_democracy,
+		Utility: pallet_utility,
 		// flag add pallet runtime
 	}
 );
