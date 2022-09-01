@@ -109,8 +109,8 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-preimage/std",
 	"pallet-treasury/std",
-	### add new std
 	"pallet-utility/std",
+	### add new std
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -128,6 +128,7 @@ runtime-benchmarks = [
 	"sp-runtime/runtime-benchmarks",
 	"pallet-onboarding/runtime-benchmarks",
 	"pallet-voting/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -146,5 +147,6 @@ try-runtime = [
 	"pallet-transaction-payment/try-runtime",
 	"pallet-onboarding/try-runtime",
 	"pallet-voting/try-runtime",
+	"pallet-utility/try-runtime",
 	### add new try-runtime
 ]

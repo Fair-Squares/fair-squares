@@ -45,6 +45,7 @@ use pallet_nft::NftPermissions;
 pub use pallet_onboarding;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
+pub use pallet_utility;
 // flag add pallet use
 
 #[cfg(any(feature = "std", test))]
@@ -652,7 +653,8 @@ mod benches {
 		[pallet_roles, RoleModule]
 		[pallet_nft, NftModule]
 		[pallet_housing_fund, HousingFundModule]
-		[pallet_onboarding, OnboardingModule]
+		[pallet_onboarding, OnboardingModule],
+		[pallet_utility, Utility],
 		//[pallet_voting, VotingModule]
 		// flag add pallet bench_macro
 	);
@@ -839,6 +841,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
+			add_benchmark!(params, batches, pallet_utility, Utility);
 			//add_benchmark!(params, batches, pallet_voting, VotingModule);
 			// flag add pallet benchmark
 
