@@ -653,8 +653,9 @@ mod benches {
 		[pallet_roles, RoleModule]
 		[pallet_nft, NftModule]
 		[pallet_housing_fund, HousingFundModule]
-		[pallet_onboarding, OnboardingModule],
-		[pallet_utility, Utility],
+		[pallet_onboarding, OnboardingModule]
+		[pallet_utility, Utility]
+
 		//[pallet_voting, VotingModule]
 		// flag add pallet bench_macro
 	);
