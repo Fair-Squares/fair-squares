@@ -72,6 +72,8 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
 		type WeightInfo: WeightInfo;
+
+		#[pallet::constant]
 		type MaxMembers: Get<u32>;
 	}
 

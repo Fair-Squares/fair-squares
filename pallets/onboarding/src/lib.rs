@@ -95,8 +95,11 @@ pub mod pallet {
 		type Prop: Parameter
 			+ Dispatchable<Origin = <Self as frame_system::Config>::Origin>
 			+ From<Call<Self>>;
+		#[pallet::constant]
 		type ProposalFee: Get<BalanceOf<Self>>;
 		type WeightInfo: WeightInfo;
+
+		#[pallet::constant]
 		type FeesAccount: Get<PalletId>;
 	}
 
