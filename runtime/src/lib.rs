@@ -574,9 +574,22 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	pub const SimultaneousAssetBidder: u64 = 1;
+	pub const MaxTriesBid: u64 = 3;
+	pub const MaxTriesAseemblingInvestor: u64 = 3;
+	pub const MaximumSharePerInvestor: u64 = 20;
+	pub const MinimumSharePerInvestor: u64 = 10;
+}
+
 impl pallet_bidding::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = pallet_bidding::weights::SubstrateWeight<Runtime>;
+	type SimultaneousAssetBidder = SimultaneousAssetBidder;
+	type MaxTriesBid = MaxTriesBid;
+	type MaxTriesAseemblingInvestor = MaxTriesAseemblingInvestor;
+	type MaximumSharePerInvestor = MaximumSharePerInvestor;
+	type MinimumSharePerInvestor = MinimumSharePerInvestor;
 }
 
 // flag add pallet config

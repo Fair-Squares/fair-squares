@@ -49,6 +49,11 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
+		type SimultaneousAssetBidder: Get<u64>;
+		type MaxTriesBid: Get<u64>;
+		type MaxTriesAseemblingInvestor: Get<u64>;
+		type MaximumSharePerInvestor: Get<u64>;
+		type MinimumSharePerInvestor: Get<u64>;
 	}
 
 	#[pallet::pallet]

@@ -1,5 +1,8 @@
 use crate as pallet_bidding;
-use frame_support::traits::{ConstU16, ConstU64};
+use frame_support::{
+	parameter_types,
+	traits::{ConstU16, ConstU64}
+};
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -49,9 +52,22 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+parameter_types! {
+	pub const SimultaneousAssetBidder: u64 = 1;
+	pub const MaxTriesBid: u64 = 3;
+	pub const MaxTriesAseemblingInvestor: u64 = 3;
+	pub const MaximumSharePerInvestor: u64 = 20;
+	pub const MinimumSharePerInvestor: u64 = 10;
+}
+
 impl pallet_bidding::Config for Test {
 	type Event = Event;
 	type WeightInfo = ();
+	type SimultaneousAssetBidder = SimultaneousAssetBidder;
+	type MaxTriesBid = MaxTriesBid;
+	type MaxTriesAseemblingInvestor = MaxTriesAseemblingInvestor;
+	type MaximumSharePerInvestor = MaximumSharePerInvestor;
+	type MinimumSharePerInvestor = MinimumSharePerInvestor;
 }
 
 // Build genesis storage according to the mock runtime.
