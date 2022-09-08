@@ -42,6 +42,7 @@ pub use frame_support::{
 		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU64, ConstU16, ConstU8, EitherOfDiverse,
 		EqualPrivilegeOnly, KeyOwnerProofSystem, Randomness, StorageInfo,
 		Contains,U128CurrencyToVote,
+
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -63,6 +64,7 @@ pub use pallet_onboarding;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 pub use pallet_share_distributor;
+pub use pallet_utility;
 // flag add pallet use
 
 #[cfg(any(feature = "std", test))]
@@ -974,11 +976,11 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 			Call::Democracy(_) => false,
 			Call::Council(_) => false,
 			Call::NftModule(_) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::do_something{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::change_status{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::do_buy{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::reject_edit{..}) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy{..}) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::do_buy { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::reject_edit { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy { .. }) => false,
 			_ => true,
 		}
 	}
@@ -1033,6 +1035,12 @@ impl pallet_assets::Config for Runtime {
 impl pallet_share_distributor::Config for Runtime{
 	type Event = Event;
 }
+impl pallet_utility::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
 // flag add pallet config
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -1075,6 +1083,7 @@ construct_runtime!(
 		Democracy: pallet_democracy,
 		ShareDistributor: pallet_share_distributor,
 		NominationPools: pallet_nomination_pools,
+		Utility: pallet_utility,
 		// flag add pallet runtime
 	}
 );
@@ -1139,6 +1148,7 @@ mod benches {
 		[pallet_election_provider_multi_phase, ElectionProviderMultiPhase]
 		[pallet_election_provider_support_benchmarking, EPSBench::<Runtime>]
 		[pallet_im_online, ImOnline]
+		[pallet_utility, Utility]
 
 		//[pallet_voting, VotingModule]
 		// flag add pallet bench_macro
@@ -1378,6 +1388,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			add_benchmark!(params, batches, pallet_share_distributor, ShareDistributor);
+			add_benchmark!(params, batches, pallet_utility, Utility);
 			//add_benchmark!(params, batches, pallet_voting, VotingModule);
 			// flag add pallet benchmark
 
