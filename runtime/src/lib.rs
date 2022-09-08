@@ -42,11 +42,8 @@ pub use frame_system::Call as SystemCall;
 use frame_system::{EnsureRoot, EnsureSigned};
 pub use pallet_balances::Call as BalancesCall;
 use pallet_nft::NftPermissions;
-pub use pallet_onboarding;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
-pub use pallet_utility;
-// flag add pallet use
 
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
@@ -59,7 +56,10 @@ pub use pallet_housing_fund;
 pub use pallet_nft;
 pub use pallet_nft::{Acc, CollectionId, ItemId, NftPermission};
 pub use pallet_roles;
+pub use pallet_onboarding;
 pub use pallet_voting;
+pub use pallet_utility;
+pub use pallet_bidding;
 // flag add pallet use
 
 /// An index to a block.
@@ -574,6 +574,11 @@ impl pallet_utility::Config for Runtime {
 	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_bidding::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_bidding::weights::SubstrateWeight<Runtime>;
+}
+
 // flag add pallet config
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -604,6 +609,7 @@ construct_runtime!(
 		Council: pallet_collective::<Instance1>,
 		Democracy: pallet_democracy,
 		Utility: pallet_utility,
+		BiddingModule: pallet_bidding,
 		// flag add pallet runtime
 	}
 );
@@ -657,6 +663,7 @@ mod benches {
 		[pallet_utility, Utility]
 
 		//[pallet_voting, VotingModule]
+		[pallet_bidding, BiddingModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -844,6 +851,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			add_benchmark!(params, batches, pallet_utility, Utility);
 			//add_benchmark!(params, batches, pallet_voting, VotingModule);
+			add_benchmark!(params, batches, pallet_bidding, BiddingModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

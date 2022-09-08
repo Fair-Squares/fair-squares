@@ -66,6 +66,7 @@ pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = 
 pallet-nft = { version = "4.0.0-dev", default-features = false, path = "../pallets/nft" }
 pallet-onboarding = { version = "4.0.0-dev", default-features = false, path = "../pallets/onboarding" }
 pallet-voting = { version = "4.0.0-dev", default-features = false, path = "../pallets/voting" }
+pallet-bidding = { version = "4.0.0-dev", default-features = false, path = "../pallets/bidding" }
 ### add new pallet config
 
 [build-dependencies]
@@ -110,6 +111,7 @@ std = [
 	"pallet-preimage/std",
 	"pallet-treasury/std",
 	"pallet-utility/std",
+	"pallet-bidding/std",
 	### add new std
 ]
 runtime-benchmarks = [
@@ -129,6 +131,7 @@ runtime-benchmarks = [
 	"pallet-onboarding/runtime-benchmarks",
 	"pallet-voting/runtime-benchmarks",
 	"pallet-utility/runtime-benchmarks",
+	"pallet-bidding/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -148,5 +151,6 @@ try-runtime = [
 	"pallet-onboarding/try-runtime",
 	"pallet-voting/try-runtime",
 	"pallet-utility/try-runtime",
+	"pallet-bidding/try-runtime",
 	### add new try-runtime
 ]
