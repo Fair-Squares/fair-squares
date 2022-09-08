@@ -126,7 +126,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		move || {
 			testnet_genesis(
 				wasm_binary,
-				// Initial PoA authorities
+				// Initial authorities
 				vec![authority_keys_from_seed_2("Alice"), authority_keys_from_seed_2("Bob")],
 				vec![],
 				// Sudo account
