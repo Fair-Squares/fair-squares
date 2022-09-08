@@ -1,5 +1,5 @@
 use fs_node_runtime::{
-	pallet_roles, Balance,AccountId, AuraConfig, BalancesConfig, CouncilConfig, GenesisConfig,
+	pallet_roles, Balance,AccountId,  BalancesConfig, CouncilConfig, GenesisConfig,
 	GrandpaConfig, NftModuleConfig, RoleModuleConfig, Signature, SudoConfig, SystemConfig,
 	WASM_BINARY,SessionConfig,StakingConfig,NominationPoolsConfig,StakerStatus,MaxNominations,
 	ImOnlineConfig,AuthorityDiscoveryConfig,constants::currency::*,opaque::SessionKeys
@@ -7,7 +7,6 @@ use fs_node_runtime::{
 use sc_service::ChainType;
 use sc_service::Properties;
 use sc_telemetry::serde_json::json;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_consensus_babe::AuthorityId as BabeId;
@@ -28,13 +27,12 @@ use sp_runtime::{
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
 fn session_keys(
-	aura: AuraId,
 	grandpa: GrandpaId,
 	babe: BabeId,
 	im_online: ImOnlineId,
 	authority_discovery: AuthorityDiscoveryId,
 ) -> SessionKeys {
-	SessionKeys { aura,grandpa, babe, im_online, authority_discovery }
+	SessionKeys { grandpa, babe, im_online, authority_discovery }
 }
 
 /// Generate a crypto pair from seed.
@@ -49,10 +47,9 @@ type AccountPublic = <Signature as Verify>::Signer;
 /// Helper function to generate stash, controller and session key from seed
 pub fn authority_keys_from_seed_2(
 	seed: &str,
-) -> (AccountId,AuraId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId) {
+) -> (AccountId,GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId) {
 	(
 		get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", seed)),
-		get_from_seed::<AuraId>(seed),
 		get_from_seed::<GrandpaId>(seed),
 		get_from_seed::<BabeId>(seed),
 		get_from_seed::<ImOnlineId>(seed),
@@ -171,7 +168,6 @@ fn testnet_genesis(
 	wasm_binary: &[u8],
 	initial_authorities: Vec<(
 		AccountId,
-		AuraId,
 		GrandpaId,
 		BabeId,
 		ImOnlineId,
@@ -243,9 +239,7 @@ fn testnet_genesis(
 			// Configure endowed accounts with initial balance of 1 << 60.
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		aura: AuraConfig {
-			authorities: vec![],
-		},
+		
 		grandpa: GrandpaConfig {
 			authorities: vec![],
 		},
@@ -287,7 +281,7 @@ fn testnet_genesis(
 					(
 						x.0.clone(),					
 						x.0.clone(),
-						session_keys(x.1.clone(),x.2.clone(), x.3.clone(), x.4.clone(), x.5.clone()),
+						session_keys(x.1.clone(),x.2.clone(), x.3.clone(), x.4.clone()),
 					)
 				})
 				.collect::<Vec<_>>(),
