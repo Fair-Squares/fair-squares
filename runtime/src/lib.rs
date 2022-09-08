@@ -1146,10 +1146,8 @@ mod benches {
 		[pallet_assets,Assets]
 		[pallet_share_distributor,ShareDistributor]
 		[pallet_election_provider_multi_phase, ElectionProviderMultiPhase]
-		[pallet_election_provider_support_benchmarking, EPSBench::<Runtime>]
 		[pallet_im_online, ImOnline]
 		[pallet_utility, Utility]
-
 		//[pallet_voting, VotingModule]
 		// flag add pallet bench_macro
 	);
