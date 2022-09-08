@@ -32,6 +32,8 @@ mod benchmarking;
 pub mod weights;
 pub use weights::WeightInfo;
 
+mod structs;
+pub use crate::structs::*;
 
 pub use pallet_housing_fund;
 pub use pallet_onboarding;
@@ -49,6 +51,7 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
+		type Currency: ReservableCurrency<Self::AccountId>;
 		type SimultaneousAssetBidder: Get<u64>;
 		type MaxTriesBid: Get<u64>;
 		type MaxTriesAseemblingInvestor: Get<u64>;
@@ -120,5 +123,36 @@ pub mod pallet {
 				},
 			}
 		}
+	}
+}
+
+use frame_support::{
+	pallet_prelude::*
+};
+
+impl<T: Config> Pallet<T> {
+
+	pub fn process_asset() -> DispatchResultWithPostInfo {
+		
+		Ok(().into())
+	}
+
+	fn check_new_asset() -> bool {
+		true
+	}
+
+	fn check_housing_fund(amount: BalanceOf<T>) -> bool {
+		true
+	}
+
+	fn create_investor_list() -> Vec<(AccountIdOf<T>, BalanceOf<T>)> {
+		
+		let result: Vec<(AccountIdOf<T>, BalanceOf<T>)> = Vec::new();
+
+		result
+	}
+
+	fn simulate_notary_intervention() {
+		
 	}
 }

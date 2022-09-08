@@ -585,6 +585,7 @@ parameter_types! {
 impl pallet_bidding::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = pallet_bidding::weights::SubstrateWeight<Runtime>;
+	type Currency = Balances;
 	type SimultaneousAssetBidder = SimultaneousAssetBidder;
 	type MaxTriesBid = MaxTriesBid;
 	type MaxTriesAseemblingInvestor = MaxTriesAseemblingInvestor;

@@ -21,6 +21,7 @@ frame-support = { default-features = false, version = "4.0.0-dev", git = "https:
 frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26", optional = true }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-onboarding = { default-features = false, path="../onboarding" }
 pallet-nft = { default-features = false, path="../nft" }
@@ -41,6 +42,7 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"frame-benchmarking/std",
+	"pallet-balances/std",
 	"pallet-housing_fund/std",
 	"pallet-onboarding/std",
 	"pallet-nft/std",
