@@ -58,7 +58,7 @@ impl frame_system::Config for Test {
 
 parameter_types! {
 	pub const MinContribution: u128 = 10;
-	pub const FundThreshold: u128 = 100;
+	pub const FundThreshold: u128 = 2;
 	pub const MaxFundContribution: u128 = 200;
 	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 	pub const MaxInvestorPerHouse: u32 = 10;
