@@ -2,6 +2,7 @@ pub use super::*;
 
 pub use frame_support::{
 	traits::{Currency, ReservableCurrency },
+    inherent::Vec,
 };
 
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;

@@ -35,9 +35,9 @@ pub use weights::WeightInfo;
 mod structs;
 pub use crate::structs::*;
 
-pub use pallet_housing_fund;
-pub use pallet_onboarding;
-pub use pallet_nft;
+pub use pallet_housing_fund as Housing_Fund;
+pub use pallet_onboarding as Onboarding;
+pub use pallet_nft as Nft;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -47,7 +47,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + Onboarding::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
@@ -74,6 +74,7 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+		HouseAlreadyInBiddingProcess()
 	}
 
 	// Errors inform users that something went wrong.
@@ -83,6 +84,10 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// No new onboarded houses found
+		NoNewHousesFound,
+		/// A list of investor cannot be assembled for an onboarded asset
+		FailedToAssembleInvestor,
 	}
 
 	#[pallet::call]
@@ -133,7 +138,7 @@ use frame_support::{
 impl<T: Config> Pallet<T> {
 
 	pub fn process_asset() -> DispatchResultWithPostInfo {
-		
+
 		Ok(().into())
 	}
 
