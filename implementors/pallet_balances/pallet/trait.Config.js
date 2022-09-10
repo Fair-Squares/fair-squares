@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"fs_node_runtime":[["impl Config&lt;<a class=\"primitive\" href=\"https://doc.rust-lang.org/nightly/std/primitive.unit.html\">()</a>&gt; for <a class=\"struct\" href=\"fs_node_runtime/struct.Runtime.html\" title=\"struct fs_node_runtime::Runtime\">Runtime</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
