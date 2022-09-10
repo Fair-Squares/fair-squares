@@ -62,11 +62,11 @@ pub use pallet_voting as Votes;
 
 pub use pallet::*;
 
-//#[cfg(test)]
-//mod mock;
+#[cfg(test)]
+mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -340,7 +340,7 @@ pub mod pallet {
 			);
 			let asset = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
 			let status = asset.status;
-			ensure!(status == AssetStatus::FINALIZED, Error::<T>::VoteNedeed);
+			ensure!(status == AssetStatus::FINALISED, Error::<T>::VoteNedeed);
 
 			//Check that the owner is not the buyer
 			let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone())
@@ -372,7 +372,7 @@ pub mod pallet {
 				origin.clone(),
 				collection.clone(),
 				item_id.clone(),
-				AssetStatus::APPROVED,
+				AssetStatus::PURCHASED,
 			)
 			.ok();
 

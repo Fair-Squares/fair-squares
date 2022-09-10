@@ -4526,6 +4526,7 @@ dependencies = [
  "pallet-balances",
  "pallet-collective",
  "pallet-democracy",
+ "pallet-housing_fund",
  "pallet-nft",
  "pallet-roles",
  "pallet-scheduler",

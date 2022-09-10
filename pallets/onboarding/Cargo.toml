@@ -32,6 +32,7 @@ sp-runtime = { default-features = false, version = "6.0.0", git = "https://githu
 pallet-roles = { default-features = false, path="../roles" }
 pallet-nft = { default-features = false, path="../nft" }
 pallet-voting = { default-features = false, path = "../voting" }
+pallet-housing_fund = { default-features = false, path = "../housing_fund" }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
@@ -58,6 +59,7 @@ std = [
 	"pallet-sudo/std",
 	"pallet-roles/std",
 	"pallet-nft/std",
+	"pallet-housing_fund/std"
 	
 ]
 
