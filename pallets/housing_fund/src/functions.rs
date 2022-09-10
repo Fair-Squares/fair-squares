@@ -31,4 +31,11 @@ impl<T: Config> Pallet<T> {
 
 		contribution_shares
 	}
+
+	/// Check that the fund can afford the amount
+	pub fn check_available_fund(value: BalanceOf<T>) -> bool {
+		let fund = FundBalance::<T>::get();
+
+		fund.can_take_off(value.clone())
+	}
 }
