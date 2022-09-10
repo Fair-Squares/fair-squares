@@ -98,8 +98,67 @@ fn create_proposal() {
 		let status: AssetStatus =
 			Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().status;
 		assert_eq!(status, AssetStatus::REVIEWING);
+		
 	});
 }
+
+#[test]
+fn create_proposal_2() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata0: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+			b"metadata0".to_vec().try_into().unwrap();
+		let metadata1: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+			b"metadata1".to_vec().try_into().unwrap();
+		prep_roles();
+		//Charlie creates a collection
+		assert_ok!(NftModule::create_collection(
+			Origin::signed(CHARLIE),
+			NftColl::OFFICESTEST,
+			metadata0
+		));
+		// Bob creates a proposal and submit it for review
+		let price = 100_000_000;
+		assert_ok!(OnboardingModule::create_and_submit_proposal(
+			Origin::signed(BOB),
+			NftColl::OFFICESTEST,
+			Some(price.clone()),
+			metadata1,
+			true
+		));
+
+		let coll_id = NftColl::OFFICESTEST.value();
+		let item_id = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
+		let status: AssetStatus =
+			Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().status;
+
+		expect_events(vec![
+			crate::Event::ProposalCreated {
+				who: BOB,
+				collection: coll_id.clone(),
+				item: item_id.clone(),
+				price: Some(price.clone()),
+			}
+			.into(),
+			crate::Event::FundsReserved { from_who: BOB, amount: Some(5_000_000) }.into(),
+		]);
+
+		assert_eq!(status, AssetStatus::REVIEWING);
+
+		//Change House status to FINALISED
+	//	Houses::<Test>::mutate(coll_id.clone(),item_id.clone(),|val|{
+	//		let mut v0 = val.clone().unwrap();
+	//		v0.status = AssetStatus::FINALISED;
+	//	})
+
+		
+	//	let status: AssetStatus =
+	//		Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().status;
+	//	assert_eq!(status, AssetStatus::PURCHASED);
+		
+	});
+}
+
+
 #[test]
 fn proposal_rejections() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -170,7 +229,7 @@ fn proposal_rejections() {
 
 		let status0: AssetStatus =
 			Houses::<Test>::get(coll_id.clone(), item_id0.clone()).unwrap().status;
-		assert_eq!(status0, AssetStatus::REJECTEDIT);
+		assert_eq!(status0, AssetStatus::REJECTED);
 
 		let fees_balance1 = <Test as pallet_uniques::Config>::Currency::total_balance(
 			&OnboardingModule::account_id(),
@@ -207,6 +266,7 @@ fn proposal_rejections() {
 
 		let status1: AssetStatus =
 			Houses::<Test>::get(coll_id.clone(), item_id1.clone()).unwrap().status;
-		assert_eq!(status1, AssetStatus::REJECTBURN);
+		assert_eq!(status1, AssetStatus::SLASH);
 	});
 }
+

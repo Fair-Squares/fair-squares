@@ -13,15 +13,15 @@
 //!
 //!And the following actions sent to pallet voting through calls
 //! - Execute NFT & funds transfer
-//! - Reject a proposal for price editing purpose (asset is marked as REJECTEDIT and re-submission is possible)
-//! - Reject a proposal for destruction (NFT is burned, asset is marked as REJECTBURN)
+//! - Reject a proposal for price editing purpose (asset is marked as REJECTED and re-submission is possible)
+//! - Reject a proposal for destruction (NFT is burned, asset is marked as SLASH)
 //!
 //! ### Dispatchable Functions
 //! #### Role setting
 //!
 //! * `do_something` - Used in a Call to initialize the fields of the VotingCalls struct.
 //!  
-//! * `set_price` - Modify the price of an Existing proposal with the status EDIT or REJECTEDIT
+//! * `set_price` - Modify the price of an Existing proposal with the status EDIT or REJECTED
 //! Proposal price is the only part that can be edited
 //!
 //! * `do_buy` - Execute the buy/sell transaction.
@@ -306,7 +306,7 @@ pub mod pallet {
 			let asset = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
 			let status = asset.status;
 			ensure!(
-				status == AssetStatus::EDITING || status == AssetStatus::REJECTEDIT,
+				status == AssetStatus::EDITING || status == AssetStatus::REJECTED,
 				Error::<T>::CannotEditItem
 			);
 
@@ -340,7 +340,7 @@ pub mod pallet {
 			);
 			let asset = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
 			let status = asset.status;
-			ensure!(status == AssetStatus::VOTING, Error::<T>::VoteNedeed);
+			ensure!(status == AssetStatus::FINALISED, Error::<T>::VoteNedeed);
 
 			//Check that the owner is not the buyer
 			let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone())
@@ -372,7 +372,7 @@ pub mod pallet {
 				origin.clone(),
 				collection.clone(),
 				item_id.clone(),
-				AssetStatus::APPROVED,
+				AssetStatus::PURCHASED,
 			)
 			.ok();
 
@@ -401,7 +401,7 @@ pub mod pallet {
 				origin.clone(),
 				collection.clone(),
 				item_id.clone(),
-				AssetStatus::REJECTEDIT,
+				AssetStatus::REJECTED,
 			)
 			.ok();
 
@@ -459,7 +459,7 @@ pub mod pallet {
 				origin.clone(),
 				collection.clone(),
 				item_id.clone(),
-				AssetStatus::REJECTBURN,
+				AssetStatus::SLASH,
 			)
 			.ok();
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
@@ -552,12 +552,13 @@ pub mod pallet {
 			}
 			.into();
 			let call1_wrap = Box::new(call1);
-			Vcalls::<T>::mutate(collection_id, item_id.clone(), |val| {
+			Vcalls::<T>::mutate(collection_id.clone(), item_id.clone(), |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.democracy_status = call1_wrap;
 				*val = Some(v0);
 			});
 
+			
 			//Create Call for proposal reject_edit
 			let call2: T::Prop = Call::<T>::reject_edit {
 				collection: collection.clone(),
@@ -566,7 +567,7 @@ pub mod pallet {
 			}
 			.into();
 			let call2_wrap = Box::new(call2);
-			Vcalls::<T>::mutate(collection_id, item_id.clone(), |val| {
+			Vcalls::<T>::mutate(collection_id.clone(), item_id.clone(), |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.reject_edit = call2_wrap;
 				*val = Some(v0);
@@ -583,6 +584,20 @@ pub mod pallet {
 			Vcalls::<T>::mutate(collection_id.clone(), item_id.clone(), |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.reject_destroy = call3_wrap;
+				*val = Some(v0);
+			});
+
+			//Create Call for asset status change after Investor's vote
+			let call4: T::Prop = Call::<T>::change_status {
+				collection: collection.clone(),
+				item_id: item_id.clone(),
+				status: AssetStatus::ONBOARDED,
+			}
+			.into();
+			let call4_wrap = Box::new(call4);
+			Vcalls::<T>::mutate(collection_id.clone(), item_id.clone(), |val| {
+				let mut v0 = val.clone().unwrap();
+				v0.after_vote_status = call4_wrap;
 				*val = Some(v0);
 			});
 
@@ -610,11 +625,13 @@ pub mod pallet {
 				//Send Proposal struct to voting pallet
 				//get the needed call and convert them to pallet_voting format
 				let out_call = Vcalls::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
-				let w_buy =
-					Box::new(Self::get_formatted_collective_proposal(*out_call.buy).unwrap());
-				let w_status = Box::new(
+
+				let w_status0 = Box::new(
 					Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap(),
 				);
+				let w_status1 =
+					Box::new(Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
+				
 				let w_r_destroy = Box::new(
 					Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap(),
 				);
@@ -622,7 +639,7 @@ pub mod pallet {
 					Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap(),
 				);
 				//Send Calls struct to voting pallet
-				Votes::Pallet::<T>::submit_proposal(origin, w_buy, w_status, w_r_destroy, w_r_edit)
+				Votes::Pallet::<T>::submit_proposal(origin, w_status1, w_status0, w_r_destroy, w_r_edit)
 					.ok();
 
 				Self::deposit_event(Event::ProposalSubmitted {
@@ -655,7 +672,7 @@ pub mod pallet {
 			);
 			let house = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
 			ensure!(
-				house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTEDIT,
+				house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTED,
 				Error::<T>::CannotSubmitItem
 			);
 
@@ -690,8 +707,8 @@ pub mod pallet {
 			});
 			//get the needed call and convert them to pallet_voting format
 			let out_call = Vcalls::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
-			let w_buy = Box::new(Self::get_formatted_collective_proposal(*out_call.buy).unwrap());
-			let w_status = Box::new(
+			let w_status1 = Box::new(Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
+			let w_status0 = Box::new(
 				Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap(),
 			);
 			let w_r_destroy = Box::new(
@@ -700,7 +717,7 @@ pub mod pallet {
 			let w_r_edit =
 				Box::new(Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap());
 			//Send Calls struct to voting pallet
-			Votes::Pallet::<T>::submit_proposal(origin, w_buy, w_status, w_r_destroy, w_r_edit)
+			Votes::Pallet::<T>::submit_proposal(origin, w_status1, w_status0, w_r_destroy, w_r_edit)
 				.ok();
 
 			Self::deposit_event(Event::ProposalSubmitted {
