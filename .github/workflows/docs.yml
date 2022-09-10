@@ -18,6 +18,7 @@ jobs:
             toolchain: nightly
             override: true
             components: rustfmt, clippy
+            targes: wasm32-unknown-unknown
 
       # With rustup's nice new toml format, we just need to run rustup show to install the toolchain
       # https://github.com/actions-rs/toolchain/issues/126#issuecomment-782989659
