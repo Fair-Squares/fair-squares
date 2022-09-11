@@ -270,3 +270,102 @@ fn proposal_rejections() {
 	});
 }
 
+#[test]
+fn get_onboarded_houses_no_onboarded_houses() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata0: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+			b"metadata0".to_vec().try_into().unwrap();
+		let metadata1: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+			b"metadata1".to_vec().try_into().unwrap();
+
+		prep_roles();
+
+		//Charlie creates a collection
+		assert_ok!(NftModule::create_collection(
+			Origin::signed(CHARLIE),
+			NftColl::OFFICESTEST,
+			metadata0
+		));
+		// Bob creates a proposal without submiting for review
+		assert_ok!(OnboardingModule::create_and_submit_proposal(
+			Origin::signed(BOB),
+			NftColl::OFFICESTEST,
+			Some(100_000_000),
+			metadata1,
+			false
+		));
+
+		let onboarded_houses = OnboardingModule::get_onboarded_houses();
+		assert_eq!(
+			onboarded_houses.len(),
+			0
+		);
+	});
+}
+
+#[test]
+fn get_onboarded_houses_with_onboarded_houses() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata0: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+			b"metadata0".to_vec().try_into().unwrap();
+		let metadata1: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+			b"metadata1".to_vec().try_into().unwrap();
+		let metadata2: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
+			b"metadata1".to_vec().try_into().unwrap();
+		prep_roles();
+		//Charlie creates a collection
+		assert_ok!(NftModule::create_collection(
+			Origin::signed(CHARLIE),
+			NftColl::OFFICESTEST,
+			metadata0
+		));
+		// Bob creates a proposal without submiting for review
+		let price = 100_000_000;
+		assert_ok!(OnboardingModule::create_and_submit_proposal(
+			Origin::signed(BOB),
+			NftColl::OFFICESTEST,
+			Some(price.clone()),
+			metadata1,
+			false
+		));
+
+		let collection_id = NftColl::OFFICESTEST.value();
+		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
+
+		// we simulate for the the presence of an onboarded house by changing its status
+		assert_ok!(OnboardingModule::change_status(
+			Origin::signed(BOB),
+			NftColl::OFFICESTEST,
+			item_id,
+			AssetStatus::ONBOARDED,
+		));
+
+		let price2 = 200_000_000;
+		// we add a new asset that won't have the ONBOARDED status
+		assert_ok!(OnboardingModule::create_and_submit_proposal(
+			Origin::signed(BOB),
+			NftColl::OFFICESTEST,
+			Some(price2.clone()),
+			metadata2,
+			false
+		));
+
+		// we check that the onboarded house is correctly retrieved
+		let onboarded_houses = OnboardingModule::get_onboarded_houses();
+		assert_eq!(
+			onboarded_houses.len(),
+			1
+		);
+
+		let house = onboarded_houses[0].clone();
+		assert_eq!(
+			house.2.status,
+			AssetStatus::ONBOARDED,
+		);
+		assert_eq!(
+			house.2.price,
+			Some(price),
+		);
+	});
+}
+
