@@ -15,10 +15,12 @@ pub enum AssetStatus {
 	EDITING,
 	REVIEWING,
 	VOTING,
-	FINALIZING,
-	APPROVED,
-	REJECTEDIT,
-	REJECTBURN,
+	ONBOARDED,
+	FINALISING,
+	FINALISED,
+	PURCHASED,
+	REJECTED,
+	SLASH,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebugNoBound, TypeInfo)]
@@ -63,6 +65,8 @@ pub struct VotingCalls<T: Config> {
 	pub(super) reject_destroy: Box<T::Prop>,
 	/// NFT Price
 	pub(super) democracy_status: Box<T::Prop>,
+	///After positive Investor vote status
+	pub(super) after_vote_status: Box<T::Prop>,
 }
 
 impl<T: Config> VotingCalls<T> {
@@ -75,6 +79,7 @@ impl<T: Config> VotingCalls<T> {
 			reject_edit: Box::new(call.clone()),
 			reject_destroy: Box::new(call.clone()),
 			democracy_status: Box::new(call.clone()),
+			after_vote_status: Box::new(call.clone()),
 		};
 		Vcalls::<T>::insert(collection, item, calls);
 		Ok(())

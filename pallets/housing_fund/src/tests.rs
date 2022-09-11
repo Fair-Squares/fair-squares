@@ -476,7 +476,7 @@ fn house_bidding_without_enough_in_fund_should_fail() {
 		// Try to bid for a house without enough in pot
 		assert_noop!(
 			HousingFundModule::house_bidding(Origin::signed(origin), account_id, 1, 60, Vec::new()),
-			Error::<Test>::NotEnoughAvailableBalance
+			Error::<Test>::NotEnoughFundForHouse
 		);
 	});
 }
@@ -490,7 +490,7 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 60));
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 62));
 
 		// Try to bid for a house without enough in pot
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
@@ -517,7 +517,7 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
 		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 42));
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 20));
 
 		// Try to bid for a house without enough in pot
@@ -763,6 +763,46 @@ fn get_contribution_share_should_succeed() {
 				ContributionShare { account_id: 1, share: 50000 },
 				ContributionShare { account_id: 2, share: 50000 },
 			]
+		);
+	});
+}
+
+#[test]
+fn check_available_fund_not_enough_fund_should_fail() {
+	new_test_ext().execute_with(|| {
+		let account_id: u64 = 1;
+
+		assert_ok!(RoleModule::set_role(
+			Origin::signed(account_id.clone()),
+			account_id,
+			crate::ROLES::Accounts::INVESTOR
+		));
+
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 20));
+
+		assert_eq!(
+			HousingFundModule::check_available_fund(20),
+			false
+		);
+	});
+}
+
+#[test]
+fn check_available_fund_has_enough_fund_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let account_id: u64 = 1;
+
+		assert_ok!(RoleModule::set_role(
+			Origin::signed(account_id.clone()),
+			account_id,
+			crate::ROLES::Accounts::INVESTOR
+		));
+
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+
+		assert_eq!(
+			HousingFundModule::check_available_fund(20),
+			true
 		);
 	});
 }

@@ -1,7 +1,6 @@
 [package]
-name = "pallet-onboarding"
+name = "pallet-share_distributor"
 version = "4.0.0-dev"
-description = "Pallet to allow seller role to create an asset proposal and submit it for a Review by a Council in the FairSquares framework."
 authors = ["Fair Squares"]
 homepage = "https://fair-squares.nl"
 edition = "2021"
@@ -26,13 +25,13 @@ pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https
 pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 pallet-roles = { default-features = false, path="../roles" }
 pallet-nft = { default-features = false, path="../nft" }
 pallet-voting = { default-features = false, path = "../voting" }
-pallet-housing_fund = { default-features = false, path = "../housing_fund" }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
@@ -50,6 +49,7 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"frame-benchmarking/std",
+	"pallet-assets/std",
 	"pallet-uniques/std",
 	"pallet-balances/std",
 	"pallet-voting/std",
@@ -59,7 +59,6 @@ std = [
 	"pallet-sudo/std",
 	"pallet-roles/std",
 	"pallet-nft/std",
-	"pallet-housing_fund/std"
 	
 ]
 
