@@ -139,6 +139,8 @@ pub mod pallet {
 		NotAContributor,
 		/// Contributor must have enough available balance
 		NotEnoughAvailableBalance,
+		/// Not enough i the fund to bid a house
+		NotEnoughFundForHouse,
 		/// Must have the investor role,
 		NotAnInvestor,
 		/// Must not have more investor than the max acceppted
@@ -346,7 +348,7 @@ pub mod pallet {
 			// Check that the fund can afford the bid
 			let mut fund = FundBalance::<T>::get();
 
-			ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughAvailableBalance);
+			ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughFundForHouse);
 
 			// Check the number of investors
 			ensure!(

@@ -52,6 +52,7 @@ frame_support::construct_runtime!(
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		Collective: pallet_collective::<Instance1>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
+		HousingFund: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
@@ -268,6 +269,26 @@ impl pallet_roles::Config for Test {
 	type WeightInfo = ();
 	type MaxMembers = MaxMembers;
 }
+parameter_types! {
+	pub const MinContribution: u64 = 5;
+	pub const FundThreshold: u64 = 100;
+	pub const MaxFundContribution: u64 = 20;
+	pub const MaxInvestorPerHouse: u32 = 10;
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
+}
+
+/// Configure the pallet-housing_fund in pallets/housing_fund.
+impl pallet_housing_fund::Config for Test {
+	type Event = Event;
+	type LocalCurrency = Balances;
+	type MinContribution = MinContribution;
+	type FundThreshold = FundThreshold;
+	type MaxFundContribution = MaxFundContribution;
+	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Test>;
+	type PalletId = HousingFundPalletId;
+	type MaxInvestorPerHouse = MaxInvestorPerHouse;
+}
+
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
