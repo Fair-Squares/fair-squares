@@ -59,6 +59,7 @@ pub use pallet_nft as Nft;
 pub use pallet_roles as Roles;
 pub use pallet_sudo as Sudo;
 pub use pallet_voting as Votes;
+pub use pallet_housing_fund as HousingFund;
 
 pub use pallet::*;
 
@@ -87,7 +88,7 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config:
-		frame_system::Config + Roles::Config + Nft::Config + Sudo::Config + Votes::Config
+		frame_system::Config + Roles::Config + Nft::Config + Sudo::Config + Votes::Config + HousingFund::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
@@ -328,9 +329,10 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: NftCollectionOf,
 			item_id: T::NftItemId,
+			buyer: T::AccountId,
 			_infos: Asset<T>,
 		) -> DispatchResult {
-			let buyer = ensure_signed(origin.clone()).unwrap();
+			let _caller = ensure_signed(origin.clone()).unwrap();
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 
 			//Check that the house item exists and has the correct status
@@ -349,10 +351,11 @@ pub mod pallet {
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
 			let _returned = <T as Config>::Currency::unreserve(&owner, balance);
 
-			//Execute transaction
+			//Transfer funds from HousingFund to owner
 			let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
+			let fund_id = T::PalletId::get().into_account_truncating();
 			<T as Config>::Currency::transfer(
-				&buyer,
+				&fund_id,
 				&owner,
 				price,
 				ExistenceRequirement::KeepAlive,
@@ -529,21 +532,7 @@ pub mod pallet {
 
 			let house = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
 
-			//Create Call for the sell/buy transaction
 			let _new_call = VotingCalls::<T>::new(collection_id.clone(), item_id.clone()).ok();
-			let call0: T::Prop = Call::<T>::do_buy {
-				collection: collection.clone(),
-				item_id: item_id.clone(),
-				infos: house.clone(),
-			}
-			.into();
-			let call0_wrap = Box::new(call0);
-			Vcalls::<T>::mutate(collection_id.clone(), item_id.clone(), |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.buy = call0_wrap;
-				*val = Some(v0);
-			});
-
 			//Create Call for collective-to-democracy status change
 			let call1: T::Prop = Call::<T>::change_status {
 				collection: collection.clone(),
@@ -694,17 +683,7 @@ pub mod pallet {
 				AssetStatus::REVIEWING,
 			)
 			.ok();
-			let house = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
-
-			//Update Call for the sell/buy transaction
-			let call: T::Prop =
-				Call::<T>::do_buy { collection, item_id: item_id.clone(), infos: house }.into();
-			let call0 = Box::new(call);
-			Vcalls::<T>::mutate(collection_id.clone(), item_id.clone(), |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.buy = call0;
-				*val = Some(v0);
-			});
+			
 			//get the needed call and convert them to pallet_voting format
 			let out_call = Vcalls::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
 			let w_status1 = Box::new(Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
