@@ -532,7 +532,7 @@ pub mod pallet {
 
 			let house = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
 
-
+			let _new_call = VotingCalls::<T>::new(collection_id.clone(), item_id.clone()).ok();
 			//Create Call for collective-to-democracy status change
 			let call1: T::Prop = Call::<T>::change_status {
 				collection: collection.clone(),
