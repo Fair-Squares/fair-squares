@@ -803,3 +803,48 @@ fn check_available_fund_has_enough_fund_should_succeed() {
 		);
 	});
 }
+
+#[test]
+fn get_contributions_without_contribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+
+		let contributions = HousingFundModule::get_contributions();
+		assert_eq!(
+			contributions.len(),
+			0
+		);
+	});
+}
+
+#[test]
+fn get_contributions_with_contribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+
+		// Give the investor role to the accounts
+		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 25));
+
+		let contributions = HousingFundModule::get_contributions();
+		assert_eq!(
+			contributions.len(),
+			1
+		);
+
+		assert_eq!(
+			contributions[0].1,
+			Contribution {
+				account_id: 1,
+				available_balance: HousingFundModule::u64_to_balance_option(25).unwrap(),
+				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				has_withdrawn: false,
+				block_number: 1,
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
+				withdraws: Vec::new()
+			}
+		);
+	});
+}
