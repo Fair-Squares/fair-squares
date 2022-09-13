@@ -47,7 +47,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Onboarding::Config {
+	pub trait Config: frame_system::Config + Onboarding::Config + Housing_Fund::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
@@ -74,7 +74,8 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
-		HouseAlreadyInBiddingProcess()
+		HouseAlreadyInBiddingProcess(),
+		HousingFundNotEnough(),
 	}
 
 	// Errors inform users that something went wrong.
@@ -139,6 +140,27 @@ impl<T: Config> Pallet<T> {
 
 	pub fn process_asset() -> DispatchResultWithPostInfo {
 
+		let houses = Onboarding::Pallet::<T>::get_onboarded_houses().clone();
+		let houses_iter = houses.iter();
+
+		for item in houses_iter {
+			if item.2.price.is_some() == false {
+				continue;
+			}
+			
+			let amount = Self::convert_balance(item.2.price.unwrap());
+			if amount.is_some() == false {
+				continue;
+			}
+
+			if Housing_Fund::Pallet::<T>::check_available_fund(amount.unwrap()) == false {
+				Self::deposit_event(Event::HousingFundNotEnough());
+				continue;
+			}
+
+			let investors_shares = Self::create_investor_list();
+		}
+
 		Ok(().into())
 	}
 
@@ -160,4 +182,11 @@ impl<T: Config> Pallet<T> {
 	fn simulate_notary_intervention() {
 		
 	}
+
+	fn convert_balance(amount: Onboarding::BalanceOf<T>) -> Option<Housing_Fund::BalanceOf<T>> {
+		let value: Option<u128> = amount.try_into().ok();
+		let result: Option<Housing_Fund::BalanceOf<T>> = value.unwrap().try_into().ok();
+		result
+	}
+
 }
