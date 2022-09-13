@@ -118,4 +118,8 @@ impl<T: Config> Pallet<T> {
 
 		Ok(().into())
 	}
+
+	pub fn get_contributions() -> Vec<(AccountIdOf<T>, Contribution<T>)> {
+		Contributions::<T>::iter().map(|elt| (elt.0, elt.1)).collect()
+	}
 }
