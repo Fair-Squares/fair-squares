@@ -7,12 +7,18 @@ pub use pallet::*;
 pub use pallet_assets as Assets;
 pub use pallet_nft as Nft;
 pub use pallet_roles as Roles;
+pub use pallet_onboarding as Onboarding;
 
-//#[cfg(test)]
-//mod mock;
+mod functions;
+mod types;
+pub use functions::*;
+pub use types::*;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -20,27 +26,36 @@ mod benchmarking;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
+	
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Assets::Config + Roles::Config + Nft::Config {
+	pub trait Config: frame_system::Config + Assets::Config + Roles::Config + Nft::Config + Onboarding::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Currency: ReservableCurrency<Self::AccountId>;
 	}
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/main-docs/build/runtime-storage/
+
+
 	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
+	#[pallet::getter(fn virtual_acc)]
+	/// Stores Virtual accounts
+	pub(super) type Virtual<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::NftCollectionId,
+		Blake2_128Concat,
+		T::NftItemId,
+		Ownership<T>,
+		OptionQuery,
+	>;
+	
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
@@ -48,8 +63,12 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		/// A virtual account was created
+		VirtualCreated{
+			account: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -58,7 +77,7 @@ pub mod pallet {
 		/// Error names should be descriptive.
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
-		StorageOverflow,
+		ReservedToServicer,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -69,38 +88,24 @@ pub mod pallet {
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/main-docs/build/origins/
-			let who = ensure_signed(origin)?;
+		pub fn create_virtual(origin: OriginFor<T>, collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
+			
+			let caller = ensure_signed(origin.clone()).unwrap();
+			ensure!(Roles::Pallet::<T>::servicers(&caller).is_some(),Error::<T>::ReservedToServicer);
 
-			// Update storage.
-			<Something<T>>::put(something);
+			// Create virtual account
+			Self::virtual_account(collection_id.clone(),item_id.clone()).ok();
+			let account = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().virtual_account;
 
 			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
-			// Return a successful DispatchResultWithPostInfo
+			Self::deposit_event(Event::VirtualCreated{
+				account: account,
+				collection: collection_id,
+				item: item_id,
+			});
 			Ok(())
 		}
 
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
-
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
-		}
+	
 	}
 }
