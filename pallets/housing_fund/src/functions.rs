@@ -38,4 +38,84 @@ impl<T: Config> Pallet<T> {
 
 		fund.can_take_off(value.clone())
 	}
+
+	/// Execute a bid on a house, funds are reserve for the bid before the transfer
+	/// - account_id : account of the house seller
+	/// - collection_id : id of a ollection of house type
+	/// - item_id : id of the house in the collection
+	/// - amount : amount used to buy the house
+	/// - contributions : list of investors contributions
+	/// Emits FundReservationSucceeded when successful
+	pub fn house_bidding(
+		account_id: AccountIdOf<T>,
+		nft_collection_id: NftCollectionId<T>,
+		nft_item_id: NftItemId<T>,
+		amount: BalanceOf<T>,
+		contributions: Vec<(AccountIdOf<T>, BalanceOf<T>)>,
+	) -> DispatchResultWithPostInfo {
+
+		// Check that the fund can afford the bid
+		let mut fund = FundBalance::<T>::get();
+
+		ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughFundForHouse);
+
+		// Check the number of investors
+		ensure!(
+			contributions.clone().len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(),
+			Error::<T>::NotMoreThanMaxInvestorPerHouse
+		);
+
+		// Checks that each contribution is possible
+		let contribution_iter = contributions.iter();
+
+		let mut contribution_list = Vec::new();
+
+		for item in contribution_iter {
+			let entry = Contributions::<T>::get(item.0.clone());
+			ensure!(entry.is_some(), Error::<T>::NotAContributor);
+			ensure!(entry.unwrap().can_reserve(item.1), Error::<T>::NotEnoughAvailableBalance);
+
+			Contributions::<T>::mutate(item.0.clone(), |val| {
+				let mut unwrap_val = val.clone().unwrap();
+				unwrap_val.reserve_amount(item.1);
+				let contribution = unwrap_val.clone();
+				*val = Some(contribution);
+			});
+			contribution_list.push((item.0.clone(), item.1));
+		}
+
+		// The amount is tagged as reserved in the fund for the account_id
+		T::LocalCurrency::reserve(&T::PalletId::get().into_account_truncating(), amount)?;
+		fund.reserve(amount);
+
+		// The amount is reserved in the pot
+		FundBalance::<T>::mutate(|val| {
+			*val = fund.clone();
+		});
+
+		// Get the block number for timestamp
+		let block_number = <frame_system::Pallet<T>>::block_number();
+
+		let reservation = FundOperation {
+			account_id: account_id.clone(),
+			nft_collection_id,
+			nft_item_id,
+			amount,
+			block_number,
+			contributions: contribution_list,
+		};
+
+		// The reservation is added to the storage
+		Reservations::<T>::insert((nft_collection_id, nft_item_id), reservation);
+
+		// Emit an event.
+		Self::deposit_event(Event::FundReservationSucceeded(
+			nft_collection_id,
+			nft_item_id,
+			amount,
+			block_number,
+		));
+
+		Ok(().into())
+	}
 }
