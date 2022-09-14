@@ -1,6 +1,7 @@
 pub use super::*;
 pub use crate::mock::*;
 pub use frame_support::{assert_noop, assert_ok};
+use frame_system::pallet_prelude::OriginFor;
 
 pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(CHARLIE).clone(), CHARLIE, Acc::SERVICER).ok();
@@ -55,8 +56,9 @@ fn virtual0(){
 
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
+		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
 
-		assert_ok!(ShareDistributor::virtual_account(coll_id0,item_id0));
+		assert_ok!(ShareDistributor::create_virtual(origin.clone(),coll_id0,item_id0));
 
 		// Bob creates a second proposal without submiting for review
 	let price = 100_000_000;
@@ -69,8 +71,9 @@ fn virtual0(){
 	));
 		let coll_id1 = NftColl::APPARTMENTSTEST.value();
 		let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id1 as usize] - 1;
+		
 
-		assert_ok!(ShareDistributor::create_virtual(Origin::signed(EVE),coll_id1,item_id1));
+		assert_ok!(ShareDistributor::create_virtual(origin,coll_id1,item_id1));
 		let virtual0 = Virtual::<Test>::get(coll_id0,item_id0).unwrap();
 		
 		let virtual1 = Virtual::<Test>::get(coll_id1,item_id1).unwrap();

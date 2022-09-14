@@ -15,12 +15,9 @@ benchmarks! {
 	create_virtual{
 		let s in 0 .. 100;
 		let caller: T::AccountId = whitelisted_caller();
-		let origin:OriginFor<T> = RawOrigin::Signed(caller.clone()).into();
-		Roles::Servicer::<T>::new(origin.clone()).ok();
-		Roles::Pallet::<T>::approve_account(caller.clone(),caller.clone()).ok();
 		let coll_id:T::NftCollectionId = NftColl::APPARTMENTSTEST.value().into();
 
-	}: _(RawOrigin::Signed(caller),coll_id,s.into())
+	}: _(RawOrigin::Root,coll_id,s.into())
 
 	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);
 }

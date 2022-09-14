@@ -90,8 +90,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn create_virtual(origin: OriginFor<T>, collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
 			
-			let caller = ensure_signed(origin.clone()).unwrap();
-			ensure!(Roles::Pallet::<T>::servicers(&caller).is_some(),Error::<T>::ReservedToServicer);
+			let _caller = ensure_root(origin);
+			
 
 			// Create virtual account
 			Self::virtual_account(collection_id.clone(),item_id.clone()).ok();
