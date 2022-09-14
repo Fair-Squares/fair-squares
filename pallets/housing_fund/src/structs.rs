@@ -13,6 +13,8 @@ pub use frame_system::{ensure_signed, pallet_prelude::*};
 use scale_info::TypeInfo;
 
 pub type StorageIndex = u32;
+pub type NftCollectionId<T> = <T as pallet_nft::Config>::NftCollectionId;
+pub type NftItemId<T> = <T as pallet_nft::Config>::NftItemId;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T> = <<T as Config>::LocalCurrency as Currency<AccountIdOf<T>>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
@@ -121,7 +123,8 @@ pub struct FundOperation<T: Config> {
 	// Account to which the amount is destinated
 	pub account_id: AccountIdOf<T>,
 	// The house identifier
-	pub house_id: StorageIndex,
+	pub nft_collection_id: T::NftCollectionId,
+	pub nft_item_id: T::NftItemId,
 	// The amount of the transaction
 	pub amount: BalanceOf<T>,
 	// Block number of the last contribution's update

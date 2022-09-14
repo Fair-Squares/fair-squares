@@ -1,6 +1,6 @@
 use super::*;
 use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, assert_err};
 
 #[test]
 fn contribute_without_having_investor_role_should_fail() {
@@ -470,12 +470,11 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 #[test]
 fn house_bidding_without_enough_in_fund_should_fail() {
 	new_test_ext().execute_with(|| {
-		let origin: u64 = 1;
 		let account_id: u64 = 1;
 
 		// Try to bid for a house without enough in pot
 		assert_noop!(
-			HousingFundModule::house_bidding(Origin::signed(origin), account_id, 1, 60, Vec::new()),
+			HousingFundModule::house_bidding(account_id, 1, 1, 60, Vec::new()),
 			Error::<Test>::NotEnoughFundForHouse
 		);
 	});
@@ -484,7 +483,6 @@ fn house_bidding_without_enough_in_fund_should_fail() {
 #[test]
 fn house_bidding_with_an_non_contributor_account_should_fail() {
 	new_test_ext().execute_with(|| {
-		let origin: u64 = 1;
 		let account_id: u64 = 1;
 
 		// Give the investor role to the account
@@ -494,13 +492,13 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 
 		// Try to bid for a house without enough in pot
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
-		assert_noop!(
+		assert_err!(
 			HousingFundModule::house_bidding(
-				Origin::signed(origin),
 				account_id,
 				1,
-				60,
-				vec![(1, 20), (2, 40)]
+				2,
+				50,
+				vec![(1, 20), (2, 30)]
 			),
 			Error::<Test>::NotAContributor
 		);
@@ -510,7 +508,6 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 #[test]
 fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 	new_test_ext().execute_with(|| {
-		let origin: u64 = 1;
 		let account_id: u64 = 1;
 
 		// Give the investor role to the accounts
@@ -522,10 +519,10 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 
 		// Try to bid for a house without enough in pot
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
-		assert_noop!(
+		assert_err!(
 			HousingFundModule::house_bidding(
-				Origin::signed(origin),
 				account_id,
+				1,
 				1,
 				60,
 				vec![(1, 30), (2, 30)]
@@ -538,7 +535,6 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 #[test]
 fn house_bidding_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
-		let origin: u64 = 1;
 		let fund_account_id = HousingFundModule::fund_account_id();
 
 		// Give the investor role to the accounts
@@ -549,8 +545,8 @@ fn house_bidding_with_valid_values_should_succeed() {
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(
-			Origin::signed(origin),
 			3,
+			1,
 			1,
 			60,
 			vec![(1, 30), (2, 30)]
@@ -600,10 +596,11 @@ fn house_bidding_with_valid_values_should_succeed() {
 		);
 
 		assert_eq!(
-			HousingFundModule::reservations(1),
+			HousingFundModule::reservations((1, 1)),
 			Some(FundOperation {
 				account_id: 3,
-				house_id: 1,
+				nft_collection_id: 1,
+				nft_item_id: 1,
 				amount: 60,
 				block_number: 1,
 				contributions: vec![(1, 30), (2, 30)]
@@ -803,6 +800,51 @@ fn check_available_fund_has_enough_fund_should_succeed() {
 		assert_eq!(
 			HousingFundModule::check_available_fund(20),
 			true
+		);
+	});
+}
+
+#[test]
+fn get_contributions_without_contribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+
+		let contributions = HousingFundModule::get_contributions();
+		assert_eq!(
+			contributions.len(),
+			0
+		);
+	});
+}
+
+#[test]
+fn get_contributions_with_contribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+
+		// Give the investor role to the accounts
+		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 25));
+
+		let contributions = HousingFundModule::get_contributions();
+		assert_eq!(
+			contributions.len(),
+			1
+		);
+
+		assert_eq!(
+			contributions[0].1,
+			Contribution {
+				account_id: 1,
+				available_balance: HousingFundModule::u64_to_balance_option(25).unwrap(),
+				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				has_withdrawn: false,
+				block_number: 1,
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(25).unwrap(),
+					block_number: 1
+				}],
+				withdraws: Vec::new()
+			}
 		);
 	});
 }
