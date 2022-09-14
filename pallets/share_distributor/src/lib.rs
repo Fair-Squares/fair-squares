@@ -57,12 +57,10 @@ pub mod pallet {
 	>;
 	
 
-	// Pallets use events to inform users when important changes are made.
-	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
+		
 		/// A virtual account was created
 		VirtualCreated{
 			account: T::AccountId,
@@ -71,22 +69,20 @@ pub mod pallet {
 		},
 	}
 
-	// Errors inform users that something went wrong.
+
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Error names should be descriptive.
+		/// Not a value.
 		NoneValue,
-		/// Errors should have helpful documentation associated with them.
+		/// This action is reserved to Accounts holding the SERVICER role.
 		ReservedToServicer,
 	}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+	
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		/// This call creates a virtual account from the asset's collection_id and item_id.
+		/// The caller must hold the Servicer role 
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn create_virtual(origin: OriginFor<T>, collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
 			
