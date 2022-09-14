@@ -1,18 +1,25 @@
+use super::*;
 use crate as pallet_housing_fund;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16, ConstU64},
+	traits::{ConstU16, ConstU64, AsEnsureOriginWithArg},
 	PalletId,
 };
-use sp_core::H256;
+use frame_system::EnsureRoot;
+use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 };
 
+use crate::NFT::NftPermissions;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 pub(crate) type Balance = u128;
+type AccountId = u64;
+pub type CollectionId = u32;
+pub type ItemId = u32;
+pub type NftCollection = crate::NFT::PossibleCollections;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -25,6 +32,8 @@ frame_support::construct_runtime!(
 			HousingFundModule: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
 			Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 			RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
+			Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
+			NftModule: pallet_nft::{Pallet, Call, Storage, Event<T>},
 			Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
 		}
 );
@@ -56,14 +65,6 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-parameter_types! {
-	pub const MinContribution: u128 = 10;
-	pub const FundThreshold: u128 = 2;
-	pub const MaxFundContribution: u128 = 200;
-	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
-	pub const MaxInvestorPerHouse: u32 = 10;
-}
-
 impl pallet_sudo::Config for Test {
 	type Event = Event;
 	type Call = Call;
@@ -76,6 +77,58 @@ impl pallet_roles::Config for Test {
 	type Currency = Balances;
 	type WeightInfo = ();
 	type MaxMembers = MaxMembers;
+}
+
+parameter_types! {
+	pub const CollectionDeposit: Balance = 10_000 ; // 1 UNIT deposit to create asset class
+	pub const ItemDeposit: Balance = 100 ; // 1/100 UNIT deposit to create asset instance
+	pub const KeyLimit: u32 = 32;	// Max 32 bytes per key
+	pub const ValueLimit: u32 = 64;	// Max 64 bytes per value
+	pub const UniquesMetadataDepositBase: Balance = 1000 ;
+	pub const AttributeDepositBase: Balance = 100 ;
+	pub const DepositPerByte: Balance = 10 ;
+	pub const UniquesStringLimit: u32 = 32;
+
+}
+
+impl pallet_uniques::Config for Test {
+	type Event = Event;
+	type CollectionId = CollectionId;
+	type ItemId = ItemId;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type Locker = ();
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = UniquesMetadataDepositBase;
+	type AttributeDepositBase = AttributeDepositBase;
+	type DepositPerByte = DepositPerByte;
+	type StringLimit = UniquesStringLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type WeightInfo = ();
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
+}
+
+parameter_types! {
+	pub ReserveCollectionIdUpTo: u32 = 3;
+}
+impl pallet_nft::Config for Test {
+	type Event = Event;
+	type WeightInfo = ();
+	type NftCollectionId = CollectionId;
+	type NftItemId = ItemId;
+	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type Permissions = NftPermissions;
+	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
+}
+
+parameter_types! {
+	pub const MinContribution: u128 = 10;
+	pub const FundThreshold: u128 = 2;
+	pub const MaxFundContribution: u128 = 200;
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
+	pub const MaxInvestorPerHouse: u32 = 2;
 }
 
 impl pallet_housing_fund::Config for Test {

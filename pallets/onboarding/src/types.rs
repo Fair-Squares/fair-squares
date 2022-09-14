@@ -57,8 +57,6 @@ impl<T: Config> Asset<T> {
 #[scale_info(skip_type_params(T))]
 //#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct VotingCalls<T: Config> {
-	/// Asset status
-	pub(super) buy: Box<T::Prop>,
 	/// Asset creation block
 	pub(super) reject_edit: Box<T::Prop>,
 	/// NFT infos
@@ -75,7 +73,6 @@ impl<T: Config> VotingCalls<T> {
 		let call: T::Prop = Call::<T>::do_something { something: nbr }.into();
 
 		let calls = VotingCalls::<T> {
-			buy: Box::new(call.clone()),
 			reject_edit: Box::new(call.clone()),
 			reject_destroy: Box::new(call.clone()),
 			democracy_status: Box::new(call.clone()),
