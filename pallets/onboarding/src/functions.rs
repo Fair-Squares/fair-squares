@@ -77,6 +77,65 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	///Execute the buy/sell transaction
+		
+	pub fn do_buy(
+		collection: NftCollectionOf,
+		item_id: T::NftItemId,
+		buyer: T::AccountId,
+		_infos: Asset<T>,
+	) -> DispatchResult {			
+		let collection_id: T::NftCollectionId = collection.clone().value().into();
+		let origin: OriginFor<T> = frame_system::RawOrigin::Root.into();
+		let origin2: OriginFor<T> = frame_system::RawOrigin::Signed(buyer.clone()).into();
+
+		//Check that the house item exists and has the correct status
+		ensure!(
+			Houses::<T>::contains_key(collection_id.clone(), item_id.clone()),
+			Error::<T>::CollectionOrItemUnknown
+		);
+		let asset = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
+		let status = asset.status;
+		ensure!(status == AssetStatus::FINALISED, Error::<T>::VoteNedeed);
+
+		//Check that the owner is not the buyer
+		let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone())
+			.ok_or(Error::<T>::CollectionOrItemUnknown)?;
+		ensure!(buyer != owner.clone(), Error::<T>::BuyFromSelf);
+		let balance = <T as Config>::Currency::reserved_balance(&owner);
+		let _returned = <T as Config>::Currency::unreserve(&owner, balance);
+
+		//Transfer funds from HousingFund to owner
+		let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
+		let fund_id = T::PalletId::get().into_account_truncating();
+		<T as Config>::Currency::transfer(
+			&fund_id,
+			&owner,
+			price,
+			ExistenceRequirement::KeepAlive,
+		)?;
+		let to = T::Lookup::unlookup(buyer.clone());
+		Nft::Pallet::<T>::transfer(origin.clone(), collection, item_id.clone(), to)?;
+		Self::deposit_event(Event::TokenSold {
+			owner,
+			buyer,
+			collection: collection_id.clone(),
+			item: item_id.clone(),
+			price,
+		});
+
+		//change status
+		Self::change_status(
+			origin2.clone(),
+			collection.clone(),
+			item_id.clone(),
+			AssetStatus::PURCHASED,
+		)
+		.ok();
+
+		Ok(())
+	}
+
 	pub fn get_formatted_collective_proposal(
 		call: <T as Config>::Prop,
 	) -> Option<<T as Votes::Config>::Call> {

@@ -93,7 +93,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn reservations)]
 	// Housing fund reservations
-	pub(super) type Reservations<T> =
+	pub type Reservations<T> =
 		StorageMap<_, Blake2_128Concat, (NftCollectionId<T>, NftItemId<T>), FundOperation<T>, OptionQuery>;
 
 	#[pallet::storage]

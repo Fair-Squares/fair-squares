@@ -14,7 +14,7 @@ pub use frame_support::{
 pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 pub use scale_info::{prelude::{vec,format}, TypeInfo};
 pub use serde::{Deserialize, Serialize};
-
+pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
@@ -25,6 +25,8 @@ pub struct Ownership<T:Config> {
 	pub virtual_account: T::AccountId,
 	/// NFT owners accounts list
 	pub owners: Vec<T::AccountId>,
+	///Creation Blocknumber
+	pub created: BlockNumberOf<T> 
 }
 
 impl<T: Config> Ownership<T> {
@@ -34,7 +36,8 @@ impl<T: Config> Ownership<T> {
 		virtual_account: T::AccountId
 	) -> DispatchResult {
 		let owners = Vec::new();
-		let ownership = Ownership::<T>{ virtual_account,owners};
+		let created = <frame_system::Pallet<T>>::block_number();
+		let ownership = Ownership::<T>{ virtual_account,owners,created};
 		Virtual::<T>::insert(collection,item,ownership);
 
 		Ok(())		

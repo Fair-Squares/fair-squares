@@ -4,6 +4,7 @@
 //3) Use onboarding do_buy
 //4) transfer tokens to owners
 use super::*;
+use enum_iterator::all;
 
 impl<T: Config> Pallet<T> {
 pub fn virtual_account(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
@@ -20,5 +21,23 @@ pub fn virtual_account(collection_id: T::NftCollectionId, item_id: T::NftItemId)
     
 
     Ok(())
+}
+pub fn nft_transaction(collection_id: T::NftCollectionId, item_id: T::NftItemId,virtual_id:T::AccountId) -> DispatchResult {
+    
+    //Get collection
+        let collection_vec = all::<Nft::PossibleCollections>().collect::<Vec<_>>();
+        let _infos = Onboarding::Houses::<T>::get(collection_id.clone(),item_id.clone()).unwrap();
+        let mut coll_id = Nft::PossibleCollections::HOUSES;
+        for i in collection_vec.iter() {
+            let val:T::NftCollectionId=i.value().into();
+            if val == collection_id{
+                coll_id = *i;                
+            }
+        }
+    //Execute NFT and money transfer
+        Onboarding::Pallet::do_buy(coll_id,item_id.clone(),virtual_id.clone(),_infos).ok();        
+
+Ok(())
+
 }
 }
