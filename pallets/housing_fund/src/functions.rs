@@ -47,7 +47,6 @@ impl<T: Config> Pallet<T> {
 	/// - contributions : list of investors contributions
 	/// Emits FundReservationSucceeded when successful
 	pub fn house_bidding(
-		account_id: AccountIdOf<T>,
 		nft_collection_id: NftCollectionId<T>,
 		nft_item_id: NftItemId<T>,
 		amount: BalanceOf<T>,
@@ -97,7 +96,6 @@ impl<T: Config> Pallet<T> {
 		let block_number = <frame_system::Pallet<T>>::block_number();
 
 		let reservation = FundOperation {
-			account_id: account_id.clone(),
 			nft_collection_id,
 			nft_item_id,
 			amount,
