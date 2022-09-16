@@ -118,7 +118,7 @@ benchmarks! {
         let caller2 = create_account::<T>("caller2", 1);
         let caller2_lookup = T::Lookup::unlookup(caller2.clone());
         do_mint::<T>(caller3.clone());
-    }: _(RawOrigin::Signed(caller1), PossibleCollections::HOUSESTEST, 0u32.into(), caller2_lookup)
+    }: _(RawOrigin::Root, PossibleCollections::HOUSESTEST, 0u32.into(), caller2_lookup)
     verify {
         assert_eq!(UNQ::Pallet::<T>::owner(T::NftCollectionId::from(COLLECTION_ID_0).into(), T::NftItemId::from(0u32).into()), Some(caller2));
     }

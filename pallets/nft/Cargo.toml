@@ -13,6 +13,7 @@ repository = "https://github.com/Fair-Squares/fair-squares"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+enum-iterator = "1.2.0"
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
