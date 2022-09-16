@@ -34,7 +34,7 @@ pub struct Asset<T: Config> {
 	/// NFT infos
 	pub(super) infos: ItemInfoOf<T>,
 	/// NFT Price
-	pub(super) price: Option<BalanceOf<T>>,
+	pub price: Option<BalanceOf<T>>,
 }
 
 impl<T: Config> Asset<T> {
