@@ -154,10 +154,12 @@ fn transfer_works() {
 			metadata
 		));
 
+		let origin: Origin= frame_system::RawOrigin::Root.into();
+
 		// not existing
 		assert_noop!(
 			NFTPallet::transfer(
-				Origin::signed(CHARLIE),
+				origin.clone(),
 				PossibleCollections::APPARTMENTSTEST,
 				ITEM_ID_0,
 				BOB
@@ -165,19 +167,10 @@ fn transfer_works() {
 			Error::<Test>::ItemUnknown
 		);
 
-		// not allowed in Permissions
-		assert_noop!(
-			NFTPallet::transfer(
-				Origin::signed(BOB),
-				PossibleCollections::OFFICESTEST,
-				ITEM_ID_0,
-				DAVE
-			),
-			Error::<Test>::NotPermitted
-		);
-
+		
+		
 		assert_ok!(NFTPallet::transfer(
-			Origin::signed(CHARLIE),
+			origin.clone(),
 			PossibleCollections::HOUSESTEST,
 			ITEM_ID_0,
 			DAVE
@@ -185,7 +178,7 @@ fn transfer_works() {
 		assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), DAVE);
 
 		assert_ok!(NFTPallet::transfer(
-			Origin::signed(EVE),
+			origin.clone(),
 			PossibleCollections::HOUSESTEST,
 			ITEM_ID_0,
 			BOB

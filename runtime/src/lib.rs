@@ -978,7 +978,6 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 			Call::NftModule(_) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::do_buy { .. }) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::reject_edit { .. }) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy { .. }) => false,
 			_ => true,

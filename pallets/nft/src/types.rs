@@ -1,4 +1,5 @@
 pub use super::*;
+use enum_iterator::Sequence;
 pub use frame_support::inherent::Vec;
 use frame_support::pallet_prelude::*;
 #[cfg(feature = "std")]
@@ -8,7 +9,7 @@ pub use scale_info::{prelude::vec, TypeInfo};
 
 /// NFT Collection ID
 pub type CollectionId = u32;
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy,Sequence)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum PossibleCollections {
 	HOUSES,
@@ -32,6 +33,7 @@ impl PossibleCollections {
 			PossibleCollections::NONEXISTING => 3,
 		}
 	}
+
 }
 
 /// NFT Item ID
@@ -54,7 +56,6 @@ pub struct ItemInfo<BoundedVec> {
 pub trait NftPermission<Acc> {
 	fn can_create(created_by: &Acc) -> bool;
 	fn can_mint(created_by: &Acc) -> bool;
-	fn can_transfer(created_by: &Acc) -> bool;
 	fn can_burn(created_by: &Acc) -> bool;
 	fn can_destroy(created_by: &Acc) -> bool;
 	fn has_deposit(created_by: &Acc) -> bool;
@@ -71,10 +72,6 @@ impl NftPermission<Acc> for NftPermissions {
 
 	fn can_mint(created_by: &Acc) -> bool {
 		matches!(*created_by, Acc::SELLER)
-	}
-
-	fn can_transfer(created_by: &Acc) -> bool {
-		matches!(*created_by, Acc::SERVICER)
 	}
 
 	fn can_burn(created_by: &Acc) -> bool {
