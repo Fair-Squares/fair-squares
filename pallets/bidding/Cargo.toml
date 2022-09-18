@@ -22,9 +22,16 @@ frame-system = { default-features = false, version = "4.0.0-dev", git = "https:/
 frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26", optional = true }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
+pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
+pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-onboarding = { default-features = false, path="../onboarding" }
 pallet-nft = { default-features = false, path="../nft" }
+pallet-roles = { default-features = false, path="../roles" }
+pallet-voting = { default-features = false, path = "../voting" }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
@@ -43,9 +50,16 @@ std = [
 	"frame-system/std",
 	"frame-benchmarking/std",
 	"pallet-balances/std",
+	"pallet-uniques/std",
+	"pallet-collective/std",
+	"pallet-democracy/std",
+	"pallet-scheduler/std",
+	"pallet-sudo/std",
 	"pallet-housing_fund/std",
 	"pallet-onboarding/std",
 	"pallet-nft/std",
+	"pallet-roles/std",
+	"pallet-voting/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]

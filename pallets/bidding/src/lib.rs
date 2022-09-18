@@ -176,7 +176,8 @@ impl<T: Config> Pallet<T> {
 
 			// Checki that the investor list creation was successful
 			if investors_shares.len() == 0 {
-				let block = <frame_system::Pallet<T>>::block_number();
+				let block = <frame_system::Pallet<T>>
+				::block_number();
 				Self::deposit_event(Event::FailedToAssembleInvestor(
 					item.0.clone(), item.1.clone(), amount.clone(), block,
 				));
@@ -279,6 +280,7 @@ impl<T: Config> Pallet<T> {
 		
 	}
 
+	/// Get the oldest contribution which accountId is not present in the ordered_list
 	fn get_oldest_contribution(
 		ordered_list: Vec<Housing_Fund::AccountIdOf<T>>, 
 		contributions: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>)>
@@ -294,6 +296,7 @@ impl<T: Config> Pallet<T> {
 		min
 	}
 
+	// Get the share of the house price from a given contribution
 	fn get_investor_share(
 		amount: Housing_Fund::BalanceOf<T>, 
 		contribution: Housing_Fund::Contribution<T>
