@@ -17,7 +17,7 @@ pub use serde::{Deserialize, Serialize};
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 
 
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Ownership<T:Config> {
@@ -26,7 +26,9 @@ pub struct Ownership<T:Config> {
 	/// NFT owners accounts list
 	pub owners: Vec<T::AccountId>,
 	///Creation Blocknumber
-	pub created: BlockNumberOf<T> 
+	pub created: BlockNumberOf<T>,
+	///TokenId
+	pub token_id: <T as pallet::Config>::AssetId,
 }
 
 impl<T: Config> Ownership<T> {
@@ -37,7 +39,9 @@ impl<T: Config> Ownership<T> {
 	) -> DispatchResult {
 		let owners = Vec::new();
 		let created = <frame_system::Pallet<T>>::block_number();
-		let ownership = Ownership::<T>{ virtual_account,owners,created};
+		let token_id:<T as pallet::Config>::AssetId = TokenId::<T>::get().into();
+		let ownership = Ownership::<T>{ virtual_account,owners,created,token_id};
+				
 		Virtual::<T>::insert(collection,item,ownership);
 
 		Ok(())		

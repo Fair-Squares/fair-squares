@@ -306,6 +306,7 @@ impl pallet_assets::Config for Test {
 impl pallet_share_distributor::Config for Test{
 	type Event = Event;
 	type Currency = Balances;
+	type AssetId = u128;
 }
 
 parameter_types! {

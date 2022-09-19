@@ -1034,6 +1034,7 @@ impl pallet_assets::Config for Runtime {
 impl pallet_share_distributor::Config for Runtime{
 	type Event = Event;
 	type Currency = Balances;
+	type AssetId = u32;
 }
 impl pallet_utility::Config for Runtime {
 	type Event = Event;
