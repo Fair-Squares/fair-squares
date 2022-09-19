@@ -37,7 +37,12 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + Assets::Config + Roles::Config + Nft::Config + Onboarding::Config + HousingFund::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type Currency: ReservableCurrency<Self::AccountId>;
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+		type AssetId: IsType<<Self as Assets::Config>::AssetId>
+            + Parameter
+            + From<u32>
+            + Ord
+            + Copy;
 	}
 
 
@@ -45,7 +50,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn virtual_acc)]
 	/// Stores Virtual accounts
-	pub(super) type Virtual<T: Config> = StorageDoubleMap<
+	pub type Virtual<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		T::NftCollectionId,
@@ -55,6 +60,16 @@ pub mod pallet {
 		OptionQuery,
 	>;
 	
+	#[pallet::type_value]
+	///Initializing Token id to value 1
+	pub fn InitDefault<T:Config>() -> u32{
+		0
+	}
+
+	#[pallet::storage]
+	#[pallet::getter(fn token_id)]
+	/// Stores Ownership Tokens id number
+	pub type TokenId<T: Config> = StorageValue<_,u32,ValueQuery,InitDefault<T>>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -100,6 +115,12 @@ pub mod pallet {
 
 			// execute NFT transaction
 			Self::nft_transaction(collection_id.clone(),item_id.clone(),account.clone()).ok();
+
+			//Create new token class
+			//Self::create_tokens(origin,account.clone()).ok();
+			
+			//distribute tokens
+
 
 			// Emit an event.
 			let created = <frame_system::Pallet<T>>::block_number();

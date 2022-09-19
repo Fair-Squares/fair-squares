@@ -40,4 +40,58 @@ pub fn nft_transaction(collection_id: T::NftCollectionId, item_id: T::NftItemId,
 Ok(())
 
 }
+
+pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> Vec<(T::AccountId, f64)>{
+
+    //Get owners and their reserved contribution to the bid
+    let infos = HousingFund::Reservations::<T>::get((collection_id,item_id)).unwrap();
+    let vec0 = infos.contributions;
+    let price = infos.amount;
+    let mut vec = Vec::new() ;
+    for i in vec0.iter(){
+        let float0 = Self::balance_to_float_option(price).unwrap();
+        let float1 = Self::balance_to_float_option(i.1.clone()).unwrap();
+        let share = float1/float0;
+        vec.push((i.0.clone(),share));
+
+    }
+    vec
+}
+
+pub fn create_tokens(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult{
+
+    //create token class:
+    let token_id: <T as pallet::Config>::AssetId = TokenId::<T>::get().into();
+    //let token_id: T::AssetId = id.into();
+    let to = T::Lookup::unlookup(account.clone());
+    Assets::Pallet::<T>::force_create(origin.clone(),token_id.clone().into(),to.clone(),true,Self::u64_to_balance_option(1).unwrap()).ok();
+    TokenId::<T>::mutate(|val|{
+        let val0 = val.clone();
+        *val = val0+1;
+    });
+      
+    //Set class metadata
+
+    //mint 100 tokens
+    Assets::Pallet::<T>::mint(origin.clone(),token_id.clone().into(),to,Self::u64_to_balance_option(100).unwrap()).ok();
+    
+
+    Ok(())
+
+}
+
+//pub fn distribute_tokens(collection_id: T::NftCollectionId, item_id: T::NftItemId)
+
+// Conversion of u64 to BalanxceOf<T>
+pub fn u64_to_balance_option(input: u64) -> Option<T::Balance> {
+    input.try_into().ok()
+}
+
+// Conversion of BalanceOf<T> to u32
+pub fn balance_to_float_option(input: HousingFund::BalanceOf<T>) -> Option<f64> {
+    let integer:u64 = input.try_into().ok().unwrap();
+    let float = integer as f64;
+    Some(float)
+}
+
 }
