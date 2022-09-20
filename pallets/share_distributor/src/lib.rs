@@ -43,6 +43,8 @@ pub mod pallet {
             + From<u32>
             + Ord
             + Copy;
+		#[pallet::constant]
+		type Fees: Get<BalanceOf<Self>>;
 	}
 
 
@@ -117,9 +119,10 @@ pub mod pallet {
 			Self::nft_transaction(collection_id.clone(),item_id.clone(),account.clone()).ok();
 
 			//Create new token class
-			//Self::create_tokens(origin,account.clone()).ok();
+			Self::create_tokens(origin,collection_id.clone(),item_id.clone(),account.clone()).ok();
 			
 			//distribute tokens
+			Self::distribute_tokens(account.clone(),collection_id.clone(),item_id.clone()).ok();
 
 
 			// Emit an event.

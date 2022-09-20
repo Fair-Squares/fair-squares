@@ -4,7 +4,7 @@ pub use frame_support::{
 	dispatch::{DispatchResult, EncodeLike},
 	inherent::Vec,
 	pallet_prelude::*,
-	sp_runtime::traits::{AccountIdConversion, Hash, Saturating, StaticLookup, Zero},
+	sp_runtime::{Percent,PerThing,traits::{AccountIdConversion,One, Hash, Saturating, StaticLookup, Zero}},
 	storage::child,
 	traits::{
 		Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency, WithdrawReasons,
@@ -15,6 +15,8 @@ pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 pub use scale_info::{prelude::{vec,format}, TypeInfo};
 pub use serde::{Deserialize, Serialize};
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
+pub type BalanceOf<T> =
+	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]

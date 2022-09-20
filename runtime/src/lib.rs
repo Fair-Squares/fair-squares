@@ -800,7 +800,7 @@ impl pallet_housing_fund::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ProposalFee: u64= 5;
+	pub const ProposalFee: Balance= 50 * DOLLARS;
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
@@ -1030,11 +1030,14 @@ impl pallet_assets::Config for Runtime {
 	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 }
 
-
+parameter_types! {
+	pub const AssetsFees: Balance = 25 * DOLLARS;
+}
 impl pallet_share_distributor::Config for Runtime{
 	type Event = Event;
 	type Currency = Balances;
 	type AssetId = u32;
+	type Fees = AssetsFees;
 }
 impl pallet_utility::Config for Runtime {
 	type Event = Event;
