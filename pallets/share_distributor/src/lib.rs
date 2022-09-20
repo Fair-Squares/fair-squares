@@ -63,7 +63,7 @@ pub mod pallet {
 	>;
 	
 	#[pallet::type_value]
-	///Initializing Token id to value 1
+	///Initializing Token id to value 0
 	pub fn InitDefault<T:Config>() -> u32{
 		0
 	}

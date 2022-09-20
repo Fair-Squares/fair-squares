@@ -116,17 +116,17 @@ pub fn distribute_tokens(account:T::AccountId,collection_id: T::NftCollectionId,
 }
 
 
-// Conversion of u64 to BalanxceOf<T>
+// Conversion of u32 to Balance
 pub fn u32_to_balance_option(input: u32) -> Option<T::Balance> {
     input.try_into().ok()
 }
 
-// Conversion of BalanceOf<T> to u32
+// Conversion of BalanceOf<T> to u64
 pub fn balance_to_u64_option(input: HousingFund::BalanceOf<T>) -> Option<u64> {
     input.try_into().ok()
 }
 
-// Conversion of BalanceOf<T> to u32
+// Conversion of BalanceOf<T> to f64
 pub fn balance_to_float_option(input: HousingFund::BalanceOf<T>) -> Option<f64> {
     let integer:u64 = input.try_into().ok().unwrap();
     let float = integer as f64;
