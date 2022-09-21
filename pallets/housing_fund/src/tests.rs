@@ -470,11 +470,10 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 #[test]
 fn house_bidding_without_enough_in_fund_should_fail() {
 	new_test_ext().execute_with(|| {
-		let account_id: u64 = 1;
 
 		// Try to bid for a house without enough in pot
 		assert_noop!(
-			HousingFundModule::house_bidding(account_id, 1, 1, 60, Vec::new()),
+			HousingFundModule::house_bidding(1, 1, 60, Vec::new()),
 			Error::<Test>::NotEnoughFundForHouse
 		);
 	});
@@ -483,7 +482,6 @@ fn house_bidding_without_enough_in_fund_should_fail() {
 #[test]
 fn house_bidding_with_an_non_contributor_account_should_fail() {
 	new_test_ext().execute_with(|| {
-		let account_id: u64 = 1;
 
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
@@ -494,7 +492,6 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
 		assert_err!(
 			HousingFundModule::house_bidding(
-				account_id,
 				1,
 				2,
 				50,
@@ -508,7 +505,6 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 #[test]
 fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 	new_test_ext().execute_with(|| {
-		let account_id: u64 = 1;
 
 		// Give the investor role to the accounts
 		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
@@ -521,7 +517,6 @@ fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
 		assert_err!(
 			HousingFundModule::house_bidding(
-				account_id,
 				1,
 				1,
 				60,
@@ -545,7 +540,6 @@ fn house_bidding_with_valid_values_should_succeed() {
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(
-			3,
 			1,
 			1,
 			60,
@@ -598,7 +592,6 @@ fn house_bidding_with_valid_values_should_succeed() {
 		assert_eq!(
 			HousingFundModule::reservations((1, 1)),
 			Some(FundOperation {
-				account_id: 3,
 				nft_collection_id: 1,
 				nft_item_id: 1,
 				amount: 60,

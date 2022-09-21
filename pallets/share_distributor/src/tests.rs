@@ -87,7 +87,6 @@ fn virtual0(){
 
 		//Create a FundOperation struct for this asset
 		let fund_op = HousingFund::FundOperation{
-			account_id: new_owner0.clone(),
 			nft_collection_id: coll_id0.clone(),
 			nft_item_id: item_id0.clone(),
 			amount: price.clone(),

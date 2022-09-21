@@ -32,6 +32,7 @@ pub fn virtual_account(collection_id: T::NftCollectionId, item_id: T::NftItemId)
 
     Ok(())
 }
+
 pub fn nft_transaction(collection_id: T::NftCollectionId, item_id: T::NftItemId,virtual_id:T::AccountId) -> DispatchResult {
     
     //Get collection

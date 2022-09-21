@@ -120,8 +120,6 @@ impl<T: Config> Contribution<T> {
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct FundOperation<T: Config> {
-	// Account to which the amount is destinated
-	pub account_id: AccountIdOf<T>,
 	// The house identifier
 	pub nft_collection_id: T::NftCollectionId,
 	pub nft_item_id: T::NftItemId,
