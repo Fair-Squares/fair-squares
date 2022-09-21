@@ -69,14 +69,22 @@ fn virtual0(){
 
 		//Change first asset status to FINALISED
 		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::OFFICESTEST,item_id0.clone(),Onboarding::AssetStatus::FINALISED).ok();		
+
 		//Store initial owner
 		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0.clone(),item_id0.clone()).unwrap();
+
 		//Execute virtual account transactions 
-		assert_ok!(ShareDistributor::create_virtual(origin.clone(),coll_id0.clone(),item_id0.clone()));
+		assert_ok!(ShareDistributor::virtual_account(coll_id0.clone(),item_id0.clone()));
+		
 		//Store new owner
-		let new_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0.clone(),item_id0.clone()).unwrap();
+		let new_owner0 = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().virtual_account;
+
+		//Execute nft transaction
+		assert_ok!(ShareDistributor::nft_transaction(coll_id0.clone(),item_id0.clone(),new_owner0.clone()));
+
 		//Compare new & old owner
 		assert_ne!(old_owner0.clone(),new_owner0.clone());
+
 		//Create a FundOperation struct for this asset
 		let fund_op = HousingFund::FundOperation{
 			account_id: new_owner0.clone(),
@@ -126,10 +134,16 @@ fn virtual0(){
 
 		//Change first asset status to FINALISED
 		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::APPARTMENTSTEST,item_id1.clone(),Onboarding::AssetStatus::FINALISED).ok();
+
 		//Execute virtual account transactions 
-		assert_ok!(ShareDistributor::create_virtual(origin,coll_id1,item_id1));
+		assert_ok!(ShareDistributor::virtual_account(coll_id1,item_id1));
+
 		//Store new owner
-		let new_owner1 = pallet_nft::Pallet::<Test>::owner(coll_id1.clone(),item_id1.clone()).unwrap();
+		let new_owner1 = ShareDistributor::virtual_acc(coll_id1.clone(),item_id1.clone()).unwrap().virtual_account;
+
+		//Execute nft transaction
+		assert_ok!(ShareDistributor::nft_transaction(coll_id1.clone(),item_id1.clone(),new_owner1.clone()));
+
 		//Compare new & old owner
 		assert_ne!(old_owner1.clone(),new_owner1.clone());
 
