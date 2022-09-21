@@ -6,6 +6,7 @@ pub use pallet_assets as Assets;
 pub use pallet_nft as Nft;
 pub use pallet_roles as Roles;
 pub use pallet_onboarding as Onboarding;
+pub use pallet_housing_fund as HousingFund;
 
 mod functions;
 mod types;
@@ -33,7 +34,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Assets::Config + Roles::Config + Nft::Config + Onboarding::Config{
+	pub trait Config: frame_system::Config + Assets::Config + Roles::Config + Nft::Config + Onboarding::Config + HousingFund::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: ReservableCurrency<Self::AccountId>;
@@ -64,7 +65,14 @@ pub mod pallet {
 			account: T::AccountId,
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
+			when: BlockNumberOf<T>
 		},
+		NftTransactionExecuted{
+			nft_transfer_to: T::AccountId,
+			nft_transfer_from: T::AccountId,
+			when: BlockNumberOf<T>
+		}
+
 	}
 
 
@@ -84,19 +92,32 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
 		pub fn create_virtual(origin: OriginFor<T>, collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
 			
-			let _caller = ensure_root(origin);
-			
+			let _caller = ensure_root(origin.clone());
+			let seller: T::AccountId = Nft::Pallet::<T>::owner(collection_id.clone(),item_id.clone()).unwrap();
 
 			// Create virtual account
 			Self::virtual_account(collection_id.clone(),item_id.clone()).ok();
 			let account = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().virtual_account;
 
+			// execute NFT transaction
+			Self::nft_transaction(collection_id.clone(),item_id.clone(),account.clone()).ok();
+
 			// Emit an event.
+			let created = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::VirtualCreated{
-				account: account,
-				collection: collection_id,
-				item: item_id,
+				account: account.clone(),
+				collection: collection_id.clone(),
+				item: item_id.clone(),
+				when: created.clone(),
+			});			
+
+			//Emit another event
+			Self::deposit_event(Event::NftTransactionExecuted{
+				nft_transfer_to: account,
+				nft_transfer_from: seller,
+				when: created
 			});
+
 			Ok(())
 		}
 

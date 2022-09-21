@@ -42,7 +42,7 @@ use frame_support::{
 	traits::{tokens::nonfungibles::*, Get},
 	transactional, BoundedVec,
 };
-use frame_system::ensure_signed;
+use frame_system::{ensure_signed,ensure_root};
 use pallet_uniques::DestroyWitness;
 
 pub use functions::*;
@@ -237,7 +237,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Triggered by a servicer(`origin`), this transfers NFT from owner account to `dest` account
+		/// Triggered by Root(`origin`), this transfers NFT from owner account to `dest` account
 		///
 		/// Parameters:
 		/// - `collection_id`: The Collection of the asset to be transferred.
@@ -251,10 +251,8 @@ pub mod pallet {
 			item_id: T::NftItemId,
 			dest: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
-			//the transaction is triggered by a servicer
-			let sender = ensure_signed(origin)?;
-			let triggered_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
-			ensure!(T::Permissions::can_transfer(&triggered_by), Error::<T>::NotPermitted);
+			//the transaction is triggered by Root
+			ensure_root(origin)?;
 
 			//Nft transfered from old to new owner
 			let coll_id: CollectionId = collection_id.value();

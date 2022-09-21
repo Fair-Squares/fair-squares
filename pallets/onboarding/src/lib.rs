@@ -133,7 +133,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn houses)]
 	/// Stores Asset info
-	pub(super) type Houses<T: Config> = StorageDoubleMap<
+	pub type Houses<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		T::NftCollectionId,
@@ -319,65 +319,6 @@ pub mod pallet {
 				item: item_id.clone(),
 				price: new_price,
 			});
-
-			Ok(())
-		}
-
-		///Execute the buy/sell transaction
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn do_buy(
-			origin: OriginFor<T>,
-			collection: NftCollectionOf,
-			item_id: T::NftItemId,
-			buyer: T::AccountId,
-			_infos: Asset<T>,
-		) -> DispatchResult {
-			let _caller = ensure_signed(origin.clone()).unwrap();
-			let collection_id: T::NftCollectionId = collection.clone().value().into();
-
-			//Check that the house item exists and has the correct status
-			ensure!(
-				Houses::<T>::contains_key(collection_id.clone(), item_id.clone()),
-				Error::<T>::CollectionOrItemUnknown
-			);
-			let asset = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
-			let status = asset.status;
-			ensure!(status == AssetStatus::FINALISED, Error::<T>::VoteNedeed);
-
-			//Check that the owner is not the buyer
-			let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone())
-				.ok_or(Error::<T>::CollectionOrItemUnknown)?;
-			ensure!(buyer != owner.clone(), Error::<T>::BuyFromSelf);
-			let balance = <T as Config>::Currency::reserved_balance(&owner);
-			let _returned = <T as Config>::Currency::unreserve(&owner, balance);
-
-			//Transfer funds from HousingFund to owner
-			let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
-			let fund_id = T::PalletId::get().into_account_truncating();
-			<T as Config>::Currency::transfer(
-				&fund_id,
-				&owner,
-				price,
-				ExistenceRequirement::KeepAlive,
-			)?;
-			let to = T::Lookup::unlookup(buyer.clone());
-			Nft::Pallet::<T>::transfer(origin.clone(), collection, item_id.clone(), to)?;
-			Self::deposit_event(Event::TokenSold {
-				owner,
-				buyer,
-				collection: collection_id.clone(),
-				item: item_id.clone(),
-				price,
-			});
-
-			//change status
-			Self::change_status(
-				origin.clone(),
-				collection.clone(),
-				item_id.clone(),
-				AssetStatus::PURCHASED,
-			)
-			.ok();
 
 			Ok(())
 		}

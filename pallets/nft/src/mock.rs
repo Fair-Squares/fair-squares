@@ -54,10 +54,6 @@ impl NftPermission<Acc> for NftTestPermissions {
 		matches!(*created_by, Acc::SELLER)
 	}
 
-	fn can_transfer(created_by: &Acc) -> bool {
-		matches!(*created_by, Acc::SERVICER)
-	}
-
 	fn can_burn(created_by: &Acc) -> bool {
 		matches!(*created_by, Acc::SERVICER)
 	}

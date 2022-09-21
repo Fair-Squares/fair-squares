@@ -93,7 +93,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn reservations)]
 	// Housing fund reservations
-	pub(super) type Reservations<T> =
+	pub type Reservations<T> =
 		StorageMap<_, Blake2_128Concat, (NftCollectionId<T>, NftItemId<T>), FundOperation<T>, OptionQuery>;
 
 	#[pallet::storage]
@@ -227,7 +227,7 @@ pub mod pallet {
 			// The amount is transferred to the treasurery
 			T::LocalCurrency::transfer(
 				&who,
-				&T::PalletId::get().into_account_truncating(),
+				&Pallet::<T>::fund_account_id(),
 				amount,
 				ExistenceRequirement::AllowDeath,
 			)?;
@@ -308,7 +308,7 @@ pub mod pallet {
 
 			// The amount is transferred from the treasury to the account
 			T::LocalCurrency::transfer(
-				&T::PalletId::get().into_account_truncating(),
+				&Pallet::<T>::fund_account_id(),
 				&who,
 				amount,
 				ExistenceRequirement::AllowDeath,
