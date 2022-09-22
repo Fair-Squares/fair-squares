@@ -1,5 +1,28 @@
-#![cfg_attr(not(feature = "std"), no_std)]
+//! # Share_Distributor Pallet
+//!
+//! The Share_Distributor Pallet is called by the Bidding Pallet
+//! after a Finalised bid was identified on-chain.
+//! It will distribute to the asset new owners, the ownership nft, and the ownership token
+//! connected to the asset at the center of the transaction.
+//! 
+//! ## Overview
+//! 
+//! The On boarding Pallet fulfill the following tasks:
+//! - Create a virtual account which will hold the nft
+//! - Connect the Virtual account to the new owners/contributors
+//! through the use of a storage/struct
+//! - Execute the Nft transaction between Seller and Virtual account
+//! - Mint 100 Ownership Tokens, which represent the asset share of 
+//! each owner
+//! - Distribute the ownership tokens to the new owners.
+//! 
+//! Dispatchable Functions
+//! 
+//! * `create_virtual` - Will sequencially execute each of the steps 
+//! described in the Overview.
 
+
+#![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
 pub use pallet_assets as Assets;
@@ -88,6 +111,11 @@ pub mod pallet {
 			nft_transfer_to: T::AccountId,
 			nft_transfer_from: T::AccountId,
 			when: BlockNumberOf<T>
+		},
+		OwnershipTokensDistributed{
+			from: T::AccountId,
+			to: Vec<T::AccountId>,
+			token_id:<T as pallet::Config>::AssetId,
 		}
 
 	}
@@ -127,7 +155,7 @@ pub mod pallet {
 			Self::distribute_tokens(account.clone(),collection_id.clone(),item_id.clone()).ok();
 
 
-			// Emit an event.
+			// Emit some events.
 			let created = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::VirtualCreated{
 				account: account.clone(),
@@ -136,11 +164,18 @@ pub mod pallet {
 				when: created.clone(),
 			});			
 
-			//Emit another event
 			Self::deposit_event(Event::NftTransactionExecuted{
-				nft_transfer_to: account,
-				nft_transfer_from: seller,
+				nft_transfer_to: account.clone(),
+				nft_transfer_from: seller.clone(),
 				when: created
+			});
+
+			let new_owners = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().owners;
+			let token_id = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().token_id;
+			Self::deposit_event(Event::OwnershipTokensDistributed{
+				from: account.clone(),
+				to: new_owners,
+				token_id: token_id,
 			});
 
 			Ok(())

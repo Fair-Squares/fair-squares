@@ -7,6 +7,8 @@ use super::*;
 use enum_iterator::all;
 
 impl<T: Config> Pallet<T> {
+
+///The function below create a virtual account from the NFT collection and item id's
 pub fn virtual_account(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
     //Create virtual account
     let text0 = format!("{:?}_{:?}_account",collection_id,item_id.clone());
@@ -33,6 +35,7 @@ pub fn virtual_account(collection_id: T::NftCollectionId, item_id: T::NftItemId)
     Ok(())
 }
 
+///This function executes all actions relatives to nft transfer from the seller to the virtual account
 pub fn nft_transaction(collection_id: T::NftCollectionId, item_id: T::NftItemId,virtual_id:T::AccountId) -> DispatchResult {
     
     //Get collection
@@ -52,6 +55,7 @@ Ok(())
 
 }
 
+///Collect contributors to the bid, and their shares
 pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> Vec<(T::AccountId, Percent)>{
 
     //Get owners and their reserved contribution to the bid
@@ -66,23 +70,31 @@ pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId
         let share = Percent::from_rational(contribution,price0);
         debug_assert!(!share.is_zero()); 
         vec.push((i.0.clone(),share));
+        //Update Virtual_account storage
+        Virtual::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
+            let mut val0 = val.clone().unwrap();
+            val0.owners.push(i.0.clone());
+            *val = Some(val0);
+
+        }); 
 
     }
     vec
 }
 
 
-
+///Create 100 Ownership tokens owned by a virtual account
 pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, item_id: T::NftItemId,account: T::AccountId) -> DispatchResult{
 
     //Get token class Id:    
+    ensure!(Virtual::<T>::get(collection_id,item_id).is_some(),Error::<T>::InvalidValue);
+    let token_id = Virtual::<T>::get(collection_id,item_id).unwrap().token_id;
     let to = T::Lookup::unlookup(account.clone());    
     TokenId::<T>::mutate(|val|{
         let val0 = val.clone();
         *val = val0+1;
     });
-    ensure!(Virtual::<T>::get(collection_id,item_id).is_some(),Error::<T>::InvalidValue);
-    let token_id = Virtual::<T>::get(collection_id,item_id).unwrap().token_id;
+    
     
     //Create token class
     let res = Assets::Pallet::<T>::force_create(origin.clone(),token_id.clone().into(),to.clone(),false,One::one());
@@ -99,6 +111,7 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
 
 }
 
+///Distribute the ownership tokens to the group of new owners
 pub fn distribute_tokens(account:T::AccountId,collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult{
     let shares = Self::owner_and_shares(collection_id.clone(),item_id.clone());  
     ensure!(Virtual::<T>::get(collection_id,item_id).is_some(),Error::<T>::InvalidValue);  
