@@ -199,20 +199,17 @@ pub mod pallet {
 				Contributions::<T>::insert(&who, contribution);
 			} else {
 				Contributions::<T>::mutate(&who, |val| {
-					let unwrap_val = val.clone().unwrap();
-					let mut contribution_logs = unwrap_val.contributions.clone();
+					let old_contrib = val.clone().unwrap();
+					let mut contribution_logs = old_contrib.contributions.clone();
 					// update the contributions history
 					contribution_logs.push(contribution_log.clone());
 
 					let new_contrib = Contribution {
 						account_id: who.clone(),
-						available_balance: unwrap_val.available_balance + amount,
-						reserved_balance: unwrap_val.reserved_balance,
-						contributed_balance: unwrap_val.contributed_balance,
-						has_withdrawn: unwrap_val.has_withdrawn,
+						available_balance: old_contrib.available_balance + amount,
 						block_number,
 						contributions: contribution_logs,
-						withdraws: Vec::new(),
+						..old_contrib
 					};
 					*val = Some(new_contrib);
 				});
@@ -281,21 +278,17 @@ pub mod pallet {
 			let withdraw_log = ContributionLog { amount, block_number };
 
 			Contributions::<T>::mutate(&who, |val| {
-				let unwrap_val = val.clone().unwrap();
-				let contribution_logs = unwrap_val.contributions.clone();
-				let mut withdraw_logs = unwrap_val.withdraws.clone();
+				let old_contrib = val.clone().unwrap();
+				let mut withdraw_logs = old_contrib.withdraws.clone();
 				// update the withdraws history
 				withdraw_logs.push(withdraw_log.clone());
 
 				let new_contrib = Contribution {
-					account_id: who.clone(),
-					available_balance: unwrap_val.available_balance - amount,
-					reserved_balance: unwrap_val.reserved_balance,
-					contributed_balance: unwrap_val.contributed_balance,
+					available_balance: old_contrib.available_balance - amount,
 					has_withdrawn: true,
 					block_number,
-					contributions: contribution_logs,
 					withdraws: withdraw_logs.clone(),
+					..old_contrib
 				};
 				*val = Some(new_contrib);
 			});
