@@ -125,6 +125,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Not a value.
 		NoneValue,
+		/// Ivalid parameter
+		InvalidValue,
 		/// This action is reserved to Accounts holding the SERVICER role.
 		ReservedToServicer,
 	}
@@ -139,7 +141,6 @@ pub mod pallet {
 			
 			let _caller = ensure_root(origin.clone());
 			let seller: T::AccountId = Nft::Pallet::<T>::owner(collection_id.clone(),item_id.clone()).unwrap();
-
 			// Create virtual account
 			Self::virtual_account(collection_id.clone(),item_id.clone()).ok();
 			let account = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().virtual_account;

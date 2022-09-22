@@ -59,9 +59,10 @@ Ok(())
 pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> Vec<(T::AccountId, Percent)>{
 
     //Get owners and their reserved contribution to the bid
-    let infos = HousingFund::Reservations::<T>::get((collection_id.clone(),item_id.clone())).unwrap();
-    let vec0 = infos.contributions;
-    let price = infos.amount;
+    
+    let reservation_infos = HousingFund::Reservations::<T>::get((collection_id.clone(),item_id.clone())).unwrap();
+    let vec0 = reservation_infos.contributions;
+    let price = reservation_infos.amount;
     let mut vec = Vec::new() ;
     for i in vec0.iter(){
         let price0 = Self::balance_to_u64_option(price).unwrap();
@@ -86,6 +87,7 @@ pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId
 pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, item_id: T::NftItemId,account: T::AccountId) -> DispatchResult{
 
     //Get token class Id:    
+    ensure!(Virtual::<T>::get(collection_id,item_id).is_some(),Error::<T>::InvalidValue);
     let token_id = Virtual::<T>::get(collection_id,item_id).unwrap().token_id;
     let to = T::Lookup::unlookup(account.clone());    
     TokenId::<T>::mutate(|val|{
@@ -111,18 +113,19 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
 
 ///Distribute the ownership tokens to the group of new owners
 pub fn distribute_tokens(account:T::AccountId,collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult{
-    let shares = Self::owner_and_shares(collection_id.clone(),item_id.clone());    
+    let shares = Self::owner_and_shares(collection_id.clone(),item_id.clone());  
+    ensure!(Virtual::<T>::get(collection_id,item_id).is_some(),Error::<T>::InvalidValue);  
     let token_id = Virtual::<T>::get(collection_id,item_id).unwrap().token_id;
     let total_tokens = Assets::Pallet::<T>::total_supply(token_id.into());
     debug_assert!(total_tokens == Self::u32_to_balance_option(100).unwrap());
     
     let from = T::Lookup::unlookup(account.clone());
     let origin:OriginFor<T> = RawOrigin::Signed(account.clone()).into();
-    for i in shares.iter(){
-
-        let amount:<T as Assets::Config>::Balance = i.clone().1* total_tokens.clone();        
+    
+    for share in shares.iter(){
+        let amount:<T as Assets::Config>::Balance = share.clone().1* total_tokens.clone();        
         debug_assert!(!amount.clone().is_zero());
-        let to = T::Lookup::unlookup(i.clone().0);
+        let to = T::Lookup::unlookup(share.clone().0);
         Assets::Pallet::<T>::force_transfer(origin.clone(),token_id.clone().into(),from.clone(),to,amount).ok();
     }
 
