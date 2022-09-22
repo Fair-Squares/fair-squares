@@ -1171,7 +1171,6 @@ mod benches {
 		[pallet_im_online, ImOnline]
 		[pallet_utility, Utility]
 		//[pallet_voting, VotingModule]
-		[pallet_bidding, BiddingModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -1411,7 +1410,6 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_share_distributor, ShareDistributor);
 			add_benchmark!(params, batches, pallet_utility, Utility);
 			//add_benchmark!(params, batches, pallet_voting, VotingModule);
-			add_benchmark!(params, batches, pallet_bidding, BiddingModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
