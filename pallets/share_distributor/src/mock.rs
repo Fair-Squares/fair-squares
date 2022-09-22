@@ -287,8 +287,8 @@ parameter_types! {
 
 impl pallet_assets::Config for Test {
 	type Event = Event;
-	type Balance = u128;
-	type AssetId = u128;
+	type Balance = u32;
+	type AssetId = u32;
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
 	type AssetDeposit = AssetDeposit;
@@ -302,10 +302,14 @@ impl pallet_assets::Config for Test {
 	type WeightInfo = ();
 }
 
-
+parameter_types! {
+	pub const AssetsFees: Balance = 15000;
+}
 impl pallet_share_distributor::Config for Test{
 	type Event = Event;
 	type Currency = Balances;
+	type AssetId = u32;
+	type Fees = AssetsFees;
 }
 
 parameter_types! {
