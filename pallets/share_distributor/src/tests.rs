@@ -3,6 +3,8 @@ pub use crate::mock::*;
 pub use frame_support::{assert_noop, assert_ok};
 use frame_system::pallet_prelude::OriginFor;
 
+pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
+
 pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(CHARLIE).clone(), CHARLIE, Acc::SERVICER).ok();
 	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
@@ -19,21 +21,11 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
 }
 
-#[test]
-fn virtual0(){
-	ExtBuilder::default().build().execute_with(|| {
-		let metadata0: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
-		b"metadata0".to_vec().try_into().unwrap();
-	let metadata1: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
-		b"metadata1".to_vec().try_into().unwrap();
-	let metadata2: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
-		b"metadata2".to_vec().try_into().unwrap();
+pub fn prep_test(price1:u64,price2:u64, metadata0:Bvec<Test>,metadata1:Bvec<Test>,metadata2:Bvec<Test>){
+	
 	prep_roles();
 
-	//put some funds in FairSquare SlashFees account
-	let fees_account = Onboarding::Pallet::<Test>::account_id();
-	<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account,150_000u32.into());
-
+	
 	//Dave and EVE contribute to the fund
 	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(DAVE),50_000));
 	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(EVE),50_000));
@@ -51,17 +43,40 @@ fn virtual0(){
 		metadata0
 	));
 	// Bob creates a proposal without submiting for review
-	let price = 40_000;
+	
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
 		Origin::signed(BOB),
 		NftColl::OFFICESTEST,
-		Some(price.clone()),
+		Some(price1.clone()),
 		metadata1,
 		false
 	));
 
-	
+	assert_ok!(OnboardingModule::create_and_submit_proposal(
+		Origin::signed(BOB),
+		NftColl::APPARTMENTSTEST,
+		Some(price2.clone()),
+		metadata2,
+		false
+	));
 
+}
+
+
+#[test]
+fn share_distributor0(){
+	ExtBuilder::default().build().execute_with(|| {	
+		
+		let metadata0 = b"metadata0".to_vec().try_into().unwrap();
+		let metadata1 = b"metadata1".to_vec().try_into().unwrap();
+		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
+		//put some funds in FairSquare SlashFees account
+		let fees_account = Onboarding::Pallet::<Test>::account_id();
+		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account,150_000u32.into());
+
+		let price1 = 40_000;
+		let price2 = 30_000;
+		prep_test(price1.clone(),price2.clone(),metadata0,metadata1,metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
@@ -89,7 +104,7 @@ fn virtual0(){
 		let fund_op = HousingFund::FundOperation{
 			nft_collection_id: coll_id0.clone(),
 			nft_item_id: item_id0.clone(),
-			amount: price.clone(),
+			amount: price1.clone(),
 			block_number:1,
 			contributions:vec![(EVE,25_000),(DAVE,15_000)],
 		};
@@ -100,6 +115,7 @@ fn virtual0(){
 		//Create token				
 		assert_ok!(ShareDistributor::create_tokens(origin.clone(),coll_id0.clone(),item_id0.clone(),new_owner0.clone()));		
 		assert_eq!(1,ShareDistributor::token_id());
+		assert_eq!(0,ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().token_id);
 		assert_eq!(100,Assets::Pallet::<Test>::total_supply(id.clone()));
 		
 		//Check that new_owner0 is in possession of 100 tokens		
@@ -114,15 +130,8 @@ fn virtual0(){
 		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}",balance0,balance1);
 
 		// Bob creates a second proposal without submiting for review
-	let price = 30_000;
 	
-	assert_ok!(OnboardingModule::create_and_submit_proposal(
-		Origin::signed(BOB),
-		NftColl::APPARTMENTSTEST,
-		Some(price.clone()),
-		metadata2,
-		false
-	));
+	
 
 	
 		let coll_id1 = NftColl::APPARTMENTSTEST.value();
@@ -160,4 +169,65 @@ fn virtual0(){
 
 
 	});
+}
+
+#[test]
+fn share_distributor1(){
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata0 = b"metadata0".to_vec().try_into().unwrap();
+		let metadata1 = b"metadata1".to_vec().try_into().unwrap();
+		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
+		//put some funds in FairSquare SlashFees account
+		let fees_account = Onboarding::Pallet::<Test>::account_id();
+		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account,150_000u32.into());
+
+		let price1 = 40_000;
+		let price2 = 30_000;
+		prep_test(price1.clone(),price2.clone(),metadata0,metadata1,metadata2);
+		let coll_id0 = NftColl::OFFICESTEST.value();
+		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
+		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
+		let origin2 = Origin::signed(BOB);
+
+		//Create a FundOperation struct for this asset
+		let fund_op = HousingFund::FundOperation{
+			nft_collection_id: coll_id0.clone(),
+			nft_item_id: item_id0.clone(),
+			amount: price1.clone(),
+			block_number:1,
+			contributions:vec![(EVE,25_000),(DAVE,15_000)],
+		};
+
+		//Add new owners and asset to housing fund
+		HousingFund::Reservations::<Test>::insert((coll_id0.clone(),item_id0.clone()),fund_op);
+
+		//Change first asset status to FINALISED
+		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::OFFICESTEST,item_id0.clone(),Onboarding::AssetStatus::FINALISED).ok();		
+
+		//Store initial owner
+		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0.clone(),item_id0.clone()).unwrap();
+
+		assert_ok!(ShareDistributor::create_virtual(origin.clone(),coll_id0.clone(),item_id0.clone()));
+		let when = <frame_system::Pallet<Test>>::block_number();
+		let new_owner0 = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().virtual_account;
+		let owners = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().owners;
+		assert_eq!(owners.len()>1,true);
+		expect_events(vec![
+			crate::Event::VirtualCreated {
+				account: new_owner0.clone(),
+				collection: coll_id0.clone(),
+				item: item_id0.clone(),
+				when: when,
+			}
+			.into(),
+			crate::Event::NftTransactionExecuted {
+				nft_transfer_to: new_owner0.clone(),
+				nft_transfer_from: old_owner0.clone(),
+				when: when,
+			}
+			.into()
+		]);
+
+
+	})
 }
