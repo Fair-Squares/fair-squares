@@ -23,6 +23,7 @@ type Block = frame_system::mocking::MockBlock<Test>;
 pub(crate) type Balance = u128;
 pub type CollectionId = u32;
 pub type ItemId = u32;
+pub type NftCollection = pallet_nft::PossibleCollections;
 type AccountId = u64;
 pub type MaxProposals = u32;
 pub type BlockNumber = u64;
@@ -309,6 +310,8 @@ pub const BOB: u64 = 2;
 pub const CHARLIE: u64 = 3;
 pub const DAVE: u64 = 4;
 pub const EVE: u64 = 5;
+pub const AMANI: u64 = 6;
+pub const KEZIA: u64 = 7;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
@@ -321,6 +324,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 			(CHARLIE, 200_000_000),
 			(DAVE, 150_000),
 			(EVE, 150_000),
+			(AMANI, 150_000),
+			(KEZIA, 150_000),
 		],
 	}
 	.assimilate_storage(&mut storage)
