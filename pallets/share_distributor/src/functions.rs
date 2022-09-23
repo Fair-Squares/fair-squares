@@ -101,6 +101,10 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
     debug_assert!(res.is_ok());  
     
     //Set class metadata
+    let token_name = format!("FairOwner_nbr{:?}",token_id.clone()).as_bytes().to_vec().try_into().unwrap();
+    let token_symbol = format!("FO{:?}",token_id.clone()).as_bytes().to_vec().try_into().unwrap();
+    let decimals = 18;
+    Assets::Pallet::<T>::force_set_metadata(origin.clone(),token_id.clone().into(),token_name,token_symbol,decimals,false).ok();
 
     //mint 100 tokens
     let res0 = Assets::Pallet::<T>::mint(RawOrigin::Signed(account.clone()).into(),token_id.clone().into(),to,Self::u32_to_balance_option(100).unwrap());
