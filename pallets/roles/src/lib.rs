@@ -108,14 +108,14 @@ pub mod pallet {
 
 	#[pallet::type_value]
 	///Initializing function for the approval waiting list
-	pub(super) fn MyDefault<T: Config>() -> Idle<T> {
+	pub(super) fn InitApprovalList<T: Config>() -> Idle<T> {
 		(Vec::new(), Vec::new())
 	}
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_approvals)]
 	///Approval waiting list for Sellers and Servicers
 	pub(super) type RoleApprovalList<T: Config> =
-		StorageValue<_, Idle<T>, ValueQuery, MyDefault<T>>;
+		StorageValue<_, Idle<T>, ValueQuery, InitApprovalList<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_roles)]
@@ -125,13 +125,13 @@ pub mod pallet {
 
 	#[pallet::type_value]
 	///Initializing function for the total number of members
-	pub(super) fn MyDefault1<T: Config>() -> u32 {
+	pub(super) fn InitTotalMembers<T: Config>() -> u32 {
 		0
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn total_members)]
-	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, MyDefault1<T>>;
+	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, InitTotalMembers<T>>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
@@ -213,42 +213,42 @@ pub mod pallet {
 			if caller != account {
 				ensure!(ServicerLog::<T>::contains_key(&caller), Error::<T>::OnlyForServicers);
 			}
-			Self::check_storage(account.clone())?;
+			Self::check_account_role(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			let count0 = Self::total_members();
+			let members = Self::total_members();
 			match account_type {
 				Accounts::INVESTOR => {
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let investor = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Investor::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
+					Investor::<T>::new(investor).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
-					TotalMembers::<T>::put(count0 + 1);
+					TotalMembers::<T>::put(members + 1);
 					Self::deposit_event(Event::InvestorCreated(now, account));
 				},
 				Accounts::SELLER => {
 					Self::check_role_approval_list(account.clone())?;
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let seller = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					HouseSeller::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
+					HouseSeller::<T>::new(seller).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 				Accounts::TENANT => {
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let tenant = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Tenant::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
+					Tenant::<T>::new(tenant).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
-					TotalMembers::<T>::put(count0 + 1);
+					TotalMembers::<T>::put(members + 1);
 					Self::deposit_event(Event::TenantCreated(now, account));
 				},
 				Accounts::SERVICER => {
 					Self::check_role_approval_list(account.clone())?;
-					let origin0 = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let servicer = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Servicer::<T>::new(origin0).map_err(|_| <Error<T>>::InitializationError)?;
+					Servicer::<T>::new(servicer).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 			}
@@ -264,8 +264,8 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			let count0 = Self::total_members();
-			TotalMembers::<T>::put(count0 + 1);
+			let members = Self::total_members();
+			TotalMembers::<T>::put(members + 1);
 			Self::approve_account(sender, account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
@@ -299,6 +299,7 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
+			ensure!(sender != new0, "The same manager is given");
 			//Remove current Sudo from Servicers list
 			if ServicerLog::<T>::contains_key(sender.clone()) == true {
 				ServicerLog::<T>::remove(sender.clone());
@@ -310,11 +311,7 @@ pub mod pallet {
 				Servicer::<T>::new(new_origin).ok();
 				Self::approve_account(sender, new0.clone()).ok();
 			}
-
-			if new0 != SUDO::Pallet::<T>::key().unwrap() {
-				//Change sudo key owner to new owner
-				SUDO::Pallet::<T>::set_key(origin, new).ok();
-			}
+			SUDO::Pallet::<T>::set_key(origin, new).ok();
 			Ok(())
 		}
 	}
