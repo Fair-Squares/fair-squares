@@ -81,14 +81,14 @@ fn get_investor_share_should_succeed() {
 		};
 
 		assert_eq!(
-			BiddingModule::get_investor_share(amount.clone(), contribution.clone()),
+			BiddingModule::get_investor_share(amount.clone(), contribution.clone()).0,
 			20
 		);
 
 		contribution.reserve_amount(10);
 
 		assert_eq!(
-			BiddingModule::get_investor_share(amount, contribution),
+			BiddingModule::get_investor_share(amount, contribution).0,
 			15
 		);
 	});
@@ -173,6 +173,139 @@ fn create_investor_list_should_succeed() {
 		assert_eq!(investor_list.contains(&(4, 20)), true);
 		assert_eq!(investor_list.contains(&(5, 10)), true);
 		assert_eq!(investor_list.contains(&(6, 10)), true);
+	});
+}
+
+#[test]
+fn create_investor_list_second_case_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let mut block_number = System::block_number();
+		let mut amount = 20;
+
+		for account_id in 1..7 {
+			assert_ok!(RoleModule::set_role(
+				Origin::signed(account_id.clone()),
+				account_id,
+				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
+			));
+
+			if account_id > 3 {
+				amount = 15;
+			}
+			// test contribute with sufficient contribution and free balance
+			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+
+			let contribution = HousingFund::contributions(account_id).unwrap();
+
+			assert_eq!(contribution.block_number, block_number);
+
+			block_number = block_number.saturating_add(1);
+			System::set_block_number(block_number.clone());
+		}
+
+		let investor_list = BiddingModule::create_investor_list(100);
+
+		assert_eq!(investor_list.len(), 6);
+		assert_eq!(investor_list.contains(&(1, 20)), true);
+		assert_eq!(investor_list.contains(&(2, 20)), true);
+		assert_eq!(investor_list.contains(&(3, 20)), true);
+		assert_eq!(investor_list.contains(&(4, 15)), true);
+		assert_eq!(investor_list.contains(&(5, 15)), true);
+		assert_eq!(investor_list.contains(&(6, 10)), true);
+	});
+}
+
+#[test]
+fn create_investor_list_third_case_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let mut block_number = System::block_number();
+		let mut amount = 20;
+
+		for account_id in 1..8 {
+			assert_ok!(RoleModule::set_role(
+				Origin::signed(account_id.clone()),
+				account_id,
+				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
+			));
+
+			if account_id == 2 {
+				amount = 10;
+			} else {
+				amount = 20;
+			}
+
+			// test contribute with sufficient contribution and free balance
+			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+
+			let contribution = HousingFund::contributions(account_id).unwrap();
+
+			assert_eq!(contribution.block_number, block_number);
+
+			block_number = block_number.saturating_add(1);
+			System::set_block_number(block_number.clone());
+		}
+
+		let investor_list = BiddingModule::create_investor_list(100);
+
+		assert_eq!(investor_list, 
+			vec![
+				(1, 20),
+				(2, 10),
+				(3, 20),
+				(4, 20),
+				(5, 10),
+				(6, 10),
+				(7, 10),
+			]
+		);
+	});
+}
+
+#[test]
+fn create_investor_list_fourth_case_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let mut block_number = System::block_number();
+		let mut amount = 20;
+
+		for account_id in 1..8 {
+			assert_ok!(RoleModule::set_role(
+				Origin::signed(account_id.clone()),
+				account_id,
+				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
+			));
+
+			if account_id == 2 {
+				amount = 5;
+			} else {
+				amount = 20;
+			}
+
+			// test contribute with sufficient contribution and free balance
+			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+
+			let contribution = HousingFund::contributions(account_id).unwrap();
+
+			assert_eq!(contribution.block_number, block_number);
+
+			block_number = block_number.saturating_add(1);
+			System::set_block_number(block_number.clone());
+		}
+
+		let investor_list = BiddingModule::create_investor_list(100);
+
+		assert_eq!(investor_list, 
+			vec![
+				(1, 20),
+				(3, 20),
+				(4, 20),
+				(5, 20),
+				(6, 10),
+				(7, 10),
+			]
+		);
 	});
 }
 

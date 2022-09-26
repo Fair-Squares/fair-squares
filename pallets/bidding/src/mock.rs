@@ -312,6 +312,7 @@ pub const DAVE: u64 = 4;
 pub const EVE: u64 = 5;
 pub const AMANI: u64 = 6;
 pub const KEZIA: u64 = 7;
+pub const DAN: u64 = 8;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
@@ -326,6 +327,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 			(EVE, 150_000),
 			(AMANI, 150_000),
 			(KEZIA, 150_000),
+			(DAN, 150_000),
 		],
 	}
 	.assimilate_storage(&mut storage)
