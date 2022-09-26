@@ -591,6 +591,7 @@ pub mod pallet {
 			collection: NftCollectionOf,
 			item_id: T::NftItemId,
 			price: Option<BalanceOf<T>>,
+			data: Option<Nft::BoundedVecOfUnq<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
 			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(),Error::<T>::ReservedToSeller);
@@ -608,6 +609,15 @@ pub mod pallet {
 
 			//Edit asset price
 			let price0 = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
+
+			let data0 = Nft::Pallet::<T>::items(collection_id.clone(),item_id.clone()).unwrap().metadata;
+			let data1 = data.unwrap_or(data0.clone());
+			let collection_owner = Nft::Pallet::<T>::collection_owner(collection_id.clone()).unwrap();
+			if data1.clone() !=data0 {
+
+				let res = Nft::Pallet::<T>::set_metadata(collection_owner, collection_id.clone(), item_id.clone(),data1);
+				debug_assert!(res.is_ok());
+			}
 
 			let mut b = price.unwrap_or(price0);
 			if b == Zero::zero() {

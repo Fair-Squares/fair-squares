@@ -31,7 +31,7 @@ fn create_proposal() {
 		assert_ok!(NftModule::create_collection(
 			Origin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
-			metadata0
+			metadata0.clone(),
 		));
 		// Bob creates a proposal without submiting for review
 		let price = 100_000_000;
@@ -90,7 +90,8 @@ fn create_proposal() {
 			Origin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
-			None
+			None,
+			Some(metadata0.clone()),
 		));
 
 		let house_price = Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().price;
@@ -98,6 +99,7 @@ fn create_proposal() {
 		let status: AssetStatus =
 			Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().status;
 		assert_eq!(status, AssetStatus::REVIEWING);
+		assert_eq!(Nft::Pallet::<Test>::items(coll_id.clone(), item_id.clone()).unwrap().metadata,metadata0);
 		
 	});
 }

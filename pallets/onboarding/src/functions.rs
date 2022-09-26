@@ -57,14 +57,13 @@ impl<T: Config> Pallet<T> {
 		item_id: T::NftItemId,
 		new_price: Option<BalanceOf<T>>,
 	) -> DispatchResult {
-		let sender = ensure_signed(origin)?;
-		let collection_id: T::NftCollectionId = collection.value().into();
+		let sender = ensure_signed(origin.clone())?;
+		let collection_id: T::NftCollectionId = collection.clone().value().into();
 
 		ensure!(
-			pallet_nft::Pallet::<T>::owner(collection_id, item_id) == Some(sender.clone()),
+			pallet_nft::Pallet::<T>::owner(collection_id, item_id.clone()) == Some(sender.clone()),
 			Error::<T>::NotTheTokenOwner
 		);
-
 		Prices::<T>::mutate_exists(collection_id, item_id, |price| *price = new_price);
 
 		Self::deposit_event(Event::TokenPriceUpdated {
@@ -76,6 +75,7 @@ impl<T: Config> Pallet<T> {
 
 		Ok(())
 	}
+
 
 	///Execute the buy/sell transaction
 		

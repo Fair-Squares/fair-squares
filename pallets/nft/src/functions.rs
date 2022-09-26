@@ -1,4 +1,5 @@
 pub use super::*;
+pub use frame_system::{pallet_prelude::OriginFor, RawOrigin};
 
 pub trait CreateTypedCollection<AccountId, CollectionId>: Create<AccountId> {
 	/// This function create an NFT collection of `created_by` type.
@@ -66,6 +67,36 @@ impl<T: Config> Pallet<T> {
 		Items::<T>::insert(collection_id, item_id, ItemInfo { metadata });
 
 		Self::deposit_event(Event::ItemMinted { owner, collection_id, item_id });
+
+		Ok(())
+	}
+
+	pub fn set_metadata(
+		owner: T::AccountId,
+		collection_id: T::NftCollectionId,
+		item_id: T::NftItemId,
+		metadata: BoundedVecOfUnq<T>,
+	) -> DispatchResult {
+
+		ensure!(Collections::<T>::contains_key(collection_id), Error::<T>::CollectionUnknown);
+		let origin = RawOrigin::Signed(owner);
+		
+		let res0 = pallet_uniques::Pallet::<T>::set_metadata(
+			origin.into(),
+			collection_id.into(),
+			item_id.into(),
+			metadata.clone(),
+			false,
+		);
+		debug_assert!(res0.is_ok());
+
+		Items::<T>::mutate(collection_id, item_id, |val|{
+			let mut val0 = val.clone().unwrap();
+			val0.metadata = metadata;
+			*val = Some(val0);
+		});
+
+		//Self::deposit_event(Event::ItemMinted { owner, collection_id, item_id });
 
 		Ok(())
 	}
