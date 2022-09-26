@@ -59,6 +59,8 @@ pub mod pallet {
 		type MaxTriesAseemblingInvestor: Get<u64>;
 		type MaximumSharePerInvestor: Get<u64>;
 		type MinimumSharePerInvestor: Get<u64>;
+		#[pallet::constant]
+		type BiddingExecutionPeriod: Get<Self::BlockNumber>;
 	}
 
 	#[pallet::pallet]
