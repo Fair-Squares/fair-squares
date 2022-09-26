@@ -7,7 +7,7 @@
 //! 
 //! ## Overview
 //! 
-//! The On boarding Pallet fulfill the following tasks:
+//! The Share_Distributor Pallet fulfill the following tasks:
 //! - Create a virtual account which will hold the nft
 //! - Connect the Virtual account to the new owners/contributors
 //! through the use of a storage/struct
