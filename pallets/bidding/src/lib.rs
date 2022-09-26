@@ -94,6 +94,14 @@ pub mod pallet {
 		NoNewHousesFound,
 	}
 
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		/// Weight: see `begin_block`
+		fn on_initialize(n: T::BlockNumber) -> Weight {
+			Self::begin_block(n)
+		}
+	}
+
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		
@@ -106,6 +114,16 @@ use frame_support::{
 };
 
 impl<T: Config> Pallet<T> {
+
+	fn begin_block(now: T::BlockNumber) -> Weight {
+		let max_block_weight: u64 = 1000;
+
+		if (now % T::BiddingExecutionPeriod::get()).is_zero() {
+			Self::process_asset();
+		}
+
+		max_block_weight
+	}
 
 	pub fn process_asset() -> DispatchResultWithPostInfo {
 
