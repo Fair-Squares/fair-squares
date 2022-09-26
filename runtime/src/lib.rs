@@ -1053,7 +1053,7 @@ parameter_types! {
 	pub const MaxTriesAseemblingInvestor: u64 = 3;
 	pub const MaximumSharePerInvestor: u64 = 20;
 	pub const MinimumSharePerInvestor: u64 = 10;
-	pub const BiddingExecutionPeriod: u32 = EPOCH_DURATION_IN_BLOCKS;
+	pub const NewAssetScanPeriod: u32 = EPOCH_DURATION_IN_BLOCKS;
 }
 
 impl pallet_bidding::Config for Runtime {
@@ -1065,7 +1065,7 @@ impl pallet_bidding::Config for Runtime {
 	type MaxTriesAseemblingInvestor = MaxTriesAseemblingInvestor;
 	type MaximumSharePerInvestor = MaximumSharePerInvestor;
 	type MinimumSharePerInvestor = MinimumSharePerInvestor;
-	type BiddingExecutionPeriod = BiddingExecutionPeriod;
+	type NewAssetScanPeriod = NewAssetScanPeriod;
 }
 
 // flag add pallet config

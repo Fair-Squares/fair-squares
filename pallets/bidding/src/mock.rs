@@ -292,7 +292,7 @@ parameter_types! {
 	pub const MaxTriesAseemblingInvestor: u64 = 3;
 	pub const MaximumSharePerInvestor: u64 = 20;
 	pub const MinimumSharePerInvestor: u64 = 10;
-	pub const BiddingExecutionPeriod: u64 = 20;
+	pub const NewAssetScanPeriod: u64 = 20;
 }
 
 impl pallet_bidding::Config for Test {
@@ -304,7 +304,7 @@ impl pallet_bidding::Config for Test {
 	type MaxTriesAseemblingInvestor = MaxTriesAseemblingInvestor;
 	type MaximumSharePerInvestor = MaximumSharePerInvestor;
 	type MinimumSharePerInvestor = MinimumSharePerInvestor;
-	type BiddingExecutionPeriod = BiddingExecutionPeriod;
+	type NewAssetScanPeriod = NewAssetScanPeriod;
 }
 
 pub const ALICE: u64 = 1;
