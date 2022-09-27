@@ -138,7 +138,7 @@ fn get_oldest_contribution_should_succeed() {
 }
 
 #[test]
-fn get_elligible_investors_contribution_should_succeed() {
+fn get_eligible_investors_contribution_should_succeed() {
 	new_test_ext().execute_with(|| {
 		
 		let mut block_number = System::block_number();
@@ -165,7 +165,7 @@ fn get_elligible_investors_contribution_should_succeed() {
 			System::set_block_number(block_number.clone());
 		}
 
-		let list = BiddingModule::get_elligible_investors_contribution(100);
+		let list = BiddingModule::get_eligible_investors_contribution(100);
 
 		assert_eq!(list,
 			(80,  
@@ -578,7 +578,7 @@ fn process_asset_not_enough_fund_among_investors_should_fail() {
 		// check that the event has been raised
 		assert_eq!(
 			event,
-			mock::Event::BiddingModule(crate::Event::FailedToAssembleInvestor(collection_id, item_id, 100, block_number))
+			mock::Event::BiddingModule(crate::Event::FailedToAssembleInvestors(collection_id, item_id, 100, block_number))
 		);
 	});
 }
@@ -650,7 +650,7 @@ fn process_asset_cannot_assemble_investor_should_fail() {
 		// check that the event has been raised
 		assert_eq!(
 			event,
-			mock::Event::BiddingModule(crate::Event::FailedToAssembleInvestor(collection_id, item_id, 100, block_number))
+			mock::Event::BiddingModule(crate::Event::FailedToAssembleInvestors(collection_id, item_id, 100, block_number))
 		);
 	});
 }
