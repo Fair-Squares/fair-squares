@@ -619,6 +619,101 @@ fn house_bidding_with_valid_values_should_succeed() {
 }
 
 #[test]
+fn cancel_house_bidding_with_invalid_values_should_fail() {
+	new_test_ext().execute_with(|| {
+		// Try to cancel a bidding that doesn't exist
+		assert_noop!(
+			HousingFundModule::cancel_house_bidding(1,1),
+			Error::<Test>::NoFundReservationFound
+		);
+	});
+}
+
+#[test]
+fn cancel_house_bidding_with_valid_values_should_succeed() {
+	new_test_ext().execute_with(|| {
+		let fund_account_id = HousingFundModule::fund_account_id();
+
+		// Give the investor role to the accounts
+		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
+
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+
+		assert_ok!(HousingFundModule::house_bidding(
+			1,
+			1,
+			60,
+			vec![(1, 30), (2, 30)]
+		));
+
+		assert_ok!(HousingFundModule::cancel_house_bidding(1,1));
+
+		assert_eq!(
+			HousingFundModule::fund_balance(),
+			FundInfo {
+				total: HousingFundModule::u64_to_balance_option(80).unwrap(),
+				transferable: HousingFundModule::u64_to_balance_option(80).unwrap(),
+				reserved: HousingFundModule::u64_to_balance_option(0).unwrap(),
+			}
+		);
+
+		assert_eq!(
+			HousingFundModule::contributions(1),
+			Some(Contribution {
+				account_id: 1,
+				available_balance: HousingFundModule::u64_to_balance_option(40).unwrap(),
+				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				has_withdrawn: false,
+				block_number: 1,
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(40).unwrap(),
+					block_number: 1
+				}],
+				withdraws: Vec::new()
+			})
+		);
+
+		assert_eq!(
+			HousingFundModule::contributions(2),
+			Some(Contribution {
+				account_id: 2,
+				available_balance: HousingFundModule::u64_to_balance_option(40).unwrap(),
+				reserved_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				contributed_balance: HousingFundModule::u64_to_balance_option(0).unwrap(),
+				has_withdrawn: false,
+				block_number: 1,
+				contributions: vec![ContributionLog {
+					amount: HousingFundModule::u64_to_balance_option(40).unwrap(),
+					block_number: 1
+				}],
+				withdraws: Vec::new()
+			})
+		);
+
+		assert_eq!(HousingFundModule::reservations((1,1)).is_none(), true);
+
+		// Check the amount reserved for the account
+		assert_eq!(
+			Balances::reserved_balance(&fund_account_id),
+			HousingFundModule::u64_to_balance_option(0).unwrap()
+		);
+
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+		assert_eq!(
+			event,
+			mock::Event::HousingFundModule(crate::Event::FundReservationCancelled(1, 1, 60, 1))
+		);
+	});
+}
+
+#[test]
 fn fund_info_contribute_transferable_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let mut fund_info = HousingFundModule::fund_balance();
