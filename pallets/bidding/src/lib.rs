@@ -266,6 +266,9 @@ impl<T: Config> Pallet<T> {
 		result
 	}
 
+	/// Get
+	/// - a list of tuples (AccountId, Share, Amount) following the min-max share rule
+	/// - the total amount of the list
 	fn get_elligible_investors_contribution(amount: Housing_Fund::BalanceOf<T>) 
 	-> (Housing_Fund::BalanceOf<T>, Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)>) {
 		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)> = Vec::new();
