@@ -138,6 +138,100 @@ fn get_oldest_contribution_should_succeed() {
 }
 
 #[test]
+fn get_elligible_investors_contribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let mut block_number = System::block_number();
+		let mut amount = 20;
+
+		for account_id in 1..7 {
+			assert_ok!(RoleModule::set_role(
+				Origin::signed(account_id.clone()),
+				account_id,
+				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
+			));
+
+			if account_id > 4 {
+				amount = 9;
+			}
+			// test contribute with sufficient contribution and free balance
+			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+
+			let contribution = HousingFund::contributions(account_id).unwrap();
+
+			assert_eq!(contribution.block_number, block_number);
+
+			block_number = block_number.saturating_add(1);
+			System::set_block_number(block_number.clone());
+		}
+
+		let list = BiddingModule::get_elligible_investors_contribution(100);
+
+		assert_eq!(list,
+			(80,  
+			vec![
+				(1, 20, 20),
+				(2, 20, 20),
+				(3, 20, 20),
+				(4, 20, 20),
+			])
+		);
+	});
+}
+
+#[test]
+fn get_common_investor_distribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let elligible_contributions = vec![(1, 20, 20),
+		(2, 20, 20),
+		(3, 20, 20),
+		(4, 20, 20),];
+
+		let list = BiddingModule::get_common_investor_distribution(100, 10, elligible_contributions.clone());
+
+		assert_eq!(list,
+			vec![
+				(1, 10),
+				(2, 10),
+				(3, 10),
+				(4, 10),
+			]
+		);
+	});
+}
+
+#[test]
+fn get_investor_distribution_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let elligible_contributions = vec![
+			(1, 20, 20),
+			(2, 20, 20),
+			(3, 20, 20),
+			(4, 20, 20),
+			(5, 20, 20),
+			(6, 20, 20),
+			(7, 20, 20),
+		];
+
+		let list = BiddingModule::get_investor_distribution(100, elligible_contributions.clone());
+
+		assert_eq!(list,
+			vec![
+				(1, 20),
+				(2, 20),
+				(3, 20),
+				(4, 10),
+				(5, 10),
+				(6, 10),
+				(7, 10),
+			]
+		);
+	});
+}
+
+#[test]
 fn create_investor_list_should_succeed() {
 	new_test_ext().execute_with(|| {
 		
@@ -415,6 +509,76 @@ fn process_asset_not_enough_fund_should_fail() {
 		assert_eq!(
 			event,
 			mock::Event::BiddingModule(crate::Event::HousingFundNotEnough(collection_id, item_id, 100, block_number))
+		);
+	});
+}
+
+#[test]
+fn process_asset_not_enough_fund_among_investors_should_fail() {
+	new_test_ext().execute_with(|| {
+		
+		let mut block_number = System::block_number();
+		let amount = 100;
+
+		for account_id in 1..5 {
+			assert_ok!(RoleModule::set_role(
+				Origin::signed(account_id.clone()),
+				account_id,
+				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
+			));
+			
+			// test contribute with sufficient contribution and free balance
+			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+
+			let contribution = HousingFund::contributions(account_id).unwrap();
+
+			assert_eq!(contribution.block_number, block_number);
+
+			block_number = block_number.saturating_add(1);
+			System::set_block_number(block_number.clone());
+		}
+
+		assert_ok!(RoleModule::set_role(Origin::signed(KEZIA).clone(), KEZIA, crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER));
+		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::set_role(Origin::signed(AMANI).clone(), AMANI, crate::Onboarding::HousingFund::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+
+		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> = b"metadata0".to_vec().try_into().unwrap();
+
+		assert_ok!(NftModule::create_collection(
+			Origin::signed(KEZIA),
+			NftCollection::OFFICESTEST,
+			metadata.clone()
+		));
+
+		assert_ok!(OnboardingModule::create_and_submit_proposal(
+			Origin::signed(AMANI),
+			NftCollection::OFFICESTEST,
+			Some(100),
+			metadata,
+			false
+		));
+
+		let collection_id = NftCollection::OFFICESTEST.value();
+		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
+
+		assert_ok!(OnboardingModule::change_status(
+			Origin::signed(AMANI),
+			NftCollection::OFFICESTEST,item_id.clone(),
+			crate::Onboarding::AssetStatus::ONBOARDED)
+		);
+
+		assert_ok!(BiddingModule::process_asset());
+
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+		// check that the event has been raised
+		assert_eq!(
+			event,
+			mock::Event::BiddingModule(crate::Event::FailedToAssembleInvestor(collection_id, item_id, 100, block_number))
 		);
 	});
 }
