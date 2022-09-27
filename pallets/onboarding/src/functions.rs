@@ -166,4 +166,8 @@ impl<T: Config> Pallet<T> {
 	pub fn get_onboarded_houses() -> Vec<(<T as pallet_nft::Config>::NftCollectionId, <T as pallet_nft::Config>::NftItemId, types::Asset<T>)> {
 		Houses::<T>::iter().filter(|val| val.2.status == types::AssetStatus::ONBOARDED).map(|elt| (elt.0, elt.1, elt.2)).collect()
 	}
+
+	pub fn get_finalised_houses() -> Vec<(<T as pallet_nft::Config>::NftCollectionId, <T as pallet_nft::Config>::NftItemId, types::Asset<T>)> {
+		Houses::<T>::iter().filter(|val| val.2.status == types::AssetStatus::FINALISED).map(|elt| (elt.0, elt.1, elt.2)).collect()
+	}
 }
