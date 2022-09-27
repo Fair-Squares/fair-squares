@@ -117,6 +117,7 @@ pub mod pallet {
 		),
 		/// Fund reservation succeded
 		FundReservationSucceeded(T::NftCollectionId, T::NftItemId, BalanceOf<T>, BlockNumberOf<T>),
+		FundReservationCancelled(T::NftCollectionId, T::NftItemId, BalanceOf<T>, BlockNumberOf<T>),
 	}
 
 	// Errors inform users that something went wrong.
@@ -144,6 +145,8 @@ pub mod pallet {
 		NotAnInvestor,
 		/// Must not have more investor than the max acceppted
 		NotMoreThanMaxInvestorPerHouse,
+		/// The reservation doesn't exist in the storage
+		NoFundReservationFound,
 	}
 
 	#[pallet::call]
