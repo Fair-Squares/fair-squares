@@ -48,6 +48,8 @@ frame_support::construct_runtime!(
 		Collective: pallet_collective::<Instance1>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
 		VotingModule: pallet_voting::{Pallet, Call, Storage, Event<T>},
+		Assets: pallet_assets::{Pallet, Storage, Config<T>, Event<T>},
+		ShareDistributorModule: pallet_share_distributor::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
@@ -284,6 +286,42 @@ impl pallet_voting::Config for Test {
 		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 	type MinimumDepositVote = MinimumDeposit;
 	type CheckPeriod = CheckPeriod;
+}
+
+parameter_types! {
+	pub const AssetDeposit: u64 = 100 ;
+	pub const ApprovalDeposit: u64 = 1 ;
+	pub const MetadataDepositPerByte: u64 = 1 ;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: u64 = 1000 ;
+	pub const AssetAccountDeposit: u64 = 1;
+}
+
+impl pallet_assets::Config for Test {
+	type Event = Event;
+	type Balance = u32;
+	type AssetId = u32;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = AssetDeposit;
+	type AssetAccountDeposit = AssetAccountDeposit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = StringLimit;
+	type Freezer = ();
+	type Extra = ();
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const AssetsFees: Balance = 10000;
+}
+impl pallet_share_distributor::Config for Test{
+	type Event = Event;
+	type Currency = Balances;
+	type AssetId = u32;
+	type Fees = AssetsFees;
 }
 
 parameter_types! {
