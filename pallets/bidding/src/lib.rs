@@ -38,6 +38,7 @@ pub use crate::structs::*;
 pub use pallet_housing_fund as Housing_Fund;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_nft as Nft;
+pub use pallet_share_distributor as ShareDistributor;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -49,7 +50,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Onboarding::Config + Housing_Fund::Config {
+	pub trait Config: frame_system::Config + ShareDistributor::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
@@ -121,9 +122,11 @@ impl<T: Config> Pallet<T> {
 
 	pub fn process_finalised_assets() -> DispatchResultWithPostInfo {
 
+		// We retrieve houses with finalised status
 		let houses = Onboarding::Pallet::<T>::get_finalised_houses().clone();
 
 		if houses.len() == 0 {
+			// If no houses are found, an event is raised
 			let block = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::NoHousesFinalisedFound(block));
 			return Ok(().into());
@@ -131,7 +134,9 @@ impl<T: Config> Pallet<T> {
 
 		let houses_iter = houses.iter();
 
+		// For each finalised houses, the ownership transfer is executed
 		for item in houses_iter {
+			ShareDistributor::Pallet::<T>::create_virtual(frame_system::RawOrigin::Root.into(), item.0.clone(), item.1.clone());
 		}
 
 		Ok(().into())
