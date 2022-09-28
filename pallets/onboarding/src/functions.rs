@@ -106,7 +106,7 @@ impl<T: Config> Pallet<T> {
 		let _returned = <T as Config>::Currency::unreserve(&owner, balance);
 
 		// The reserved funds in Housing Fund from the house bidding are unreserved for the transfer transaction
-		HousingFund::Pallet::<T>::cancel_house_bidding(collection_id.clone(), item_id.clone()).ok();
+		HousingFund::Pallet::<T>::unreserve_house_bidding_amount(collection_id.clone(), item_id.clone()).ok();
 
 		//Transfer funds from HousingFund to owner
 		let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
