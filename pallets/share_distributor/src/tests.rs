@@ -189,6 +189,38 @@ fn share_distributor1(){
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
 		let origin2 = Origin::signed(BOB);
 
+		let contribution_eve = HousingFund::Contribution {
+			account_id: EVE,
+			available_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(10_000).unwrap(),
+			reserved_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(25_000).unwrap(),
+			contributed_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(0).unwrap(),
+			has_withdrawn: false,
+			block_number: 1,
+			contributions: vec![HousingFund::ContributionLog {
+				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(35_000).unwrap(),
+				block_number: 1
+			}],
+			withdraws: Vec::new()
+		};
+
+		let contribution_dave = HousingFund::Contribution {
+			account_id: DAVE,
+			available_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(10_000).unwrap(),
+			reserved_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(15_000).unwrap(),
+			contributed_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(0).unwrap(),
+			has_withdrawn: false,
+			block_number: 1,
+			contributions: vec![HousingFund::ContributionLog {
+				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(25_000).unwrap(),
+				block_number: 1
+			}],
+			withdraws: Vec::new()
+		};
+
+		// Add contributions to storage
+		HousingFund::Contributions::<Test>::insert(EVE,contribution_eve);
+		HousingFund::Contributions::<Test>::insert(DAVE,contribution_dave);
+
 		//Create a FundOperation struct for this asset
 		let fund_op = HousingFund::FundOperation{
 			nft_collection_id: coll_id0.clone(),
@@ -200,6 +232,15 @@ fn share_distributor1(){
 
 		//Add new owners and asset to housing fund
 		HousingFund::Reservations::<Test>::insert((coll_id0.clone(),item_id0.clone()),fund_op);
+
+		// Update the Housing fund to fit with the contributions
+		HousingFund::FundBalance::<Test>::mutate(|val| {
+			*val = HousingFund::FundInfo {
+				total: 60_000,
+				transferable: 20_000,
+				reserved: 40_000,
+			};
+		});
 
 		//Change first asset status to FINALISED
 		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::OFFICESTEST,item_id0.clone(),Onboarding::AssetStatus::FINALISED).ok();		
