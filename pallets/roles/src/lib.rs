@@ -299,7 +299,7 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			ensure!(sender != new0, "The same manager is given");
+			//ensure!(sender != new0, "The same manager is given");
 			//Remove current Sudo from Servicers list
 			if ServicerLog::<T>::contains_key(sender.clone()) == true {
 				ServicerLog::<T>::remove(sender.clone());
