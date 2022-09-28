@@ -69,8 +69,6 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		// The house is already being processed
-		HouseAlreadyInBiddingProcess(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		// No enough fund for the house
 		HousingFundNotEnough(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		// The bidding on the house is successful
@@ -182,8 +180,10 @@ impl<T: Config> Pallet<T> {
 	fn create_investor_list(amount: Housing_Fund::BalanceOf<T>) -> Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> {
 		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> = Vec::new();
 		let percent = Self::u64_to_balance_option(100).unwrap();
+		// We get contributions following the min-max rules
 		let contributions = Self::get_eligible_investors_contribution(amount.clone());
 
+		// We check that the total amount of the contributions allow to buy the asset
 		if contributions.0 < amount {
 			return result;
 		}
@@ -234,12 +234,19 @@ impl<T: Config> Pallet<T> {
 		let mut count: u64 = 1;
 		let contributions_length: u64 = eligible_contributions.len() as u64;
 
+		// We iterate through shares matching the rule min-max contribution
+		// The eligible contributions are enough to buy the asset
+		// The definitive shares will be determined by this loop
+		// Each round, 100% is decremented by the share of the contribution processed
 		for item in eligible_contributions.iter() {
 			let mut item_share = Self::u64_to_balance_option(0).unwrap();
+
+			// We are checking the last item so it takes the remaining percentage
 			if count == contributions_length {
 				item_share = actual_percentage;
 			}
 			else {
+				// We calculate what is the share if a median rule is applied on the actual contribution and the remaining ones
 				let share_median_diff = (actual_percentage - item.1.clone())/Self::u64_to_balance_option(contributions_length - count).unwrap();
 				
 				// We check that the distribution between accounts will respect rules if the maximum available share is given to the current account
@@ -248,11 +255,12 @@ impl<T: Config> Pallet<T> {
 					item_share = actual_percentage / Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
 				}
 				else {
-					// The account is given its maximum available share
+					// The account is given its maximum available share as the remaining contributions will follow the min-max rule
 					item_share = item.1.clone();
 				}
 			}
 
+			// We add the account and the amount of its share
 			result.push((item.0.clone(), item_share.clone()  * amount / percent));
 			
 			actual_percentage -= item_share;
@@ -310,6 +318,7 @@ impl<T: Config> Pallet<T> {
 	) -> (Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>) {
 		let mut contributions_cut:Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>)> = Vec::new();
 
+		// We build the list where the min will be searched
 		for item in contributions.iter() {
 			if !ordered_list.contains(&item.0) {
 				contributions_cut.push(item.clone());
@@ -335,10 +344,12 @@ impl<T: Config> Pallet<T> {
 		
 		let mut share: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
 		let mut value: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
+		// If the available amount is greater than the maximum amount, then the maximum amount is returned
 		if contribution.available_balance >= Self::get_amount_percentage(amount.clone(), T::MaximumSharePerInvestor::get()) {
 			share = Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap();
 			value = Self::get_amount_percentage(amount.clone(), T::MaximumSharePerInvestor::get());
 		}
+		// If the avalable amount is greater than the minimum but less than the maximum amount then the share is calculated as a percentage
 		else if contribution.available_balance >= Self::get_amount_percentage(amount.clone(), T::MinimumSharePerInvestor::get()) {
 			share = contribution.available_balance * Self::u64_to_balance_option(100).unwrap() / amount;
 			value = contribution.available_balance;
