@@ -121,6 +121,9 @@ impl<T: Config> Pallet<T> {
 		Contributions::<T>::iter().map(|elt| (elt.0, elt.1)).collect()
 	}
 
+	/// Cancel a house bidding
+	/// The reserved funds from contributions are restored
+	/// The Housing Fund pot is restored with the reserved amount
 	pub fn cancel_house_bidding(nft_collection_id: NftCollectionId<T>, nft_item_id: NftItemId<T>) -> DispatchResultWithPostInfo {
 		let reservation_wrap = Reservations::<T>::get((nft_collection_id, nft_item_id));
 
@@ -131,7 +134,6 @@ impl<T: Config> Pallet<T> {
 		let contributions_iter = reservation.contributions.iter();
 
 		for item in contributions_iter {
-			let entry = Contributions::<T>::get(item.0.clone());
 			Contributions::<T>::mutate(item.0.clone(), |val| {
 				let mut unwrap_val = val.clone().unwrap();
 				unwrap_val.unreserve_amount(item.1);
@@ -146,7 +148,7 @@ impl<T: Config> Pallet<T> {
 
 		Reservations::<T>::remove((nft_collection_id, nft_item_id));
 
-		// The amount is reserved in the pot
+		// The amount is unreserved in the pot
 		FundBalance::<T>::mutate(|val| {
 			*val = fund.clone();
 		});
@@ -156,6 +158,82 @@ impl<T: Config> Pallet<T> {
 
 		// Emit an event.
 		Self::deposit_event(Event::FundReservationCancelled(
+			nft_collection_id,
+			nft_item_id,
+			reservation.amount,
+			block_number,
+		));
+
+		Ok(().into())
+	}
+
+	/// Unreserved the amount of the house in the Housing fund
+	pub fn unreserve_house_bidding_amount(nft_collection_id: NftCollectionId<T>, nft_item_id: NftItemId<T>) -> DispatchResultWithPostInfo {
+		let reservation_wrap = Reservations::<T>::get((nft_collection_id, nft_item_id));
+
+		ensure!(reservation_wrap.is_some(), Error::<T>::NoFundReservationFound);
+
+		let reservation = reservation_wrap.unwrap();
+
+		let fund = FundBalance::<T>::get();
+		// The amount is unreserved in the currency pallet
+		T::LocalCurrency::unreserve(&Self::fund_account_id(), reservation.amount);
+
+		// Get the block number for timestamp
+		let block_number = <frame_system::Pallet<T>>::block_number();
+		
+		// Emit an event.
+		Self::deposit_event(Event::FundUnreservedForPurchase(
+			nft_collection_id,
+			nft_item_id,
+			reservation.amount,
+			block_number,
+		));
+
+		Ok(().into())
+	}
+
+	/// Move the reserved funds as purchased
+	/// Unreserved fund from contributions and Fund
+	/// Add operation in Purchases storage
+	pub fn validate_house_bidding(nft_collection_id: NftCollectionId<T>, nft_item_id: NftItemId<T>) -> DispatchResultWithPostInfo {
+		let reservation_wrap = Reservations::<T>::get((nft_collection_id, nft_item_id));
+
+		ensure!(reservation_wrap.is_some(), Error::<T>::NoFundReservationFound);
+
+		let reservation = reservation_wrap.unwrap();
+
+		let contributions_iter = reservation.contributions.iter();
+
+		// We tag the reserved amount in the contribution as used
+		for item in contributions_iter {
+			Contributions::<T>::mutate(item.0.clone(), |val| {
+				let mut unwrap_val = val.clone().unwrap();
+				unwrap_val.use_reserved_amount(item.1);
+				let contribution = unwrap_val.clone();
+				*val = Some(contribution);
+			});
+		}
+
+		let mut fund = FundBalance::<T>::get();
+		// The amount is tagged as used for history
+		fund.use_reserved(reservation.amount);
+
+		// Delete from reservation
+		Reservations::<T>::remove((nft_collection_id, nft_item_id));
+		// Add to purchased operations
+		Purchases::<T>::insert((nft_collection_id, nft_item_id), reservation.clone());
+
+		// The amount is updated in the pot
+		FundBalance::<T>::mutate(|val| {
+			*val = fund.clone();
+		});
+
+		// Get the block number for timestamp
+		let block_number = <frame_system::Pallet<T>>::block_number();
+
+		// Emit an event.
+		Self::deposit_event(Event::PurchaseFundValidated(
 			nft_collection_id,
 			nft_item_id,
 			reservation.amount,
