@@ -84,7 +84,7 @@ impl<T: Config> Pallet<T> {
 		}
 
 		// The amount is tagged as reserved in the fund for the account_id
-		T::LocalCurrency::reserve(&T::PalletId::get().into_account_truncating(), amount)?;
+		T::LocalCurrency::reserve(&Self::fund_account_id(), amount)?;
 		fund.reserve(amount);
 
 		// The amount is reserved in the pot
@@ -119,5 +119,49 @@ impl<T: Config> Pallet<T> {
 
 	pub fn get_contributions() -> Vec<(AccountIdOf<T>, Contribution<T>)> {
 		Contributions::<T>::iter().map(|elt| (elt.0, elt.1)).collect()
+	}
+
+	pub fn cancel_house_bidding(nft_collection_id: NftCollectionId<T>, nft_item_id: NftItemId<T>) -> DispatchResultWithPostInfo {
+		let reservation_wrap = Reservations::<T>::get((nft_collection_id, nft_item_id));
+
+		ensure!(reservation_wrap.is_some(), Error::<T>::NoFundReservationFound);
+
+		let reservation = reservation_wrap.unwrap();
+
+		let contributions_iter = reservation.contributions.iter();
+
+		for item in contributions_iter {
+			let entry = Contributions::<T>::get(item.0.clone());
+			Contributions::<T>::mutate(item.0.clone(), |val| {
+				let mut unwrap_val = val.clone().unwrap();
+				unwrap_val.unreserve_amount(item.1);
+				let contribution = unwrap_val.clone();
+				*val = Some(contribution);
+			});
+		}
+
+		let mut fund = FundBalance::<T>::get();
+		T::LocalCurrency::unreserve(&Self::fund_account_id(), reservation.amount);
+		fund.unreserve(reservation.amount);
+
+		Reservations::<T>::remove((nft_collection_id, nft_item_id));
+
+		// The amount is reserved in the pot
+		FundBalance::<T>::mutate(|val| {
+			*val = fund.clone();
+		});
+
+		// Get the block number for timestamp
+		let block_number = <frame_system::Pallet<T>>::block_number();
+
+		// Emit an event.
+		Self::deposit_event(Event::FundReservationCancelled(
+			nft_collection_id,
+			nft_item_id,
+			reservation.amount,
+			block_number,
+		));
+
+		Ok(().into())
 	}
 }

@@ -63,6 +63,13 @@ impl<T: Config> FundInfo<T> {
 		// add the amount to reserved
 		self.reserved += amount;
 	}
+
+	pub fn unreserve(&mut self, amount: BalanceOf<T>) {
+		// remove the amount to reserved
+		self.reserved -= amount;
+		// add the amount to transferable
+		self.transferable += amount;
+	}
 }
 
 // Contains amount and timestamp of an account
