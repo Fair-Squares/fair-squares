@@ -223,6 +223,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Get a list of tuple of account id and their contribution with different values
+	/// The contribubtions follow the min-max rule of the amount
 	fn get_investor_distribution(
 		amount: Housing_Fund::BalanceOf<T>, 
 		eligible_contributions: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)>,
