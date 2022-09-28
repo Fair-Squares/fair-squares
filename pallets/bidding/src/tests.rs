@@ -444,7 +444,7 @@ fn create_investor_list_should_fail() {
 }
 
 #[test]
-fn process_asset_not_enough_fund_should_fail() {
+fn process_onboarded_assets_not_enough_fund_should_fail() {
 	new_test_ext().execute_with(|| {
 		
 		let mut block_number = System::block_number();
@@ -498,7 +498,7 @@ fn process_asset_not_enough_fund_should_fail() {
 			crate::Onboarding::AssetStatus::ONBOARDED)
 		);
 
-		assert_ok!(BiddingModule::process_asset());
+		assert_ok!(BiddingModule::process_onboarded_assets());
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
@@ -514,7 +514,7 @@ fn process_asset_not_enough_fund_should_fail() {
 }
 
 #[test]
-fn process_asset_not_enough_fund_among_investors_should_fail() {
+fn process_onboarded_assets_not_enough_fund_among_investors_should_fail() {
 	new_test_ext().execute_with(|| {
 		
 		let mut block_number = System::block_number();
@@ -568,7 +568,7 @@ fn process_asset_not_enough_fund_among_investors_should_fail() {
 			crate::Onboarding::AssetStatus::ONBOARDED)
 		);
 
-		assert_ok!(BiddingModule::process_asset());
+		assert_ok!(BiddingModule::process_onboarded_assets());
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
@@ -584,7 +584,7 @@ fn process_asset_not_enough_fund_among_investors_should_fail() {
 }
 
 #[test]
-fn process_asset_cannot_assemble_investor_should_fail() {
+fn process_onboarded_assets_cannot_assemble_investor_should_fail() {
 	new_test_ext().execute_with(|| {
 		
 		let mut block_number = System::block_number();
@@ -640,7 +640,7 @@ fn process_asset_cannot_assemble_investor_should_fail() {
 			crate::Onboarding::AssetStatus::ONBOARDED)
 		);
 
-		assert_ok!(BiddingModule::process_asset());
+		assert_ok!(BiddingModule::process_onboarded_assets());
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
@@ -656,7 +656,7 @@ fn process_asset_cannot_assemble_investor_should_fail() {
 }
 
 #[test]
-fn process_asset_should_succeed() {
+fn process_onboarded_assets_should_succeed() {
 	new_test_ext().execute_with(|| {
 		
 		let mut block_number = System::block_number();
@@ -710,7 +710,7 @@ fn process_asset_should_succeed() {
 			crate::Onboarding::AssetStatus::ONBOARDED)
 		);
 
-		assert_ok!(BiddingModule::process_asset());
+		assert_ok!(BiddingModule::process_onboarded_assets());
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
@@ -721,6 +721,45 @@ fn process_asset_should_succeed() {
 		assert_eq!(
 			event,
 			mock::Event::BiddingModule(crate::Event::HouseBiddingSucceeded(collection_id, item_id, 100, block_number))
+		);
+	});
+}
+
+#[test]
+fn process_onboarded_assets_check_periodicity_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let end_block_number = <Test as crate::Config>::NewAssetScanPeriod::get();
+		System::set_block_number(end_block_number.clone());
+		BiddingModule::on_initialize(end_block_number.clone());
+
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+		// check that the event has been raised
+		assert_eq!(
+			event,
+			mock::Event::BiddingModule(crate::Event::NoNewHousesFound(end_block_number))
+		);
+	});
+}
+
+#[test]
+fn process_onboarded_assets_check_periodicity_should_fail() {
+	new_test_ext().execute_with(|| {
+		
+		let end_block_number = <Test as crate::Config>::NewAssetScanPeriod::get();
+		System::set_block_number(end_block_number.clone() + 1);
+		BiddingModule::on_initialize(end_block_number.clone() + 1);
+
+		let events = <frame_system::Pallet<Test>>::events();
+
+		// check that we have no event raised
+		assert_eq!(
+			events.len(),
+			0
 		);
 	});
 }

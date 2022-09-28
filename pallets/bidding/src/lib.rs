@@ -110,13 +110,13 @@ impl<T: Config> Pallet<T> {
 		let max_block_weight: u64 = 1000;
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
-			Self::process_asset();
+			Self::process_onboarded_assets();
 		}
 
 		max_block_weight
 	}
 
-	pub fn process_asset() -> DispatchResultWithPostInfo {
+	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
 
 		let houses = Onboarding::Pallet::<T>::get_onboarded_houses().clone();
 
