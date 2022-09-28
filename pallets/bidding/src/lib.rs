@@ -68,15 +68,9 @@ pub mod pallet {
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
-	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	pub type Something<T> = StorageValue<_, u32>;
-
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		// The house is already being processed
-		HouseAlreadyInBiddingProcess(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		// No enough fund for the house
 		HousingFundNotEnough(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		// The bidding on the house is successful
@@ -84,7 +78,11 @@ pub mod pallet {
 		// The bidding on the house failed
 		HouseBiddingFailed(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		/// A list of investor cannot be assembled for an onboarded asset
-		FailedToAssembleInvestor(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
+		FailedToAssembleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
+		/// No new onboarded houses found
+		NoNewHousesFound(BlockNumberOf<T>),
+		/// Selected investors don't have enough to bid for the asset
+		NotEnoughAmongElligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>)
 	}
 
 	#[pallet::hooks]
@@ -121,6 +119,13 @@ impl<T: Config> Pallet<T> {
 	pub fn process_asset() -> DispatchResultWithPostInfo {
 
 		let houses = Onboarding::Pallet::<T>::get_onboarded_houses().clone();
+
+		if houses.len() == 0 {
+			let block = <frame_system::Pallet<T>>::block_number();
+			Self::deposit_event(Event::NoNewHousesFound(block));
+			return Ok(().into());
+		}
+
 		let houses_iter = houses.iter();
 
 		for item in houses_iter {
@@ -149,7 +154,7 @@ impl<T: Config> Pallet<T> {
 			// Checki that the investor list creation was successful
 			if investors_shares.len() == 0 {
 				let block = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::FailedToAssembleInvestor(
+				Self::deposit_event(Event::FailedToAssembleInvestors(
 					item.0.clone(), item.1.clone(), amount.clone(), block,
 				));
 				continue;
@@ -186,65 +191,134 @@ impl<T: Config> Pallet<T> {
 	/// - no less than T::MinimumSharePerInvestor share per investor
 	/// The total contribution from the investor list should be equal to the asset's price
 	fn create_investor_list(amount: Housing_Fund::BalanceOf<T>) -> Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> {
-		
 		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> = Vec::new();
-		let mut ordered_list: Vec<Housing_Fund::AccountIdOf<T>> = Vec::new();
-		let contributions = Housing_Fund::Pallet::<T>::get_contributions();
 		let percent = Self::u64_to_balance_option(100).unwrap();
-		let zero_percent = Self::u64_to_balance_option(0).unwrap();
-		let mut actual_percentage: Housing_Fund::BalanceOf<T> = zero_percent.clone();
+		// We get contributions following the min-max rules
+		let contributions = Self::get_eligible_investors_contribution(amount.clone());
 
-		for i in 0..contributions.len() {
-			// We have completed the share distribution so we can end the processus
-			if actual_percentage == percent {
-				break;
-			}
-
-			// Check if the remaining available percentage is less that the minimum share per investor
-			if actual_percentage > percent || actual_percentage > Self::u64_to_balance_option(100 - T::MinimumSharePerInvestor::get()).unwrap() {
-				result = Vec::new();
-				break;
-			} 
-
-			let oldest_contribution = Self::get_oldest_contribution(ordered_list.clone(), contributions.clone());
-			// We update the list of oldest contributions
-			ordered_list.push(oldest_contribution.0.clone());
-			let mut share = Self::get_investor_share(amount.clone(), oldest_contribution.1.clone());
-
-			// Check if the contribution share was successful
-			if share == zero_percent {
-				continue;
-			}
-
-			let available_percentage = percent - actual_percentage;
-			if share > available_percentage {
-				if share - available_percentage >= Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap() {
-					share = share - available_percentage;
-				}
-				else {
-					share = zero_percent;
-				}
-			}
-
-			// Check if the comparison of the share against the available share was successful
-			if share == zero_percent {
-				continue;
-			}
-
-			// We add the investor and its share in the list
-			result.push(
-				(oldest_contribution.0.clone(), share * amount / percent)
-			);
-			// We update the actual amount's percentage utilized in the processus
-			actual_percentage += share;
+		// We check that the total amount of the contributions allow to buy the asset
+		if contributions.0 < amount {
+			return result;
 		}
 
-		// Check if all percentage has been completed
-		if actual_percentage != percent {
-			result = Vec::new();
-		}		
+		let contributions_length = Self::u64_to_balance_option(contributions.1.len() as u64).unwrap();
+
+		// We have at least more than the maximum possible investors
+		if contributions_length >= (percent / Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap()) {
+			result = Self::get_common_investor_distribution(amount.clone(), Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap(), contributions.1.clone());
+		}
+		// We have the minimum of investors
+		else if contributions_length == (percent / Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap()) {
+			result = Self::get_common_investor_distribution(amount.clone(), Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap(), contributions.1.clone());
+		}
+		// We have less than the maximum investors and more than the minimum investors
+		else {
+			result = Self::get_investor_distribution(amount.clone(), contributions.1.clone())
+		}
 
 		result
+	}
+
+	/// Get a list of tuple of account id and their contribution set at the same amount
+	fn get_common_investor_distribution(
+		amount: Housing_Fund::BalanceOf<T>, 
+		common_share: Housing_Fund::BalanceOf<T>, 
+		eligible_contributions: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)>,
+	) -> Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> {
+		let percent = Self::u64_to_balance_option(100).unwrap();
+		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> = Vec::new();
+
+		for item in eligible_contributions.iter() {
+			result.push((item.0.clone(), common_share * amount / percent));
+		}
+
+		result
+	}
+
+	/// Get a list of tuple of account id and their contribution with different values
+	/// The contribubtions follow the min-max rule of the amount
+	fn get_investor_distribution(
+		amount: Housing_Fund::BalanceOf<T>, 
+		eligible_contributions: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)>,
+	) -> Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> {
+		let percent = Self::u64_to_balance_option(100).unwrap();
+		let zero_percent = Self::u64_to_balance_option(0).unwrap();
+		let mut actual_percentage: Housing_Fund::BalanceOf<T> = percent.clone();
+		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> = Vec::new();
+		let mut count: u64 = 1;
+		let contributions_length: u64 = eligible_contributions.len() as u64;
+
+		// We iterate through shares matching the rule min-max contribution
+		// The eligible contributions are enough to buy the asset
+		// The definitive shares will be determined by this loop
+		// Each round, 100% is decremented by the share of the contribution processed
+		for item in eligible_contributions.iter() {
+			let mut item_share = Self::u64_to_balance_option(0).unwrap();
+
+			// We are checking the last item so it takes the remaining percentage
+			if count == contributions_length {
+				item_share = actual_percentage;
+			}
+			else {
+				// We calculate what is the share if a median rule is applied on the actual contribution and the remaining ones
+				let share_median_diff = (actual_percentage - item.1.clone())/Self::u64_to_balance_option(contributions_length - count).unwrap();
+				
+				// We check that the distribution between accounts will respect rules if the maximum available share is given to the current account
+				if share_median_diff < Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap() {
+					// The current account is given a median share as its maximum available share will break the distribution rule
+					item_share = actual_percentage / Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
+				}
+				else {
+					// The account is given its maximum available share as the remaining contributions will follow the min-max rule
+					item_share = item.1.clone();
+				}
+			}
+
+			// We add the account and the amount of its share
+			result.push((item.0.clone(), item_share.clone()  * amount / percent));
+			
+			actual_percentage -= item_share;
+			count += 1;
+
+			if actual_percentage == zero_percent {
+				break;
+			}
+		}
+
+		result
+	}
+
+	/// Get
+	/// - a list of tuples (AccountId, Share, Amount) following the min-max share rule
+	/// - the total amount of the list
+	fn get_eligible_investors_contribution(amount: Housing_Fund::BalanceOf<T>) 
+	-> (Housing_Fund::BalanceOf<T>, Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)>) {
+		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)> = Vec::new();
+		let contributions = Housing_Fund::Pallet::<T>::get_contributions();
+		let mut ordered_accountid_list: Vec<Housing_Fund::AccountIdOf<T>> = Vec::new();
+		let mut ordered_contributions: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>)> = Vec::new();
+		let zero_percent = Self::u64_to_balance_option(0).unwrap();
+		let mut total_share: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
+
+		// the contributions are ordered by block number ascending order
+		for i in 0..contributions.len() {
+			let oldest_contribution = Self::get_oldest_contribution(ordered_accountid_list.clone(), contributions.clone());
+			ordered_accountid_list.push(oldest_contribution.0.clone());
+			ordered_contributions.push(oldest_contribution.clone());
+		}
+
+		let contributions_iter = ordered_contributions.iter();
+
+		// Add only contribution matching the minimum share contribution condition
+		for item in contributions_iter {
+			let share = Self::get_investor_share(amount.clone(), item.1.clone());
+			if share.0 > zero_percent {
+				result.push((item.0.clone(), share.0, share.1.clone()));
+				total_share += share.1.clone();
+			}
+		}
+
+		(total_share, result)
 	}
 
 	fn simulate_notary_intervention() {
@@ -256,10 +330,19 @@ impl<T: Config> Pallet<T> {
 		ordered_list: Vec<Housing_Fund::AccountIdOf<T>>, 
 		contributions: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>)>
 	) -> (Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>) {
-		let mut min = contributions[0].clone();
+		let mut contributions_cut:Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>)> = Vec::new();
 
+		// We build the list where the min will be searched
 		for item in contributions.iter() {
-			if item.1.block_number < min.1.block_number && !ordered_list.contains(&item.0) {
+			if !ordered_list.contains(&item.0) {
+				contributions_cut.push(item.clone());
+			}
+		}
+
+		let mut min = contributions_cut[0].clone();
+
+		for item in contributions_cut.iter() {
+			if item.1.block_number < min.1.block_number {
 				min = item.clone();
 			}
 		}
@@ -271,17 +354,22 @@ impl<T: Config> Pallet<T> {
 	fn get_investor_share(
 		amount: Housing_Fund::BalanceOf<T>, 
 		contribution: Housing_Fund::Contribution<T>
-	) -> Housing_Fund::BalanceOf<T> {
+	) -> (Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>) {
 		
 		let mut share: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
+		let mut value: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
+		// If the available amount is greater than the maximum amount, then the maximum amount is returned
 		if contribution.available_balance >= Self::get_amount_percentage(amount.clone(), T::MaximumSharePerInvestor::get()) {
 			share = Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap();
+			value = Self::get_amount_percentage(amount.clone(), T::MaximumSharePerInvestor::get());
 		}
+		// If the avalable amount is greater than the minimum but less than the maximum amount then the share is calculated as a percentage
 		else if contribution.available_balance >= Self::get_amount_percentage(amount.clone(), T::MinimumSharePerInvestor::get()) {
-			share = contribution.available_balance * Self::u64_to_balance_option(100).unwrap() / amount
+			share = contribution.available_balance * Self::u64_to_balance_option(100).unwrap() / amount;
+			value = contribution.available_balance;
 		}
 		
-		share
+		(share, value)
 	}
 
 	fn get_amount_percentage(amount: Housing_Fund::BalanceOf<T>, percentage: u64) -> Housing_Fund::BalanceOf<T> {
