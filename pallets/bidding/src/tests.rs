@@ -733,7 +733,10 @@ fn process_onboarded_assets_check_periodicity_should_succeed() {
 		System::set_block_number(end_block_number.clone());
 		BiddingModule::on_initialize(end_block_number.clone());
 
-		let event = <frame_system::Pallet<Test>>::events()
+		let mut events = <frame_system::Pallet<Test>>::events();
+		events.pop();
+
+		let event = events
 			.pop()
 			.expect("Expected at least one EventRecord to be found")
 			.event;
@@ -748,6 +751,45 @@ fn process_onboarded_assets_check_periodicity_should_succeed() {
 
 #[test]
 fn process_onboarded_assets_check_periodicity_should_fail() {
+	new_test_ext().execute_with(|| {
+		
+		let end_block_number = <Test as crate::Config>::NewAssetScanPeriod::get();
+		System::set_block_number(end_block_number.clone() + 1);
+		BiddingModule::on_initialize(end_block_number.clone() + 1);
+
+		let events = <frame_system::Pallet<Test>>::events();
+
+		// check that we have no event raised
+		assert_eq!(
+			events.len(),
+			0
+		);
+	});
+}
+
+#[test]
+fn process_finalised_assets_check_periodicity_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let end_block_number = <Test as crate::Config>::NewAssetScanPeriod::get();
+		System::set_block_number(end_block_number.clone());
+		BiddingModule::on_initialize(end_block_number.clone());
+
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+		// check that the event has been raised
+		assert_eq!(
+			event,
+			mock::Event::BiddingModule(crate::Event::NoHousesFinalisedFound(end_block_number))
+		);
+	});
+}
+
+#[test]
+fn process_finalised_assets_check_periodicity_should_fail() {
 	new_test_ext().execute_with(|| {
 		
 		let end_block_number = <Test as crate::Config>::NewAssetScanPeriod::get();

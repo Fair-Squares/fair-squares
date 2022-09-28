@@ -82,7 +82,9 @@ pub mod pallet {
 		/// No new onboarded houses found
 		NoNewHousesFound(BlockNumberOf<T>),
 		/// Selected investors don't have enough to bid for the asset
-		NotEnoughAmongElligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>)
+		NotEnoughAmongElligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
+		/// No new finalised houses found
+		NoHousesFinalisedFound(BlockNumberOf<T>),
 	}
 
 	#[pallet::hooks]
@@ -111,9 +113,28 @@ impl<T: Config> Pallet<T> {
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
 			Self::process_onboarded_assets();
+			Self::process_finalised_assets();
 		}
 
 		max_block_weight
+	}
+
+	pub fn process_finalised_assets() -> DispatchResultWithPostInfo {
+
+		let houses = Onboarding::Pallet::<T>::get_finalised_houses().clone();
+
+		if houses.len() == 0 {
+			let block = <frame_system::Pallet<T>>::block_number();
+			Self::deposit_event(Event::NoHousesFinalisedFound(block));
+			return Ok(().into());
+		}
+
+		let houses_iter = houses.iter();
+
+		for item in houses_iter {
+		}
+
+		Ok(().into())
 	}
 
 	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
