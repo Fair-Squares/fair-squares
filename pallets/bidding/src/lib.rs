@@ -59,6 +59,8 @@ pub mod pallet {
 		type MaxTriesAseemblingInvestor: Get<u64>;
 		type MaximumSharePerInvestor: Get<u64>;
 		type MinimumSharePerInvestor: Get<u64>;
+		#[pallet::constant]
+		type NewAssetScanPeriod: Get<Self::BlockNumber>;
 	}
 
 	#[pallet::pallet]
@@ -85,11 +87,12 @@ pub mod pallet {
 		FailedToAssembleInvestor(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 	}
 
-	// Errors inform users that something went wrong.
-	#[pallet::error]
-	pub enum Error<T> {
-		/// No new onboarded houses found
-		NoNewHousesFound,
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		/// Weight: see `begin_block`
+		fn on_initialize(n: T::BlockNumber) -> Weight {
+			Self::begin_block(n)
+		}
 	}
 
 	#[pallet::call]
@@ -104,6 +107,16 @@ use frame_support::{
 };
 
 impl<T: Config> Pallet<T> {
+
+	fn begin_block(now: T::BlockNumber) -> Weight {
+		let max_block_weight: u64 = 1000;
+
+		if (now % T::NewAssetScanPeriod::get()).is_zero() {
+			Self::process_asset();
+		}
+
+		max_block_weight
+	}
 
 	pub fn process_asset() -> DispatchResultWithPostInfo {
 
