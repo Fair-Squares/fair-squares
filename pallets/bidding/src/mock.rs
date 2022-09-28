@@ -315,7 +315,7 @@ impl pallet_assets::Config for Test {
 }
 
 parameter_types! {
-	pub const AssetsFees: Balance = 10000;
+	pub const AssetsFees: Balance = 20000;
 }
 impl pallet_share_distributor::Config for Test{
 	type Event = Event;

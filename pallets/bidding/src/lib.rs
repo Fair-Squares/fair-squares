@@ -86,6 +86,10 @@ pub mod pallet {
 		NotEnoughAmongElligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		/// No new finalised houses found
 		NoHousesFinalisedFound(BlockNumberOf<T>),
+		/// A finalised house has been distributed among investors
+		SellAssetToInvestorsSuccessful(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
+		/// A finalised house failed to be distributed among investors
+		SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
 	}
 
 	#[pallet::hooks]
@@ -136,7 +140,22 @@ impl<T: Config> Pallet<T> {
 
 		// For each finalised houses, the ownership transfer is executed
 		for item in houses_iter {
-			ShareDistributor::Pallet::<T>::create_virtual(frame_system::RawOrigin::Root.into(), item.0.clone(), item.1.clone());
+			let result = ShareDistributor::Pallet::<T>::create_virtual(frame_system::RawOrigin::Root.into(), item.0.clone(), item.1.clone());
+
+			let block_number = <frame_system::Pallet<T>>::block_number();
+			match result {
+				Ok(_) => {
+					
+					Self::deposit_event(Event::SellAssetToInvestorsSuccessful(
+						item.0.clone(), item.1.clone(), block_number,
+					));
+				},
+				Err(e) => {
+					Self::deposit_event(Event::SellAssetToInvestorsFailed(
+						item.0.clone(), item.1.clone(), block_number,
+					));
+				},
+			}
 		}
 
 		Ok(().into())

@@ -805,3 +805,95 @@ fn process_finalised_assets_check_periodicity_should_fail() {
 		);
 	});
 }
+
+#[test]
+fn process_finalised_assets_should_succeed() {
+	new_test_ext().execute_with(|| {
+		
+		let mut block_number = System::block_number();
+		let amount = 100;
+
+		for account_id in 1..6 {
+			assert_ok!(RoleModule::set_role(
+				Origin::signed(account_id.clone()),
+				account_id,
+				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
+			));
+			
+			// test contribute with sufficient contribution and free balance
+			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+
+			let contribution = HousingFund::contributions(account_id).unwrap();
+
+			assert_eq!(contribution.block_number, block_number);
+
+			block_number = block_number.saturating_add(1);
+			System::set_block_number(block_number.clone());
+		}
+
+		assert_ok!(RoleModule::set_role(Origin::signed(KEZIA).clone(), KEZIA, crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER));
+		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::set_role(Origin::signed(AMANI).clone(), AMANI, crate::Onboarding::HousingFund::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+
+		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> = b"metadata0".to_vec().try_into().unwrap();
+
+		assert_ok!(NftModule::create_collection(
+			Origin::signed(KEZIA),
+			NftCollection::OFFICESTEST,
+			metadata.clone()
+		));
+
+		assert_ok!(OnboardingModule::create_and_submit_proposal(
+			Origin::signed(AMANI),
+			NftCollection::OFFICESTEST,
+			Some(100),
+			metadata,
+			false
+		));
+
+		let collection_id = NftCollection::OFFICESTEST.value();
+		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
+
+		assert_ok!(OnboardingModule::change_status(
+			Origin::signed(AMANI),
+			NftCollection::OFFICESTEST,item_id.clone(),
+			crate::Onboarding::AssetStatus::ONBOARDED)
+		);
+
+		assert_ok!(BiddingModule::process_onboarded_assets());
+
+		let mut event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+		// check that the event has been raised
+		assert_eq!(
+			event,
+			mock::Event::BiddingModule(crate::Event::HouseBiddingSucceeded(collection_id, item_id, 100, block_number))
+		);
+
+		assert_ok!(OnboardingModule::change_status(
+			Origin::signed(AMANI),
+			NftCollection::OFFICESTEST,item_id.clone(),
+			crate::Onboarding::AssetStatus::FINALISED)
+		);
+
+		let fees_account = Onboarding::Pallet::<Test>::account_id();
+		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account,150_000u32.into());
+
+		assert_ok!(BiddingModule::process_finalised_assets());
+
+		event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+		// check that the event has been raised
+		assert_eq!(
+			event,
+			mock::Event::BiddingModule(crate::Event::SellAssetToInvestorsSuccessful(collection_id, item_id, block_number))
+		);
+	});
+}
