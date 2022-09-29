@@ -241,12 +241,14 @@ impl<T: Config> Pallet<T> {
 		// We get contributions following the min-max rules
 		let contributions = Self::get_eligible_investors_contribution(amount.clone());
 
+		let contributions_length = Self::u64_to_balance_option(contributions.1.len() as u64).unwrap();
+
 		// We check that the total amount of the contributions allow to buy the asset
-		if contributions.0 < amount {
+		// And that the minimum number of investors is ok
+		if contributions.0 < amount ||
+			contributions_length < (percent / Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap()) {
 			return result;
 		}
-
-		let contributions_length = Self::u64_to_balance_option(contributions.1.len() as u64).unwrap();
 
 		// We have at least more than the maximum possible investors
 		if contributions_length >= (percent / Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap()) {
