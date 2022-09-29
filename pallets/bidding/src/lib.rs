@@ -81,9 +81,9 @@ pub mod pallet {
 		/// A list of investor cannot be assembled for an onboarded asset
 		FailedToAssembleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		/// No new onboarded houses found
-		NoNewHousesFound(BlockNumberOf<T>),
+		NoHousesOnboardedFound(BlockNumberOf<T>),
 		/// Selected investors don't have enough to bid for the asset
-		NotEnoughAmongElligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
+		NotEnoughAmongEligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		/// No new finalised houses found
 		NoHousesFinalisedFound(BlockNumberOf<T>),
 		/// A finalised house has been distributed among investors
@@ -167,7 +167,7 @@ impl<T: Config> Pallet<T> {
 
 		if houses.len() == 0 {
 			let block = <frame_system::Pallet<T>>::block_number();
-			Self::deposit_event(Event::NoNewHousesFound(block));
+			Self::deposit_event(Event::NoHousesOnboardedFound(block));
 			return Ok(().into());
 		}
 

@@ -183,12 +183,12 @@ fn get_eligible_investors_contribution_should_succeed() {
 fn get_common_investor_distribution_should_succeed() {
 	new_test_ext().execute_with(|| {
 		
-		let elligible_contributions = vec![(1, 20, 20),
+		let eligible_contributions = vec![(1, 20, 20),
 		(2, 20, 20),
 		(3, 20, 20),
 		(4, 20, 20),];
 
-		let list = BiddingModule::get_common_investor_distribution(100, 10, elligible_contributions.clone());
+		let list = BiddingModule::get_common_investor_distribution(100, 10, eligible_contributions.clone());
 
 		assert_eq!(list,
 			vec![
@@ -205,7 +205,7 @@ fn get_common_investor_distribution_should_succeed() {
 fn get_investor_distribution_should_succeed() {
 	new_test_ext().execute_with(|| {
 		
-		let elligible_contributions = vec![
+		let eligible_contributions = vec![
 			(1, 20, 20),
 			(2, 20, 20),
 			(3, 20, 20),
@@ -215,7 +215,7 @@ fn get_investor_distribution_should_succeed() {
 			(7, 20, 20),
 		];
 
-		let list = BiddingModule::get_investor_distribution(100, elligible_contributions.clone());
+		let list = BiddingModule::get_investor_distribution(100, eligible_contributions.clone());
 
 		assert_eq!(list,
 			vec![
@@ -744,7 +744,7 @@ fn process_onboarded_assets_check_periodicity_should_succeed() {
 		// check that the event has been raised
 		assert_eq!(
 			event,
-			mock::Event::BiddingModule(crate::Event::NoNewHousesFound(end_block_number))
+			mock::Event::BiddingModule(crate::Event::NoHousesOnboardedFound(end_block_number))
 		);
 	});
 }
