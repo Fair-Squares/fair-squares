@@ -27,11 +27,13 @@ pallet-collective = { git = "https://github.com/paritytech/substrate", branch = 
 pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
+pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26", default-features = false }
 pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-onboarding = { default-features = false, path="../onboarding" }
 pallet-nft = { default-features = false, path="../nft" }
 pallet-roles = { default-features = false, path="../roles" }
 pallet-voting = { default-features = false, path = "../voting" }
+pallet-share_distributor = { default-features = false, path = "../share_distributor" }
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
@@ -55,11 +57,13 @@ std = [
 	"pallet-democracy/std",
 	"pallet-scheduler/std",
 	"pallet-sudo/std",
+	"pallet-assets/std",
 	"pallet-housing_fund/std",
 	"pallet-onboarding/std",
 	"pallet-nft/std",
 	"pallet-roles/std",
 	"pallet-voting/std",
+	"pallet-share_distributor/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]

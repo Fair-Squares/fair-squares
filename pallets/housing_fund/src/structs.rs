@@ -65,10 +65,16 @@ impl<T: Config> FundInfo<T> {
 	}
 
 	pub fn unreserve(&mut self, amount: BalanceOf<T>) {
-		// remove the amount to reserved
+		// remove the amount from reserved
 		self.reserved -= amount;
 		// add the amount to transferable
 		self.transferable += amount;
+	}
+
+	pub fn use_reserved(&mut self, amount: BalanceOf<T>) {
+		// remove the amount from reserved
+		self.reserved -= amount;
+		self.total -= amount;
 	}
 }
 
@@ -120,6 +126,11 @@ impl<T: Config> Contribution<T> {
 	pub fn unreserve_amount(&mut self, amount: BalanceOf<T>) {
 		self.reserved_balance -= amount;
 		self.available_balance += amount;
+	}
+
+	pub fn use_reserved_amount(&mut self, amount: BalanceOf<T>) {
+		self.reserved_balance -= amount;
+		self.contributed_balance += amount;
 	}
 }
 

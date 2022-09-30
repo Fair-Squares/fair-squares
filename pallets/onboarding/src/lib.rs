@@ -248,7 +248,9 @@ pub mod pallet {
 		/// Insufficient balance for proposal creation
 		InsufficientBalance,
 		/// Action reserved to Seller role
-		ReservedToSeller
+		ReservedToSeller,
+		/// Failed to unreserved fund in Housing fund
+		HousingFundUnreserveFundFailed,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -291,7 +293,6 @@ pub mod pallet {
 				collection: coll_id,
 				item: item_id,
 		});
-
 
 			Ok(())
 		}

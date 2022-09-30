@@ -38,6 +38,7 @@ pub use crate::structs::*;
 pub use pallet_housing_fund as Housing_Fund;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_nft as Nft;
+pub use pallet_share_distributor as ShareDistributor;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -49,7 +50,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Onboarding::Config + Housing_Fund::Config {
+	pub trait Config: frame_system::Config + ShareDistributor::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
@@ -80,9 +81,15 @@ pub mod pallet {
 		/// A list of investor cannot be assembled for an onboarded asset
 		FailedToAssembleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		/// No new onboarded houses found
-		NoNewHousesFound(BlockNumberOf<T>),
+		NoHousesOnboardedFound(BlockNumberOf<T>),
 		/// Selected investors don't have enough to bid for the asset
-		NotEnoughAmongElligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>)
+		NotEnoughAmongEligibleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
+		/// No new finalised houses found
+		NoHousesFinalisedFound(BlockNumberOf<T>),
+		/// A finalised house has been distributed among investors
+		SellAssetToInvestorsSuccessful(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
+		/// A finalised house failed to be distributed among investors
+		SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
 	}
 
 	#[pallet::hooks]
@@ -110,19 +117,57 @@ impl<T: Config> Pallet<T> {
 		let max_block_weight: u64 = 1000;
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
-			Self::process_asset();
+			Self::process_onboarded_assets();
+			Self::process_finalised_assets();
 		}
 
 		max_block_weight
 	}
 
-	pub fn process_asset() -> DispatchResultWithPostInfo {
+	pub fn process_finalised_assets() -> DispatchResultWithPostInfo {
+
+		// We retrieve houses with finalised status
+		let houses = Onboarding::Pallet::<T>::get_finalised_houses().clone();
+
+		if houses.len() == 0 {
+			// If no houses are found, an event is raised
+			let block = <frame_system::Pallet<T>>::block_number();
+			Self::deposit_event(Event::NoHousesFinalisedFound(block));
+			return Ok(().into());
+		}
+
+		let houses_iter = houses.iter();
+
+		// For each finalised houses, the ownership transfer is executed
+		for item in houses_iter {
+			let result = ShareDistributor::Pallet::<T>::create_virtual(frame_system::RawOrigin::Root.into(), item.0.clone(), item.1.clone());
+
+			let block_number = <frame_system::Pallet<T>>::block_number();
+			match result {
+				Ok(_) => {
+					
+					Self::deposit_event(Event::SellAssetToInvestorsSuccessful(
+						item.0.clone(), item.1.clone(), block_number,
+					));
+				},
+				Err(e) => {
+					Self::deposit_event(Event::SellAssetToInvestorsFailed(
+						item.0.clone(), item.1.clone(), block_number,
+					));
+				},
+			}
+		}
+
+		Ok(().into())
+	}
+
+	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
 
 		let houses = Onboarding::Pallet::<T>::get_onboarded_houses().clone();
 
 		if houses.len() == 0 {
 			let block = <frame_system::Pallet<T>>::block_number();
-			Self::deposit_event(Event::NoNewHousesFound(block));
+			Self::deposit_event(Event::NoHousesOnboardedFound(block));
 			return Ok(().into());
 		}
 
@@ -196,12 +241,14 @@ impl<T: Config> Pallet<T> {
 		// We get contributions following the min-max rules
 		let contributions = Self::get_eligible_investors_contribution(amount.clone());
 
+		let contributions_length = Self::u64_to_balance_option(contributions.1.len() as u64).unwrap();
+
 		// We check that the total amount of the contributions allow to buy the asset
-		if contributions.0 < amount {
+		// And that the minimum number of investors is ok
+		if contributions.0 < amount ||
+			contributions_length < (percent / Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap()) {
 			return result;
 		}
-
-		let contributions_length = Self::u64_to_balance_option(contributions.1.len() as u64).unwrap();
 
 		// We have at least more than the maximum possible investors
 		if contributions_length >= (percent / Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap()) {

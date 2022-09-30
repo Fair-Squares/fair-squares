@@ -154,6 +154,9 @@ pub mod pallet {
 			//distribute tokens
 			Self::distribute_tokens(account.clone(),collection_id.clone(),item_id.clone()).ok();
 
+			// Update Housing fund informations
+			HousingFund::Pallet::<T>::validate_house_bidding(collection_id.clone(), item_id.clone()).ok();
+
 
 			// Emit some events.
 			let created = <frame_system::Pallet<T>>::block_number();

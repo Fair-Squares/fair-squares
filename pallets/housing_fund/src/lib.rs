@@ -87,7 +87,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn contributions)]
 	// Distribution of investor's contributions
-	pub(super) type Contributions<T> =
+	pub type Contributions<T> =
 		StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Contribution<T>, OptionQuery>;
 
 	#[pallet::storage]
@@ -100,7 +100,7 @@ pub mod pallet {
 	#[pallet::getter(fn purchases)]
 	// Housing fund used for purchases
 	pub(super) type Purchases<T> =
-		StorageMap<_, Blake2_128Concat, StorageIndex, FundOperation<T>, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, (NftCollectionId<T>, NftItemId<T>), FundOperation<T>, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	#[pallet::event]
@@ -118,6 +118,8 @@ pub mod pallet {
 		/// Fund reservation succeded
 		FundReservationSucceeded(T::NftCollectionId, T::NftItemId, BalanceOf<T>, BlockNumberOf<T>),
 		FundReservationCancelled(T::NftCollectionId, T::NftItemId, BalanceOf<T>, BlockNumberOf<T>),
+		PurchaseFundValidated(T::NftCollectionId, T::NftItemId, BalanceOf<T>, BlockNumberOf<T>),
+		FundUnreservedForPurchase(T::NftCollectionId, T::NftItemId, BalanceOf<T>, BlockNumberOf<T>),
 	}
 
 	// Errors inform users that something went wrong.
