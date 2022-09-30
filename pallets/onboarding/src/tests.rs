@@ -128,10 +128,21 @@ fn create_proposal_2() {
 			true
 		));
 
+		
+
 		let coll_id = NftColl::OFFICESTEST.value();
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
-		let status: AssetStatus =
-			Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().status;
+
+		let status: AssetStatus = Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().status;
+		
+		let out_call = OnboardingModule::voting_calls(coll_id.clone(),item_id.clone()).unwrap();
+		let w_status1 = Box::new(OnboardingModule::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
+		assert_ok!(w_status1.dispatch(Origin::signed(ALICE)));
+
+		let status_bis: AssetStatus = Houses::<Test>::get(coll_id.clone(), item_id.clone()).unwrap().status;
+		assert_ne!(status.clone(),status_bis.clone());
+		println!("status1:{:?}\nstatus2:{:?}",status,status_bis);
+		
 
 		expect_events(vec![
 			crate::Event::ProposalCreated {

@@ -212,13 +212,13 @@ pub mod pallet {
 		FundsReserved { from_who: T::AccountId, amount: Option<BalanceOf<T>> },
 		///Funds slashed
 		SlashedFunds { from_who: T::AccountId, amount: Option<BalanceOf<T>> },
-		HouseStatusChanged { 
-			by_who: T::AccountId,
-			collection: NftCollectionOf,
+		///StatusChanged
+		AssetStatusChanged {
+			changed_to: AssetStatus,
+			collection: T::NftCollectionId,
 			item: T::NftItemId,
-			status: AssetStatus,
-		},
 	}
+}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
@@ -286,15 +286,13 @@ pub mod pallet {
 			status: AssetStatus,
 		) -> DispatchResult {
 			let _caller = ensure_signed(origin.clone()).unwrap();
-
+			let coll_id: T::NftCollectionId = collection.clone().value().into();
 			Self::status(collection.clone(), item_id.clone(), status.clone());
-
-			Self::deposit_event(Event::HouseStatusChanged {
-				by_who: _caller,
-				collection: collection.clone(),
-				item: item_id.clone(),
-				status: status,
-			});
+			Self::deposit_event(Event::AssetStatusChanged {
+				changed_to: status,
+				collection: coll_id,
+				item: item_id,
+		});
 
 			Ok(())
 		}
@@ -491,6 +489,7 @@ pub mod pallet {
 			let house = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
 
 			let _new_call = VotingCalls::<T>::new(collection_id.clone(), item_id.clone()).ok();
+
 			//Create Call for collective-to-democracy status change
 			let call1: T::Prop = Call::<T>::change_status {
 				collection: collection.clone(),
