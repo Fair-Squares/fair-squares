@@ -212,6 +212,12 @@ pub mod pallet {
 		FundsReserved { from_who: T::AccountId, amount: Option<BalanceOf<T>> },
 		///Funds slashed
 		SlashedFunds { from_who: T::AccountId, amount: Option<BalanceOf<T>> },
+		HouseStatusChanged { 
+			by_who: T::AccountId,
+			collection: NftCollectionOf,
+			item: T::NftItemId,
+			status: AssetStatus,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -280,7 +286,16 @@ pub mod pallet {
 			status: AssetStatus,
 		) -> DispatchResult {
 			let _caller = ensure_signed(origin.clone()).unwrap();
-			Self::status(collection, item_id, status);
+
+			Self::status(collection.clone(), item_id.clone(), status.clone());
+
+			Self::deposit_event(Event::HouseStatusChanged {
+				by_who: _caller,
+				collection: collection.clone(),
+				item: item_id.clone(),
+				status: status,
+			});
+
 			Ok(())
 		}
 
