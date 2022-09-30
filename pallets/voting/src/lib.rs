@@ -49,7 +49,8 @@ pub mod pallet {
 	use super::*;
 	use frame_support::{
 		dispatch::Dispatchable, inherent::Vec, pallet_prelude::*, sp_runtime::traits::Hash,
-		traits::ReservableCurrency, weights::GetDispatchInfo,
+		traits::{ReservableCurrency, UnfilteredDispatchable}, 
+		weights::GetDispatchInfo,
 	};
 	use frame_system::{pallet_prelude::*, RawOrigin};
 
@@ -63,8 +64,9 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Call: Parameter
-			+ Dispatchable<Origin = <Self as frame_system::Config>::Origin>
-			+ From<Call<Self>>;
+			+ UnfilteredDispatchable<Origin = <Self as frame_system::Config>::Origin>
+			+ From<Call<Self>>
+			+ GetDispatchInfo;
 		type WeightInfo: WeightInfo;
 		type Delay: Get<Self::BlockNumber>;
 		type CheckDelay: Get<Self::BlockNumber>;
@@ -325,7 +327,7 @@ pub mod pallet {
 			// Execute the dispatch for collective vote passed
 			proposal
 				.collective_passed_call
-				.dispatch(frame_system::RawOrigin::Signed(account_id).into()).ok();
+				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id).into()).ok();
 
 			Self::deposit_event(Event::InvestorVoteSessionStarted(proposal_hash, block_number));
 
@@ -355,7 +357,7 @@ pub mod pallet {
 			});
 
 			// The proposal is executed
-			proposal.dispatch(frame_system::RawOrigin::Signed(account_id).into()).ok();
+			proposal.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id).into()).ok();
 
 			Ok(().into())
 		}
@@ -523,7 +525,7 @@ pub mod pallet {
 	}
 }
 
-use frame_support::dispatch::Dispatchable;
+use frame_support::dispatch::{Dispatchable, UnfilteredDispatchable};
 
 impl<T: Config> Pallet<T> {
 	// Conversion of u64 to BalanxceOf<T>
@@ -576,7 +578,7 @@ impl<T: Config> Pallet<T> {
 					if voting.collective_closed {
 						// the collective step not passed means it has been rejected by the House Council
 						if !voting.collective_step {
-							voting.collective_failed_call.dispatch(
+							voting.collective_failed_call.dispatch_bypass_filter(
 								frame_system::RawOrigin::Signed(voting.account_id.clone()).into(),
 							).ok();
 						}
@@ -600,7 +602,7 @@ impl<T: Config> Pallet<T> {
 					let voting = VotingProposals::<T>::get(elt.0).unwrap();
 
 					if !voting.proposal_executed {
-						voting.democracy_failed_call.dispatch(
+						voting.democracy_failed_call.dispatch_bypass_filter(
 							frame_system::RawOrigin::Signed(voting.account_id.clone()).into(),
 						).ok();
 					}
