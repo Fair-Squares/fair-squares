@@ -102,8 +102,15 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		
-		
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn force_process_onboarded_asset(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+			Self::process_onboarded_assets()
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn force_process_finalised_asset(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+			Self::process_finalised_assets()
+		}		
 	}
 }
 
