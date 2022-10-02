@@ -252,6 +252,19 @@ fn share_distributor1(){
 		let when = <frame_system::Pallet<Test>>::block_number();
 		let new_owner0 = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().virtual_account;
 		let owners = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().owners;
+		let id = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().token_id;
+		println!("The token id is:{:?}",id.clone());
+		assert_eq!(100,Assets::Pallet::<Test>::total_supply(id.clone()));
+
+		let balance0 = Assets::Pallet::<Test>::balance(id.clone(),DAVE);
+		let balance1 = Assets::Pallet::<Test>::balance(id.clone(),EVE);
+		let balance2 = Assets::Pallet::<Test>::balance(id.clone(),new_owner0.clone());
+		
+		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}\nTokens own by Virtual_account:{:?}",balance0,balance1,balance2);
+		let infos = ShareDistributor::tokens_infos(new_owner0.clone()).unwrap().owners;
+
+		println!("Again, new owners are:\n{:?}",infos);
+
 		assert_eq!(owners.len()>1,true);
 		expect_events(vec![
 			crate::Event::VirtualCreated {

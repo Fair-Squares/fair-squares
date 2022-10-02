@@ -84,6 +84,17 @@ pub mod pallet {
 		Ownership<T>,
 		OptionQuery,
 	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn tokens_infos)]
+	/// Stores Tokens infos
+	pub type Tokens<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId,		
+		Owners<T>,
+		OptionQuery,
+	>;
 	
 	#[pallet::type_value]
 	///Initializing Token id to value 0
@@ -116,6 +127,7 @@ pub mod pallet {
 			from: T::AccountId,
 			to: Vec<T::AccountId>,
 			token_id:<T as pallet::Config>::AssetId,
+			owners:Vec<(T::AccountId,<T as Assets::Config>::Balance)>,
 		}
 
 	}
@@ -175,10 +187,12 @@ pub mod pallet {
 
 			let new_owners = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().owners;
 			let token_id = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().token_id;
+			let owners = Self::tokens_infos(account.clone()).unwrap().owners;
 			Self::deposit_event(Event::OwnershipTokensDistributed{
 				from: account.clone(),
 				to: new_owners,
-				token_id: token_id,
+				token_id,
+				owners,
 			});
 
 			Ok(())

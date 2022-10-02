@@ -19,6 +19,38 @@ pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 
+	#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
+	#[scale_info(skip_type_params(T))]
+	#[cfg_attr(feature = "std", derive(Debug))]
+	pub struct Owners<T:Config> {
+		
+		pub owners: Vec<(T::AccountId,<T as Assets::Config>::Balance)>,
+		///Creation Blocknumber
+		pub created: BlockNumberOf<T>,
+		///TokenId
+		pub token_id: <T as pallet::Config>::AssetId,
+		///Total supply of tokens
+		pub supply: <T as Assets::Config>::Balance
+	}
+
+	impl<T: Config> Owners<T> {
+		pub fn new(			
+			virtual_account: T::AccountId
+		) -> DispatchResult {
+			let owners = Vec::new();			
+			let created = <frame_system::Pallet<T>>::block_number();
+			let token_id:<T as pallet::Config>::AssetId = TokenId::<T>::get().into();
+			let supply = Zero::zero();
+			let tokens = Owners::<T>{owners,created,token_id,supply};
+
+					
+			Tokens::<T>::insert(virtual_account,tokens);
+	
+			Ok(())		
+		}
+	}
+
+
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]

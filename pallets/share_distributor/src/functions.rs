@@ -18,6 +18,7 @@ pub fn virtual_account(collection_id: T::NftCollectionId, item_id: T::NftItemId)
 
     //Store account inside storage
     Ownership::<T>::new(collection_id.clone(),item_id.clone(),account.clone()).ok();
+    Owners::<T>::new(account.clone()).ok();
 
     //The virtual account needs some initial funds to pay for asset creation fees
     //These funds could be provided by the FairSquare FeesAccount maintained in the 
@@ -56,27 +57,38 @@ Ok(())
 }
 
 ///Collect contributors to the bid, and their shares
-pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> Vec<(T::AccountId, Percent)>{
+pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId,total_tokens:<T as Assets::Config>::Balance) -> Vec<(T::AccountId, Percent)>{
 
     //Get owners and their reserved contribution to the bid
     
     let reservation_infos = HousingFund::Reservations::<T>::get((collection_id.clone(),item_id.clone())).unwrap();
     let vec0 = reservation_infos.contributions;
     let price = reservation_infos.amount;
+    let virtual_acc = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().virtual_account;
+
     let mut vec = Vec::new() ;
     for i in vec0.iter(){
+        
         let price0 = Self::balance_to_u64_option(price).unwrap();
         let contribution = Self::balance_to_u64_option(i.1.clone()).unwrap();
         let share = Percent::from_rational(contribution,price0);
         debug_assert!(!share.is_zero()); 
-        vec.push((i.0.clone(),share));
+        vec.push((i.0.clone(),share.clone()));
         //Update Virtual_account storage
         Virtual::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
             let mut val0 = val.clone().unwrap();
             val0.owners.push(i.0.clone());
             *val = Some(val0);
 
-        }); 
+        });
+        //Update owners in Tokens storage
+        Tokens::<T>::mutate(&virtual_acc,|val|{
+            let amount:<T as Assets::Config>::Balance = share.clone()* total_tokens.clone();
+            let mut val0 = val.clone().unwrap();
+            val0.owners.push((i.0.clone(),amount));
+            *val = Some(val0);
+
+        });
 
     }
     vec
@@ -109,6 +121,14 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
     //mint 100 tokens
     let res0 = Assets::Pallet::<T>::mint(RawOrigin::Signed(account.clone()).into(),token_id.clone().into(),to,Self::u32_to_balance_option(100).unwrap());
     debug_assert!(res0.is_ok());
+
+    //Update supply in Tokens storage
+    Tokens::<T>::mutate(account,|val|{
+        let mut val0 = val.clone().unwrap();
+        val0.supply = Assets::Pallet::<T>::total_supply(token_id.into());
+        *val = Some(val0);
+    });
+
     
 
     Ok(())
@@ -117,11 +137,12 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
 
 ///Distribute the ownership tokens to the group of new owners
 pub fn distribute_tokens(account:T::AccountId,collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult{
-    let shares = Self::owner_and_shares(collection_id.clone(),item_id.clone());  
+      
     ensure!(Virtual::<T>::get(collection_id,item_id).is_some(),Error::<T>::InvalidValue);  
     let token_id = Virtual::<T>::get(collection_id,item_id).unwrap().token_id;
     let total_tokens = Assets::Pallet::<T>::total_supply(token_id.into());
     debug_assert!(total_tokens == Self::u32_to_balance_option(100).unwrap());
+    let shares = Self::owner_and_shares(collection_id.clone(),item_id.clone(),total_tokens.clone());
     
     let from = T::Lookup::unlookup(account.clone());
     let origin:OriginFor<T> = RawOrigin::Signed(account.clone()).into();
