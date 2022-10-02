@@ -978,7 +978,7 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 			Call::Council(_) => false,
 			Call::NftModule(_) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
+			// Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::reject_edit { .. }) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy { .. }) => false,
 			_ => true,
@@ -1051,8 +1051,8 @@ parameter_types! {
 	pub const SimultaneousAssetBidder: u64 = 1;
 	pub const MaxTriesBid: u64 = 3;
 	pub const MaxTriesAseemblingInvestor: u64 = 3;
-	pub const MaximumSharePerInvestor: u64 = 20;
-	pub const MinimumSharePerInvestor: u64 = 10;
+	pub const MaximumSharePerInvestor: u64 = 40;
+	pub const MinimumSharePerInvestor: u64 = 5;
 	pub const NewAssetScanPeriod: u32 = EPOCH_DURATION_IN_BLOCKS;
 }
 
