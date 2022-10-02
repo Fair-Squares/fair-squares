@@ -109,7 +109,7 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
     
     
     //Create token class
-    let res = Assets::Pallet::<T>::force_create(origin.clone(),token_id.clone().into(),to.clone(),false,One::one());
+    let res = Assets::Pallet::<T>::force_create(origin.clone(),token_id.clone().into(),to.clone(),true,One::one());
     debug_assert!(res.is_ok());  
     
     //Set class metadata
