@@ -77,7 +77,7 @@ pub mod pallet {
 		// The bidding on the house is successful
 		HouseBiddingSucceeded(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		// The bidding on the house failed
-		HouseBiddingFailed(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
+		HouseBiddingFailed(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>, Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)>),
 		/// A list of investor cannot be assembled for an onboarded asset
 		FailedToAssembleInvestors(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, BlockNumberOf<T>),
 		/// No new onboarded houses found
@@ -90,6 +90,8 @@ pub mod pallet {
 		SellAssetToInvestorsSuccessful(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
 		/// A finalised house failed to be distributed among investors
 		SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
+		ProcessingAsset(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>),
+		InvestorListCreationSuccessful(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>, Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)>),
 	}
 
 	#[pallet::hooks]
@@ -102,8 +104,15 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		
-		
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn force_process_onboarded_asset(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+			Self::process_onboarded_assets()
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn force_process_finalised_asset(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
+			Self::process_finalised_assets()
+		}		
 	}
 }
 
@@ -185,6 +194,7 @@ impl<T: Config> Pallet<T> {
 			}
 
 			let amount = amount_wrap.unwrap();
+			Self::deposit_event(Event::ProcessingAsset(item.0.clone(), item.1.clone(), amount.clone()));			
 
 			// Check if Housing Fund has enough fund for the asset
 			if Housing_Fund::Pallet::<T>::check_available_fund(amount.clone()) == false {
@@ -205,6 +215,10 @@ impl<T: Config> Pallet<T> {
 				continue;
 			}
 
+			Self::deposit_event(Event::InvestorListCreationSuccessful(
+				item.0.clone(), item.1.clone(), amount.clone(), investors_shares.clone(),
+			));
+
 			let result = Housing_Fund::Pallet::<T>::house_bidding(item.0.clone(), item.1.clone(), amount.clone(), investors_shares.clone());
 
 			let block_number = <frame_system::Pallet<T>>::block_number();
@@ -217,7 +231,7 @@ impl<T: Config> Pallet<T> {
 				},
 				Err(e) => {
 					Self::deposit_event(Event::HouseBiddingFailed(
-						item.0.clone(), item.1.clone(), amount.clone(), block_number,
+						item.0.clone(), item.1.clone(), amount.clone(), block_number, investors_shares,
 					));
 					continue;
 				},
@@ -305,6 +319,10 @@ impl<T: Config> Pallet<T> {
 			// We are checking the last item so it takes the remaining percentage
 			if count == contributions_length {
 				item_share = actual_percentage;
+			}
+			else if item.1.clone() >= actual_percentage {
+				// The current account is given a median share as its maximum available share will break the distribution rule
+				item_share = actual_percentage / Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
 			}
 			else {
 				// We calculate what is the share if a median rule is applied on the actual contribution and the remaining ones
