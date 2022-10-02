@@ -2,6 +2,7 @@
 
 use super::*;
 use frame_benchmarking::{account, benchmarks};
+use crate::Pallet as Roles;
 use frame_system::RawOrigin;
 
 const SEED: u32 = 0;
@@ -142,5 +143,5 @@ benchmarks! {
 
 
 
-	impl_benchmark_test_suite!(Roles, crate::tests::new_test_ext(), crate::tests::Test)
+	impl_benchmark_test_suite!(Roles, crate::mock::new_test_ext(), crate::mock::Test)
 }

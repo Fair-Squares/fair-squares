@@ -81,6 +81,11 @@ impl<T: Config> Pallet<T> {
 		ensure!(exist, Error::<T>::NotInWaitingList);
 		Ok(())
 	}
+	
+	
+	pub fn get_manager() -> AccountIdOf<T> {
+		SUDO::Pallet::<T>::key().unwrap()
+	}
 
 	pub fn check_role_approval_list(account: AccountIdOf<T>) -> DispatchResult {
 		let (sellers, servicers) = Self::get_pending_approvals();

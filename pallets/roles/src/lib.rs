@@ -85,53 +85,53 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn investors)]
 	///Registry of Investors organized by AccountId
-	pub(super) type InvestorLog<T: Config> =
+	pub type InvestorLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn sellers)]
 	///Registry of Sellers organized by AccountId
-	pub(super) type HouseSellerLog<T: Config> =
+	pub type HouseSellerLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn tenants)]
 	///Registry of Tenants organized by AccountId
-	pub(super) type TenantLog<T: Config> =
+	pub type TenantLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn servicers)]
 	///Registry of Servicers organized by AccountId
-	pub(super) type ServicerLog<T: Config> =
+	pub type ServicerLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer<T>, OptionQuery>;
 
 	#[pallet::type_value]
 	///Initializing function for the approval waiting list
-	pub(super) fn InitApprovalList<T: Config>() -> Idle<T> {
+	pub fn InitApprovalList<T: Config>() -> Idle<T> {
 		(Vec::new(), Vec::new())
 	}
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_approvals)]
 	///Approval waiting list for Sellers and Servicers
-	pub(super) type RoleApprovalList<T: Config> =
+	pub type RoleApprovalList<T: Config> =
 		StorageValue<_, Idle<T>, ValueQuery, InitApprovalList<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_roles)]
 	///Registry of Roles by AccountId
-	pub(super) type AccountsRolesLog<T: Config> =
+	pub type AccountsRolesLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
 
 	#[pallet::type_value]
 	///Initializing function for the total number of members
-	pub(super) fn InitTotalMembers<T: Config>() -> u32 {
+	pub fn InitTotalMembers<T: Config>() -> u32 {
 		0
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn total_members)]
-	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, InitTotalMembers<T>>;
+	pub type TotalMembers<T> = StorageValue<_, u32, ValueQuery, InitTotalMembers<T>>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
