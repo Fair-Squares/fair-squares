@@ -27,14 +27,14 @@ impl<T: Config> Pallet<T> {
 				exist = true;
 				let mut servicer = serv.clone();
 				servicer.activated = true;
-				servicer.verifier = sender.clone();
+				servicer.verifier = sender;
 				ServicerLog::<T>::insert(&who, servicer);
 				RoleApprovalList::<T>::mutate(|val| {
 					val.1.remove(index);
 				});
 				AccountsRolesLog::<T>::insert(&who, Accounts::SERVICER);
 				let now = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::ServicerCreated(now, who.clone()));
+				Self::deposit_event(Event::ServicerCreated(now, who));
 				break;
 			}
 		}
@@ -74,7 +74,7 @@ impl<T: Config> Pallet<T> {
 					val.1.remove(index);
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who.clone()));
+				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
 				break;
 			}
 		}

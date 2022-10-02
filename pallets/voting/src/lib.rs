@@ -48,7 +48,7 @@ type DemoBalanceOf<T> =
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		dispatch::Dispatchable, inherent::Vec, pallet_prelude::*, sp_runtime::traits::Hash,
+		inherent::Vec, pallet_prelude::*, sp_runtime::traits::Hash,
 		traits::{ReservableCurrency, UnfilteredDispatchable}, 
 		weights::GetDispatchInfo,
 	};
@@ -521,7 +521,7 @@ pub mod pallet {
 	}
 }
 
-use frame_support::dispatch::{Dispatchable, UnfilteredDispatchable};
+use frame_support::dispatch::UnfilteredDispatchable;
 
 impl<T: Config> Pallet<T> {
 	// Conversion of u64 to BalanxceOf<T>

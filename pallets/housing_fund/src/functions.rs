@@ -36,7 +36,7 @@ impl<T: Config> Pallet<T> {
 	pub fn check_available_fund(value: BalanceOf<T>) -> bool {
 		let fund = FundBalance::<T>::get();
 
-		fund.can_take_off(value.clone())
+		fund.can_take_off(value)
 	}
 
 	/// Execute a bid on a house, funds are reserve for the bid before the transfer
@@ -60,7 +60,7 @@ impl<T: Config> Pallet<T> {
 
 		// Check the number of investors
 		ensure!(
-			contributions.clone().len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(),
+			contributions.len() <= T::MaxInvestorPerHouse::get().try_into().unwrap(),
 			Error::<T>::NotMoreThanMaxInvestorPerHouse
 		);
 
@@ -175,7 +175,7 @@ impl<T: Config> Pallet<T> {
 
 		let reservation = reservation_wrap.unwrap();
 
-		let fund = FundBalance::<T>::get();
+		let _fund = FundBalance::<T>::get();
 		// The amount is unreserved in the currency pallet
 		T::LocalCurrency::unreserve(&Self::fund_account_id(), reservation.amount);
 

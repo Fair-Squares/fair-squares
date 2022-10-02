@@ -140,45 +140,45 @@ pub mod pallet {
 		pub fn create_virtual(origin: OriginFor<T>, collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
 			
 			let _caller = ensure_root(origin.clone());
-			let seller: T::AccountId = Nft::Pallet::<T>::owner(collection_id.clone(),item_id.clone()).unwrap();
+			let seller: T::AccountId = Nft::Pallet::<T>::owner(collection_id,item_id).unwrap();
 			// Create virtual account
-			Self::virtual_account(collection_id.clone(),item_id.clone()).ok();
-			let account = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().virtual_account;
+			Self::virtual_account(collection_id,item_id).ok();
+			let account = Self::virtual_acc(collection_id,item_id).unwrap().virtual_account;
 
 			// execute NFT transaction
-			Self::nft_transaction(collection_id.clone(),item_id.clone(),account.clone()).ok();
+			Self::nft_transaction(collection_id,item_id,account.clone()).ok();
 
 			//Create new token class
-			Self::create_tokens(origin,collection_id.clone(),item_id.clone(),account.clone()).ok();
+			Self::create_tokens(origin,collection_id,item_id,account.clone()).ok();
 			
 			//distribute tokens
-			Self::distribute_tokens(account.clone(),collection_id.clone(),item_id.clone()).ok();
+			Self::distribute_tokens(account.clone(),collection_id,item_id).ok();
 
 			// Update Housing fund informations
-			HousingFund::Pallet::<T>::validate_house_bidding(collection_id.clone(), item_id.clone()).ok();
+			HousingFund::Pallet::<T>::validate_house_bidding(collection_id, item_id).ok();
 
 
 			// Emit some events.
 			let created = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::VirtualCreated{
 				account: account.clone(),
-				collection: collection_id.clone(),
-				item: item_id.clone(),
-				when: created.clone(),
+				collection: collection_id,
+				item: item_id,
+				when: created,
 			});			
 
 			Self::deposit_event(Event::NftTransactionExecuted{
 				nft_transfer_to: account.clone(),
-				nft_transfer_from: seller.clone(),
+				nft_transfer_from: seller,
 				when: created
 			});
 
-			let new_owners = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().owners;
-			let token_id = Self::virtual_acc(collection_id.clone(),item_id.clone()).unwrap().token_id;
+			let new_owners = Self::virtual_acc(collection_id,item_id).unwrap().owners;
+			let token_id = Self::virtual_acc(collection_id,item_id).unwrap().token_id;
 			Self::deposit_event(Event::OwnershipTokensDistributed{
-				from: account.clone(),
+				from: account,
 				to: new_owners,
-				token_id: token_id,
+				token_id,
 			});
 
 			Ok(())

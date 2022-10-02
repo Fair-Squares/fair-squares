@@ -289,7 +289,7 @@ fn testnet_genesis(
 		im_online: ImOnlineConfig { keys: vec![] },
 		nomination_pools:NominationPoolsConfig {
 			min_create_bond: 10 * DOLLARS,
-			min_join_bond: 1 * DOLLARS,
+			min_join_bond: DOLLARS,
 			..Default::default()
 		},
 		staking: StakingConfig {

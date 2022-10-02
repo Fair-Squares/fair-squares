@@ -504,9 +504,9 @@ parameter_types! {
 	pub const UnsignedPhase: u32 = EPOCH_DURATION_IN_BLOCKS / 4;
 
 	// signed config
-	pub const SignedRewardBase: Balance = 1 * DOLLARS;
-	pub const SignedDepositBase: Balance = 1 * DOLLARS;
-	pub const SignedDepositByte: Balance = 1 * CENTS;
+	pub const SignedRewardBase: Balance =DOLLARS;
+	pub const SignedDepositBase: Balance =DOLLARS;
+	pub const SignedDepositByte: Balance =CENTS;
 
 	pub BetterUnsignedThreshold: Perbill = Perbill::from_rational(1u32, 10_000);
 
@@ -723,7 +723,7 @@ parameter_types! {
 	// Deposit to create a class of assets is 100 Dollars
 	pub const CollectionDeposit: Balance = 100 * DOLLARS;
 	// Deposit to create an item is 1 Dollars
-	pub const ItemDeposit: Balance = 1 * DOLLARS;
+	pub const ItemDeposit: Balance =DOLLARS;
 	pub const KeyLimit: u32 = 32;
 	pub const ValueLimit: u32 = 256;
 	// Base deposit to add metadata is 10 CENTS
@@ -834,13 +834,13 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
-	pub const SpendPeriod: BlockNumber = 1 * DAYS;
+	pub const ProposalBondMinimum: Balance =DOLLARS;
+	pub const SpendPeriod: BlockNumber =DAYS;
 	pub const Burn: Permill = Permill::from_percent(50);
-	pub const TipCountdown: BlockNumber = 1 * DAYS;
+	pub const TipCountdown: BlockNumber =DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(20);
-	pub const TipReportDepositBase: Balance = 1 * DOLLARS;
-	pub const DataDepositPerByte: Balance = 1 * CENTS;
+	pub const TipReportDepositBase: Balance =DOLLARS;
+	pub const DataDepositPerByte: Balance =CENTS;
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const MaximumReasonLength: u32 = 300;
 	pub const MaxApprovals: u32 = 100;
@@ -873,9 +873,9 @@ impl pallet_treasury::Config for Runtime {
 
 parameter_types! {
 	pub const PreimageMaxSize: u32 = 4096 * 1024;
-	pub const PreimageBaseDeposit: Balance = 1 * DOLLARS;
+	pub const PreimageBaseDeposit: Balance =DOLLARS;
 	// One cent: $10,000 / MB
-	pub const PreimageByteDeposit: Balance = 1 * CENTS;
+	pub const PreimageByteDeposit: Balance =CENTS;
 }
 
 impl pallet_preimage::Config for Runtime {
@@ -913,7 +913,7 @@ parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 24 * 60 * MINUTES;
 	pub const VotingPeriod: BlockNumber = 3 * MINUTES;//28 * 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
-	pub const MinimumDeposit: Balance = 1 * DOLLARS;
+	pub const MinimumDeposit: Balance =DOLLARS;
 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxProposals: u32 = 100;
@@ -987,10 +987,10 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 }
 
 parameter_types! {
-	pub const Delay: BlockNumber = 0 * MINUTES;//3 * MINUTES;
-	pub const CheckDelay: BlockNumber = 1 * MINUTES;//3 * MINUTES;
+	pub const Delay: BlockNumber =MINUTES;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber =MINUTES;//3 * MINUTES;
 	pub const InvestorVoteAmount: u128 = 10 * DOLLARS;
-	pub const CheckPeriod: BlockNumber = 1 * MINUTES;
+	pub const CheckPeriod: BlockNumber =MINUTES;
 }
 
 impl pallet_voting::Config for Runtime {
@@ -1009,8 +1009,8 @@ impl pallet_voting::Config for Runtime {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100 * DOLLARS;
-	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
-	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+	pub const ApprovalDeposit: Balance =DOLLARS;
+	pub const MetadataDepositPerByte: Balance =DOLLARS;
 	pub const StringLimit: u32 = 50;
 }
 

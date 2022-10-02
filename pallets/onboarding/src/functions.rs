@@ -29,13 +29,13 @@ impl<T: Config> Pallet<T> {
 		new_price: Option<BalanceOf<T>>,
 		item_id: T::NftItemId,
 	) -> DispatchResult {
-		let coll_id: T::NftCollectionId = collection.clone().value().into();
+		let coll_id: T::NftCollectionId = collection.value().into();
 		// Mint nft
-		Nft::Pallet::<T>::mint(origin.clone(), collection.clone(), metadata).ok();
+		Nft::Pallet::<T>::mint(origin.clone(), collection, metadata).ok();
 
-		let infos = Nft::Items::<T>::get(coll_id.clone(), item_id.clone()).unwrap();
+		let infos = Nft::Items::<T>::get(coll_id, item_id).unwrap();
 		// Set asset price
-		Self::price(origin, collection, item_id.clone(), new_price.clone()).ok();
+		Self::price(origin, collection, item_id, new_price).ok();
 		// Create Asset
 		Asset::<T>::new(coll_id, item_id, infos, new_price).ok();
 
@@ -43,8 +43,8 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: AssetStatus) {
-		let collection_id: T::NftCollectionId = collection.clone().value().into();
-		Houses::<T>::mutate(collection_id, item_id.clone(), |val| {
+		let collection_id: T::NftCollectionId = collection.value().into();
+		Houses::<T>::mutate(collection_id, item_id, |val| {
 			let mut v0 = val.clone().unwrap();
 			v0.status = status;
 			*val = Some(v0);
@@ -57,11 +57,11 @@ impl<T: Config> Pallet<T> {
 		item_id: T::NftItemId,
 		new_price: Option<BalanceOf<T>>,
 	) -> DispatchResult {
-		let sender = ensure_signed(origin.clone())?;
-		let collection_id: T::NftCollectionId = collection.clone().value().into();
+		let sender = ensure_signed(origin)?;
+		let collection_id: T::NftCollectionId = collection.value().into();
 
 		ensure!(
-			pallet_nft::Pallet::<T>::owner(collection_id, item_id.clone()) == Some(sender.clone()),
+			pallet_nft::Pallet::<T>::owner(collection_id, item_id) == Some(sender.clone()),
 			Error::<T>::NotTheTokenOwner
 		);
 		Prices::<T>::mutate_exists(collection_id, item_id, |price| *price = new_price);
@@ -85,31 +85,31 @@ impl<T: Config> Pallet<T> {
 		buyer: T::AccountId,
 		_infos: Asset<T>,
 	) -> DispatchResult {			
-		let collection_id: T::NftCollectionId = collection.clone().value().into();
+		let collection_id: T::NftCollectionId = collection.value().into();
 		let origin: OriginFor<T> = frame_system::RawOrigin::Root.into();
 		let origin2: OriginFor<T> = frame_system::RawOrigin::Signed(buyer.clone()).into();
 
 		//Check that the house item exists and has the correct status
 		ensure!(
-			Houses::<T>::contains_key(collection_id.clone(), item_id.clone()),
+			Houses::<T>::contains_key(collection_id, item_id),
 			Error::<T>::CollectionOrItemUnknown
 		);
-		let asset = Self::houses(collection_id.clone(), item_id.clone()).unwrap();
+		let asset = Self::houses(collection_id, item_id).unwrap();
 		let status = asset.status;
 		ensure!(status == AssetStatus::FINALISED, Error::<T>::VoteNedeed);
 
 		//Check that the owner is not the buyer
-		let owner = Nft::Pallet::<T>::owner(collection_id.clone(), item_id.clone())
+		let owner = Nft::Pallet::<T>::owner(collection_id, item_id)
 			.ok_or(Error::<T>::CollectionOrItemUnknown)?;
-		ensure!(buyer != owner.clone(), Error::<T>::BuyFromSelf);
+		ensure!(buyer != owner, Error::<T>::BuyFromSelf);
 		let balance = <T as Config>::Currency::reserved_balance(&owner);
 		let _returned = <T as Config>::Currency::unreserve(&owner, balance);
 
 		// The reserved funds in Housing Fund from the house bidding are unreserved for the transfer transaction
-		HousingFund::Pallet::<T>::unreserve_house_bidding_amount(collection_id.clone(), item_id.clone()).ok();
+		HousingFund::Pallet::<T>::unreserve_house_bidding_amount(collection_id, item_id).ok();
 
 		//Transfer funds from HousingFund to owner
-		let price = Prices::<T>::get(collection_id.clone(), item_id.clone()).unwrap();
+		let price = Prices::<T>::get(collection_id, item_id).unwrap();
 		let fund_id = T::PalletId::get().into_account_truncating();
 		<T as Config>::Currency::transfer(
 			&fund_id,
@@ -118,20 +118,20 @@ impl<T: Config> Pallet<T> {
 			ExistenceRequirement::KeepAlive,
 		)?;
 		let to = T::Lookup::unlookup(buyer.clone());
-		Nft::Pallet::<T>::transfer(origin.clone(), collection, item_id.clone(), to)?;
+		Nft::Pallet::<T>::transfer(origin, collection, item_id, to)?;
 		Self::deposit_event(Event::TokenSold {
 			owner,
 			buyer,
-			collection: collection_id.clone(),
-			item: item_id.clone(),
+			collection: collection_id,
+			item: item_id,
 			price,
 		});
 
 		//change status
 		Self::change_status(
-			origin2.clone(),
-			collection.clone(),
-			item_id.clone(),
+			origin2,
+			collection,
+			item_id,
 			AssetStatus::PURCHASED,
 		)
 		.ok();

@@ -11,13 +11,13 @@ impl<T: Config> Pallet<T> {
 ///The function below create a virtual account from the NFT collection and item id's
 pub fn virtual_account(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult {
     //Create virtual account
-    let text0 = format!("{:?}_{:?}_account",collection_id,item_id.clone());
+    let text0 = format!("{:?}_{:?}_account",collection_id,item_id);
     let bytes = text0.as_bytes();
     let array: &[u8;8] = &bytes[0..8].try_into().unwrap();
     let account: T::AccountId = PalletId(*array).into_account_truncating();
 
     //Store account inside storage
-    Ownership::<T>::new(collection_id.clone(),item_id.clone(),account.clone()).ok();
+    Ownership::<T>::new(collection_id,item_id,account.clone()).ok();
 
     //The virtual account needs some initial funds to pay for asset creation fees
     //These funds could be provided by the FairSquare FeesAccount maintained in the 
@@ -40,7 +40,7 @@ pub fn nft_transaction(collection_id: T::NftCollectionId, item_id: T::NftItemId,
     
     //Get collection
         let collection_vec = all::<Nft::PossibleCollections>().collect::<Vec<_>>();
-        let _infos = Onboarding::Houses::<T>::get(collection_id.clone(),item_id.clone()).unwrap();
+        let _infos = Onboarding::Houses::<T>::get(collection_id,item_id).unwrap();
         let mut coll_id = Nft::PossibleCollections::HOUSES;
         for i in collection_vec.iter() {
             let val:T::NftCollectionId=i.value().into();
@@ -49,7 +49,7 @@ pub fn nft_transaction(collection_id: T::NftCollectionId, item_id: T::NftItemId,
             }
         }
     //Execute NFT and money transfer
-        Onboarding::Pallet::do_buy(coll_id,item_id.clone(),virtual_id.clone(),_infos).ok();        
+        Onboarding::Pallet::do_buy(coll_id,item_id,virtual_id,_infos).ok();        
 
 Ok(())
 
@@ -60,18 +60,18 @@ pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId
 
     //Get owners and their reserved contribution to the bid
     
-    let reservation_infos = HousingFund::Reservations::<T>::get((collection_id.clone(),item_id.clone())).unwrap();
+    let reservation_infos = HousingFund::Reservations::<T>::get((collection_id,item_id)).unwrap();
     let vec0 = reservation_infos.contributions;
     let price = reservation_infos.amount;
     let mut vec = Vec::new() ;
     for i in vec0.iter(){
         let price0 = Self::balance_to_u64_option(price).unwrap();
-        let contribution = Self::balance_to_u64_option(i.1.clone()).unwrap();
+        let contribution = Self::balance_to_u64_option(i.1).unwrap();
         let share = Percent::from_rational(contribution,price0);
         debug_assert!(!share.is_zero()); 
         vec.push((i.0.clone(),share));
         //Update Virtual_account storage
-        Virtual::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
+        Virtual::<T>::mutate(collection_id,item_id,|val|{
             let mut val0 = val.clone().unwrap();
             val0.owners.push(i.0.clone());
             *val = Some(val0);
@@ -91,23 +91,23 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
     let token_id = Virtual::<T>::get(collection_id,item_id).unwrap().token_id;
     let to = T::Lookup::unlookup(account.clone());    
     TokenId::<T>::mutate(|val|{
-        let val0 = val.clone();
+        let val0 = *val;
         *val = val0+1;
     });
     
     
     //Create token class
-    let res = Assets::Pallet::<T>::force_create(origin.clone(),token_id.clone().into(),to.clone(),false,One::one());
+    let res = Assets::Pallet::<T>::force_create(origin.clone(),token_id.into(),to.clone(),false,One::one());
     debug_assert!(res.is_ok());  
     
     //Set class metadata
-    let token_name = format!("FairOwner_nbr{:?}",token_id.clone()).as_bytes().to_vec().try_into().unwrap();
-    let token_symbol = format!("FO{:?}",token_id.clone()).as_bytes().to_vec().try_into().unwrap();
+    let token_name = format!("FairOwner_nbr{:?}",token_id).as_bytes().to_vec();
+    let token_symbol = format!("FO{:?}",token_id).as_bytes().to_vec();
     let decimals = 18;
-    Assets::Pallet::<T>::force_set_metadata(origin.clone(),token_id.clone().into(),token_name,token_symbol,decimals,false).ok();
+    Assets::Pallet::<T>::force_set_metadata(origin,token_id.into(),token_name,token_symbol,decimals,false).ok();
 
     //mint 100 tokens
-    let res0 = Assets::Pallet::<T>::mint(RawOrigin::Signed(account.clone()).into(),token_id.clone().into(),to,Self::u32_to_balance_option(100).unwrap());
+    let res0 = Assets::Pallet::<T>::mint(RawOrigin::Signed(account).into(),token_id.into(),to,Self::u32_to_balance_option(100).unwrap());
     debug_assert!(res0.is_ok());
     
 
@@ -117,20 +117,20 @@ pub fn create_tokens(origin: OriginFor<T>,collection_id: T::NftCollectionId, ite
 
 ///Distribute the ownership tokens to the group of new owners
 pub fn distribute_tokens(account:T::AccountId,collection_id: T::NftCollectionId, item_id: T::NftItemId) -> DispatchResult{
-    let shares = Self::owner_and_shares(collection_id.clone(),item_id.clone());  
+    let shares = Self::owner_and_shares(collection_id,item_id);  
     ensure!(Virtual::<T>::get(collection_id,item_id).is_some(),Error::<T>::InvalidValue);  
     let token_id = Virtual::<T>::get(collection_id,item_id).unwrap().token_id;
     let total_tokens = Assets::Pallet::<T>::total_supply(token_id.into());
     debug_assert!(total_tokens == Self::u32_to_balance_option(100).unwrap());
     
     let from = T::Lookup::unlookup(account.clone());
-    let origin:OriginFor<T> = RawOrigin::Signed(account.clone()).into();
+    let origin:OriginFor<T> = RawOrigin::Signed(account).into();
     
     for share in shares.iter(){
-        let amount:<T as Assets::Config>::Balance = share.clone().1* total_tokens.clone();        
+        let amount:<T as Assets::Config>::Balance = share.clone().1* total_tokens;        
         debug_assert!(!amount.clone().is_zero());
         let to = T::Lookup::unlookup(share.clone().0);
-        Assets::Pallet::<T>::force_transfer(origin.clone(),token_id.clone().into(),from.clone(),to,amount).ok();
+        Assets::Pallet::<T>::force_transfer(origin.clone(),token_id.into(),from.clone(),to,amount).ok();
     }
 
     Ok(())
