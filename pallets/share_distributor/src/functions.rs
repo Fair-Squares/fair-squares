@@ -71,7 +71,7 @@ pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId
         
         let price0 = Self::balance_to_u64_option(price).unwrap();
         let contribution = Self::balance_to_u64_option(i.1.clone()).unwrap();
-        let share = Percent::from_rational(contribution,price0);
+        let share = Percent::from_rational_with_rounding(contribution,price0, NearestPrefUp).unwrap();
         debug_assert!(!share.is_zero()); 
         vec.push((i.0.clone(),share.clone()));
         //Update Virtual_account storage
