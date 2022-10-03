@@ -40,7 +40,6 @@ pallet-housing_fund = { default-features = false, path = "../housing_fund" }
 [dev-dependencies]
 sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
-sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
 
 [features]
@@ -51,6 +50,7 @@ std = [
 	"scale-info/std",
 	"sp-std/std",
 	"frame-support/std",
+	"sp-runtime/std",
 	"frame-system/std",
 	"frame-benchmarking/std",
 	"pallet-housing_fund/std",
