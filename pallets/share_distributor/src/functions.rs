@@ -5,6 +5,7 @@
 //4) transfer tokens to owners
 use super::*;
 use enum_iterator::all;
+pub use sp_runtime::Rounding;
 
 impl<T: Config> Pallet<T> {
 
