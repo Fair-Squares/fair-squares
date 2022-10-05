@@ -12,6 +12,8 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
 	RoleModule::set_role(Origin::signed(DAVE).clone(), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(EVE).clone(), EVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(FERDIE).clone(), FERDIE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(GERARD).clone(), GERARD, Acc::INVESTOR).ok();
 	RoleModule::set_role(
 		Origin::signed(ACCOUNT_WITH_NO_BALANCE0).clone(),
 		ACCOUNT_WITH_NO_BALANCE0,
@@ -29,6 +31,10 @@ pub fn prep_test(price1:u64,price2:u64, metadata0:Bvec<Test>,metadata1:Bvec<Test
 	//Dave and EVE contribute to the fund
 	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(DAVE),50_000));
 	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(EVE),50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(FERDIE),50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(GERARD),50_000));
+
+
 
 	//Charlie creates a collection
 	assert_ok!(NftModule::create_collection(
@@ -106,7 +112,7 @@ fn share_distributor0(){
 			nft_item_id: item_id0.clone(),
 			amount: price1.clone(),
 			block_number:1,
-			contributions:vec![(EVE,25_000),(DAVE,15_000)],
+			contributions:vec![(EVE,25_000),(DAVE,15_000),(FERDIE,20_500),(GERARD,20_000)],
 		};
 		let id = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().token_id;
 		//Add new owners and asset to housing fund
@@ -126,8 +132,10 @@ fn share_distributor0(){
 		assert_ok!(ShareDistributor::distribute_tokens(new_owner0.clone(),coll_id0.clone(),item_id0.clone()));
 		let balance0 = Assets::Pallet::<Test>::balance(id.clone(),DAVE);
 		let balance1 = Assets::Pallet::<Test>::balance(id.clone(),EVE);
+		let balance2 = Assets::Pallet::<Test>::balance(id.clone(),FERDIE);
+		let balance3 = Assets::Pallet::<Test>::balance(id.clone(),GERARD);
 
-		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}",balance0,balance1);
+		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}\nTokens own by Ferdie:{:?}\nTokens own by Gerard:{:?}",balance0,balance1,balance2,balance3);
 
 		// Bob creates a second proposal without submiting for review
 	
