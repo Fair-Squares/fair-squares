@@ -5,7 +5,10 @@
 //4) transfer tokens to owners
 use super::*;
 use enum_iterator::all;
-
+use sp_runtime::{
+    traits::SaturatedConversion,
+    {FixedPointNumber,FixedU128}
+};
 impl<T: Config> Pallet<T> {
 
 ///The function below create a virtual account from the NFT collection and item id's
@@ -57,7 +60,7 @@ Ok(())
 }
 
 ///Collect contributors to the bid, and their shares
-pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId,total_tokens:<T as Assets::Config>::Balance) -> Vec<(T::AccountId, Percent)>{
+pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId,total_tokens:<T as Assets::Config>::Balance) -> Vec<(T::AccountId, u128)>{
 
     //Get owners and their reserved contribution to the bid
     
@@ -69,10 +72,12 @@ pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId
     let mut vec = Vec::new() ;
     for i in vec0.iter(){
         
-        let price0 = Self::balance_to_u64_option(price).unwrap();
-        let contribution = Self::balance_to_u64_option(i.1.clone()).unwrap();
-        let share = Percent::from_rational(contribution,price0);
-        debug_assert!(!share.is_zero()); 
+        let price0 = Self::balance_to_u128_option0(price).unwrap()*100;
+        let contribution0 = Self::balance_to_u128_option0(i.1.clone()).unwrap();
+        let share0:FixedU128= FixedPointNumber:: saturating_from_rational(price0,contribution0);
+        let share = FixedPointNumber::into_inner(share0);
+        debug_assert!(share>0); 
+        
         vec.push((i.0.clone(),share.clone()));
         //Update Virtual_account storage
         Virtual::<T>::mutate(collection_id.clone(),item_id.clone(),|val|{
@@ -83,7 +88,7 @@ pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId
         });
         //Update owners in Tokens storage
         Tokens::<T>::mutate(&virtual_acc,|val|{
-            let amount:<T as Assets::Config>::Balance = share.clone()* total_tokens.clone();
+            let amount:<T as Assets::Config>::Balance = share.clone().saturated_into::<<T as Assets::Config>::Balance>();
             let mut val0 = val.clone().unwrap();
             val0.owners.push((i.0.clone(),amount));
             *val = Some(val0);
@@ -148,7 +153,9 @@ pub fn distribute_tokens(account:T::AccountId,collection_id: T::NftCollectionId,
     let origin:OriginFor<T> = RawOrigin::Signed(account.clone()).into();
     
     for share in shares.iter(){
-        let amount:<T as Assets::Config>::Balance = share.clone().1* total_tokens.clone();        
+        let amount0 = share.clone().1;
+        debug_assert!(amount0>0);
+        let amount:<T as Assets::Config>::Balance = share.clone().1.saturated_into::<<T as Assets::Config>::Balance>();        
         debug_assert!(!amount.clone().is_zero());
         let to = T::Lookup::unlookup(share.clone().0);
         Assets::Pallet::<T>::force_transfer(origin.clone(),token_id.clone().into(),from.clone(),to,amount).ok();
@@ -163,16 +170,16 @@ pub fn u32_to_balance_option(input: u32) -> Option<T::Balance> {
     input.try_into().ok()
 }
 
-// Conversion of BalanceOf<T> to u64
-pub fn balance_to_u64_option(input: HousingFund::BalanceOf<T>) -> Option<u64> {
+
+// Conversion of BalanceOf<T> to u128
+pub fn balance_to_u128_option0(input: HousingFund::BalanceOf<T>) -> Option<u128> {
+    input.try_into().ok()
+}
+// Conversion of BalanceOf<T> to u128
+pub fn balance_to_u128_option(input: <T as Assets::Config>::Balance) -> Option<u128> {
     input.try_into().ok()
 }
 
-// Conversion of BalanceOf<T> to f64
-pub fn balance_to_float_option(input: HousingFund::BalanceOf<T>) -> Option<f64> {
-    let integer:u64 = input.try_into().ok().unwrap();
-    let float = integer as f64;
-    Some(float)
-}
+
 
 }
