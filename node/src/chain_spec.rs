@@ -1,17 +1,16 @@
 use fs_node_runtime::{
-	pallet_roles, Balance,AccountId,  BalancesConfig, CouncilConfig, GenesisConfig,
-	GrandpaConfig, NftModuleConfig, RoleModuleConfig, Signature, SudoConfig, SystemConfig,
-	WASM_BINARY,SessionConfig,StakingConfig,NominationPoolsConfig,StakerStatus,MaxNominations,
-	ImOnlineConfig,AuthorityDiscoveryConfig,constants::currency::*,opaque::SessionKeys
+	constants::currency::*, opaque::SessionKeys, pallet_roles, AccountId, AuthorityDiscoveryConfig,
+	Balance, BalancesConfig, CouncilConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig,
+	MaxNominations, NftModuleConfig, NominationPoolsConfig, RoleModuleConfig, SessionConfig,
+	Signature, StakerStatus, StakingConfig, SudoConfig, SystemConfig, WASM_BINARY,
 };
-use sc_service::ChainType;
-use sc_service::Properties;
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
+use sc_service::{ChainType, Properties};
 use sc_telemetry::serde_json::json;
+use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
+use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_consensus_babe::AuthorityId as BabeId;
-use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
-use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
 use sp_runtime::{
 	traits::{IdentifyAccount, Verify},
 	Perbill,
@@ -47,7 +46,7 @@ type AccountPublic = <Signature as Verify>::Signer;
 /// Helper function to generate stash, controller and session key from seed
 pub fn authority_keys_from_seed_2(
 	seed: &str,
-) -> (AccountId,GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId) {
+) -> (AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId) {
 	(
 		get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", seed)),
 		get_from_seed::<GrandpaId>(seed),
@@ -64,7 +63,6 @@ where
 {
 	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
-
 
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
@@ -166,19 +164,12 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
 	wasm_binary: &[u8],
-	initial_authorities: Vec<(
-		AccountId,
-		GrandpaId,
-		BabeId,
-		ImOnlineId,
-		AuthorityDiscoveryId,
-	)>,
+	initial_authorities: Vec<(AccountId, GrandpaId, BabeId, ImOnlineId, AuthorityDiscoveryId)>,
 	initial_nominators: Vec<AccountId>,
 	root_key: AccountId,
 	endowed_accounts: Option<Vec<AccountId>>,
 	_enable_println: bool,
 ) -> GenesisConfig {
-
 	let mut endowed_accounts: Vec<AccountId> = endowed_accounts.unwrap_or_else(|| {
 		vec![
 			get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -195,7 +186,6 @@ fn testnet_genesis(
 			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 		]
 	});
-
 
 	// endow all authorities and nominators.
 	initial_authorities
@@ -223,7 +213,7 @@ fn testnet_genesis(
 				.into_iter()
 				.map(|choice| choice.0.clone())
 				.collect::<Vec<_>>();
-			(x.clone(),x.clone(),STASH, StakerStatus::Nominator(nominations))
+			(x.clone(), x.clone(), STASH, StakerStatus::Nominator(nominations))
 		}))
 		.collect::<Vec<_>>();
 
@@ -239,10 +229,8 @@ fn testnet_genesis(
 			// Configure endowed accounts with initial balance of 1 << 60.
 			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
 		},
-		
-		grandpa: GrandpaConfig {
-			authorities: vec![],
-		},
+
+		grandpa: GrandpaConfig { authorities: vec![] },
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
@@ -270,7 +258,7 @@ fn testnet_genesis(
 			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
 		},
 		assets: Default::default(),
-		babe: fs_node_runtime::BabeConfig{
+		babe: fs_node_runtime::BabeConfig {
 			authorities: vec![],
 			epoch_config: Some(fs_node_runtime::BABE_GENESIS_EPOCH_CONFIG),
 		},
@@ -279,17 +267,17 @@ fn testnet_genesis(
 				.iter()
 				.map(|x| {
 					(
-						x.0.clone(),					
 						x.0.clone(),
-						session_keys(x.1.clone(),x.2.clone(), x.3.clone(), x.4.clone()),
+						x.0.clone(),
+						session_keys(x.1.clone(), x.2.clone(), x.3.clone(), x.4.clone()),
 					)
 				})
 				.collect::<Vec<_>>(),
 		},
 		im_online: ImOnlineConfig { keys: vec![] },
-		nomination_pools:NominationPoolsConfig {
+		nomination_pools: NominationPoolsConfig {
 			min_create_bond: 10 * DOLLARS,
-			min_join_bond: 1 * DOLLARS,
+			min_join_bond: DOLLARS,
 			..Default::default()
 		},
 		staking: StakingConfig {
@@ -300,6 +288,6 @@ fn testnet_genesis(
 			stakers,
 			..Default::default()
 		},
-		authority_discovery:  AuthorityDiscoveryConfig { keys: vec![] },
+		authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
 	}
 }

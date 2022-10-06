@@ -6,14 +6,16 @@ use frame_system::pallet_prelude::OriginFor;
 pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
 
 pub fn prep_roles() {
-	RoleModule::set_role(Origin::signed(CHARLIE).clone(), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
 	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
-	RoleModule::set_role(Origin::signed(BOB).clone(), BOB, Acc::SELLER).ok();
+	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
-	RoleModule::set_role(Origin::signed(DAVE).clone(), DAVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(EVE).clone(), EVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::INVESTOR).ok();
 	RoleModule::set_role(
-		Origin::signed(ACCOUNT_WITH_NO_BALANCE0).clone(),
+		Origin::signed(ACCOUNT_WITH_NO_BALANCE0),
 		ACCOUNT_WITH_NO_BALANCE0,
 		Acc::SERVICER,
 	)
@@ -21,14 +23,20 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
 }
 
-pub fn prep_test(price1:u64,price2:u64, metadata0:Bvec<Test>,metadata1:Bvec<Test>,metadata2:Bvec<Test>){
-	
+pub fn prep_test(
+	price1: u64,
+	price2: u64,
+	metadata0: Bvec<Test>,
+	metadata1: Bvec<Test>,
+	metadata2: Bvec<Test>,
+) {
 	prep_roles();
 
-	
 	//Dave and EVE contribute to the fund
-	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(DAVE),50_000));
-	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(EVE),50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(DAVE), 50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(EVE), 50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(FERDIE), 50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(GERARD), 50_000));
 
 	//Charlie creates a collection
 	assert_ok!(NftModule::create_collection(
@@ -43,11 +51,11 @@ pub fn prep_test(price1:u64,price2:u64, metadata0:Bvec<Test>,metadata1:Bvec<Test
 		metadata0
 	));
 	// Bob creates a proposal without submiting for review
-	
+
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
 		Origin::signed(BOB),
 		NftColl::OFFICESTEST,
-		Some(price1.clone()),
+		Some(price1),
 		metadata1,
 		false
 	));
@@ -55,18 +63,16 @@ pub fn prep_test(price1:u64,price2:u64, metadata0:Bvec<Test>,metadata1:Bvec<Test
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
 		Origin::signed(BOB),
 		NftColl::APPARTMENTSTEST,
-		Some(price2.clone()),
+		Some(price2),
 		metadata2,
 		false
 	));
-
 }
 
-
 #[test]
-fn share_distributor0(){
-	ExtBuilder::default().build().execute_with(|| {	
-		
+fn share_distributor0() {
+	ExtBuilder::default().build().execute_with(|| {
+
 		let metadata0 = b"metadata0".to_vec().try_into().unwrap();
 		let metadata1 = b"metadata1".to_vec().try_into().unwrap();
 		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
@@ -76,114 +82,105 @@ fn share_distributor0(){
 
 		let price1 = 40_000;
 		let price2 = 30_000;
-		prep_test(price1.clone(),price2.clone(),metadata0,metadata1,metadata2);
+		prep_test(price1,price2,metadata0,metadata1,metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
 		let origin2 = Origin::signed(BOB);
 
 		//Change first asset status to FINALISED
-		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::OFFICESTEST,item_id0.clone(),Onboarding::AssetStatus::FINALISED).ok();		
+		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::OFFICESTEST,item_id0,Onboarding::AssetStatus::FINALISED).ok();
 
 		//Store initial owner
-		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0.clone(),item_id0.clone()).unwrap();
+		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0,item_id0).unwrap();
 
 		//Execute virtual account transactions 
-		assert_ok!(ShareDistributor::virtual_account(coll_id0.clone(),item_id0.clone()));
-		
+		assert_ok!(ShareDistributor::virtual_account(coll_id0,item_id0));
 		//Store new owner
-		let new_owner0 = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().virtual_account;
+		let new_owner0 = ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap().virtual_account;
 
 		//Execute nft transaction
-		assert_ok!(ShareDistributor::nft_transaction(coll_id0.clone(),item_id0.clone(),new_owner0.clone()));
+		assert_ok!(ShareDistributor::nft_transaction(coll_id0,item_id0,new_owner0.clone()));
 
 		//Compare new & old owner
-		assert_ne!(old_owner0.clone(),new_owner0.clone());
+		assert_ne!(old_owner0,new_owner0);
 
 		//Create a FundOperation struct for this asset
 		let fund_op = HousingFund::FundOperation{
-			nft_collection_id: coll_id0.clone(),
-			nft_item_id: item_id0.clone(),
-			amount: price1.clone(),
+			nft_collection_id: coll_id0,
+			nft_item_id: item_id0,
+			amount: price1,
 			block_number:1,
-			contributions:vec![(EVE,25_000),(DAVE,15_000)],
+			contributions:vec![(EVE,25_000),(DAVE,15_000),(FERDIE,20_500),(GERARD,20_000)],
 		};
-		let id = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().token_id;
+		let id = ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap().token_id;
 		//Add new owners and asset to housing fund
-		HousingFund::Reservations::<Test>::insert((coll_id0.clone(),item_id0.clone()),fund_op);
-		
+		HousingFund::Reservations::<Test>::insert((coll_id0,item_id0),fund_op);
 		//Create token				
-		assert_ok!(ShareDistributor::create_tokens(origin.clone(),coll_id0.clone(),item_id0.clone(),new_owner0.clone()));		
+		assert_ok!(ShareDistributor::create_tokens(origin,coll_id0,item_id0,new_owner0.clone()));
 		assert_eq!(1,ShareDistributor::token_id());
-		assert_eq!(0,ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().token_id);
-		assert_eq!(100,Assets::Pallet::<Test>::total_supply(id.clone()));
-		
-		//Check that new_owner0 is in possession of 100 tokens		
-		assert_eq!(100,Assets::Pallet::<Test>::balance(id.clone(),new_owner0.clone()));
-		
-		
+		assert_eq!(0,ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap().token_id);
+		assert_eq!(100,Assets::Pallet::<Test>::total_supply(id));
+		//Check that new_owner0 is in possession of 100 tokens
+		assert_eq!(100,Assets::Pallet::<Test>::balance(id,new_owner0.clone()));
 		//Distribute token
-		assert_ok!(ShareDistributor::distribute_tokens(new_owner0.clone(),coll_id0.clone(),item_id0.clone()));
-		let balance0 = Assets::Pallet::<Test>::balance(id.clone(),DAVE);
-		let balance1 = Assets::Pallet::<Test>::balance(id.clone(),EVE);
+		assert_ok!(ShareDistributor::distribute_tokens(new_owner0.clone(),coll_id0,item_id0));
+		let balance0 = Assets::Pallet::<Test>::balance(id,DAVE);
+		let balance1 = Assets::Pallet::<Test>::balance(id,EVE);
+		let balance2 = Assets::Pallet::<Test>::balance(id,FERDIE);
+		let balance3 = Assets::Pallet::<Test>::balance(id,GERARD);
 
-		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}",balance0,balance1);
-
+		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}\nTokens own by Ferdie:{:?}\nTokens own by Gerard:{:?}",balance0,balance1,balance2,balance3);
 		// Bob creates a second proposal without submiting for review
-	
-	
-
-	
 		let coll_id1 = NftColl::APPARTMENTSTEST.value();
 		let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id1 as usize] - 1;
 
 		//Store initial owner
-		let old_owner1 = pallet_nft::Pallet::<Test>::owner(coll_id1.clone(),item_id1.clone()).unwrap();
+		let old_owner1 = pallet_nft::Pallet::<Test>::owner(coll_id1,item_id1).unwrap();
 
 		//Change first asset status to FINALISED
-		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::APPARTMENTSTEST,item_id1.clone(),Onboarding::AssetStatus::FINALISED).ok();
+		Onboarding::Pallet::<Test>::change_status(origin2,NftColl::APPARTMENTSTEST,item_id1,Onboarding::AssetStatus::FINALISED).ok();
 
 		//Execute virtual account transactions 
 		assert_ok!(ShareDistributor::virtual_account(coll_id1,item_id1));
 
 		//Store new owner
-		let new_owner1 = ShareDistributor::virtual_acc(coll_id1.clone(),item_id1.clone()).unwrap().virtual_account;
+		let new_owner1 = ShareDistributor::virtual_acc(coll_id1,item_id1).unwrap().virtual_account;
 
 		//Execute nft transaction
-		assert_ok!(ShareDistributor::nft_transaction(coll_id1.clone(),item_id1.clone(),new_owner1.clone()));
+		assert_ok!(ShareDistributor::nft_transaction(coll_id1,item_id1,new_owner1.clone()));
 
 		//Compare new & old owner
-		assert_ne!(old_owner1.clone(),new_owner1.clone());
+		assert_ne!(old_owner1,new_owner1);
 
 		//Get the virtual accounts
-		let virtual0 = Virtual::<Test>::get(coll_id0,item_id0).unwrap();		
+		let virtual0 = Virtual::<Test>::get(coll_id0,item_id0).unwrap();
 		let virtual1 = Virtual::<Test>::get(coll_id1,item_id1).unwrap();
 
 		//Check that virtual accounts are different
 		println!("Virtual account nbr1:{:?}\nVirtual account nbr2:{:?}",virtual0,virtual1);
 		assert_ne!(virtual0.virtual_account,virtual1.virtual_account);
-		
 		//Check that virtual accounts are the new owners
-		assert_eq!(new_owner0,virtual0.clone().virtual_account);
-		assert_eq!(new_owner1,virtual1.clone().virtual_account);
+		assert_eq!(new_owner0,virtual0.virtual_account);
+		assert_eq!(new_owner1,virtual1.virtual_account);
 
 
 	});
 }
 
 #[test]
-fn share_distributor1(){
+fn share_distributor1() {
 	ExtBuilder::default().build().execute_with(|| {
 		let metadata0 = b"metadata0".to_vec().try_into().unwrap();
 		let metadata1 = b"metadata1".to_vec().try_into().unwrap();
 		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
 		//put some funds in FairSquare SlashFees account
 		let fees_account = Onboarding::Pallet::<Test>::account_id();
-		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account,150_000u32.into());
+		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account, 150_000u32.into());
 
 		let price1 = 40_000;
 		let price2 = 30_000;
-		prep_test(price1.clone(),price2.clone(),metadata0,metadata1,metadata2);
+		prep_test(price1, price2, metadata0, metadata1, metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
@@ -198,9 +195,9 @@ fn share_distributor1(){
 			block_number: 1,
 			contributions: vec![HousingFund::ContributionLog {
 				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(35_000).unwrap(),
-				block_number: 1
+				block_number: 1,
 			}],
-			withdraws: Vec::new()
+			withdraws: Vec::new(),
 		};
 
 		let contribution_dave = HousingFund::Contribution {
@@ -212,63 +209,72 @@ fn share_distributor1(){
 			block_number: 1,
 			contributions: vec![HousingFund::ContributionLog {
 				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(25_000).unwrap(),
-				block_number: 1
+				block_number: 1,
 			}],
-			withdraws: Vec::new()
+			withdraws: Vec::new(),
 		};
 
 		// Add contributions to storage
-		HousingFund::Contributions::<Test>::insert(EVE,contribution_eve);
-		HousingFund::Contributions::<Test>::insert(DAVE,contribution_dave);
+		HousingFund::Contributions::<Test>::insert(EVE, contribution_eve);
+		HousingFund::Contributions::<Test>::insert(DAVE, contribution_dave);
 
 		//Create a FundOperation struct for this asset
-		let fund_op = HousingFund::FundOperation{
-			nft_collection_id: coll_id0.clone(),
-			nft_item_id: item_id0.clone(),
-			amount: price1.clone(),
-			block_number:1,
-			contributions:vec![(EVE,25_000),(DAVE,15_000)],
+		let fund_op = HousingFund::FundOperation {
+			nft_collection_id: coll_id0,
+			nft_item_id: item_id0,
+			amount: price1,
+			block_number: 1,
+			contributions: vec![(EVE, 25_000), (DAVE, 15_000)],
 		};
 
 		//Add new owners and asset to housing fund
-		HousingFund::Reservations::<Test>::insert((coll_id0.clone(),item_id0.clone()),fund_op);
+		HousingFund::Reservations::<Test>::insert((coll_id0, item_id0), fund_op);
 
 		// Update the Housing fund to fit with the contributions
 		HousingFund::FundBalance::<Test>::mutate(|val| {
-			*val = HousingFund::FundInfo {
-				total: 60_000,
-				transferable: 20_000,
-				reserved: 40_000,
-			};
+			*val = HousingFund::FundInfo { total: 60_000, transferable: 20_000, reserved: 40_000 };
 		});
 
 		//Change first asset status to FINALISED
-		Onboarding::Pallet::<Test>::change_status(origin2.clone(),NftColl::OFFICESTEST,item_id0.clone(),Onboarding::AssetStatus::FINALISED).ok();		
+		Onboarding::Pallet::<Test>::change_status(
+			origin2,
+			NftColl::OFFICESTEST,
+			item_id0,
+			Onboarding::AssetStatus::FINALISED,
+		)
+		.ok();
 
 		//Store initial owner
-		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0.clone(),item_id0.clone()).unwrap();
+		let old_owner0 =
+			pallet_nft::Pallet::<Test>::owner(coll_id0, item_id0).unwrap();
 
-		assert_ok!(ShareDistributor::create_virtual(origin.clone(),coll_id0.clone(),item_id0.clone()));
+		assert_ok!(ShareDistributor::create_virtual(
+			origin,
+			coll_id0,
+			item_id0
+		));
 		let when = <frame_system::Pallet<Test>>::block_number();
-		let new_owner0 = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().virtual_account;
-		let owners = ShareDistributor::virtual_acc(coll_id0.clone(),item_id0.clone()).unwrap().owners;
-		assert_eq!(owners.len()>1,true);
+		let new_owner0 = ShareDistributor::virtual_acc(coll_id0, item_id0)
+			.unwrap()
+			.virtual_account;
+		let owners = ShareDistributor::virtual_acc(coll_id0, item_id0)
+			.unwrap()
+			.owners;
+		assert_eq!(owners.len() > 1, true);
 		expect_events(vec![
 			crate::Event::VirtualCreated {
 				account: new_owner0.clone(),
-				collection: coll_id0.clone(),
-				item: item_id0.clone(),
-				when: when,
+				collection: coll_id0,
+				item: item_id0,
+				when,
 			}
 			.into(),
 			crate::Event::NftTransactionExecuted {
-				nft_transfer_to: new_owner0.clone(),
-				nft_transfer_from: old_owner0.clone(),
-				when: when,
+				nft_transfer_to: new_owner0,
+				nft_transfer_from: old_owner0,
+				when,
 			}
-			.into()
+			.into(),
 		]);
-
-
 	})
 }

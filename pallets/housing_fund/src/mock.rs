@@ -2,11 +2,11 @@ use super::*;
 use crate as pallet_housing_fund;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16, ConstU64, AsEnsureOriginWithArg},
+	traits::{AsEnsureOriginWithArg, ConstU16, ConstU64},
 	PalletId,
 };
 use frame_system::EnsureRoot;
-use sp_core::{crypto::AccountId32, H256};
+use sp_core::{H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
