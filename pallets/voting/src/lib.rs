@@ -48,8 +48,11 @@ type DemoBalanceOf<T> =
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		dispatch::Dispatchable, inherent::Vec, pallet_prelude::*, sp_runtime::traits::Hash,
-		traits::{ReservableCurrency, UnfilteredDispatchable}, 
+		dispatch::Dispatchable,
+		inherent::Vec,
+		pallet_prelude::*,
+		sp_runtime::traits::Hash,
+		traits::{ReservableCurrency, UnfilteredDispatchable},
 		weights::GetDispatchInfo,
 	};
 	use frame_system::{pallet_prelude::*, RawOrigin};
@@ -184,7 +187,7 @@ pub mod pallet {
 			let council_member = COLL::Pallet::<T, Instance1>::members()[0].clone();
 			// create the final dispatch call of the proposal in democracy
 			let call = Call::<T>::call_dispatch {
-				account_id: council_member,
+				account_id: council_member.clone(),
 				proposal_hash,
 				proposal: proposal.clone(),
 			};
@@ -213,8 +216,7 @@ pub mod pallet {
 			// Retrieve the index of the proposal in Collective pallet
 			let collective_index = COLL::Pallet::<T, Instance1>::proposal_count();
 
-			let collective_origin =
-				Self::get_origin(COLL::Pallet::<T, Instance1>::members()[0].clone());
+			let collective_origin = Self::get_origin(council_member.clone());
 
 			let result = COLL::Pallet::<T, Instance1>::propose(
 				collective_origin,
@@ -286,7 +288,7 @@ pub mod pallet {
 
 			// Call Democracy note_pre_image
 			DEMO::Pallet::<T>::note_preimage(
-				RawOrigin::Signed(account_id.clone()).into(),
+				Self::get_origin(account_id.clone()),
 				proposal_encoded,
 			)?;
 
@@ -323,7 +325,8 @@ pub mod pallet {
 			// Execute the dispatch for collective vote passed
 			proposal
 				.collective_passed_call
-				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id).into()).ok();
+				.dispatch_bypass_filter(Self::get_origin(account_id))
+				.ok();
 
 			Self::deposit_event(Event::InvestorVoteSessionStarted(proposal_hash, block_number));
 
@@ -353,7 +356,7 @@ pub mod pallet {
 			});
 
 			// The proposal is executed
-			proposal.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id).into()).ok();
+			proposal.dispatch_bypass_filter(Self::get_origin(account_id)).ok();
 
 			Ok(().into())
 		}
@@ -574,9 +577,10 @@ impl<T: Config> Pallet<T> {
 					if voting.collective_closed {
 						// the collective step not passed means it has been rejected by the House Council
 						if !voting.collective_step {
-							voting.collective_failed_call.dispatch_bypass_filter(
-								frame_system::RawOrigin::Signed(voting.account_id.clone()).into(),
-							).ok();
+							voting
+								.collective_failed_call
+								.dispatch_bypass_filter(Self::get_origin(voting.account_id.clone()))
+								.ok();
 						}
 
 						// the vote doesn't need to be watched in the collective proposal storage for this step anymore
@@ -598,9 +602,10 @@ impl<T: Config> Pallet<T> {
 					let voting = VotingProposals::<T>::get(elt.0).unwrap();
 
 					if !voting.proposal_executed {
-						voting.democracy_failed_call.dispatch_bypass_filter(
-							frame_system::RawOrigin::Signed(voting.account_id.clone()).into(),
-						).ok();
+						voting
+							.democracy_failed_call
+							.dispatch_bypass_filter(Self::get_origin(voting.account_id.clone()))
+							.ok();
 					}
 
 					// the democracy doesn't need to be watched in the democracy proposal storage for this step anymore
