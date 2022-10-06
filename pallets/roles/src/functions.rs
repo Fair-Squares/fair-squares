@@ -19,7 +19,7 @@ impl<T: Config> Pallet<T> {
 				AccountsRolesLog::<T>::insert(&who, Accounts::SELLER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerCreated(now, who.clone()));
-				break
+				break;
 			}
 		}
 		for (index, serv) in servicers.iter().enumerate() {
@@ -27,15 +27,15 @@ impl<T: Config> Pallet<T> {
 				exist = true;
 				let mut servicer = serv.clone();
 				servicer.activated = true;
-				servicer.verifier = sender;
+				servicer.verifier = sender.clone();
 				ServicerLog::<T>::insert(&who, servicer);
 				RoleApprovalList::<T>::mutate(|val| {
 					val.1.remove(index);
 				});
 				AccountsRolesLog::<T>::insert(&who, Accounts::SERVICER);
 				let now = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::ServicerCreated(now, who));
-				break
+				Self::deposit_event(Event::ServicerCreated(now, who.clone()));
+				break;
 			}
 		}
 		ensure!(exist, Error::<T>::NotInWaitingList);
@@ -63,7 +63,7 @@ impl<T: Config> Pallet<T> {
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerAccountCreationRejected(now, who.clone()));
-				break
+				break;
 			}
 		}
 
@@ -74,8 +74,8 @@ impl<T: Config> Pallet<T> {
 					val.1.remove(index);
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
-				break
+				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who.clone()));
+				break;
 			}
 		}
 		ensure!(exist, Error::<T>::NotInWaitingList);

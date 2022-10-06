@@ -33,15 +33,16 @@ mod functions;
 mod structs;
 
 pub use crate::structs::*;
-pub use pallet_nft as NFT;
 pub use pallet_roles as ROLES;
+pub use pallet_nft as NFT;
 pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		traits::{Currency, ExistenceRequirement, Get},
+		sp_runtime::traits::AccountIdConversion,
+		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
 		transactional, PalletId,
 	};
 	use sp_std::vec;
@@ -92,24 +93,14 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn reservations)]
 	// Housing fund reservations
-	pub type Reservations<T> = StorageMap<
-		_,
-		Blake2_128Concat,
-		(NftCollectionId<T>, NftItemId<T>),
-		FundOperation<T>,
-		OptionQuery,
-	>;
+	pub type Reservations<T> =
+		StorageMap<_, Blake2_128Concat, (NftCollectionId<T>, NftItemId<T>), FundOperation<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn purchases)]
 	// Housing fund used for purchases
-	pub(super) type Purchases<T> = StorageMap<
-		_,
-		Blake2_128Concat,
-		(NftCollectionId<T>, NftItemId<T>),
-		FundOperation<T>,
-		OptionQuery,
-	>;
+	pub(super) type Purchases<T> =
+		StorageMap<_, Blake2_128Concat, (NftCollectionId<T>, NftItemId<T>), FundOperation<T>, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	#[pallet::event]

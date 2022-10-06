@@ -1,21 +1,21 @@
 use crate as pallet_bidding;
 use frame_support::{
 	parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU16, ConstU64, EqualPrivilegeOnly},
-	weights::Weight,
+	traits::{ConstU16, ConstU32, ConstU64, AsEnsureOriginWithArg, EqualPrivilegeOnly},
 	PalletId,
+	weights::Weight,
 };
 use frame_system as system;
 use frame_system::{EnsureRoot, EnsureSigned};
-use pallet_collective::{Instance1, PrimeDefaultVote};
-use pallet_nft::NftPermissions;
-use pallet_roles::GenesisBuild;
-use sp_core::{H256};
+use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
+use pallet_nft::NftPermissions;
+use pallet_collective::{Instance1, PrimeDefaultVote};
+use pallet_roles::GenesisBuild;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type CouncilCollective = pallet_collective::Instance1;
@@ -317,7 +317,7 @@ impl pallet_assets::Config for Test {
 parameter_types! {
 	pub const AssetsFees: Balance = 20000;
 }
-impl pallet_share_distributor::Config for Test {
+impl pallet_share_distributor::Config for Test{
 	type Event = Event;
 	type Currency = Balances;
 	type AssetId = u32;

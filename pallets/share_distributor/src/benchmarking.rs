@@ -5,11 +5,9 @@ use super::*;
 #[allow(unused)]
 use crate::Pallet as Template;
 use frame_benchmarking::{benchmarks, whitelisted_caller};
-pub use frame_support::{
-	dispatch::{DispatchResult, EncodeLike},
-	inherent::Vec,
-	pallet_prelude::*,
-};
+pub use frame_support::{dispatch::{DispatchResult, EncodeLike},
+inherent::Vec,
+pallet_prelude::*};
 use frame_system::RawOrigin;
 pub type NftColl = Nft::PossibleCollections;
 

@@ -9,7 +9,7 @@ pub use scale_info::{prelude::vec, TypeInfo};
 
 /// NFT Collection ID
 pub type CollectionId = u32;
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, Sequence)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy,Sequence)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum PossibleCollections {
 	HOUSES,
@@ -33,6 +33,7 @@ impl PossibleCollections {
 			PossibleCollections::NONEXISTING => 3,
 		}
 	}
+
 }
 
 /// NFT Item ID

@@ -6,7 +6,8 @@ pub use frame_support::{
 	RuntimeDebug,
 };
 
-use scale_info::{prelude::boxed::Box, TypeInfo};
+use scale_info::prelude::boxed::Box;
+use scale_info::TypeInfo;
 
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T> = <<T as Config>::LocalCurrency as Currency<AccountIdOf<T>>>::Balance;

@@ -29,8 +29,7 @@
 
 //! * `burn` - Restricted to Servicer role, this function Removes a NFT item from existence
 
-//! * `destroy_collection` - Restricted to Servicer role, this function Removes a Collection from
-//!   existence
+//! * `destroy_collection` - Restricted to Servicer role, this function Removes a Collection from existence
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
@@ -43,7 +42,7 @@ use frame_support::{
 	traits::{tokens::nonfungibles::*, Get},
 	transactional, BoundedVec,
 };
-use frame_system::{ensure_root, ensure_signed};
+use frame_system::{ensure_signed,ensure_root};
 use pallet_uniques::DestroyWitness;
 
 pub use functions::*;
@@ -198,8 +197,7 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 			let coll_id: CollectionId = collection_id.value();
 
-			//ensure!(T::ReserveCollectionIdUpTo::get() != coll_id.clone().into(),
-			// Error::<T>::IdReserved);
+			//ensure!(T::ReserveCollectionIdUpTo::get() != coll_id.clone().into(), Error::<T>::IdReserved);
 			ensure!(!Self::is_id_reserved(coll_id.into()), Error::<T>::IdReserved);
 			let created_by = Roles::Pallet::<T>::get_roles(&sender).unwrap();
 			ensure!(T::Permissions::can_create(&created_by), Error::<T>::NotPermitted);

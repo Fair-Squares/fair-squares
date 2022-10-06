@@ -46,8 +46,7 @@ impl<T: Config> FundInfo<T> {
 
 	pub fn can_take_off(&self, amount: BalanceOf<T>) -> bool {
 		// check that amount to take off if inferior to the transferable
-		self.transferable > T::FundThreshold::get() &&
-			amount <= self.transferable - T::FundThreshold::get()
+		self.transferable > T::FundThreshold::get() && amount <= self.transferable - T::FundThreshold::get()
 	}
 
 	// Withdraw from the tranferable
