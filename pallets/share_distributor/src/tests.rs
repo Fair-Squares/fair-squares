@@ -122,9 +122,9 @@ fn share_distributor0() {
 		assert_ok!(ShareDistributor::create_tokens(origin,coll_id0,item_id0,new_owner0.clone()));
 		assert_eq!(1,ShareDistributor::token_id());
 		assert_eq!(0,ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap().token_id);
-		assert_eq!(100,Assets::Pallet::<Test>::total_supply(id));
-		//Check that new_owner0 is in possession of 100 tokens		
-		assert_eq!(100,Assets::Pallet::<Test>::balance(id,new_owner0.clone()));
+		assert_eq!(1000,Assets::Pallet::<Test>::total_supply(id));
+		//Check that new_owner0 is in possession of 1000 tokens		
+		assert_eq!(1000,Assets::Pallet::<Test>::balance(id,new_owner0.clone()));
 		//Distribute token
 		assert_ok!(ShareDistributor::distribute_tokens(new_owner0.clone(),coll_id0,item_id0));
 		let balance0 = Assets::Pallet::<Test>::balance(id,DAVE);
@@ -289,7 +289,7 @@ fn share_distributor1() {
 		let owners = ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap().owners;
 		let id = ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap().token_id;
 		println!("The token id is:{:?}",id.clone());
-		assert_eq!(100,Assets::Pallet::<Test>::total_supply(id));
+		assert_eq!(1000,Assets::Pallet::<Test>::total_supply(id));
 
 		let balance0 = Assets::Pallet::<Test>::balance(id,DAVE);
 		let balance1 = Assets::Pallet::<Test>::balance(id,EVE);

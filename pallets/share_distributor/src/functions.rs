@@ -87,13 +87,13 @@ impl<T: Config> Pallet<T> {
 			let contribution1 = Self::balance_to_f64_option0(i.1).unwrap();
 			let frac = (contribution1 / price1).round();
 			let mut share = FixedU128::saturating_from_rational(contribution0, price0)
-				.saturating_mul_int(100u128);
+				.saturating_mul_int(1000u128);
 			let fl = share as f64;
 			if (fl + 0.5) < frac {
 				share += 1;
 			}
 
-			debug_assert!(share < 100);
+			debug_assert!(share < 1000);
 			debug_assert!(share > 0);
 
 			vec.push((i.0.clone(), share));
@@ -115,7 +115,7 @@ impl<T: Config> Pallet<T> {
 		vec
 	}
 
-	///Create 100 Ownership tokens owned by a virtual account
+	///Create 1000 Ownership tokens owned by a virtual account
 	pub fn create_tokens(
 		origin: OriginFor<T>,
 		collection_id: T::NftCollectionId,
@@ -160,12 +160,12 @@ impl<T: Config> Pallet<T> {
 		)
 		.ok();
 
-		//mint 100 tokens
+		//mint 1000 tokens
 		let res0 = Assets::Pallet::<T>::mint(
 			RawOrigin::Signed(account.clone()).into(),
 			token_id.into(),
 			to,
-			Self::u32_to_balance_option(100).unwrap(),
+			Self::u32_to_balance_option(1000).unwrap(),
 		);
 		debug_assert!(res0.is_ok());
 
@@ -188,7 +188,7 @@ impl<T: Config> Pallet<T> {
 		ensure!(Virtual::<T>::get(collection_id, item_id).is_some(), Error::<T>::InvalidValue);
 		let token_id = Virtual::<T>::get(collection_id, item_id).unwrap().token_id;
 		let total_tokens = Assets::Pallet::<T>::total_supply(token_id.into());
-		debug_assert!(total_tokens == Self::u32_to_balance_option(100).unwrap());
+		debug_assert!(total_tokens == Self::u32_to_balance_option(1000).unwrap());
 		let shares =
 			Self::owner_and_shares(collection_id, item_id, total_tokens);
 
