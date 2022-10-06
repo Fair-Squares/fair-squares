@@ -1,11 +1,12 @@
 use super::*;
 use crate as pallet_share_distributor;
-use frame_support::traits::{
-	AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly,
+use frame_support::{
+	parameter_types,
+	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly},
+	weights::Weight,
+	PalletId,
 };
-use frame_support::PalletId;
-use frame_support::{parameter_types, weights::Weight};
-use frame_system;
+
 
 use crate::Nft::NftPermissions;
 use frame_system::{EnsureRoot, EnsureSigned};
@@ -18,10 +19,9 @@ use sp_runtime::{
 	Perbill,
 };
 
-use pallet_collective;
-use pallet_democracy;
-use pallet_onboarding;
-use pallet_roles;
+
+
+
 
 
 type CouncilCollective = pallet_collective::Instance1;
@@ -305,7 +305,7 @@ impl pallet_assets::Config for Test {
 parameter_types! {
 	pub const AssetsFees: Balance = 15000;
 }
-impl pallet_share_distributor::Config for Test{
+impl pallet_share_distributor::Config for Test {
 	type Event = Event;
 	type Currency = Balances;
 	type AssetId = u32;
@@ -332,7 +332,6 @@ impl pallet_housing_fund::Config for Test {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
-
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
@@ -341,10 +340,6 @@ pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
 pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
 pub const GERARD: AccountId = AccountId::new([8u8; 32]);
-
-
-
-
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {

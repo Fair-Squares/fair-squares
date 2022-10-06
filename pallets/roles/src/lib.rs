@@ -35,7 +35,8 @@
 //! role connection to the requesting AccountId
 //! that are in the approval list, but do not fullfill the FaiSquares guideline.
 //!
-//! * `set_manager` - This function allows the current manager/Sudo_Account to transfer his Administrative
+//! * `set_manager` - This function allows the current manager/Sudo_Account to transfer his
+//!   Administrative
 //! authority to a different user/account.
 //! Only the current manager can use this function, and he will lose all administrative power by
 //! using this function. The Servicer Role is affected to new manager account during this transfer.
@@ -301,15 +302,15 @@ pub mod pallet {
 			);
 			//ensure!(sender != new0, "The same manager is given");
 			//Remove current Sudo from Servicers list
-			if ServicerLog::<T>::contains_key(sender.clone()) == true {
+			if ServicerLog::<T>::contains_key(sender.clone()) {
 				ServicerLog::<T>::remove(sender.clone());
 			}
 
 			//create Servicer & approve a servicer account for new Sudo
 			//if the new Sudo has no role yet
-			if AccountsRolesLog::<T>::contains_key(&new0) == false {
+			if !AccountsRolesLog::<T>::contains_key(&new0) {
 				Servicer::<T>::new(new_origin).ok();
-				Self::approve_account(sender, new0.clone()).ok();
+				Self::approve_account(sender, new0).ok();
 			}
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
 			Ok(())

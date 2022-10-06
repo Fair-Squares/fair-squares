@@ -1,9 +1,9 @@
 pub use super::*;
 
 pub use frame_support::{
-	traits::{Currency, ReservableCurrency },
-    inherent::Vec,
-    sp_runtime::traits::Zero
+	inherent::Vec,
+	sp_runtime::traits::Zero,
+	traits::{Currency, ReservableCurrency},
 };
 
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;

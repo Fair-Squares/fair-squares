@@ -6,22 +6,22 @@ use std::convert::TryInto;
 
 type NFTPallet = Pallet<Test>;
 pub fn prep_roles() {
-	RoleModule::set_role(Origin::signed(CHARLIE).clone(), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
 	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
-	RoleModule::set_role(Origin::signed(EVE).clone(), EVE, Acc::SERVICER).ok();
+	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::SERVICER).ok();
 	RoleModule::account_approval(Origin::signed(ALICE), EVE).ok();
-	RoleModule::set_role(Origin::signed(BOB).clone(), BOB, Acc::SELLER).ok();
+	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
-	RoleModule::set_role(Origin::signed(DAVE).clone(), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(
-		Origin::signed(ACCOUNT_WITH_NO_BALANCE0).clone(),
+		Origin::signed(ACCOUNT_WITH_NO_BALANCE0),
 		ACCOUNT_WITH_NO_BALANCE0,
 		Acc::SERVICER,
 	)
 	.ok();
 	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
 	RoleModule::set_role(
-		Origin::signed(ACCOUNT_WITH_NO_BALANCE1).clone(),
+		Origin::signed(ACCOUNT_WITH_NO_BALANCE1),
 		ACCOUNT_WITH_NO_BALANCE1,
 		Acc::SELLER,
 	)
@@ -37,7 +37,7 @@ fn create_collection_works() {
 		prep_roles();
 		assert_ok!(NFTPallet::create_collection(
 			Origin::signed(CHARLIE),
-			PossibleCollections::HOUSESTEST.into(),
+			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_eq!(
@@ -67,7 +67,7 @@ fn create_collection_works() {
 			NFTPallet::create_collection(
 				Origin::signed(CHARLIE),
 				PossibleCollections::HOUSESTEST,
-				metadata.clone()
+				metadata
 			),
 			pallet_uniques::Error::<Test>::InUse
 		);
@@ -154,7 +154,7 @@ fn transfer_works() {
 			metadata
 		));
 
-		let origin: Origin= frame_system::RawOrigin::Root.into();
+		let origin: Origin = frame_system::RawOrigin::Root.into();
 
 		// not existing
 		assert_noop!(
@@ -167,8 +167,6 @@ fn transfer_works() {
 			Error::<Test>::ItemUnknown
 		);
 
-		
-		
 		assert_ok!(NFTPallet::transfer(
 			origin.clone(),
 			PossibleCollections::HOUSESTEST,
@@ -178,7 +176,7 @@ fn transfer_works() {
 		assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), DAVE);
 
 		assert_ok!(NFTPallet::transfer(
-			origin.clone(),
+			origin,
 			PossibleCollections::HOUSESTEST,
 			ITEM_ID_0,
 			BOB

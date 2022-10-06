@@ -10,7 +10,7 @@ use frame_system::{EnsureRoot, EnsureSigned};
 use pallet_collective::PrimeDefaultVote;
 use pallet_roles::GenesisBuild;
 
-use frame_system;
+
 use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
