@@ -12,7 +12,7 @@
 //! - Connect the Virtual account to the new owners/contributors
 //! through the use of a storage/struct
 //! - Execute the Nft transaction between Seller and Virtual account
-//! - Mint 100 Ownership Tokens, which represent the asset share of
+//! - Mint 1000 Ownership Tokens, which represent the asset share of
 //! each owner
 //! - Distribute the ownership tokens to the new owners.
 //!
