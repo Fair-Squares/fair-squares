@@ -149,7 +149,7 @@ impl<T: Config> Pallet<T> {
 			.unwrap();
 		let token_symbol =
 			format!("FO{:?}", token_id.clone()).as_bytes().to_vec().try_into().unwrap();
-		let decimals = 18;
+		let decimals = 12;
 		Assets::Pallet::<T>::force_set_metadata(
 			origin,
 			token_id.into(),
