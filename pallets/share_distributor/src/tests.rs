@@ -205,7 +205,7 @@ fn share_distributor1(){
 			has_withdrawn: false,
 			block_number: 1,
 			contributions: vec![HousingFund::ContributionLog {
-				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(35_000).unwrap(),
+				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(15_000).unwrap(),
 				block_number: 1
 			}],
 			withdraws: Vec::new()

@@ -5,10 +5,9 @@
 //4) transfer tokens to owners
 use super::*;
 use enum_iterator::all;
-use sp_runtime::{
-    traits::SaturatedConversion,
-    {FixedPointNumber,FixedU128}
-};
+use sp_runtime::{traits::SaturatedConversion, FixedPointNumber,FixedPointOperand, FixedU128,};
+use num_traits::float::FloatCore;
+
 impl<T: Config> Pallet<T> {
 
 ///The function below create a virtual account from the NFT collection and item id's
@@ -72,11 +71,21 @@ pub fn owner_and_shares(collection_id: T::NftCollectionId, item_id: T::NftItemId
     let mut vec = Vec::new() ;
     for i in vec0.iter(){
         
-        let price0 = Self::balance_to_u128_option0(price).unwrap()*100;
+        let price0 = Self::balance_to_u128_option0(price).unwrap();        
         let contribution0 = Self::balance_to_u128_option0(i.1.clone()).unwrap();
-        let share0:FixedU128= FixedPointNumber:: saturating_from_rational(price0,contribution0);
-        let share = FixedPointNumber::into_inner(share0);
-        debug_assert!(share>0); 
+
+        let price1 = Self::balance_to_f64_option0(price).unwrap();
+        let contribution1 = Self::balance_to_f64_option0(i.1.clone()).unwrap();
+        let frac = (contribution1/price1).round();
+        let mut share = FixedU128::saturating_from_rational(contribution0,price0).saturating_mul_int(100u128);
+        let fl = share.clone() as f64;
+        if (fl+0.5)<frac{
+            share = share+1;
+        }
+
+        
+        debug_assert!(share<100); 
+        debug_assert!(share>0);
         
         vec.push((i.0.clone(),share.clone()));
         //Update Virtual_account storage
@@ -178,6 +187,13 @@ pub fn balance_to_u128_option0(input: HousingFund::BalanceOf<T>) -> Option<u128>
 // Conversion of BalanceOf<T> to u128
 pub fn balance_to_u128_option(input: <T as Assets::Config>::Balance) -> Option<u128> {
     input.try_into().ok()
+}
+
+// Conversion of BalanceOf<T> to f64
+pub fn balance_to_f64_option0(input: HousingFund::BalanceOf<T>) -> Option<f64> {
+    let integer:u64 = input.try_into().ok().unwrap();
+    let float = integer as f64;
+    Some(float)
 }
 
 
