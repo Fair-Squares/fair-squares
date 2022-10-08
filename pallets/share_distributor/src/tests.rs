@@ -12,8 +12,6 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
 	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::INVESTOR).ok();
 	RoleModule::set_role(
 		Origin::signed(ACCOUNT_WITH_NO_BALANCE0),
 		ACCOUNT_WITH_NO_BALANCE0,
@@ -35,8 +33,7 @@ pub fn prep_test(
 	//Dave and EVE contribute to the fund
 	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(DAVE), 50_000));
 	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(EVE), 50_000));
-	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(FERDIE), 50_000));
-	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(GERARD), 50_000));
+
 
 	//Charlie creates a collection
 	assert_ok!(NftModule::create_collection(
@@ -110,7 +107,7 @@ fn share_distributor0() {
 			nft_item_id: item_id0,
 			amount: price1,
 			block_number:1,
-			contributions:vec![(EVE,25_000),(DAVE,15_000),(FERDIE,20_500),(GERARD,20_000)],
+			contributions:vec![(EVE,25_000),(DAVE,15_000)],
 		};
 		let id = ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap().token_id;
 		//Add new owners and asset to housing fund
@@ -129,11 +126,10 @@ fn share_distributor0() {
 		assert_ok!(ShareDistributor::distribute_tokens(new_owner0.clone(),coll_id0,item_id0));
 		let balance0 = Assets::Pallet::<Test>::balance(id,DAVE);
 		let balance1 = Assets::Pallet::<Test>::balance(id,EVE);
-		let balance2 = Assets::Pallet::<Test>::balance(id,FERDIE);
-		let balance3 = Assets::Pallet::<Test>::balance(id,GERARD);
+
 
 		let _infos = ShareDistributor::tokens_infos(new_owner0.clone()).unwrap().owners;
-		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}\nTokens own by Ferdie:{:?}\nTokens own by Gerard:{:?}",balance0,balance1,balance2,balance3);
+		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}",balance0,balance1);
 		println!("Total supply {:?}",Assets::Pallet::<Test>::total_supply(id));
 
 
@@ -220,40 +216,11 @@ fn share_distributor1() {
 			withdraws: Vec::new()
 		};
 
-		let contribution_ferdie = HousingFund::Contribution {
-			account_id: FERDIE,
-			available_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(10_000).unwrap(),
-			reserved_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(15_000).unwrap(),
-			contributed_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(0).unwrap(),
-			has_withdrawn: false,
-			block_number: 1,
-			contributions: vec![HousingFund::ContributionLog {
-				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(25_000).unwrap(),
-				block_number: 1
-			}],
-			withdraws: Vec::new()
-		};
-		let contribution_gerard = HousingFund::Contribution {
-			account_id: GERARD,
-			available_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(10_000).unwrap(),
-			reserved_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(15_000).unwrap(),
-			contributed_balance: HousingFund::Pallet::<Test>::u64_to_balance_option(0).unwrap(),
-			has_withdrawn: false,
-			block_number: 1,
-			contributions: vec![HousingFund::ContributionLog {
-				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(25_000).unwrap(),
-				block_number: 1
-			}],
-			withdraws: Vec::new()
-		};
 
 
 		// Add contributions to storage
 		HousingFund::Contributions::<Test>::insert(EVE,contribution_eve);
 		HousingFund::Contributions::<Test>::insert(DAVE,contribution_dave);
-		HousingFund::Contributions::<Test>::insert(FERDIE,contribution_ferdie);
-		HousingFund::Contributions::<Test>::insert(GERARD,contribution_gerard);
-
 
 
 		//Create a FundOperation struct for this asset
@@ -262,7 +229,7 @@ fn share_distributor1() {
 			nft_item_id: item_id0,
 			amount: price1,
 			block_number:1,
-			contributions:vec![(EVE,25_000),(DAVE,15_000),(FERDIE,15_000),(GERARD,15_000)],
+			contributions:vec![(EVE,25_000),(DAVE,15_000)],
 		};
 
 		//Add new owners and asset to housing fund
@@ -271,9 +238,9 @@ fn share_distributor1() {
 		// Update the Housing fund to fit with the contributions
 		HousingFund::FundBalance::<Test>::mutate(|val| {
 			*val = HousingFund::FundInfo {
-				total: 110_000,
-				transferable: 40_000,
-				reserved: 70_000,
+				total: 60_000,
+				transferable: 20_000,
+				reserved: 40_000,
 			};
 		});
 
@@ -294,10 +261,8 @@ fn share_distributor1() {
 		let balance0 = Assets::Pallet::<Test>::balance(id,DAVE);
 		let balance1 = Assets::Pallet::<Test>::balance(id,EVE);
 		let balance2 = Assets::Pallet::<Test>::balance(id,new_owner0.clone());
-		let balance3 = Assets::Pallet::<Test>::balance(id,DAVE);
-		let balance4 = Assets::Pallet::<Test>::balance(id,EVE);
 
-		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}\nTokens own by Virtual_account:{:?}\nTokens own by DAVE:{:?}\nTokens own by Gerard:{:?}",balance0,balance1,balance2,balance3,balance4);
+		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}\nTokens own by Virtual_account:{:?}",balance0,balance1,balance2);
 		let infos = ShareDistributor::tokens_infos(new_owner0.clone()).unwrap().owners;
 
 
