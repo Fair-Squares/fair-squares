@@ -41,7 +41,7 @@ pub use pallet_share_distributor as ShareDistributor;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	
+
 	use frame_system::pallet_prelude::*;
 
 	pub const PERCENT_FACTOR: u64 = 100;
@@ -225,21 +225,12 @@ impl<T: Config> Pallet<T> {
 			}
 
 			let amount = amount_wrap.unwrap();
-			Self::deposit_event(Event::ProcessingAsset(
-				item.0,
-				item.1,
-				amount,
-			));
+			Self::deposit_event(Event::ProcessingAsset(item.0, item.1, amount));
 
 			// Check if Housing Fund has enough fund for the asset
 			if !Housing_Fund::Pallet::<T>::check_available_fund(amount) {
 				let block = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::HousingFundNotEnough(
-					item.0,
-					item.1,
-					amount,
-					block,
-				));
+				Self::deposit_event(Event::HousingFundNotEnough(item.0, item.1, amount, block));
 				continue
 			}
 
@@ -250,10 +241,7 @@ impl<T: Config> Pallet<T> {
 			if investors_shares.is_empty() {
 				let block = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::FailedToAssembleInvestors(
-					item.0,
-					item.1,
-					amount,
-					block,
+					item.0, item.1, amount, block,
 				));
 				continue
 			}

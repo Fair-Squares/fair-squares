@@ -74,9 +74,7 @@ impl<T: Config> Pallet<T> {
 			HousingFund::Reservations::<T>::get((collection_id, item_id)).unwrap();
 		let vec0 = reservation_infos.contributions;
 		let price = reservation_infos.amount;
-		let virtual_acc = Self::virtual_acc(collection_id, item_id)
-			.unwrap()
-			.virtual_account;
+		let virtual_acc = Self::virtual_acc(collection_id, item_id).unwrap().virtual_account;
 
 		let mut vec = Vec::new();
 		for i in vec0.iter() {
@@ -189,8 +187,7 @@ impl<T: Config> Pallet<T> {
 		let token_id = Virtual::<T>::get(collection_id, item_id).unwrap().token_id;
 		let total_tokens = Assets::Pallet::<T>::total_supply(token_id.into());
 		debug_assert!(total_tokens == Self::u32_to_balance_option(1000).unwrap());
-		let shares =
-			Self::owner_and_shares(collection_id, item_id, total_tokens);
+		let shares = Self::owner_and_shares(collection_id, item_id, total_tokens);
 
 		let from = T::Lookup::unlookup(account.clone());
 		let origin: OriginFor<T> = RawOrigin::Signed(account).into();

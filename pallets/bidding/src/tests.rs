@@ -161,11 +161,7 @@ fn get_common_investor_distribution_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let eligible_contributions = vec![(1, 20, 20), (2, 20, 20), (3, 20, 20), (4, 20, 20)];
 
-		let list = BiddingModule::get_common_investor_distribution(
-			100,
-			10,
-			eligible_contributions,
-		);
+		let list = BiddingModule::get_common_investor_distribution(100, 10, eligible_contributions);
 
 		assert_eq!(list, vec![(1, 10), (2, 10), (3, 10), (4, 10),]);
 	});

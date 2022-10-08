@@ -145,30 +145,22 @@ pub mod pallet {
 			item_id: T::NftItemId,
 		) -> DispatchResult {
 			let _caller = ensure_root(origin.clone());
-			let seller: T::AccountId =
-				Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
+			let seller: T::AccountId = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			// Create virtual account
 			Self::virtual_account(collection_id, item_id).ok();
-			let account = Self::virtual_acc(collection_id, item_id)
-				.unwrap()
-				.virtual_account;
+			let account = Self::virtual_acc(collection_id, item_id).unwrap().virtual_account;
 
 			// execute NFT transaction
 			Self::nft_transaction(collection_id, item_id, account.clone()).ok();
 
 			//Create new token class
-			Self::create_tokens(origin, collection_id, item_id, account.clone())
-				.ok();
+			Self::create_tokens(origin, collection_id, item_id, account.clone()).ok();
 
 			//distribute tokens
 			Self::distribute_tokens(account.clone(), collection_id, item_id).ok();
 
 			// Update Housing fund informations
-			HousingFund::Pallet::<T>::validate_house_bidding(
-				collection_id,
-				item_id,
-			)
-			.ok();
+			HousingFund::Pallet::<T>::validate_house_bidding(collection_id, item_id).ok();
 
 			// Emit some events.
 			let created = <frame_system::Pallet<T>>::block_number();
@@ -185,10 +177,8 @@ pub mod pallet {
 				when: created,
 			});
 
-			let new_owners =
-				Self::virtual_acc(collection_id, item_id).unwrap().owners;
-			let token_id =
-				Self::virtual_acc(collection_id, item_id).unwrap().token_id;
+			let new_owners = Self::virtual_acc(collection_id, item_id).unwrap().owners;
+			let token_id = Self::virtual_acc(collection_id, item_id).unwrap().token_id;
 			let owners = Self::tokens_infos(account.clone()).unwrap().owners;
 			Self::deposit_event(Event::OwnershipTokensDistributed {
 				from: account,

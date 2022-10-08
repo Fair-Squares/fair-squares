@@ -10,7 +10,7 @@ use frame_system::{EnsureRoot, EnsureSigned};
 use pallet_collective::{Instance1, PrimeDefaultVote};
 use pallet_nft::NftPermissions;
 use pallet_roles::GenesisBuild;
-use sp_core::{H256};
+use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
