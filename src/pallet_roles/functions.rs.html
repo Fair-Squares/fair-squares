@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/roles/src/functions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_roles/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_roles/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_roles/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/roles/src/functions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_roles/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_roles/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_roles/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -99,61 +99,51 @@
 <span id="99">99</span>
 <span id="100">100</span>
 <span id="101">101</span>
-<span id="102">102</span>
-<span id="103">103</span>
-<span id="104">104</span>
-<span id="105">105</span>
-<span id="106">106</span>
-<span id="107">107</span>
-<span id="108">108</span>
-<span id="109">109</span>
 </pre><pre class="rust"><code><span class="kw">pub use super</span>::<span class="kw-2">*</span>;
 
 <span class="kw">impl</span>&lt;T: Config&gt; Pallet&lt;T&gt; {
 	<span class="comment">//Helper function for account creation approval by admin only
 	</span><span class="kw">pub fn </span>approve_account(sender: T::AccountId, who: T::AccountId) -&gt; DispatchResult {
-		<span class="kw">let </span>waitlist = <span class="self">Self</span>::get_pending_approvals();
-		<span class="kw">let </span>sellers = waitlist.<span class="number">0</span>;
-		<span class="kw">let </span>servicers = waitlist.<span class="number">1</span>;
+		<span class="kw">let </span>(sellers, servicers) = <span class="self">Self</span>::get_pending_approvals();
 		<span class="kw">let </span><span class="kw-2">mut </span>exist: bool = <span class="bool-val">false</span>;
 
-		<span class="kw">for </span>sell <span class="kw">in </span>sellers.iter() {
+		<span class="kw">for </span>(index, sell) <span class="kw">in </span>sellers.iter().enumerate() {
 			<span class="kw">if </span>sell.account_id == who.clone() {
 				exist = <span class="bool-val">true</span>;
-				<span class="kw">let </span><span class="kw-2">mut </span>sell0 = sell.clone();
-				sell0.activated = <span class="bool-val">true</span>;
-				sell0.verifier = sender.clone();
-				HouseSellerLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, sell0);
-				<span class="kw">let </span>index = sellers.iter().position(|x| <span class="kw-2">*</span>x == <span class="kw-2">*</span>sell).unwrap();
+				<span class="kw">let </span><span class="kw-2">mut </span>seller = sell.clone();
+				seller.activated = <span class="bool-val">true</span>;
+				seller.verifier = sender.clone();
+				HouseSellerLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, seller);
 				RoleApprovalList::&lt;T&gt;::mutate(|val| {
 					val.<span class="number">0</span>.remove(index);
 				});
 				AccountsRolesLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, Accounts::SELLER);
 				<span class="kw">let </span>now = &lt;frame_system::Pallet&lt;T&gt;&gt;::block_number();
 				<span class="self">Self</span>::deposit_event(Event::SellerCreated(now, who.clone()));
-			}
+				<span class="kw">break
+			</span>}
 		}
-		<span class="kw">for </span>serv <span class="kw">in </span>servicers.iter() {
+		<span class="kw">for </span>(index, serv) <span class="kw">in </span>servicers.iter().enumerate() {
 			<span class="kw">if </span>serv.account_id == who.clone() {
 				exist = <span class="bool-val">true</span>;
-				<span class="kw">let </span><span class="kw-2">mut </span>serv0 = serv.clone();
-				serv0.activated = <span class="bool-val">true</span>;
-				serv0.verifier = sender.clone();
-				ServicerLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, serv0);
-				<span class="kw">let </span>index = servicers.iter().position(|x| <span class="kw-2">*</span>x == <span class="kw-2">*</span>serv).unwrap();
+				<span class="kw">let </span><span class="kw-2">mut </span>servicer = serv.clone();
+				servicer.activated = <span class="bool-val">true</span>;
+				servicer.verifier = sender;
+				ServicerLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, servicer);
 				RoleApprovalList::&lt;T&gt;::mutate(|val| {
 					val.<span class="number">1</span>.remove(index);
 				});
 				AccountsRolesLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, Accounts::SERVICER);
 				<span class="kw">let </span>now = &lt;frame_system::Pallet&lt;T&gt;&gt;::block_number();
-				<span class="self">Self</span>::deposit_event(Event::ServicerCreated(now, who.clone()));
-			}
+				<span class="self">Self</span>::deposit_event(Event::ServicerCreated(now, who));
+				<span class="kw">break
+			</span>}
 		}
 		<span class="macro">ensure!</span>(exist, Error::&lt;T&gt;::NotInWaitingList);
 		<span class="prelude-val">Ok</span>(())
 	}
 
-	<span class="kw">pub fn </span>check_storage(caller: T::AccountId) -&gt; DispatchResult {
+	<span class="kw">pub fn </span>check_account_role(caller: T::AccountId) -&gt; DispatchResult {
 		<span class="macro">ensure!</span>(!HouseSellerLog::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>caller), Error::&lt;T&gt;::OneRoleAllowed);
 		<span class="macro">ensure!</span>(!InvestorLog::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>caller), Error::&lt;T&gt;::OneRoleAllowed);
 		<span class="macro">ensure!</span>(!ServicerLog::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>caller), Error::&lt;T&gt;::OneRoleAllowed);
@@ -164,52 +154,46 @@
 
 	<span class="comment">//Helper function for account creation rejection by admin only
 	</span><span class="kw">pub fn </span>reject_account(who: T::AccountId) -&gt; DispatchResult {
-		<span class="kw">let </span>waitlist = <span class="self">Self</span>::get_pending_approvals();
-		<span class="kw">let </span>sellers = waitlist.<span class="number">0</span>;
-		<span class="kw">let </span>servicers = waitlist.<span class="number">1</span>;
+		<span class="kw">let </span>(sellers, servicers) = <span class="self">Self</span>::get_pending_approvals();
 		<span class="kw">let </span><span class="kw-2">mut </span>exist: bool = <span class="bool-val">false</span>;
-		<span class="kw">for </span>sell <span class="kw">in </span>sellers.iter() {
+		<span class="kw">for </span>(index, sell) <span class="kw">in </span>sellers.iter().enumerate() {
 			<span class="kw">if </span>sell.account_id == who.clone() {
 				exist = <span class="bool-val">true</span>;
-				<span class="kw">let </span>index = sellers.iter().position(|x| <span class="kw-2">*</span>x == <span class="kw-2">*</span>sell).unwrap();
 				RoleApprovalList::&lt;T&gt;::mutate(|val| {
 					val.<span class="number">0</span>.remove(index);
 				});
 				<span class="kw">let </span>now = &lt;frame_system::Pallet&lt;T&gt;&gt;::block_number();
 				<span class="self">Self</span>::deposit_event(Event::SellerAccountCreationRejected(now, who.clone()));
-			}
+				<span class="kw">break
+			</span>}
 		}
 
-		<span class="kw">for </span>serv <span class="kw">in </span>servicers.iter() {
+		<span class="kw">for </span>(index, serv) <span class="kw">in </span>servicers.iter().enumerate() {
 			<span class="kw">if </span>serv.account_id == who.clone() {
 				exist = <span class="bool-val">true</span>;
-				<span class="kw">let </span>index = servicers.iter().position(|x| <span class="kw-2">*</span>x == <span class="kw-2">*</span>serv).unwrap();
 				RoleApprovalList::&lt;T&gt;::mutate(|val| {
 					val.<span class="number">1</span>.remove(index);
 				});
 				<span class="kw">let </span>now = &lt;frame_system::Pallet&lt;T&gt;&gt;::block_number();
-				<span class="self">Self</span>::deposit_event(Event::ServicerAccountCreationRejected(now, who.clone()));
-			}
+				<span class="self">Self</span>::deposit_event(Event::ServicerAccountCreationRejected(now, who));
+				<span class="kw">break
+			</span>}
 		}
 		<span class="macro">ensure!</span>(exist, Error::&lt;T&gt;::NotInWaitingList);
 		<span class="prelude-val">Ok</span>(())
 	}
 
 	<span class="kw">pub fn </span>check_role_approval_list(account: AccountIdOf&lt;T&gt;) -&gt; DispatchResult {
-		<span class="kw">let </span>waitlists = <span class="self">Self</span>::get_pending_approvals();
-		<span class="kw">let </span>serv = waitlists.<span class="number">1</span>;
-		<span class="kw">let </span>sell = waitlists.<span class="number">0</span>;
-		<span class="macro">ensure!</span>(!HouseSellerLog::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>account), Error::&lt;T&gt;::OneRoleAllowed);
-		<span class="macro">ensure!</span>(!ServicerLog::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>account), Error::&lt;T&gt;::OneRoleAllowed);
-		<span class="kw">if </span>!sell.is_empty() {
-			<span class="kw">for </span>sellers <span class="kw">in </span>sell.iter() {
-				<span class="kw">let </span>id = <span class="kw-2">&amp;</span>sellers.account_id;
+		<span class="kw">let </span>(sellers, servicers) = <span class="self">Self</span>::get_pending_approvals();
+		<span class="kw">if </span>!sellers.is_empty() {
+			<span class="kw">for </span>seller <span class="kw">in </span>sellers.iter() {
+				<span class="kw">let </span>id = <span class="kw-2">&amp;</span>seller.account_id;
 				<span class="macro">ensure!</span>(<span class="kw-2">&amp;</span>account != id, Error::&lt;T&gt;::AlreadyWaiting);
 			}
 		}
-		<span class="kw">if </span>!serv.is_empty() {
-			<span class="kw">for </span>servicers <span class="kw">in </span>serv.iter() {
-				<span class="kw">let </span>id = <span class="kw-2">&amp;</span>servicers.account_id;
+		<span class="kw">if </span>!servicers.is_empty() {
+			<span class="kw">for </span>servicer <span class="kw">in </span>servicers.iter() {
+				<span class="kw">let </span>id = <span class="kw-2">&amp;</span>servicer.account_id;
 				<span class="macro">ensure!</span>(<span class="kw-2">&amp;</span>account != id, Error::&lt;T&gt;::AlreadyWaiting);
 			}
 		}
@@ -217,4 +201,4 @@
 	}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_roles" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (1d37ed661 2022-09-09)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_roles" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (8796e7a9c 2022-10-08)" ></div></body></html>

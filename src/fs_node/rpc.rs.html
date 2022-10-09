@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `node/src/rpc.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>rpc.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../fs_node/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../fs_node/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../fs_node/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `node/src/rpc.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>rpc.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../fs_node/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../fs_node/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../fs_node/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -133,12 +133,6 @@
 <span id="133">133</span>
 <span id="134">134</span>
 <span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-<span id="140">140</span>
-<span id="141">141</span>
 </pre><pre class="rust"><code><span class="doccomment">//! A collection of node-specific RPC methods.
 //! Substrate provides the `sc-rpc` crate, which defines the core RPC layer
 //! used by Substrate nodes. This file extends those RPC definitions with
@@ -148,23 +142,24 @@
 
 </span><span class="kw">use </span>std::sync::Arc;
 
+<span class="kw">use </span>fs_node_runtime::opaque::Block;
 <span class="kw">use </span>jsonrpsee::RpcModule;
-<span class="kw">use </span>fs_node_runtime::{opaque::Block};
+<span class="kw">use </span>node_primitives::{AccountId, Balance, BlockNumber, Hash, Index};
+<span class="kw">use </span>sc_client_api::AuxStore;
+<span class="kw">use </span>sc_consensus_babe::{Config, Epoch};
+<span class="kw">use </span>sc_consensus_epochs::SharedEpochChanges;
+<span class="kw">use </span>sc_finality_grandpa::{
+	FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
+};
+<span class="kw">use </span>sc_rpc::SubscriptionTaskExecutor;
 <span class="kw">pub use </span>sc_rpc_api::DenyUnsafe;
 <span class="kw">use </span>sc_transaction_pool_api::TransactionPool;
 <span class="kw">use </span>sp_api::ProvideRuntimeApi;
 <span class="kw">use </span>sp_block_builder::BlockBuilder;
 <span class="kw">use </span>sp_blockchain::{Error <span class="kw">as </span>BlockChainError, HeaderBackend, HeaderMetadata};
-<span class="kw">use </span>sc_finality_grandpa::{FinalityProofProvider, GrandpaJustificationStream, SharedVoterState, SharedAuthoritySet};
-<span class="kw">use </span>sc_consensus_epochs::SharedEpochChanges;
-<span class="kw">use </span>sc_consensus_babe::{Config, Epoch};
-<span class="kw">use </span>sp_keystore::SyncCryptoStorePtr;
-<span class="kw">use </span>node_primitives::{Hash, BlockNumber};
-<span class="kw">use </span>sc_rpc::SubscriptionTaskExecutor;
 <span class="kw">use </span>sp_consensus::SelectChain;
 <span class="kw">use </span>sp_consensus_babe::BabeApi;
-<span class="kw">use </span>sc_client_api::AuxStore;
-<span class="kw">use </span>node_primitives::{AccountId, Balance, Index};
+<span class="kw">use </span>sp_keystore::SyncCryptoStorePtr;
 
 <span class="doccomment">/// Extra dependencies for BABE.
 </span><span class="kw">pub struct </span>BabeDeps {
@@ -210,7 +205,7 @@
 
 <span class="doccomment">/// Instantiate all full RPC extensions.
 </span><span class="kw">pub fn </span>create_full&lt;C, P, SC, B&gt;(
-	deps: FullDeps&lt;C, P, SC, B&gt;
+	deps: FullDeps&lt;C, P, SC, B&gt;,
 ) -&gt; <span class="prelude-ty">Result</span>&lt;RpcModule&lt;()&gt;, Box&lt;<span class="kw">dyn </span>std::error::Error + Send + Sync&gt;&gt;
 <span class="kw">where
 	</span>C: ProvideRuntimeApi&lt;Block&gt;
@@ -230,9 +225,9 @@
 	B::State: sc_client_api::backend::StateBackend&lt;sp_runtime::traits::HashFor&lt;Block&gt;&gt;,
 {
 	<span class="kw">use </span>pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-	<span class="kw">use </span>substrate_frame_rpc_system::{System, SystemApiServer};
 	<span class="kw">use </span>sc_consensus_babe_rpc::{Babe, BabeApiServer};
 	<span class="kw">use </span>sc_finality_grandpa_rpc::{Grandpa, GrandpaApiServer};
+	<span class="kw">use </span>substrate_frame_rpc_system::{System, SystemApiServer};
 
 	<span class="kw">let </span><span class="kw-2">mut </span>io = RpcModule::new(());
 	<span class="kw">let </span>FullDeps { client, pool, select_chain, chain_spec: <span class="kw">_</span>, deny_unsafe, babe, grandpa } = deps;
@@ -251,21 +246,14 @@
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())<span class="question-mark">?</span>;
 
 	io.merge(
-		Babe::new(
-			client.clone(),
-			shared_epoch_changes.clone(),
-			keystore,
-			babe_config,
-			select_chain,
-			deny_unsafe,
-		)
-		.into_rpc(),
+		Babe::new(client, shared_epoch_changes, keystore, babe_config, select_chain, deny_unsafe)
+			.into_rpc(),
 	)<span class="question-mark">?</span>;
 
 	io.merge(
 		Grandpa::new(
 			subscription_executor,
-			shared_authority_set.clone(),
+			shared_authority_set,
 			shared_voter_state,
 			justification_stream,
 			finality_provider,
@@ -279,5 +267,6 @@
 	// `io.extend_with(YourRpcTrait::to_delegate(YourRpcStruct::new(ReferenceToClient, ...)));`
 
 	</span><span class="prelude-val">Ok</span>(io)
-}</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="fs_node" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (1d37ed661 2022-09-09)" ></div></body></html>
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="fs_node" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (8796e7a9c 2022-10-08)" ></div></body></html>

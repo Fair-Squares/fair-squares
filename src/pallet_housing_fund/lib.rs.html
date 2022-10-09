@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/housing_fund/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_housing_fund/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_housing_fund/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_housing_fund/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/housing_fund/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_housing_fund/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_housing_fund/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_housing_fund/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -333,83 +333,6 @@
 <span id="333">333</span>
 <span id="334">334</span>
 <span id="335">335</span>
-<span id="336">336</span>
-<span id="337">337</span>
-<span id="338">338</span>
-<span id="339">339</span>
-<span id="340">340</span>
-<span id="341">341</span>
-<span id="342">342</span>
-<span id="343">343</span>
-<span id="344">344</span>
-<span id="345">345</span>
-<span id="346">346</span>
-<span id="347">347</span>
-<span id="348">348</span>
-<span id="349">349</span>
-<span id="350">350</span>
-<span id="351">351</span>
-<span id="352">352</span>
-<span id="353">353</span>
-<span id="354">354</span>
-<span id="355">355</span>
-<span id="356">356</span>
-<span id="357">357</span>
-<span id="358">358</span>
-<span id="359">359</span>
-<span id="360">360</span>
-<span id="361">361</span>
-<span id="362">362</span>
-<span id="363">363</span>
-<span id="364">364</span>
-<span id="365">365</span>
-<span id="366">366</span>
-<span id="367">367</span>
-<span id="368">368</span>
-<span id="369">369</span>
-<span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
-<span id="373">373</span>
-<span id="374">374</span>
-<span id="375">375</span>
-<span id="376">376</span>
-<span id="377">377</span>
-<span id="378">378</span>
-<span id="379">379</span>
-<span id="380">380</span>
-<span id="381">381</span>
-<span id="382">382</span>
-<span id="383">383</span>
-<span id="384">384</span>
-<span id="385">385</span>
-<span id="386">386</span>
-<span id="387">387</span>
-<span id="388">388</span>
-<span id="389">389</span>
-<span id="390">390</span>
-<span id="391">391</span>
-<span id="392">392</span>
-<span id="393">393</span>
-<span id="394">394</span>
-<span id="395">395</span>
-<span id="396">396</span>
-<span id="397">397</span>
-<span id="398">398</span>
-<span id="399">399</span>
-<span id="400">400</span>
-<span id="401">401</span>
-<span id="402">402</span>
-<span id="403">403</span>
-<span id="404">404</span>
-<span id="405">405</span>
-<span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
 </pre><pre class="rust"><code><span class="doccomment">//! # Housing fund pallet
 //!
 //! The housing fund pallet provides methods to manage the fund used to buy houses
@@ -426,8 +349,6 @@
 //! * &#39;contribute_to_fund&#39; - an account with the investor role can transfer funds to the pot
 //! * &#39;withdraw_fund&#39; - an account with the investor role can withdraw funds from the pot if the
 //!   amount is available
-//! * &#39;house_bidding&#39; - an amount is reserved from the pot for the purchase of a house, for each
-//!   contributor the share is tagged as reserved in his contribution
 
 </span><span class="attribute">#![cfg_attr(not(feature = <span class="string">&quot;std&quot;</span>), no_std)]
 
@@ -447,6 +368,7 @@
 <span class="kw">mod </span>structs;
 
 <span class="kw">pub use </span><span class="kw">crate</span>::structs::<span class="kw-2">*</span>;
+<span class="kw">pub use </span>pallet_nft <span class="kw">as </span>NFT;
 <span class="kw">pub use </span>pallet_roles <span class="kw">as </span>ROLES;
 <span class="kw">pub use </span>weights::WeightInfo;
 
@@ -454,8 +376,7 @@
 </span><span class="kw">pub mod </span>pallet {
 	<span class="kw">use super</span>::<span class="kw-2">*</span>;
 	<span class="kw">use </span>frame_support::{
-		sp_runtime::traits::AccountIdConversion,
-		traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
+		traits::{Currency, ExistenceRequirement, Get},
 		transactional, PalletId,
 	};
 	<span class="kw">use </span>sp_std::vec;
@@ -464,7 +385,7 @@
 
 	<span class="doccomment">/// Configure the pallet by specifying the parameters and types on which it depends.
 	</span><span class="attribute">#[pallet::config]
-	</span><span class="kw">pub trait </span>Config: frame_system::Config + ROLES::Config {
+	</span><span class="kw">pub trait </span>Config: frame_system::Config + NFT::Config {
 		<span class="doccomment">/// Because this pallet emits events, it depends on the runtime&#39;s definition of an event.
 		</span><span class="kw">type </span>Event: From&lt;Event&lt;<span class="self">Self</span>&gt;&gt; + IsType&lt;&lt;<span class="self">Self </span><span class="kw">as </span>frame_system::Config&gt;::Event&gt;;
 		<span class="kw">type </span>LocalCurrency: frame_support::traits::Currency&lt;<span class="self">Self</span>::AccountId&gt;
@@ -500,20 +421,30 @@
 	<span class="attribute">#[pallet::storage]
 	#[pallet::getter(<span class="kw">fn </span>contributions)]
 	</span><span class="comment">// Distribution of investor&#39;s contributions
-	</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">type </span>Contributions&lt;T&gt; =
+	</span><span class="kw">pub type </span>Contributions&lt;T&gt; =
 		StorageMap&lt;<span class="kw">_</span>, Blake2_128Concat, AccountIdOf&lt;T&gt;, Contribution&lt;T&gt;, OptionQuery&gt;;
 
 	<span class="attribute">#[pallet::storage]
 	#[pallet::getter(<span class="kw">fn </span>reservations)]
 	</span><span class="comment">// Housing fund reservations
-	</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">type </span>Reservations&lt;T&gt; =
-		StorageMap&lt;<span class="kw">_</span>, Blake2_128Concat, StorageIndex, FundOperation&lt;T&gt;, OptionQuery&gt;;
+	</span><span class="kw">pub type </span>Reservations&lt;T&gt; = StorageMap&lt;
+		<span class="kw">_</span>,
+		Blake2_128Concat,
+		(NftCollectionId&lt;T&gt;, NftItemId&lt;T&gt;),
+		FundOperation&lt;T&gt;,
+		OptionQuery,
+	&gt;;
 
 	<span class="attribute">#[pallet::storage]
 	#[pallet::getter(<span class="kw">fn </span>purchases)]
 	</span><span class="comment">// Housing fund used for purchases
-	</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">type </span>Purchases&lt;T&gt; =
-		StorageMap&lt;<span class="kw">_</span>, Blake2_128Concat, StorageIndex, FundOperation&lt;T&gt;, OptionQuery&gt;;
+	</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">type </span>Purchases&lt;T&gt; = StorageMap&lt;
+		<span class="kw">_</span>,
+		Blake2_128Concat,
+		(NftCollectionId&lt;T&gt;, NftItemId&lt;T&gt;),
+		FundOperation&lt;T&gt;,
+		OptionQuery,
+	&gt;;
 
 	<span class="comment">// Pallets use events to inform users when important changes are made.
 	</span><span class="attribute">#[pallet::event]
@@ -529,7 +460,10 @@
 			BlockNumberOf&lt;T&gt;,
 		),
 		<span class="doccomment">/// Fund reservation succeded
-		</span>FundReservationSucceeded(AccountIdOf&lt;T&gt;, StorageIndex, BalanceOf&lt;T&gt;, BlockNumberOf&lt;T&gt;),
+		</span>FundReservationSucceeded(T::NftCollectionId, T::NftItemId, BalanceOf&lt;T&gt;, BlockNumberOf&lt;T&gt;),
+		FundReservationCancelled(T::NftCollectionId, T::NftItemId, BalanceOf&lt;T&gt;, BlockNumberOf&lt;T&gt;),
+		PurchaseFundValidated(T::NftCollectionId, T::NftItemId, BalanceOf&lt;T&gt;, BlockNumberOf&lt;T&gt;),
+		FundUnreservedForPurchase(T::NftCollectionId, T::NftItemId, BalanceOf&lt;T&gt;, BlockNumberOf&lt;T&gt;),
 	}
 
 	<span class="comment">// Errors inform users that something went wrong.
@@ -557,6 +491,8 @@
 		</span>NotAnInvestor,
 		<span class="doccomment">/// Must not have more investor than the max acceppted
 		</span>NotMoreThanMaxInvestorPerHouse,
+		<span class="doccomment">/// The reservation doesn&#39;t exist in the storage
+		</span>NoFundReservationFound,
 	}
 
 	<span class="attribute">#[pallet::call]
@@ -612,20 +548,17 @@
 				Contributions::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, contribution);
 			} <span class="kw">else </span>{
 				Contributions::&lt;T&gt;::mutate(<span class="kw-2">&amp;</span>who, |val| {
-					<span class="kw">let </span>unwrap_val = val.clone().unwrap();
-					<span class="kw">let </span><span class="kw-2">mut </span>contribution_logs = unwrap_val.contributions.clone();
+					<span class="kw">let </span>old_contrib = val.clone().unwrap();
+					<span class="kw">let </span><span class="kw-2">mut </span>contribution_logs = old_contrib.contributions.clone();
 					<span class="comment">// update the contributions history
 					</span>contribution_logs.push(contribution_log.clone());
 
 					<span class="kw">let </span>new_contrib = Contribution {
 						account_id: who.clone(),
-						available_balance: unwrap_val.available_balance + amount,
-						reserved_balance: unwrap_val.reserved_balance,
-						contributed_balance: unwrap_val.contributed_balance,
-						has_withdrawn: unwrap_val.has_withdrawn,
+						available_balance: old_contrib.available_balance + amount,
 						block_number,
 						contributions: contribution_logs,
-						withdraws: Vec::new(),
+						..old_contrib
 					};
 					<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(new_contrib);
 				});
@@ -640,7 +573,7 @@
 			<span class="comment">// The amount is transferred to the treasurery
 			</span>T::LocalCurrency::transfer(
 				<span class="kw-2">&amp;</span>who,
-				<span class="kw-2">&amp;</span>T::PalletId::get().into_account_truncating(),
+				<span class="kw-2">&amp;</span>Pallet::&lt;T&gt;::fund_account_id(),
 				amount,
 				ExistenceRequirement::AllowDeath,
 			)<span class="question-mark">?</span>;
@@ -694,21 +627,17 @@
 			<span class="kw">let </span>withdraw_log = ContributionLog { amount, block_number };
 
 			Contributions::&lt;T&gt;::mutate(<span class="kw-2">&amp;</span>who, |val| {
-				<span class="kw">let </span>unwrap_val = val.clone().unwrap();
-				<span class="kw">let </span>contribution_logs = unwrap_val.contributions.clone();
-				<span class="kw">let </span><span class="kw-2">mut </span>withdraw_logs = unwrap_val.withdraws.clone();
+				<span class="kw">let </span>old_contrib = val.clone().unwrap();
+				<span class="kw">let </span><span class="kw-2">mut </span>withdraw_logs = old_contrib.withdraws.clone();
 				<span class="comment">// update the withdraws history
 				</span>withdraw_logs.push(withdraw_log.clone());
 
 				<span class="kw">let </span>new_contrib = Contribution {
-					account_id: who.clone(),
-					available_balance: unwrap_val.available_balance - amount,
-					reserved_balance: unwrap_val.reserved_balance,
-					contributed_balance: unwrap_val.contributed_balance,
+					available_balance: old_contrib.available_balance - amount,
 					has_withdrawn: <span class="bool-val">true</span>,
 					block_number,
-					contributions: contribution_logs,
 					withdraws: withdraw_logs.clone(),
+					..old_contrib
 				};
 				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(new_contrib);
 			});
@@ -721,7 +650,7 @@
 
 			<span class="comment">// The amount is transferred from the treasury to the account
 			</span>T::LocalCurrency::transfer(
-				<span class="kw-2">&amp;</span>T::PalletId::get().into_account_truncating(),
+				<span class="kw-2">&amp;</span>Pallet::&lt;T&gt;::fund_account_id(),
 				<span class="kw-2">&amp;</span>who,
 				amount,
 				ExistenceRequirement::AllowDeath,
@@ -737,90 +666,7 @@
 
 			<span class="prelude-val">Ok</span>(().into())
 		}
-
-		<span class="doccomment">/// Execute a bid on a house, funds are reserve for the bid before the transfer
-		/// The origin must be signed
-		/// - account_id : account of the house seller
-		/// - house_id : id of the house to be sell
-		/// - amount : amount used to buy the house
-		/// - contributions : list of investors contributions
-		/// Emits FundReservationSucceeded when successful
-		</span><span class="attribute">#[pallet::weight(&lt;T <span class="kw">as </span>pallet::Config&gt;::WeightInfo::house_bidding())]
-		#[transactional]
-		</span><span class="kw">pub fn </span>house_bidding(
-			origin: OriginFor&lt;T&gt;,
-			account_id: AccountIdOf&lt;T&gt;,
-			house_id: StorageIndex,
-			amount: BalanceOf&lt;T&gt;,
-			contributions: Vec&lt;(AccountIdOf&lt;T&gt;, BalanceOf&lt;T&gt;)&gt;,
-		) -&gt; DispatchResultWithPostInfo {
-			<span class="comment">// Check that the extrinsic was signed and get the signer.
-			</span><span class="kw">let </span>who = ensure_signed(origin)<span class="question-mark">?</span>;
-
-			<span class="comment">// Check that the fund can afford the bid
-			</span><span class="kw">let </span><span class="kw-2">mut </span>fund = FundBalance::&lt;T&gt;::get();
-
-			<span class="macro">ensure!</span>(fund.can_take_off(amount), Error::&lt;T&gt;::NotEnoughFundForHouse);
-
-			<span class="comment">// Check the number of investors
-			</span><span class="macro">ensure!</span>(
-				contributions.clone().len() &lt;= T::MaxInvestorPerHouse::get().try_into().unwrap(),
-				Error::&lt;T&gt;::NotMoreThanMaxInvestorPerHouse
-			);
-
-			<span class="comment">// Checks that each contribution is possible
-			</span><span class="kw">let </span>contribution_iter = contributions.iter();
-
-			<span class="kw">let </span><span class="kw-2">mut </span>contribution_list = Vec::new();
-
-			<span class="kw">for </span>item <span class="kw">in </span>contribution_iter {
-				<span class="kw">let </span>entry = Contributions::&lt;T&gt;::get(item.<span class="number">0</span>.clone());
-				<span class="macro">ensure!</span>(entry.is_some(), Error::&lt;T&gt;::NotAContributor);
-				<span class="macro">ensure!</span>(entry.unwrap().can_reserve(item.<span class="number">1</span>), Error::&lt;T&gt;::NotEnoughAvailableBalance);
-
-				Contributions::&lt;T&gt;::mutate(item.<span class="number">0</span>.clone(), |val| {
-					<span class="kw">let </span><span class="kw-2">mut </span>unwrap_val = val.clone().unwrap();
-					unwrap_val.reserve_amount(item.<span class="number">1</span>);
-					<span class="kw">let </span>contribution = unwrap_val.clone();
-					<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(contribution);
-				});
-				contribution_list.push((item.<span class="number">0</span>.clone(), item.<span class="number">1</span>));
-			}
-
-			<span class="comment">// The amount is tagged as reserved in the fund for the account_id
-			</span>T::LocalCurrency::reserve(<span class="kw-2">&amp;</span>T::PalletId::get().into_account_truncating(), amount)<span class="question-mark">?</span>;
-			fund.reserve(amount);
-
-			<span class="comment">// The amount is reserved in the pot
-			</span>FundBalance::&lt;T&gt;::mutate(|val| {
-				<span class="kw-2">*</span>val = fund.clone();
-			});
-
-			<span class="comment">// Get the block number for timestamp
-			</span><span class="kw">let </span>block_number = &lt;frame_system::Pallet&lt;T&gt;&gt;::block_number();
-
-			<span class="kw">let </span>reservation = FundOperation {
-				account_id: account_id.clone(),
-				house_id,
-				amount,
-				block_number,
-				contributions: contribution_list,
-			};
-
-			<span class="comment">// The reservation is added to the storage
-			</span>Reservations::&lt;T&gt;::insert(house_id, reservation);
-
-			<span class="comment">// Emit an event.
-			</span><span class="self">Self</span>::deposit_event(Event::FundReservationSucceeded(
-				who,
-				house_id,
-				amount,
-				block_number,
-			));
-
-			<span class="prelude-val">Ok</span>(().into())
-		}
 	}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_housing_fund" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (1d37ed661 2022-09-09)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_housing_fund" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (8796e7a9c 2022-10-08)" ></div></body></html>

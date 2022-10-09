@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/nft/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_nft/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_nft/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_nft/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/nft/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_nft/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_nft/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_nft/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -389,7 +389,8 @@
 
 //! * `burn` - Restricted to Servicer role, this function Removes a NFT item from existence
 
-//! * `destroy_collection` - Restricted to Servicer role, this function Removes a Collection from existence
+//! * `destroy_collection` - Restricted to Servicer role, this function Removes a Collection from
+//!   existence
 
 </span><span class="attribute">#![cfg_attr(not(feature = <span class="string">&quot;std&quot;</span>), no_std)]
 #![allow(clippy::unused_unit)]
@@ -402,7 +403,7 @@
 	traits::{tokens::nonfungibles::<span class="kw-2">*</span>, Get},
 	transactional, BoundedVec,
 };
-<span class="kw">use </span>frame_system::ensure_signed;
+<span class="kw">use </span>frame_system::{ensure_root, ensure_signed};
 <span class="kw">use </span>pallet_uniques::DestroyWitness;
 
 <span class="kw">pub use </span>functions::<span class="kw-2">*</span>;
@@ -557,7 +558,8 @@
 			<span class="kw">let </span>sender = ensure_signed(origin)<span class="question-mark">?</span>;
 			<span class="kw">let </span>coll_id: CollectionId = collection_id.value();
 
-			<span class="comment">//ensure!(T::ReserveCollectionIdUpTo::get() != coll_id.clone().into(), Error::&lt;T&gt;::IdReserved);
+			<span class="comment">//ensure!(T::ReserveCollectionIdUpTo::get() != coll_id.clone().into(),
+			// Error::&lt;T&gt;::IdReserved);
 			</span><span class="macro">ensure!</span>(!<span class="self">Self</span>::is_id_reserved(coll_id.into()), Error::&lt;T&gt;::IdReserved);
 			<span class="kw">let </span>created_by = Roles::Pallet::&lt;T&gt;::get_roles(<span class="kw-2">&amp;</span>sender).unwrap();
 			<span class="macro">ensure!</span>(T::Permissions::can_create(<span class="kw-2">&amp;</span>created_by), Error::&lt;T&gt;::NotPermitted);
@@ -597,7 +599,7 @@
 			<span class="prelude-val">Ok</span>(())
 		}
 
-		<span class="doccomment">/// Triggered by a servicer(`origin`), this transfers NFT from owner account to `dest` account
+		<span class="doccomment">/// Triggered by Root(`origin`), this transfers NFT from owner account to `dest` account
 		///
 		/// Parameters:
 		/// - `collection_id`: The Collection of the asset to be transferred.
@@ -611,10 +613,8 @@
 			item_id: T::NftItemId,
 			dest: &lt;T::Lookup <span class="kw">as </span>StaticLookup&gt;::Source,
 		) -&gt; DispatchResult {
-			<span class="comment">//the transaction is triggered by a servicer
-			</span><span class="kw">let </span>sender = ensure_signed(origin)<span class="question-mark">?</span>;
-			<span class="kw">let </span>triggered_by = Roles::Pallet::&lt;T&gt;::get_roles(<span class="kw-2">&amp;</span>sender).unwrap();
-			<span class="macro">ensure!</span>(T::Permissions::can_transfer(<span class="kw-2">&amp;</span>triggered_by), Error::&lt;T&gt;::NotPermitted);
+			<span class="comment">//the transaction is triggered by Root
+			</span>ensure_root(origin)<span class="question-mark">?</span>;
 
 			<span class="comment">//Nft transfered from old to new owner
 			</span><span class="kw">let </span>coll_id: CollectionId = collection_id.value();
@@ -719,4 +719,4 @@
 	}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_nft" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (1d37ed661 2022-09-09)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_nft" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (8796e7a9c 2022-10-08)" ></div></body></html>

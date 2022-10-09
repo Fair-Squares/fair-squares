@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/onboarding/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_onboarding/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_onboarding/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_onboarding/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/onboarding/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pallet_onboarding/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../pallet_onboarding/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pallet_onboarding/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -652,85 +652,6 @@
 <span id="652">652</span>
 <span id="653">653</span>
 <span id="654">654</span>
-<span id="655">655</span>
-<span id="656">656</span>
-<span id="657">657</span>
-<span id="658">658</span>
-<span id="659">659</span>
-<span id="660">660</span>
-<span id="661">661</span>
-<span id="662">662</span>
-<span id="663">663</span>
-<span id="664">664</span>
-<span id="665">665</span>
-<span id="666">666</span>
-<span id="667">667</span>
-<span id="668">668</span>
-<span id="669">669</span>
-<span id="670">670</span>
-<span id="671">671</span>
-<span id="672">672</span>
-<span id="673">673</span>
-<span id="674">674</span>
-<span id="675">675</span>
-<span id="676">676</span>
-<span id="677">677</span>
-<span id="678">678</span>
-<span id="679">679</span>
-<span id="680">680</span>
-<span id="681">681</span>
-<span id="682">682</span>
-<span id="683">683</span>
-<span id="684">684</span>
-<span id="685">685</span>
-<span id="686">686</span>
-<span id="687">687</span>
-<span id="688">688</span>
-<span id="689">689</span>
-<span id="690">690</span>
-<span id="691">691</span>
-<span id="692">692</span>
-<span id="693">693</span>
-<span id="694">694</span>
-<span id="695">695</span>
-<span id="696">696</span>
-<span id="697">697</span>
-<span id="698">698</span>
-<span id="699">699</span>
-<span id="700">700</span>
-<span id="701">701</span>
-<span id="702">702</span>
-<span id="703">703</span>
-<span id="704">704</span>
-<span id="705">705</span>
-<span id="706">706</span>
-<span id="707">707</span>
-<span id="708">708</span>
-<span id="709">709</span>
-<span id="710">710</span>
-<span id="711">711</span>
-<span id="712">712</span>
-<span id="713">713</span>
-<span id="714">714</span>
-<span id="715">715</span>
-<span id="716">716</span>
-<span id="717">717</span>
-<span id="718">718</span>
-<span id="719">719</span>
-<span id="720">720</span>
-<span id="721">721</span>
-<span id="722">722</span>
-<span id="723">723</span>
-<span id="724">724</span>
-<span id="725">725</span>
-<span id="726">726</span>
-<span id="727">727</span>
-<span id="728">728</span>
-<span id="729">729</span>
-<span id="730">730</span>
-<span id="731">731</span>
-<span id="732">732</span>
-<span id="733">733</span>
 </pre><pre class="rust"><code><span class="doccomment">//! # Onboarding Pallet
 //!
 //! The Onboarding Pallet allows the Seller role to create an asset proposal
@@ -746,7 +667,8 @@
 //!
 //!And the following actions sent to pallet voting through calls
 //! - Execute NFT &amp; funds transfer
-//! - Reject a proposal for price editing purpose (asset is marked as REJECTED and re-submission is possible)
+//! - Reject a proposal for price editing purpose (asset is marked as REJECTED and re-submission is
+//!   possible)
 //! - Reject a proposal for destruction (NFT is burned, asset is marked as SLASH)
 //!
 //! ### Dispatchable Functions
@@ -788,6 +710,7 @@
 <span class="kw">pub use </span>functions::<span class="kw-2">*</span>;
 <span class="kw">pub use </span>types::<span class="kw-2">*</span>;
 
+<span class="kw">pub use </span>pallet_housing_fund <span class="kw">as </span>HousingFund;
 <span class="kw">pub use </span>pallet_nft <span class="kw">as </span>Nft;
 <span class="kw">pub use </span>pallet_roles <span class="kw">as </span>Roles;
 <span class="kw">pub use </span>pallet_sudo <span class="kw">as </span>Sudo;
@@ -814,13 +737,17 @@
 <span class="attribute">#[frame_support::pallet]
 </span><span class="kw">pub mod </span>pallet {
 	<span class="kw">use super</span>::<span class="kw-2">*</span>;
-	<span class="kw">use </span>frame_support::pallet_prelude::<span class="kw-2">*</span>;
-	<span class="kw">use </span>frame_support::PalletId;
+	<span class="kw">use </span>frame_support::{pallet_prelude::<span class="kw-2">*</span>, PalletId};
 
 	<span class="doccomment">/// Configure the pallet by specifying the parameters and types on which it depends.
 	</span><span class="attribute">#[pallet::config]
 	</span><span class="kw">pub trait </span>Config:
-		frame_system::Config + Roles::Config + Nft::Config + Sudo::Config + Votes::Config
+		frame_system::Config
+		+ Roles::Config
+		+ Nft::Config
+		+ Sudo::Config
+		+ Votes::Config
+		+ HousingFund::Config
 	{
 		<span class="doccomment">/// Because this pallet emits events, it depends on the runtime&#39;s definition of an event.
 		</span><span class="kw">type </span>Event: From&lt;Event&lt;<span class="self">Self</span>&gt;&gt; + IsType&lt;&lt;<span class="self">Self </span><span class="kw">as </span>frame_system::Config&gt;::Event&gt;;
@@ -865,7 +792,7 @@
 	<span class="attribute">#[pallet::storage]
 	#[pallet::getter(<span class="kw">fn </span>houses)]
 	</span><span class="doccomment">/// Stores Asset info
-	</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">type </span>Houses&lt;T: Config&gt; = StorageDoubleMap&lt;
+	</span><span class="kw">pub type </span>Houses&lt;T: Config&gt; = StorageDoubleMap&lt;
 		<span class="kw">_</span>,
 		Blake2_128Concat,
 		T::NftCollectionId,
@@ -944,6 +871,12 @@
 		</span>FundsReserved { from_who: T::AccountId, amount: <span class="prelude-ty">Option</span>&lt;BalanceOf&lt;T&gt;&gt; },
 		<span class="doccomment">///Funds slashed
 		</span>SlashedFunds { from_who: T::AccountId, amount: <span class="prelude-ty">Option</span>&lt;BalanceOf&lt;T&gt;&gt; },
+		<span class="doccomment">///StatusChanged
+		</span>AssetStatusChanged {
+			changed_to: AssetStatus,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+		},
 	}
 
 	<span class="comment">// Errors inform users that something went wrong.
@@ -974,7 +907,9 @@
 		<span class="doccomment">/// Insufficient balance for proposal creation
 		</span>InsufficientBalance,
 		<span class="doccomment">/// Action reserved to Seller role
-		</span>ReservedToSeller
+		</span>ReservedToSeller,
+		<span class="doccomment">/// Failed to unreserved fund in Housing fund
+		</span>HousingFundUnreserveFundFailed,
 	}
 
 	<span class="comment">// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -1010,7 +945,14 @@
 			status: AssetStatus,
 		) -&gt; DispatchResult {
 			<span class="kw">let </span>_caller = ensure_signed(origin.clone()).unwrap();
+			<span class="kw">let </span>coll_id: T::NftCollectionId = collection.clone().value().into();
 			<span class="self">Self</span>::status(collection, item_id, status);
+			<span class="self">Self</span>::deposit_event(Event::AssetStatusChanged {
+				changed_to: status,
+				collection: coll_id,
+				item: item_id,
+			});
+
 			<span class="prelude-val">Ok</span>(())
 		}
 
@@ -1026,88 +968,31 @@
 			<span class="kw">let </span>caller = ensure_signed(origin.clone()).unwrap();
 			<span class="kw">let </span>collection_id: T::NftCollectionId = collection.clone().value().into();
 			<span class="macro">ensure!</span>(
-				Houses::&lt;T&gt;::contains_key(collection_id.clone(), item_id.clone()),
+				Houses::&lt;T&gt;::contains_key(collection_id, item_id),
 				Error::&lt;T&gt;::CollectionOrItemUnknown
 			);
 
-			Houses::&lt;T&gt;::mutate_exists(collection_id.clone(), item_id.clone(), |val| {
+			Houses::&lt;T&gt;::mutate_exists(collection_id, item_id, |val| {
 				<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
 				v0.price = new_price;
 				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0)
 			});
 
-			<span class="kw">let </span>asset = <span class="self">Self</span>::houses(collection_id.clone(), item_id.clone()).unwrap();
+			<span class="kw">let </span>asset = <span class="self">Self</span>::houses(collection_id, item_id).unwrap();
 			<span class="kw">let </span>status = asset.status;
 			<span class="macro">ensure!</span>(
 				status == AssetStatus::EDITING || status == AssetStatus::REJECTED,
 				Error::&lt;T&gt;::CannotEditItem
 			);
 
-			<span class="self">Self</span>::price(origin, collection, item_id.clone(), new_price.clone()).ok();
+			<span class="self">Self</span>::price(origin, collection, item_id, new_price).ok();
 
 			<span class="self">Self</span>::deposit_event(Event::TokenPriceUpdated {
 				who: caller,
-				collection: collection_id.clone(),
-				item: item_id.clone(),
+				collection: collection_id,
+				item: item_id,
 				price: new_price,
 			});
-
-			<span class="prelude-val">Ok</span>(())
-		}
-
-		<span class="doccomment">///Execute the buy/sell transaction
-		</span><span class="attribute">#[pallet::weight(<span class="number">10_000 </span>+ T::DbWeight::get().reads_writes(<span class="number">1</span>,<span class="number">1</span>))]
-		</span><span class="kw">pub fn </span>do_buy(
-			origin: OriginFor&lt;T&gt;,
-			collection: NftCollectionOf,
-			item_id: T::NftItemId,
-			_infos: Asset&lt;T&gt;,
-		) -&gt; DispatchResult {
-			<span class="kw">let </span>buyer = ensure_signed(origin.clone()).unwrap();
-			<span class="kw">let </span>collection_id: T::NftCollectionId = collection.clone().value().into();
-
-			<span class="comment">//Check that the house item exists and has the correct status
-			</span><span class="macro">ensure!</span>(
-				Houses::&lt;T&gt;::contains_key(collection_id.clone(), item_id.clone()),
-				Error::&lt;T&gt;::CollectionOrItemUnknown
-			);
-			<span class="kw">let </span>asset = <span class="self">Self</span>::houses(collection_id.clone(), item_id.clone()).unwrap();
-			<span class="kw">let </span>status = asset.status;
-			<span class="macro">ensure!</span>(status == AssetStatus::FINALISED, Error::&lt;T&gt;::VoteNedeed);
-
-			<span class="comment">//Check that the owner is not the buyer
-			</span><span class="kw">let </span>owner = Nft::Pallet::&lt;T&gt;::owner(collection_id.clone(), item_id.clone())
-				.ok_or(Error::&lt;T&gt;::CollectionOrItemUnknown)<span class="question-mark">?</span>;
-			<span class="macro">ensure!</span>(buyer != owner.clone(), Error::&lt;T&gt;::BuyFromSelf);
-			<span class="kw">let </span>balance = &lt;T <span class="kw">as </span>Config&gt;::Currency::reserved_balance(<span class="kw-2">&amp;</span>owner);
-			<span class="kw">let </span>_returned = &lt;T <span class="kw">as </span>Config&gt;::Currency::unreserve(<span class="kw-2">&amp;</span>owner, balance);
-
-			<span class="comment">//Execute transaction
-			</span><span class="kw">let </span>price = Prices::&lt;T&gt;::get(collection_id.clone(), item_id.clone()).unwrap();
-			&lt;T <span class="kw">as </span>Config&gt;::Currency::transfer(
-				<span class="kw-2">&amp;</span>buyer,
-				<span class="kw-2">&amp;</span>owner,
-				price,
-				ExistenceRequirement::KeepAlive,
-			)<span class="question-mark">?</span>;
-			<span class="kw">let </span>to = T::Lookup::unlookup(buyer.clone());
-			Nft::Pallet::&lt;T&gt;::transfer(origin.clone(), collection, item_id.clone(), to)<span class="question-mark">?</span>;
-			<span class="self">Self</span>::deposit_event(Event::TokenSold {
-				owner,
-				buyer,
-				collection: collection_id.clone(),
-				item: item_id.clone(),
-				price,
-			});
-
-			<span class="comment">//change status
-			</span><span class="self">Self</span>::change_status(
-				origin.clone(),
-				collection.clone(),
-				item_id.clone(),
-				AssetStatus::PURCHASED,
-			)
-			.ok();
 
 			<span class="prelude-val">Ok</span>(())
 		}
@@ -1122,36 +1007,30 @@
 			<span class="kw">let </span>caller = ensure_signed(origin.clone()).unwrap();
 			<span class="kw">let </span>collection_id: T::NftCollectionId = collection.clone().value().into();
 			<span class="macro">ensure!</span>(
-				Houses::&lt;T&gt;::contains_key(collection_id.clone(), item_id.clone()),
+				Houses::&lt;T&gt;::contains_key(collection_id, item_id),
 				Error::&lt;T&gt;::CollectionOrItemUnknown
 			);
-			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id.clone(), item_id.clone()).unwrap();
+			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id, item_id).unwrap();
 			<span class="macro">ensure!</span>(
 				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
 				Error::&lt;T&gt;::CannotSubmitItem
 			);
-			<span class="self">Self</span>::change_status(
-				origin.clone(),
-				collection.clone(),
-				item_id.clone(),
-				AssetStatus::REJECTED,
-			)
-			.ok();
+			<span class="self">Self</span>::change_status(origin, collection, item_id, AssetStatus::REJECTED).ok();
 
-			<span class="kw">let </span>owner = Nft::Pallet::&lt;T&gt;::owner(collection_id.clone(), item_id.clone()).unwrap();
+			<span class="kw">let </span>owner = Nft::Pallet::&lt;T&gt;::owner(collection_id, item_id).unwrap();
 			<span class="kw">let </span>balance = &lt;T <span class="kw">as </span>Config&gt;::Currency::reserved_balance(<span class="kw-2">&amp;</span>owner);
 
 			<span class="kw">let </span>wrap_balance = <span class="self">Self</span>::balance_to_u64_option(balance).unwrap();
-			<span class="kw">let </span>slash = wrap_balance.clone() * <span class="number">10 </span>/ <span class="number">100</span>;
-			<span class="kw">let </span>wrap_remain = wrap_balance - slash.clone();
+			<span class="kw">let </span>slash = wrap_balance * <span class="number">10 </span>/ <span class="number">100</span>;
+			<span class="kw">let </span>wrap_remain = wrap_balance - slash;
 			<span class="kw">let </span>fees = <span class="self">Self</span>::u64_to_balance_option(slash).unwrap();
 			<span class="kw">let </span>remain = <span class="self">Self</span>::u64_to_balance_option(wrap_remain).unwrap();
 
-			&lt;T <span class="kw">as </span>pallet::Config&gt;::Currency::unreserve(<span class="kw-2">&amp;</span>owner, fees.clone());
+			&lt;T <span class="kw">as </span>pallet::Config&gt;::Currency::unreserve(<span class="kw-2">&amp;</span>owner, fees);
 			<span class="kw">let </span>res = &lt;T <span class="kw">as </span>pallet::Config&gt;::Currency::transfer(
 				<span class="kw-2">&amp;</span>owner,
 				<span class="kw-2">&amp;</span><span class="self">Self</span>::account_id(),
-				fees.clone(),
+				fees,
 				ExistenceRequirement::AllowDeath,
 			);
 			<span class="macro">debug_assert!</span>(res.is_ok());
@@ -1161,8 +1040,8 @@
 
 			<span class="self">Self</span>::deposit_event(Event::RejectedForEditing {
 				by_who: caller.clone(),
-				collection: collection_id.clone(),
-				item: item_id.clone(),
+				collection: collection_id,
+				item: item_id,
 			});
 
 			<span class="self">Self</span>::deposit_event(Event::SlashedFunds { from_who: caller, amount: <span class="prelude-val">Some</span>(fees) });
@@ -1180,38 +1059,32 @@
 			<span class="kw">let </span>caller = ensure_signed(origin.clone()).unwrap();
 			<span class="kw">let </span>collection_id: T::NftCollectionId = collection.clone().value().into();
 			<span class="macro">ensure!</span>(
-				Houses::&lt;T&gt;::contains_key(collection_id.clone(), item_id.clone()),
+				Houses::&lt;T&gt;::contains_key(collection_id, item_id),
 				Error::&lt;T&gt;::CollectionOrItemUnknown
 			);
-			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id.clone(), item_id.clone()).unwrap();
+			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id, item_id).unwrap();
 			<span class="macro">ensure!</span>(
 				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
 				Error::&lt;T&gt;::CannotSubmitItem
 			);
-			<span class="self">Self</span>::change_status(
-				origin.clone(),
-				collection.clone(),
-				item_id.clone(),
-				AssetStatus::SLASH,
-			)
-			.ok();
+			<span class="self">Self</span>::change_status(origin.clone(), collection, item_id, AssetStatus::SLASH).ok();
 			<span class="kw">let </span>owner = Nft::Pallet::&lt;T&gt;::owner(collection_id, item_id).unwrap();
-			Nft::Pallet::&lt;T&gt;::burn(origin, collection, item_id.clone()).ok();
+			Nft::Pallet::&lt;T&gt;::burn(origin, collection, item_id).ok();
 			<span class="kw">let </span>balance = &lt;T <span class="kw">as </span>Config&gt;::Currency::reserved_balance(<span class="kw-2">&amp;</span>owner);
 			<span class="macro">ensure!</span>(balance &gt; Zero::zero(), Error::&lt;T&gt;::NoneValue);
-			&lt;T <span class="kw">as </span>pallet::Config&gt;::Currency::unreserve(<span class="kw-2">&amp;</span>owner, balance.clone());
+			&lt;T <span class="kw">as </span>pallet::Config&gt;::Currency::unreserve(<span class="kw-2">&amp;</span>owner, balance);
 			<span class="kw">let </span>res = &lt;T <span class="kw">as </span>pallet::Config&gt;::Currency::transfer(
 				<span class="kw-2">&amp;</span>owner,
 				<span class="kw-2">&amp;</span><span class="self">Self</span>::account_id(),
-				balance.clone(),
+				balance,
 				ExistenceRequirement::AllowDeath,
 			);
 			<span class="macro">debug_assert!</span>(res.is_ok());
 
 			<span class="self">Self</span>::deposit_event(Event::RejectedForDestruction {
 				by_who: caller.clone(),
-				collection: collection_id.clone(),
-				item: item_id.clone(),
+				collection: collection_id,
+				item: item_id,
 			});
 
 			<span class="self">Self</span>::deposit_event(Event::SlashedFunds { from_who: caller, amount: <span class="prelude-val">Some</span>(balance) });
@@ -1232,7 +1105,7 @@
 			submit: bool,
 		) -&gt; DispatchResult {
 			<span class="kw">let </span>caller = ensure_signed(origin.clone()).unwrap();
-			<span class="macro">ensure!</span>(Roles::Pallet::&lt;T&gt;::sellers(<span class="kw-2">&amp;</span>caller).is_some(),Error::&lt;T&gt;::ReservedToSeller);
+			<span class="macro">ensure!</span>(Roles::Pallet::&lt;T&gt;::sellers(<span class="kw-2">&amp;</span>caller).is_some(), Error::&lt;T&gt;::ReservedToSeller);
 			<span class="kw">let </span>idx = collection.clone().value() <span class="kw">as </span>usize;
 
 			<span class="comment">// Get itemId and infos from minted nft
@@ -1246,89 +1119,54 @@
 			<span class="kw">let </span>perc = <span class="self">Self</span>::balance_to_u64_option(T::ProposalFee::get()).unwrap();
 			<span class="kw">let </span>res1 = perc * res0 / <span class="number">100</span>;
 			<span class="kw">let </span>balance0 = <span class="self">Self</span>::u64_to_balance_option(res1).unwrap();
-			<span class="macro">ensure!</span>(balance1 &gt; balance0.clone(), Error::&lt;T&gt;::InsufficientBalance);
+			<span class="macro">ensure!</span>(balance1 &gt; balance0, Error::&lt;T&gt;::InsufficientBalance);
 
-			&lt;T <span class="kw">as </span>Config&gt;::Currency::reserve(<span class="kw-2">&amp;</span>caller, balance0.clone()).ok();
-			<span class="self">Self</span>::create_asset(
-				origin.clone(),
-				collection.clone(),
-				metadata,
-				price.clone(),
-				item_id.clone(),
-			)
-			.ok();
+			&lt;T <span class="kw">as </span>Config&gt;::Currency::reserve(<span class="kw-2">&amp;</span>caller, balance0).ok();
+			<span class="self">Self</span>::create_asset(origin.clone(), collection, metadata, price, item_id).ok();
 
 			<span class="kw">let </span>collection_id: T::NftCollectionId = collection.clone().value().into();
 
-			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id.clone(), item_id.clone()).unwrap();
+			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id, item_id).unwrap();
 
-			<span class="comment">//Create Call for the sell/buy transaction
-			</span><span class="kw">let </span>_new_call = VotingCalls::&lt;T&gt;::new(collection_id.clone(), item_id.clone()).ok();
-			<span class="kw">let </span>call0: T::Prop = Call::&lt;T&gt;::do_buy {
-				collection: collection.clone(),
-				item_id: item_id.clone(),
-				infos: house.clone(),
-			}
-			.into();
-			<span class="kw">let </span>call0_wrap = Box::new(call0);
-			Vcalls::&lt;T&gt;::mutate(collection_id.clone(), item_id.clone(), |val| {
-				<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
-				v0.buy = call0_wrap;
-				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0);
-			});
+			<span class="kw">let </span>_new_call = VotingCalls::&lt;T&gt;::new(collection_id, item_id).ok();
 
 			<span class="comment">//Create Call for collective-to-democracy status change
-			</span><span class="kw">let </span>call1: T::Prop = Call::&lt;T&gt;::change_status {
-				collection: collection.clone(),
-				item_id: item_id.clone(),
-				status: AssetStatus::VOTING,
-			}
-			.into();
+			</span><span class="kw">let </span>call1: T::Prop =
+				Call::&lt;T&gt;::change_status { collection, item_id, status: AssetStatus::VOTING }
+					.into();
 			<span class="kw">let </span>call1_wrap = Box::new(call1);
-			Vcalls::&lt;T&gt;::mutate(collection_id.clone(), item_id.clone(), |val| {
+			Vcalls::&lt;T&gt;::mutate(collection_id, item_id, |val| {
 				<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
 				v0.democracy_status = call1_wrap;
 				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0);
 			});
 
-			
 			<span class="comment">//Create Call for proposal reject_edit
-			</span><span class="kw">let </span>call2: T::Prop = Call::&lt;T&gt;::reject_edit {
-				collection: collection.clone(),
-				item_id: item_id.clone(),
-				infos: house.clone(),
-			}
-			.into();
+			</span><span class="kw">let </span>call2: T::Prop =
+				Call::&lt;T&gt;::reject_edit { collection, item_id, infos: house.clone() }.into();
 			<span class="kw">let </span>call2_wrap = Box::new(call2);
-			Vcalls::&lt;T&gt;::mutate(collection_id.clone(), item_id.clone(), |val| {
+			Vcalls::&lt;T&gt;::mutate(collection_id, item_id, |val| {
 				<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
 				v0.reject_edit = call2_wrap;
 				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0);
 			});
 
 			<span class="comment">//Create Call for proposal reject_destroy
-			</span><span class="kw">let </span>call3: T::Prop = Call::&lt;T&gt;::reject_destroy {
-				collection: collection.clone(),
-				item_id: item_id.clone(),
-				infos: house.clone(),
-			}
-			.into();
+			</span><span class="kw">let </span>call3: T::Prop =
+				Call::&lt;T&gt;::reject_destroy { collection, item_id, infos: house }.into();
 			<span class="kw">let </span>call3_wrap = Box::new(call3);
-			Vcalls::&lt;T&gt;::mutate(collection_id.clone(), item_id.clone(), |val| {
+			Vcalls::&lt;T&gt;::mutate(collection_id, item_id, |val| {
 				<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
 				v0.reject_destroy = call3_wrap;
 				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0);
 			});
 
 			<span class="comment">//Create Call for asset status change after Investor&#39;s vote
-			</span><span class="kw">let </span>call4: T::Prop = Call::&lt;T&gt;::change_status {
-				collection: collection.clone(),
-				item_id: item_id.clone(),
-				status: AssetStatus::ONBOARDED,
-			}
-			.into();
+			</span><span class="kw">let </span>call4: T::Prop =
+				Call::&lt;T&gt;::change_status { collection, item_id, status: AssetStatus::ONBOARDED }
+					.into();
 			<span class="kw">let </span>call4_wrap = Box::new(call4);
-			Vcalls::&lt;T&gt;::mutate(collection_id.clone(), item_id.clone(), |val| {
+			Vcalls::&lt;T&gt;::mutate(collection_id, item_id, |val| {
 				<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
 				v0.after_vote_status = call4_wrap;
 				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0);
@@ -1336,9 +1174,9 @@
 
 			<span class="self">Self</span>::deposit_event(Event::ProposalCreated {
 				who: caller.clone(),
-				collection: collection_id.clone(),
-				item: item_id.clone(),
-				price: price.clone(),
+				collection: collection_id,
+				item: item_id,
+				price,
 			});
 
 			<span class="self">Self</span>::deposit_event(Event::FundsReserved {
@@ -1346,25 +1184,21 @@
 				amount: <span class="prelude-val">Some</span>(balance0),
 			});
 
-			<span class="kw">if </span>submit == <span class="bool-val">true </span>{
+			<span class="kw">if </span>submit {
 				<span class="comment">//Change asset status to REVIEWING
-				</span><span class="self">Self</span>::change_status(
-					origin.clone(),
-					collection.clone(),
-					item_id.clone(),
-					AssetStatus::REVIEWING,
-				)
-				.ok();
+				</span><span class="self">Self</span>::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING)
+					.ok();
 				<span class="comment">//Send Proposal struct to voting pallet
 				//get the needed call and convert them to pallet_voting format
-				</span><span class="kw">let </span>out_call = Vcalls::&lt;T&gt;::get(collection_id.clone(), item_id.clone()).unwrap();
+				</span><span class="kw">let </span>out_call = Vcalls::&lt;T&gt;::get(collection_id, item_id).unwrap();
 
 				<span class="kw">let </span>w_status0 = Box::new(
 					<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.democracy_status).unwrap(),
 				);
-				<span class="kw">let </span>w_status1 =
-					Box::new(<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.after_vote_status).unwrap());
-				
+				<span class="kw">let </span>w_status1 = Box::new(
+					<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.after_vote_status).unwrap(),
+				);
+
 				<span class="kw">let </span>w_r_destroy = Box::new(
 					<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.reject_destroy).unwrap(),
 				);
@@ -1372,14 +1206,20 @@
 					<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.reject_edit).unwrap(),
 				);
 				<span class="comment">//Send Calls struct to voting pallet
-				</span>Votes::Pallet::&lt;T&gt;::submit_proposal(origin, w_status1, w_status0, w_r_destroy, w_r_edit)
-					.ok();
+				</span>Votes::Pallet::&lt;T&gt;::submit_proposal(
+					origin,
+					w_status1,
+					w_status0,
+					w_r_destroy,
+					w_r_edit,
+				)
+				.ok();
 
 				<span class="self">Self</span>::deposit_event(Event::ProposalSubmitted {
-					who: caller.clone(),
-					collection: collection_id.clone(),
-					item: item_id.clone(),
-					price: price.clone(),
+					who: caller,
+					collection: collection_id,
+					item: item_id,
+					price,
 				});
 			}
 
@@ -1394,53 +1234,49 @@
 			collection: NftCollectionOf,
 			item_id: T::NftItemId,
 			price: <span class="prelude-ty">Option</span>&lt;BalanceOf&lt;T&gt;&gt;,
+			data: <span class="prelude-ty">Option</span>&lt;Nft::BoundedVecOfUnq&lt;T&gt;&gt;,
 		) -&gt; DispatchResult {
 			<span class="kw">let </span>caller = ensure_signed(origin.clone()).unwrap();
-			<span class="macro">ensure!</span>(Roles::Pallet::&lt;T&gt;::sellers(<span class="kw-2">&amp;</span>caller).is_some(),Error::&lt;T&gt;::ReservedToSeller);
-			
+			<span class="macro">ensure!</span>(Roles::Pallet::&lt;T&gt;::sellers(<span class="kw-2">&amp;</span>caller).is_some(), Error::&lt;T&gt;::ReservedToSeller);
+
 			<span class="kw">let </span>collection_id: T::NftCollectionId = collection.clone().value().into();
 			<span class="macro">ensure!</span>(
-				Houses::&lt;T&gt;::contains_key(collection_id.clone(), item_id.clone()),
+				Houses::&lt;T&gt;::contains_key(collection_id, item_id),
 				Error::&lt;T&gt;::CollectionOrItemUnknown
 			);
-			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id.clone(), item_id.clone()).unwrap();
+			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id, item_id).unwrap();
 			<span class="macro">ensure!</span>(
 				house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTED,
 				Error::&lt;T&gt;::CannotSubmitItem
 			);
 
 			<span class="comment">//Edit asset price
-			</span><span class="kw">let </span>price0 = Prices::&lt;T&gt;::get(collection_id.clone(), item_id.clone()).unwrap();
+			</span><span class="kw">let </span>price0 = Prices::&lt;T&gt;::get(collection_id, item_id).unwrap();
+
+			<span class="kw">let </span>data0 = Nft::Pallet::&lt;T&gt;::items(collection_id, item_id).unwrap().metadata;
+			<span class="kw">let </span>data1 = data.unwrap_or(data0.clone());
+			<span class="kw">let </span>collection_owner = Nft::Pallet::&lt;T&gt;::collection_owner(collection_id).unwrap();
+			<span class="kw">if </span>data1 != data0 {
+				<span class="kw">let </span>res =
+					Nft::Pallet::&lt;T&gt;::set_metadata(collection_owner, collection_id, item_id, data1);
+				<span class="macro">debug_assert!</span>(res.is_ok());
+			}
 
 			<span class="kw">let </span><span class="kw-2">mut </span>b = price.unwrap_or(price0);
 			<span class="kw">if </span>b == Zero::zero() {
 				b = price0;
 			} <span class="kw">else </span>{
-				<span class="self">Self</span>::set_price(origin.clone(), collection.clone(), item_id.clone(), <span class="prelude-val">Some</span>(b)).ok();
+				<span class="self">Self</span>::set_price(origin.clone(), collection, item_id, <span class="prelude-val">Some</span>(b)).ok();
 			}
 
 			<span class="comment">//Change asset status to REVIEWING
-			</span><span class="self">Self</span>::change_status(
-				origin.clone(),
-				collection.clone(),
-				item_id.clone(),
-				AssetStatus::REVIEWING,
-			)
-			.ok();
-			<span class="kw">let </span>house = <span class="self">Self</span>::houses(collection_id.clone(), item_id.clone()).unwrap();
+			</span><span class="self">Self</span>::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING).ok();
 
-			<span class="comment">//Update Call for the sell/buy transaction
-			</span><span class="kw">let </span>call: T::Prop =
-				Call::&lt;T&gt;::do_buy { collection, item_id: item_id.clone(), infos: house }.into();
-			<span class="kw">let </span>call0 = Box::new(call);
-			Vcalls::&lt;T&gt;::mutate(collection_id.clone(), item_id.clone(), |val| {
-				<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
-				v0.buy = call0;
-				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0);
-			});
 			<span class="comment">//get the needed call and convert them to pallet_voting format
-			</span><span class="kw">let </span>out_call = Vcalls::&lt;T&gt;::get(collection_id.clone(), item_id.clone()).unwrap();
-			<span class="kw">let </span>w_status1 = Box::new(<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.after_vote_status).unwrap());
+			</span><span class="kw">let </span>out_call = Vcalls::&lt;T&gt;::get(collection_id, item_id).unwrap();
+			<span class="kw">let </span>w_status1 = Box::new(
+				<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.after_vote_status).unwrap(),
+			);
 			<span class="kw">let </span>w_status0 = Box::new(
 				<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.democracy_status).unwrap(),
 			);
@@ -1450,13 +1286,19 @@
 			<span class="kw">let </span>w_r_edit =
 				Box::new(<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.reject_edit).unwrap());
 			<span class="comment">//Send Calls struct to voting pallet
-			</span>Votes::Pallet::&lt;T&gt;::submit_proposal(origin, w_status1, w_status0, w_r_destroy, w_r_edit)
-				.ok();
+			</span>Votes::Pallet::&lt;T&gt;::submit_proposal(
+				origin,
+				w_status1,
+				w_status0,
+				w_r_destroy,
+				w_r_edit,
+			)
+			.ok();
 
 			<span class="self">Self</span>::deposit_event(Event::ProposalSubmitted {
 				who: caller,
-				collection: collection_id.clone(),
-				item: item_id.clone(),
+				collection: collection_id,
+				item: item_id,
 				price: <span class="prelude-val">Some</span>(b),
 			});
 
@@ -1465,4 +1307,4 @@
 	}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_onboarding" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (1d37ed661 2022-09-09)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pallet_onboarding" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (8796e7a9c 2022-10-08)" ></div></body></html>
