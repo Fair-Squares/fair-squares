@@ -10,10 +10,12 @@
 //!
 //! #### Dispatchable Functions
 //!
-//! No dispachable functions
+//! * 'force_process_onboarded_asset' - extrinsic to manually launch the process of onboarded assets
+//! * 'process_finalised_assets' - extrinsic to manually launch the process of onboarded assets
 //!
 //! #### Functions
-//! * 'process_asset' - execute the workflow to associate an asset to a list of investors
+//! * 'process_finalised_assets' - execute the token distribution between investors for the finalised assets
+//! * 'process_onboarded_assets' - execute the workflow to associate an onboarded asset to a list of investors and make
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -159,6 +161,7 @@ impl<T: Config> Pallet<T> {
 		max_block_weight
 	}
 
+	/// Process finalised assets to distribute tokens among investors for assets
 	pub fn process_finalised_assets() -> DispatchResultWithPostInfo {
 		// We retrieve houses with finalised status
 		let houses = Onboarding::Pallet::<T>::get_finalised_houses();
@@ -202,6 +205,7 @@ impl<T: Config> Pallet<T> {
 		Ok(().into())
 	}
 
+	/// Process onboarded assets to make make a bid on them and define a investors list
 	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
 		let houses = Onboarding::Pallet::<T>::get_onboarded_houses();
 
