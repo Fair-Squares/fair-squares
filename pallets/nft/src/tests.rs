@@ -175,12 +175,7 @@ fn transfer_works() {
 		));
 		assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), DAVE);
 
-		assert_ok!(NFTPallet::transfer(
-			origin,
-			PossibleCollections::HOUSESTEST,
-			ITEM_ID_0,
-			BOB
-		));
+		assert_ok!(NFTPallet::transfer(origin, PossibleCollections::HOUSESTEST, ITEM_ID_0, BOB));
 		assert_eq!(NFTPallet::owner(HOUSESTEST, ITEM_ID_0).unwrap(), BOB);
 
 		expect_events(vec![crate::Event::ItemTransferred {

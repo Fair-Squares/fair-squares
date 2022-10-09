@@ -7,7 +7,6 @@ use frame_support::{
 	PalletId,
 };
 
-
 use crate::Nft::NftPermissions;
 use frame_system::{EnsureRoot, EnsureSigned};
 use pallet_collective::{Instance1, PrimeDefaultVote};
@@ -18,11 +17,6 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
-
-
-
-
-
 
 type CouncilCollective = pallet_collective::Instance1;
 type AccountId = AccountId32;

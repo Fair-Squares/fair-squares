@@ -524,7 +524,7 @@ pub mod pallet {
 	}
 }
 
-use frame_support::dispatch::{UnfilteredDispatchable};
+use frame_support::dispatch::UnfilteredDispatchable;
 
 impl<T: Config> Pallet<T> {
 	// Conversion of u64 to BalanxceOf<T>

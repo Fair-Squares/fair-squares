@@ -1,6 +1,6 @@
 use super::*;
 use crate::mock::*;
-use frame_support::{assert_ok};
+use frame_support::assert_ok;
 
 pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
@@ -45,8 +45,7 @@ fn create_proposal() {
 
 		let coll_id = NftColl::OFFICESTEST.value();
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
-		let status: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id).unwrap().status;
+		let status: AssetStatus = Houses::<Test>::get(coll_id, item_id).unwrap().status;
 
 		expect_events(vec![
 			crate::Event::ProposalCreated {
@@ -79,10 +78,7 @@ fn create_proposal() {
 		.into()]);
 
 		let house_price = Houses::<Test>::get(coll_id, item_id).unwrap().price;
-		assert_eq!(
-			new_price.clone(),
-			Prices::<Test>::get(coll_id, item_id).unwrap()
-		);
+		assert_eq!(new_price.clone(), Prices::<Test>::get(coll_id, item_id).unwrap());
 		assert_eq!(house_price, Prices::<Test>::get(coll_id, item_id));
 
 		//Bob finally submit the proposal without changing the price a second time
@@ -96,13 +92,9 @@ fn create_proposal() {
 
 		let house_price = Houses::<Test>::get(coll_id, item_id).unwrap().price;
 		assert_eq!(house_price, Some(150_000_000));
-		let status: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id).unwrap().status;
+		let status: AssetStatus = Houses::<Test>::get(coll_id, item_id).unwrap().status;
 		assert_eq!(status, AssetStatus::REVIEWING);
-		assert_eq!(
-			Nft::Pallet::<Test>::items(coll_id, item_id).unwrap().metadata,
-			metadata0
-		);
+		assert_eq!(Nft::Pallet::<Test>::items(coll_id, item_id).unwrap().metadata, metadata0);
 	});
 }
 
@@ -133,8 +125,7 @@ fn create_proposal_2() {
 		let coll_id = NftColl::OFFICESTEST.value();
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
 
-		let status: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id).unwrap().status;
+		let status: AssetStatus = Houses::<Test>::get(coll_id, item_id).unwrap().status;
 
 		let out_call = OnboardingModule::voting_calls(coll_id, item_id).unwrap();
 		let w_status1 = Box::new(
@@ -143,8 +134,7 @@ fn create_proposal_2() {
 		);
 		assert_ok!(w_status1.dispatch(Origin::signed(ALICE)));
 
-		let status_bis: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id).unwrap().status;
+		let status_bis: AssetStatus = Houses::<Test>::get(coll_id, item_id).unwrap().status;
 		assert_ne!(status.clone(), status_bis.clone());
 		println!("status1:{:?}\nstatus2:{:?}", status, status_bis);
 
@@ -203,8 +193,7 @@ fn proposal_rejections() {
 		));
 		let coll_id = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
-		let status_0: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id0).unwrap().status;
+		let status_0: AssetStatus = Houses::<Test>::get(coll_id, item_id0).unwrap().status;
 		assert_eq!(status_0, AssetStatus::REVIEWING);
 		let initial_balance = <Test as pallet_uniques::Config>::Currency::free_balance(&BOB);
 		let fees_balance0 = <Test as pallet_uniques::Config>::Currency::total_balance(
@@ -219,8 +208,7 @@ fn proposal_rejections() {
 			true
 		));
 		let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
-		let status_1: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id0).unwrap().status;
+		let status_1: AssetStatus = Houses::<Test>::get(coll_id, item_id0).unwrap().status;
 		let balance0 = <Test as pallet_uniques::Config>::Currency::free_balance(&BOB);
 
 		assert_eq!(status_1, AssetStatus::REVIEWING);
@@ -241,8 +229,7 @@ fn proposal_rejections() {
 		}
 		.into()]);
 
-		let status0: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id0).unwrap().status;
+		let status0: AssetStatus = Houses::<Test>::get(coll_id, item_id0).unwrap().status;
 		assert_eq!(status0, AssetStatus::REJECTED);
 
 		let fees_balance1 = <Test as pallet_uniques::Config>::Currency::total_balance(
@@ -278,8 +265,7 @@ fn proposal_rejections() {
 		);
 		assert_ne!(fees_balance1, fees_balance2);
 
-		let status1: AssetStatus =
-			Houses::<Test>::get(coll_id, item_id1).unwrap().status;
+		let status1: AssetStatus = Houses::<Test>::get(coll_id, item_id1).unwrap().status;
 		assert_eq!(status1, AssetStatus::SLASH);
 	});
 }

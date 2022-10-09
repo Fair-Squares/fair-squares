@@ -105,11 +105,7 @@ impl<T: Config> Pallet<T> {
 
 		// The reserved funds in Housing Fund from the house bidding are unreserved for the transfer
 		// transaction
-		HousingFund::Pallet::<T>::unreserve_house_bidding_amount(
-			collection_id,
-			item_id,
-		)
-		.ok();
+		HousingFund::Pallet::<T>::unreserve_house_bidding_amount(collection_id, item_id).ok();
 
 		//Transfer funds from HousingFund to owner
 		let price = Prices::<T>::get(collection_id, item_id).unwrap();
@@ -131,13 +127,7 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(
-			origin2,
-			collection,
-			item_id,
-			AssetStatus::PURCHASED,
-		)
-		.ok();
+		Self::change_status(origin2, collection, item_id, AssetStatus::PURCHASED).ok();
 
 		Ok(())
 	}

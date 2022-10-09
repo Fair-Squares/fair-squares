@@ -111,15 +111,8 @@ where
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
 	io.merge(
-		Babe::new(
-			client,
-			shared_epoch_changes,
-			keystore,
-			babe_config,
-			select_chain,
-			deny_unsafe,
-		)
-		.into_rpc(),
+		Babe::new(client, shared_epoch_changes, keystore, babe_config, select_chain, deny_unsafe)
+			.into_rpc(),
 	)?;
 
 	io.merge(
