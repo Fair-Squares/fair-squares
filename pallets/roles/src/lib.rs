@@ -35,7 +35,8 @@
 //! role connection to the requesting AccountId
 //! that are in the approval list, but do not fullfill the FaiSquares guideline.
 //!
-//! * `set_manager` - This function allows the current manager/Sudo_Account to transfer his Administrative
+//! * `set_manager` - This function allows the current manager/Sudo_Account to transfer his
+//!   Administrative
 //! authority to a different user/account.
 //! Only the current manager can use this function, and he will lose all administrative power by
 //! using this function. The Servicer Role is affected to new manager account during this transfer.

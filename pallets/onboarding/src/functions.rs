@@ -12,8 +12,7 @@ pub use frame_support::{
 	},
 	transactional, BoundedVec,
 };
-pub use frame_system::pallet_prelude::*;
-pub use frame_system::{ensure_signed, RawOrigin};
+pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 
 pub use sp_runtime::{
 	traits::{AccountIdConversion, AtLeast32BitUnsigned, Saturating, StaticLookup, Zero},
@@ -43,7 +42,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: AssetStatus) {
-		let collection_id: T::NftCollectionId = collection.value().into();
+		let collection_id: T::NftCollectionId = collection.clone().value().into();
 		Houses::<T>::mutate(collection_id, item_id, |val| {
 			let mut v0 = val.clone().unwrap();
 			v0.status = status;
@@ -58,7 +57,7 @@ impl<T: Config> Pallet<T> {
 		new_price: Option<BalanceOf<T>>,
 	) -> DispatchResult {
 		let sender = ensure_signed(origin)?;
-		let collection_id: T::NftCollectionId = collection.value().into();
+		let collection_id: T::NftCollectionId = collection.clone().value().into();
 
 		ensure!(
 			pallet_nft::Pallet::<T>::owner(collection_id, item_id) == Some(sender.clone()),
@@ -76,16 +75,15 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-
 	///Execute the buy/sell transaction
-		
+
 	pub fn do_buy(
 		collection: NftCollectionOf,
 		item_id: T::NftItemId,
 		buyer: T::AccountId,
 		_infos: Asset<T>,
-	) -> DispatchResult {			
-		let collection_id: T::NftCollectionId = collection.value().into();
+	) -> DispatchResult {
+		let collection_id: T::NftCollectionId = collection.clone().value().into();
 		let origin: OriginFor<T> = frame_system::RawOrigin::Root.into();
 		let origin2: OriginFor<T> = frame_system::RawOrigin::Signed(buyer.clone()).into();
 
@@ -105,7 +103,8 @@ impl<T: Config> Pallet<T> {
 		let balance = <T as Config>::Currency::reserved_balance(&owner);
 		let _returned = <T as Config>::Currency::unreserve(&owner, balance);
 
-		// The reserved funds in Housing Fund from the house bidding are unreserved for the transfer transaction
+		// The reserved funds in Housing Fund from the house bidding are unreserved for the transfer
+		// transaction
 		HousingFund::Pallet::<T>::unreserve_house_bidding_amount(collection_id, item_id).ok();
 
 		//Transfer funds from HousingFund to owner
@@ -128,13 +127,7 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(
-			origin2,
-			collection,
-			item_id,
-			AssetStatus::PURCHASED,
-		)
-		.ok();
+		Self::change_status(origin2, collection, item_id, AssetStatus::PURCHASED).ok();
 
 		Ok(())
 	}
@@ -166,11 +159,25 @@ impl<T: Config> Pallet<T> {
 		T::FeesAccount::get().into_account_truncating()
 	}
 
-	pub fn get_onboarded_houses() -> Vec<(<T as pallet_nft::Config>::NftCollectionId, <T as pallet_nft::Config>::NftItemId, types::Asset<T>)> {
-		Houses::<T>::iter().filter(|val| val.2.status == types::AssetStatus::ONBOARDED).map(|elt| (elt.0, elt.1, elt.2)).collect()
+	pub fn get_onboarded_houses() -> Vec<(
+		<T as pallet_nft::Config>::NftCollectionId,
+		<T as pallet_nft::Config>::NftItemId,
+		types::Asset<T>,
+	)> {
+		Houses::<T>::iter()
+			.filter(|val| val.2.status == types::AssetStatus::ONBOARDED)
+			.map(|elt| (elt.0, elt.1, elt.2))
+			.collect()
 	}
 
-	pub fn get_finalised_houses() -> Vec<(<T as pallet_nft::Config>::NftCollectionId, <T as pallet_nft::Config>::NftItemId, types::Asset<T>)> {
-		Houses::<T>::iter().filter(|val| val.2.status == types::AssetStatus::FINALISED).map(|elt| (elt.0, elt.1, elt.2)).collect()
+	pub fn get_finalised_houses() -> Vec<(
+		<T as pallet_nft::Config>::NftCollectionId,
+		<T as pallet_nft::Config>::NftItemId,
+		types::Asset<T>,
+	)> {
+		Houses::<T>::iter()
+			.filter(|val| val.2.status == types::AssetStatus::FINALISED)
+			.map(|elt| (elt.0, elt.1, elt.2))
+			.collect()
 	}
 }

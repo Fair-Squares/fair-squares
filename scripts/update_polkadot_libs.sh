@@ -22,7 +22,11 @@ display()
 
 replace()
 {
-    sed -i "s/$1/$2/g" $3
+    if [[ $OSTYPE == 'darwin'* ]]; then
+        gsed -i "s/$1/$2/g" $3
+    else
+        sed -i "s/$1/$2/g" $3
+    fi
 }
 
 if [ "$#" -ne 2 ]

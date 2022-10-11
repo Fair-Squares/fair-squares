@@ -13,7 +13,8 @@
 //!
 //!And the following actions sent to pallet voting through calls
 //! - Execute NFT & funds transfer
-//! - Reject a proposal for price editing purpose (asset is marked as REJECTED and re-submission is possible)
+//! - Reject a proposal for price editing purpose (asset is marked as REJECTED and re-submission is
+//!   possible)
 //! - Reject a proposal for destruction (NFT is burned, asset is marked as SLASH)
 //!
 //! ### Dispatchable Functions
@@ -55,11 +56,11 @@ mod types;
 pub use functions::*;
 pub use types::*;
 
+pub use pallet_housing_fund as HousingFund;
 pub use pallet_nft as Nft;
 pub use pallet_roles as Roles;
 pub use pallet_sudo as Sudo;
 pub use pallet_voting as Votes;
-pub use pallet_housing_fund as HousingFund;
 
 pub use pallet::*;
 
@@ -82,13 +83,17 @@ pub type CallOf<T> = <T as Votes::Config>::Call;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_support::PalletId;
+	use frame_support::{pallet_prelude::*, PalletId};
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config:
-		frame_system::Config + Roles::Config + Nft::Config + Sudo::Config + Votes::Config + HousingFund::Config
+		frame_system::Config
+		+ Roles::Config
+		+ Nft::Config
+		+ Sudo::Config
+		+ Votes::Config
+		+ HousingFund::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
@@ -217,8 +222,8 @@ pub mod pallet {
 			changed_to: AssetStatus,
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
+		},
 	}
-}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
@@ -286,13 +291,13 @@ pub mod pallet {
 			status: AssetStatus,
 		) -> DispatchResult {
 			let _caller = ensure_signed(origin.clone()).unwrap();
-			let coll_id: T::NftCollectionId = collection.value().into();
+			let coll_id: T::NftCollectionId = collection.clone().value().into();
 			Self::status(collection, item_id, status);
 			Self::deposit_event(Event::AssetStatusChanged {
 				changed_to: status,
 				collection: coll_id,
 				item: item_id,
-		});
+			});
 
 			Ok(())
 		}
@@ -356,13 +361,7 @@ pub mod pallet {
 				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(
-				origin,
-				collection,
-				item_id,
-				AssetStatus::REJECTED,
-			)
-			.ok();
+			Self::change_status(origin, collection, item_id, AssetStatus::REJECTED).ok();
 
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -414,13 +413,7 @@ pub mod pallet {
 				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(
-				origin.clone(),
-				collection,
-				item_id,
-				AssetStatus::SLASH,
-			)
-			.ok();
+			Self::change_status(origin.clone(), collection, item_id, AssetStatus::SLASH).ok();
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			Nft::Pallet::<T>::burn(origin, collection, item_id).ok();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -458,8 +451,8 @@ pub mod pallet {
 			submit: bool,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
-			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(),Error::<T>::ReservedToSeller);
-			let idx = collection.value() as usize;
+			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(), Error::<T>::ReservedToSeller);
+			let idx = collection.clone().value() as usize;
 
 			// Get itemId and infos from minted nft
 			let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
@@ -475,14 +468,7 @@ pub mod pallet {
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
 
 			<T as Config>::Currency::reserve(&caller, balance0).ok();
-			Self::create_asset(
-				origin.clone(),
-				collection,
-				metadata,
-				price,
-				item_id,
-			)
-			.ok();
+			Self::create_asset(origin.clone(), collection, metadata, price, item_id).ok();
 
 			let collection_id: T::NftCollectionId = collection.value().into();
 
@@ -491,12 +477,9 @@ pub mod pallet {
 			let _new_call = VotingCalls::<T>::new(collection_id, item_id).ok();
 
 			//Create Call for collective-to-democracy status change
-			let call1: T::Prop = Call::<T>::change_status {
-				collection,
-				item_id,
-				status: AssetStatus::VOTING,
-			}
-			.into();
+			let call1: T::Prop =
+				Call::<T>::change_status { collection, item_id, status: AssetStatus::VOTING }
+					.into();
 			let call1_wrap = Box::new(call1);
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
@@ -504,14 +487,9 @@ pub mod pallet {
 				*val = Some(v0);
 			});
 
-			
 			//Create Call for proposal reject_edit
-			let call2: T::Prop = Call::<T>::reject_edit {
-				collection,
-				item_id,
-				infos: house.clone(),
-			}
-			.into();
+			let call2: T::Prop =
+				Call::<T>::reject_edit { collection, item_id, infos: house.clone() }.into();
 			let call2_wrap = Box::new(call2);
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
@@ -520,12 +498,8 @@ pub mod pallet {
 			});
 
 			//Create Call for proposal reject_destroy
-			let call3: T::Prop = Call::<T>::reject_destroy {
-				collection,
-				item_id,
-				infos: house,
-			}
-			.into();
+			let call3: T::Prop =
+				Call::<T>::reject_destroy { collection, item_id, infos: house }.into();
 			let call3_wrap = Box::new(call3);
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
@@ -534,12 +508,9 @@ pub mod pallet {
 			});
 
 			//Create Call for asset status change after Investor's vote
-			let call4: T::Prop = Call::<T>::change_status {
-				collection,
-				item_id,
-				status: AssetStatus::ONBOARDED,
-			}
-			.into();
+			let call4: T::Prop =
+				Call::<T>::change_status { collection, item_id, status: AssetStatus::ONBOARDED }
+					.into();
 			let call4_wrap = Box::new(call4);
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
@@ -561,13 +532,8 @@ pub mod pallet {
 
 			if submit {
 				//Change asset status to REVIEWING
-				Self::change_status(
-					origin.clone(),
-					collection,
-					item_id,
-					AssetStatus::REVIEWING,
-				)
-				.ok();
+				Self::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING)
+					.ok();
 				//Send Proposal struct to voting pallet
 				//get the needed call and convert them to pallet_voting format
 				let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
@@ -575,9 +541,10 @@ pub mod pallet {
 				let w_status0 = Box::new(
 					Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap(),
 				);
-				let w_status1 =
-					Box::new(Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
-				
+				let w_status1 = Box::new(
+					Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap(),
+				);
+
 				let w_r_destroy = Box::new(
 					Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap(),
 				);
@@ -585,8 +552,14 @@ pub mod pallet {
 					Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap(),
 				);
 				//Send Calls struct to voting pallet
-				Votes::Pallet::<T>::submit_proposal(origin, w_status1, w_status0, w_r_destroy, w_r_edit)
-					.ok();
+				Votes::Pallet::<T>::submit_proposal(
+					origin,
+					w_status1,
+					w_status0,
+					w_r_destroy,
+					w_r_edit,
+				)
+				.ok();
 
 				Self::deposit_event(Event::ProposalSubmitted {
 					who: caller,
@@ -610,9 +583,9 @@ pub mod pallet {
 			data: Option<Nft::BoundedVecOfUnq<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
-			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(),Error::<T>::ReservedToSeller);
-			
-			let collection_id: T::NftCollectionId = collection.value().into();
+			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(), Error::<T>::ReservedToSeller);
+
+			let collection_id: T::NftCollectionId = collection.clone().value().into();
 			ensure!(
 				Houses::<T>::contains_key(collection_id, item_id),
 				Error::<T>::CollectionOrItemUnknown
@@ -626,12 +599,12 @@ pub mod pallet {
 			//Edit asset price
 			let price0 = Prices::<T>::get(collection_id, item_id).unwrap();
 
-			let data0 = Nft::Pallet::<T>::items(collection_id,item_id).unwrap().metadata;
-			let data1 = data.unwrap_or_else(|| data0.clone());
+			let data0 = Nft::Pallet::<T>::items(collection_id, item_id).unwrap().metadata;
+			let data1 = data.unwrap_or(data0.clone());
 			let collection_owner = Nft::Pallet::<T>::collection_owner(collection_id).unwrap();
-			if data1 !=data0 {
-
-				let res = Nft::Pallet::<T>::set_metadata(collection_owner, collection_id, item_id,data1);
+			if data1 != data0 {
+				let res =
+					Nft::Pallet::<T>::set_metadata(collection_owner, collection_id, item_id, data1);
 				debug_assert!(res.is_ok());
 			}
 
@@ -643,17 +616,13 @@ pub mod pallet {
 			}
 
 			//Change asset status to REVIEWING
-			Self::change_status(
-				origin.clone(),
-				collection,
-				item_id,
-				AssetStatus::REVIEWING,
-			)
-			.ok();
-			
+			Self::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING).ok();
+
 			//get the needed call and convert them to pallet_voting format
 			let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
-			let w_status1 = Box::new(Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
+			let w_status1 = Box::new(
+				Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap(),
+			);
 			let w_status0 = Box::new(
 				Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap(),
 			);
@@ -663,8 +632,14 @@ pub mod pallet {
 			let w_r_edit =
 				Box::new(Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap());
 			//Send Calls struct to voting pallet
-			Votes::Pallet::<T>::submit_proposal(origin, w_status1, w_status0, w_r_destroy, w_r_edit)
-				.ok();
+			Votes::Pallet::<T>::submit_proposal(
+				origin,
+				w_status1,
+				w_status0,
+				w_r_destroy,
+				w_r_edit,
+			)
+			.ok();
 
 			Self::deposit_event(Event::ProposalSubmitted {
 				who: caller,

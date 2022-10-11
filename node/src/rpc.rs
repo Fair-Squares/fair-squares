@@ -7,23 +7,24 @@
 
 use std::sync::Arc;
 
+use fs_node_runtime::opaque::Block;
 use jsonrpsee::RpcModule;
-use fs_node_runtime::{opaque::Block};
+use node_primitives::{AccountId, Balance, BlockNumber, Hash, Index};
+use sc_client_api::AuxStore;
+use sc_consensus_babe::{Config, Epoch};
+use sc_consensus_epochs::SharedEpochChanges;
+use sc_finality_grandpa::{
+	FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
+};
+use sc_rpc::SubscriptionTaskExecutor;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
-use sc_finality_grandpa::{FinalityProofProvider, GrandpaJustificationStream, SharedVoterState, SharedAuthoritySet};
-use sc_consensus_epochs::SharedEpochChanges;
-use sc_consensus_babe::{Config, Epoch};
-use sp_keystore::SyncCryptoStorePtr;
-use node_primitives::{Hash, BlockNumber};
-use sc_rpc::SubscriptionTaskExecutor;
 use sp_consensus::SelectChain;
 use sp_consensus_babe::BabeApi;
-use sc_client_api::AuxStore;
-use node_primitives::{AccountId, Balance, Index};
+use sp_keystore::SyncCryptoStorePtr;
 
 /// Extra dependencies for BABE.
 pub struct BabeDeps {
@@ -69,7 +70,7 @@ pub struct FullDeps<C, P, SC, B> {
 
 /// Instantiate all full RPC extensions.
 pub fn create_full<C, P, SC, B>(
-	deps: FullDeps<C, P, SC, B>
+	deps: FullDeps<C, P, SC, B>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
 	C: ProvideRuntimeApi<Block>
@@ -89,9 +90,9 @@ where
 	B::State: sc_client_api::backend::StateBackend<sp_runtime::traits::HashFor<Block>>,
 {
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
-	use substrate_frame_rpc_system::{System, SystemApiServer};
 	use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 	use sc_finality_grandpa_rpc::{Grandpa, GrandpaApiServer};
+	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut io = RpcModule::new(());
 	let FullDeps { client, pool, select_chain, chain_spec: _, deny_unsafe, babe, grandpa } = deps;
@@ -110,15 +111,8 @@ where
 	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 
 	io.merge(
-		Babe::new(
-			client,
-			shared_epoch_changes,
-			keystore,
-			babe_config,
-			select_chain,
-			deny_unsafe,
-		)
-		.into_rpc(),
+		Babe::new(client, shared_epoch_changes, keystore, babe_config, select_chain, deny_unsafe)
+			.into_rpc(),
 	)?;
 
 	io.merge(
