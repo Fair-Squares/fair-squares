@@ -4,7 +4,8 @@
 //4) transfer tokens to owners
 use super::*;
 use enum_iterator::all;
-use sp_runtime::traits::SaturatedConversion;
+use sp_runtime::{traits::SaturatedConversion, FixedPointNumber, FixedU128};
+
 
 impl<T: Config> Pallet<T> {
 	///The function below create a virtual account from the NFT collection and item id's
