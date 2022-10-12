@@ -16,8 +16,10 @@ targets = ["x86_64-unknown-linux-gnu"]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
-scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30"}
+scale-info = { version = "2.1.1", default-features = false, features = [
+	"derive",
+] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30", optional = true }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
@@ -28,10 +30,10 @@ pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30", default-features = false }
 pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30", default-features = false }
-pallet-housing_fund = { default-features = false, path="../housing_fund" }
-pallet-onboarding = { default-features = false, path="../onboarding" }
-pallet-nft = { default-features = false, path="../nft" }
-pallet-roles = { default-features = false, path="../roles" }
+pallet-housing_fund = { default-features = false, path = "../housing_fund" }
+pallet-onboarding = { default-features = false, path = "../onboarding" }
+pallet-nft = { default-features = false, path = "../nft" }
+pallet-roles = { default-features = false, path = "../roles" }
 pallet-voting = { default-features = false, path = "../voting" }
 pallet-share_distributor = { default-features = false, path = "../share_distributor" }
 

@@ -58,11 +58,11 @@ use weights::WeightInfo;
 
 mod benchmarking;
 pub mod functions;
-pub mod types;
 pub mod weights;
 
 #[cfg(test)]
 pub mod mock;
+pub mod types;
 
 #[cfg(test)]
 mod tests;
@@ -88,9 +88,10 @@ pub mod pallet {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_uniques::Config + pallet_roles::Config {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		type WeightInfo: WeightInfo;
-		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
+		type ProtocolOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 		type NftCollectionId: Member
 			+ Parameter
 			+ Default

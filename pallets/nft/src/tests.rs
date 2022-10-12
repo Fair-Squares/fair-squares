@@ -6,27 +6,27 @@ use std::convert::TryInto;
 
 type NFTPallet = Pallet<Test>;
 pub fn prep_roles() {
-	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
-	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::SERVICER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), EVE).ok();
-	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
-	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), CHARLIE).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(EVE), EVE, Acc::SERVICER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(BOB), BOB, Acc::SELLER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), BOB).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(
-		Origin::signed(ACCOUNT_WITH_NO_BALANCE0),
+		RuntimeOrigin::signed(ACCOUNT_WITH_NO_BALANCE0),
 		ACCOUNT_WITH_NO_BALANCE0,
 		Acc::SERVICER,
 	)
 	.ok();
-	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
 	RoleModule::set_role(
-		Origin::signed(ACCOUNT_WITH_NO_BALANCE1),
+		RuntimeOrigin::signed(ACCOUNT_WITH_NO_BALANCE1),
 		ACCOUNT_WITH_NO_BALANCE1,
 		Acc::SELLER,
 	)
 	.ok();
-	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE1).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE1).ok();
 }
 
 #[test]
@@ -36,7 +36,7 @@ fn create_collection_works() {
 			b"metadata".to_vec().try_into().unwrap();
 		prep_roles();
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
@@ -55,7 +55,7 @@ fn create_collection_works() {
 		// not allowed in Permissions
 		assert_noop!(
 			NFTPallet::create_collection(
-				Origin::signed(BOB),
+				RuntimeOrigin::signed(BOB),
 				PossibleCollections::OFFICESTEST,
 				metadata.clone()
 			),
@@ -65,7 +65,7 @@ fn create_collection_works() {
 		// existing collection ID
 		assert_noop!(
 			NFTPallet::create_collection(
-				Origin::signed(CHARLIE),
+				RuntimeOrigin::signed(CHARLIE),
 				PossibleCollections::HOUSESTEST,
 				metadata
 			),
@@ -82,18 +82,18 @@ fn mint_works() {
 		prep_roles();
 
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(NFTPallet::mint(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
@@ -112,7 +112,7 @@ fn mint_works() {
 		// not allowed in Permissions
 		assert_noop!(
 			NFTPallet::mint(
-				Origin::signed(DAVE),
+				RuntimeOrigin::signed(DAVE),
 				PossibleCollections::OFFICESTEST,
 				metadata.clone()
 			),
@@ -121,7 +121,7 @@ fn mint_works() {
 
 		// invalid collection ID
 		assert_noop!(
-			NFTPallet::mint(Origin::signed(BOB), PossibleCollections::NONEXISTING, metadata),
+			NFTPallet::mint(RuntimeOrigin::signed(BOB), PossibleCollections::NONEXISTING, metadata),
 			Error::<Test>::CollectionUnknown
 		);
 	});
@@ -134,22 +134,22 @@ fn transfer_works() {
 			b"metadata".to_vec().try_into().unwrap();
 		prep_roles();
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::OFFICESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::mint(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::mint(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			PossibleCollections::OFFICESTEST,
 			metadata
 		));
@@ -196,39 +196,43 @@ fn burn_works() {
 		prep_roles();
 
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::OFFICESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::mint(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::mint(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::mint(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			PossibleCollections::OFFICESTEST,
 			metadata
 		));
 
 		// not allowed in Permissions
 		assert_noop!(
-			NFTPallet::burn(Origin::signed(BOB), PossibleCollections::OFFICESTEST, ITEM_ID_0),
+			NFTPallet::burn(
+				RuntimeOrigin::signed(BOB),
+				PossibleCollections::OFFICESTEST,
+				ITEM_ID_0
+			),
 			Error::<Test>::NotPermitted
 		);
 
 		assert_ok!(NFTPallet::burn(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			ITEM_ID_0
 		));
@@ -243,7 +247,11 @@ fn burn_works() {
 
 		// not existing
 		assert_noop!(
-			NFTPallet::burn(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST, ITEM_ID_0),
+			NFTPallet::burn(
+				RuntimeOrigin::signed(CHARLIE),
+				PossibleCollections::HOUSESTEST,
+				ITEM_ID_0
+			),
 			Error::<Test>::ItemUnknown
 		);
 	});
@@ -256,36 +264,46 @@ fn destroy_collection_works() {
 			b"metadata".to_vec().try_into().unwrap();
 		prep_roles();
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::OFFICESTEST,
 			metadata.clone()
 		));
-		assert_ok!(NFTPallet::mint(Origin::signed(BOB), PossibleCollections::HOUSESTEST, metadata));
+		assert_ok!(NFTPallet::mint(
+			RuntimeOrigin::signed(BOB),
+			PossibleCollections::HOUSESTEST,
+			metadata
+		));
 
 		// existing item
 		assert_noop!(
-			NFTPallet::destroy_collection(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST),
+			NFTPallet::destroy_collection(
+				RuntimeOrigin::signed(CHARLIE),
+				PossibleCollections::HOUSESTEST
+			),
 			Error::<Test>::TokenCollectionNotEmpty
 		);
 		assert_ok!(NFTPallet::burn(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			ITEM_ID_0
 		));
 
 		// not allowed in Permissions
 		assert_noop!(
-			NFTPallet::destroy_collection(Origin::signed(BOB), PossibleCollections::OFFICESTEST),
+			NFTPallet::destroy_collection(
+				RuntimeOrigin::signed(BOB),
+				PossibleCollections::OFFICESTEST
+			),
 			Error::<Test>::NotPermitted
 		);
 
 		assert_ok!(NFTPallet::destroy_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST
 		));
 		assert_eq!(NFTPallet::collections(HOUSESTEST), None);
@@ -298,7 +316,10 @@ fn destroy_collection_works() {
 
 		// not existing
 		assert_noop!(
-			NFTPallet::destroy_collection(Origin::signed(CHARLIE), PossibleCollections::HOUSESTEST),
+			NFTPallet::destroy_collection(
+				RuntimeOrigin::signed(CHARLIE),
+				PossibleCollections::HOUSESTEST
+			),
 			Error::<Test>::CollectionUnknown
 		);
 	});
@@ -317,7 +338,7 @@ fn deposit_works() {
 		assert_eq!(<Test as pallet_uniques::Config>::Currency::reserved_balance(&CHARLIE), 0);
 
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
@@ -331,7 +352,7 @@ fn deposit_works() {
 		);
 
 		assert_ok!(NFTPallet::destroy_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST
 		));
 		assert_eq!(
@@ -342,16 +363,20 @@ fn deposit_works() {
 
 		// no deposit
 		assert_ok!(NFTPallet::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			metadata.clone()
 		));
-		assert_ok!(NFTPallet::mint(Origin::signed(BOB), PossibleCollections::HOUSESTEST, metadata));
+		assert_ok!(NFTPallet::mint(
+			RuntimeOrigin::signed(BOB),
+			PossibleCollections::HOUSESTEST,
+			metadata
+		));
 		assert_eq!(<Test as pallet_uniques::Config>::Currency::free_balance(&BOB), initial_balance);
 		assert_eq!(<Test as pallet_uniques::Config>::Currency::reserved_balance(&BOB), 0);
 
 		assert_ok!(NFTPallet::burn(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			PossibleCollections::HOUSESTEST,
 			ITEM_ID_0
 		));

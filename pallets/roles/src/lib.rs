@@ -70,7 +70,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + SUDO::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		type Currency: ReservableCurrency<Self::AccountId>;
 		type WeightInfo: WeightInfo;
 
@@ -149,7 +150,7 @@ pub mod pallet {
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
 			let servicer0 = self.new_admin.clone().unwrap(); // AccountId
-			let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
+			let origin = T::RuntimeOrigin::from(RawOrigin::Signed(servicer0.clone())); //Origin
 			let source = T::Lookup::unlookup(servicer0); //Source
 			crate::Pallet::<T>::set_manager(origin, source).ok();
 		}
@@ -219,9 +220,9 @@ pub mod pallet {
 			let members = Self::total_members();
 			match account_type {
 				Accounts::INVESTOR => {
-					let investor = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
-						account.clone(),
-					));
+					let investor = <T as frame_system::Config>::RuntimeOrigin::from(
+						RawOrigin::Signed(account.clone()),
+					);
 					Investor::<T>::new(investor).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
 					TotalMembers::<T>::put(members + 1);
@@ -229,16 +230,16 @@ pub mod pallet {
 				},
 				Accounts::SELLER => {
 					Self::check_role_approval_list(account.clone())?;
-					let seller = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
-						account.clone(),
-					));
+					let seller = <T as frame_system::Config>::RuntimeOrigin::from(
+						RawOrigin::Signed(account.clone()),
+					);
 					HouseSeller::<T>::new(seller).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 				Accounts::TENANT => {
-					let tenant = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
-						account.clone(),
-					));
+					let tenant = <T as frame_system::Config>::RuntimeOrigin::from(
+						RawOrigin::Signed(account.clone()),
+					);
 					Tenant::<T>::new(tenant).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					TotalMembers::<T>::put(members + 1);
@@ -246,9 +247,9 @@ pub mod pallet {
 				},
 				Accounts::SERVICER => {
 					Self::check_role_approval_list(account.clone())?;
-					let servicer = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
-						account.clone(),
-					));
+					let servicer = <T as frame_system::Config>::RuntimeOrigin::from(
+						RawOrigin::Signed(account.clone()),
+					);
 					Servicer::<T>::new(servicer).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
@@ -295,7 +296,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let new0 = T::Lookup::lookup(new.clone())?;
-			let new_origin = T::Origin::from(RawOrigin::Signed(new0.clone()));
+			let new_origin = T::RuntimeOrigin::from(RawOrigin::Signed(new0.clone()));
 			ensure!(
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"

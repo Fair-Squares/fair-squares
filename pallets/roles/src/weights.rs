@@ -69,9 +69,11 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: RoleModule AccountsRolesLog (r:0 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn investor(_b: u32, ) -> Weight {
-		(62_329_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(5 as Weight))
-			.saturating_add(T::DbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(
+			(62_329_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(5).ref_time())
+			.saturating_add(T::DbWeight::get().writes(3).ref_time())
+		)
 	}
 	// Storage: Sudo Key (r:1 w:0)
 	// Storage: RoleModule TotalMembers (r:1 w:1)
@@ -80,19 +82,22 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: RoleModule AccountsRolesLog (r:0 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn approval(b: u32, ) -> Weight {
-		(51_919_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((36_000 as Weight).saturating_mul(b as Weight))
-			.saturating_add(T::DbWeight::get().reads(3 as Weight))
-			.saturating_add(T::DbWeight::get().writes(4 as Weight))
+		Weight::from_ref_time(
+			(51_919_000 as u64)
+			.saturating_add((36_000 as u64).saturating_mul(b as u64))
+			.saturating_add(T::DbWeight::get().reads(3).ref_time())
+			.saturating_add(T::DbWeight::get().writes(4).ref_time())
+		)
 	}
 	// Storage: Sudo Key (r:1 w:0)
 	// Storage: RoleModule RoleApprovalList (r:1 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn rejection(_b: u32, ) -> Weight {
-		(48_785_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(2 as Weight))
-			.saturating_add(T::DbWeight::get().writes(1 as Weight))
+		Weight::from_ref_time(
+			(48_785_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(2).ref_time())
+			.saturating_add(T::DbWeight::get().writes(1).ref_time())
+		)
 	}
 	// Storage: Sudo Key (r:1 w:1)
 	// Storage: RoleModule ServicerLog (r:1 w:2)
@@ -100,9 +105,11 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: RoleModule RoleApprovalList (r:1 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn set_admin(_b: u32, ) -> Weight {
-		(66_978_000 as Weight)
-			.saturating_add(T::DbWeight::get().reads(4 as Weight))
-			.saturating_add(T::DbWeight::get().writes(5 as Weight))
+		Weight::from_ref_time(
+			(66_978_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(4).ref_time())
+			.saturating_add(T::DbWeight::get().writes(5).ref_time())
+		)			
 	}
 }
 
@@ -116,9 +123,11 @@ impl WeightInfo for () {
 	// Storage: RoleModule AccountsRolesLog (r:0 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn investor(_b: u32, ) -> Weight {
-		(62_329_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(5 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(3 as Weight))
+		Weight::from_ref_time(
+			(62_329_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(5).ref_time())
+			.saturating_add(RocksDbWeight::get().writes(3).ref_time())
+		)
 	}
 	// Storage: Sudo Key (r:1 w:0)
 	// Storage: RoleModule TotalMembers (r:1 w:1)
@@ -127,19 +136,22 @@ impl WeightInfo for () {
 	// Storage: RoleModule AccountsRolesLog (r:0 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn approval(b: u32, ) -> Weight {
-		(51_919_000 as Weight)
-			// Standard Error: 1_000
-			.saturating_add((36_000 as Weight).saturating_mul(b as Weight))
-			.saturating_add(RocksDbWeight::get().reads(3 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(4 as Weight))
+		Weight::from_ref_time(
+			(51_919_000 as u64) // Standard Error: 1_000			
+			.saturating_add((36_000 as u64).saturating_mul(b as u64))
+			.saturating_add(RocksDbWeight::get().reads(3).ref_time())
+			.saturating_add(RocksDbWeight::get().writes(4).ref_time())
+		)
 	}
 	// Storage: Sudo Key (r:1 w:0)
 	// Storage: RoleModule RoleApprovalList (r:1 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn rejection(_b: u32, ) -> Weight {
-		(48_785_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(2 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(1 as Weight))
+		Weight::from_ref_time(
+			(48_785_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(2).ref_time())
+			.saturating_add(RocksDbWeight::get().writes(1).ref_time())
+		)
 	}
 	// Storage: Sudo Key (r:1 w:1)
 	// Storage: RoleModule ServicerLog (r:1 w:2)
@@ -147,8 +159,10 @@ impl WeightInfo for () {
 	// Storage: RoleModule RoleApprovalList (r:1 w:1)
 	/// The range of component `b` is `[0, 200]`.
 	fn set_admin(_b: u32, ) -> Weight {
-		(66_978_000 as Weight)
-			.saturating_add(RocksDbWeight::get().reads(4 as Weight))
-			.saturating_add(RocksDbWeight::get().writes(5 as Weight))
+		Weight::from_ref_time(
+			(66_978_000 as u64)
+			.saturating_add(RocksDbWeight::get().reads(4).ref_time())
+			.saturating_add(RocksDbWeight::get().writes(5).ref_time())
+		)
 	}
 }

@@ -131,7 +131,7 @@ fn get_eligible_investors_contribution_should_succeed() {
 
 		for account_id in 1..7 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
@@ -140,7 +140,7 @@ fn get_eligible_investors_contribution_should_succeed() {
 				amount = 9;
 			}
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -194,7 +194,7 @@ fn create_investor_list_should_succeed() {
 
 		for account_id in 1..7 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
@@ -203,7 +203,7 @@ fn create_investor_list_should_succeed() {
 				amount = 10;
 			}
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -232,7 +232,7 @@ fn create_investor_list_second_case_should_succeed() {
 
 		for account_id in 1..7 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
@@ -241,7 +241,7 @@ fn create_investor_list_second_case_should_succeed() {
 				amount = 15;
 			}
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -271,7 +271,7 @@ fn create_investor_list_third_case_should_succeed() {
 
 		for account_id in 1..8 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
@@ -283,7 +283,7 @@ fn create_investor_list_third_case_should_succeed() {
 			}
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -310,7 +310,7 @@ fn create_investor_list_fourth_case_should_succeed() {
 
 		for account_id in 1..8 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
@@ -322,7 +322,7 @@ fn create_investor_list_fourth_case_should_succeed() {
 			}
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -346,7 +346,7 @@ fn create_investor_list_should_fail() {
 
 		for account_id in 1..7 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
@@ -360,7 +360,7 @@ fn create_investor_list_should_fail() {
 			}
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -384,13 +384,13 @@ fn process_onboarded_assets_not_enough_fund_should_fail() {
 
 		for account_id in 1..6 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -401,29 +401,29 @@ fn process_onboarded_assets_not_enough_fund_should_fail() {
 		}
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -434,7 +434,7 @@ fn process_onboarded_assets_not_enough_fund_should_fail() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::ONBOARDED
@@ -468,13 +468,13 @@ fn process_onboarded_assets_not_enough_fund_among_investors_should_fail() {
 
 		for account_id in 1..5 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -485,29 +485,29 @@ fn process_onboarded_assets_not_enough_fund_among_investors_should_fail() {
 		}
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -518,7 +518,7 @@ fn process_onboarded_assets_not_enough_fund_among_investors_should_fail() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::ONBOARDED
@@ -552,13 +552,13 @@ fn process_onboarded_assets_cannot_assemble_investor_should_fail() {
 
 		for account_id in 1..6 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -568,32 +568,32 @@ fn process_onboarded_assets_cannot_assemble_investor_should_fail() {
 			System::set_block_number(block_number);
 		}
 
-		assert_ok!(HousingFund::withdraw_fund(Origin::signed(EVE), 90));
+		assert_ok!(HousingFund::withdraw_fund(RuntimeOrigin::signed(EVE), 90));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -604,7 +604,7 @@ fn process_onboarded_assets_cannot_assemble_investor_should_fail() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::ONBOARDED
@@ -638,13 +638,13 @@ fn process_onboarded_assets_should_succeed() {
 
 		for account_id in 1..6 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -655,29 +655,29 @@ fn process_onboarded_assets_should_succeed() {
 		}
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -688,7 +688,7 @@ fn process_onboarded_assets_should_succeed() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::ONBOARDED
@@ -790,13 +790,13 @@ fn process_finalised_assets_should_succeed() {
 
 		for account_id in 1..6 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFund::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFund::contributions(account_id).unwrap();
 
@@ -807,29 +807,29 @@ fn process_finalised_assets_should_succeed() {
 		}
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -840,7 +840,7 @@ fn process_finalised_assets_should_succeed() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::ONBOARDED
@@ -865,7 +865,7 @@ fn process_finalised_assets_should_succeed() {
 		);
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::FINALISED

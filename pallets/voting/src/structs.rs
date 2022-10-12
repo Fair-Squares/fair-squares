@@ -16,10 +16,10 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 #[scale_info(skip_type_params(T))]
 pub struct VotingProposal<T: Config, U> {
 	pub account_id: AccountIdOf<T>,
-	pub proposal_call: Box<<T as Config>::Call>,
-	pub collective_passed_call: Box<<T as Config>::Call>,
-	pub collective_failed_call: Box<<T as Config>::Call>,
-	pub democracy_failed_call: Box<<T as Config>::Call>,
+	pub proposal_call: Box<<T as Config>::RuntimeCall>,
+	pub collective_passed_call: Box<<T as Config>::RuntimeCall>,
+	pub collective_failed_call: Box<<T as Config>::RuntimeCall>,
+	pub democracy_failed_call: Box<<T as Config>::RuntimeCall>,
 	pub proposal_hash: T::Hash,
 	pub collective_index: u32,
 	pub collective_call: U,
@@ -33,10 +33,10 @@ pub struct VotingProposal<T: Config, U> {
 impl<T: Config, U> VotingProposal<T, U> {
 	pub fn new(
 		account_id: AccountIdOf<T>,
-		proposal_call: Box<<T as Config>::Call>,
-		collective_passed_call: Box<<T as Config>::Call>,
-		collective_failed_call: Box<<T as Config>::Call>,
-		democracy_failed_call: Box<<T as Config>::Call>,
+		proposal_call: Box<<T as Config>::RuntimeCall>,
+		collective_passed_call: Box<<T as Config>::RuntimeCall>,
+		collective_failed_call: Box<<T as Config>::RuntimeCall>,
+		democracy_failed_call: Box<<T as Config>::RuntimeCall>,
 		proposal_hash: T::Hash,
 		collective_index: u32,
 		collective_call: U,

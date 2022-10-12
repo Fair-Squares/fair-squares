@@ -33,10 +33,9 @@ use COLL::Instance1;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
 pub use weights::WeightInfo;
-
 mod structs;
+pub mod weights;
 
 pub use crate::structs::*;
 
@@ -50,11 +49,8 @@ type DemoBalanceOf<T> =
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		inherent::Vec,
-		pallet_prelude::*,
-		sp_runtime::traits::Hash,
-		traits::{ReservableCurrency, UnfilteredDispatchable},
-		weights::GetDispatchInfo,
+		dispatch::GetDispatchInfo, inherent::Vec, pallet_prelude::*, sp_runtime::traits::Hash,
+		traits::tokens::currency::ReservableCurrency, traits::UnfilteredDispatchable,
 	};
 	use frame_system::{pallet_prelude::*, RawOrigin};
 
@@ -66,9 +62,10 @@ pub mod pallet {
 		frame_system::Config + COLL::Config<Instance1> + DEMO::Config + ROLES::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type Call: Parameter
-			+ UnfilteredDispatchable<Origin = <Self as frame_system::Config>::Origin>
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
+		type RuntimeCall: Parameter
+			+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
 			+ From<Call<Self>>
 			+ GetDispatchInfo;
 		type WeightInfo: WeightInfo;
@@ -76,7 +73,7 @@ pub mod pallet {
 		type CheckDelay: Get<Self::BlockNumber>;
 		type InvestorVoteAmount: Get<u128>;
 		type LocalCurrency: ReservableCurrency<Self::AccountId>;
-		type HouseCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::Origin>;
+		type HouseCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 
 		#[pallet::constant]
 		type CheckPeriod: Get<Self::BlockNumber>;
@@ -175,10 +172,10 @@ pub mod pallet {
 		#[pallet::weight(10_000)]
 		pub fn submit_proposal(
 			origin: OriginFor<T>,
-			proposal: Box<<T as Config>::Call>,
-			collective_passed_call: Box<<T as Config>::Call>,
-			collective_failed_call: Box<<T as Config>::Call>,
-			democracy_failed_call: Box<<T as Config>::Call>,
+			proposal: Box<<T as Config>::RuntimeCall>,
+			collective_passed_call: Box<<T as Config>::RuntimeCall>,
+			collective_failed_call: Box<<T as Config>::RuntimeCall>,
+			democracy_failed_call: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer
 			let who = ensure_signed(origin)?;
@@ -277,7 +274,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			account_id: AccountIdOf<T>,
 			proposal_id: T::Hash,
-			proposal: Box<<T as Config>::Call>,
+			proposal: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			T::HouseCouncilOrigin::ensure_origin(origin)?;
 
@@ -347,7 +344,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			account_id: AccountIdOf<T>,
 			proposal_hash: T::Hash,
-			proposal: Box<<T as Config>::Call>,
+			proposal: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			ensure_root(origin)?;
 
@@ -538,7 +535,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn get_formatted_collective_proposal(
-		call: <T as Config>::Call,
+		call: <T as Config>::RuntimeCall,
 	) -> Option<<T as COLL::Config<Instance1>>::Proposal> {
 		let call_encoded: Vec<u8> = call.encode();
 		let ref_call_encoded = &call_encoded;
@@ -552,11 +549,11 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
-	pub fn get_formatted_call(call: <T as Config>::Call) -> <T as Config>::Call {
+	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> <T as Config>::RuntimeCall {
 		call
 	}
 
-	pub fn get_origin(account_id: AccountIdOf<T>) -> <T as frame_system::Config>::Origin {
+	pub fn get_origin(account_id: AccountIdOf<T>) -> <T as frame_system::Config>::RuntimeOrigin {
 		frame_system::RawOrigin::Signed(account_id).into()
 	}
 
@@ -627,6 +624,6 @@ impl<T: Config> Pallet<T> {
 			}
 		}
 
-		max_block_weight
+		Weight::from_ref_time(max_block_weight)
 	}
 }

@@ -27,10 +27,9 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
-
 mod functions;
 mod structs;
+pub mod weights;
 
 pub use crate::structs::*;
 pub use pallet_nft as NFT;
@@ -52,7 +51,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + NFT::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		type LocalCurrency: frame_support::traits::Currency<Self::AccountId>
 			+ frame_support::traits::ReservableCurrency<Self::AccountId>;
 		type MinContribution: Get<BalanceOf<Self>>;

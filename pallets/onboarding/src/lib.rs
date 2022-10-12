@@ -78,7 +78,7 @@ pub use weights::WeightInfo;
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
-pub type CallOf<T> = <T as Votes::Config>::Call;
+pub type CallOf<T> = <T as Votes::Config>::RuntimeCall;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -96,10 +96,11 @@ pub mod pallet {
 		+ HousingFund::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		type Currency: ReservableCurrency<Self::AccountId>;
 		type Prop: Parameter
-			+ Dispatchable<Origin = <Self as frame_system::Config>::Origin>
+			+ Dispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
 			+ From<Call<Self>>;
 		#[pallet::constant]
 		type ProposalFee: Get<BalanceOf<Self>>;
@@ -282,7 +283,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn change_status(
 			origin: OriginFor<T>,
@@ -303,7 +304,7 @@ pub mod pallet {
 		}
 
 		/// Modify the price of an Existing proposal
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn set_price(
 			origin: OriginFor<T>,
@@ -343,7 +344,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn reject_edit(
 			origin: OriginFor<T>,
 			collection: NftCollectionOf,
@@ -395,7 +396,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn reject_destroy(
 			origin: OriginFor<T>,
 			collection: NftCollectionOf,
@@ -441,7 +442,7 @@ pub mod pallet {
 		/// `create_and_submit_proposal` - Creation and submission of a proposal.
 		/// the proposal submission is optionnal, and can be disabled through the value
 		/// of the boolean `submit`.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn create_and_submit_proposal(
 			origin: OriginFor<T>,
@@ -573,7 +574,7 @@ pub mod pallet {
 		}
 
 		///Submit an awaiting proposal for review
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn submit_awaiting(
 			origin: OriginFor<T>,

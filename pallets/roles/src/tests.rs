@@ -5,7 +5,7 @@ use frame_support::{assert_noop, assert_ok};
 #[test]
 fn test_struct_methods() {
 	new_test_ext(4).execute_with(|| {
-		assert_ok!(Investor::<Test>::new(Origin::signed(1)));
+		assert_ok!(Investor::<Test>::new(RuntimeOrigin::signed(1)));
 		//--checking investor storage if its updated----
 		assert!(InvestorLog::<Test>::contains_key(1));
 		assert_eq!(
@@ -14,7 +14,7 @@ fn test_struct_methods() {
 		);
 
 		//---HouseSeller-------
-		assert_ok!(HouseSeller::<Test>::new(Origin::signed(1)));
+		assert_ok!(HouseSeller::<Test>::new(RuntimeOrigin::signed(1)));
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
 			(
@@ -31,7 +31,7 @@ fn test_struct_methods() {
 		assert_ne!(RoleModule::get_pending_approvals(), (vec![], vec![])); //assert_ne! is not supported at the moment, as this expression should panick
 
 		//-------tenant-----------
-		assert_ok!(Tenant::<Test>::new(Origin::signed(1)));
+		assert_ok!(Tenant::<Test>::new(RuntimeOrigin::signed(1)));
 		//-- checking Tenant storage------
 		assert_eq!(
 			RoleModule::tenants(1),
@@ -39,7 +39,7 @@ fn test_struct_methods() {
 		);
 
 		//-----Servicer-----------------------------------------
-		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
+		assert_ok!(Servicer::<Test>::new(RuntimeOrigin::signed(2)));
 		//--checking storage-------------
 		assert_eq!(
 			RoleModule::get_pending_approvals(),
@@ -65,17 +65,17 @@ fn test_struct_methods() {
 fn test_account_approval_rejection() {
 	new_test_ext(4).execute_with(|| {
 		//----testing account approval-----
-		let master = Origin::signed(4);
+		let master = RuntimeOrigin::signed(4);
 		let wait0 = RoleModule::get_pending_approvals();
 		let serv0 = wait0.1;
 		let sell0 = wait0.0;
 		assert_eq!(serv0.len(), 0);
 		assert_eq!(sell0.len(), 0);
 
-		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
-		assert_ok!(HouseSeller::<Test>::new(Origin::signed(3)));
-		assert_ok!(Servicer::<Test>::new(Origin::signed(5)));
-		assert_ok!(HouseSeller::<Test>::new(Origin::signed(6)));
+		assert_ok!(Servicer::<Test>::new(RuntimeOrigin::signed(2)));
+		assert_ok!(HouseSeller::<Test>::new(RuntimeOrigin::signed(3)));
+		assert_ok!(Servicer::<Test>::new(RuntimeOrigin::signed(5)));
+		assert_ok!(HouseSeller::<Test>::new(RuntimeOrigin::signed(6)));
 
 		let wait1 = RoleModule::get_pending_approvals();
 		let serv1 = wait1.1;
@@ -115,12 +115,12 @@ fn test_account_approval_rejection() {
 #[test]
 fn test_account_creation() {
 	new_test_ext(4).execute_with(|| {
-		let master = Origin::signed(4);
-		let user1 = Origin::signed(1);
-		let user2 = Origin::signed(2);
-		let user3 = Origin::signed(3);
-		let user4 = Origin::signed(5);
-		let user5 = Origin::signed(6);
+		let master = RuntimeOrigin::signed(4);
+		let user1 = RuntimeOrigin::signed(1);
+		let user2 = RuntimeOrigin::signed(2);
+		let user3 = RuntimeOrigin::signed(3);
+		let user4 = RuntimeOrigin::signed(5);
+		let user5 = RuntimeOrigin::signed(6);
 
 		let wait_sell = RoleModule::get_pending_approvals().0;
 		let sell_len = wait_sell.len();
@@ -171,7 +171,7 @@ fn test_set_manager() {
 		assert_eq!(Sudo::key(), Some(4));
 		//---changing--------------------------
 
-		assert_ok!(RoleModule::set_manager(Origin::signed(4), 2));
+		assert_ok!(RoleModule::set_manager(RuntimeOrigin::signed(4), 2));
 		assert_eq!(Sudo::key(), Some(2));
 	})
 }

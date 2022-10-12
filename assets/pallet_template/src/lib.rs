@@ -8,9 +8,7 @@
 //!
 //! #### Dispatchable Functions
 //! * 'do_something' - An example dispatchable that takes a singles value as a parameter, writes the value to storage and emits an event
-//! 
-
-
+//!
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -37,7 +35,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		type WeightInfo: WeightInfo;
 	}
 
@@ -88,7 +87,7 @@ pub mod pallet {
 		}
 
 		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time()))])]
 		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
 			let _who = ensure_signed(origin)?;
 

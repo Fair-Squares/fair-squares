@@ -12,7 +12,7 @@ fn submit_proposal_not_seller_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
 			VotingModule::submit_proposal(
-				Origin::signed(EVE),
+				RuntimeOrigin::signed(EVE),
 				make_proposal(1),
 				make_proposal(2),
 				make_proposal(3),
@@ -28,20 +28,20 @@ fn submit_proposal_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
 		assert_ok!(
-			RoleModule::account_approval(Origin::signed(ALICE), EVE)
+			RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE)
 		);
 
 		let proposal = make_proposal(1);
 
 		assert_ok!(
 			VotingModule::submit_proposal(
-				Origin::signed(EVE),
+				RuntimeOrigin::signed(EVE),
 				proposal.clone(),
 				make_proposal(2),
 				make_proposal(3),
@@ -90,14 +90,18 @@ fn submit_proposal_should_succeed() {
 fn council_vote_not_house_council_member_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(
+			RuntimeOrigin::signed(EVE),
+			EVE,
+			crate::ROLES::Accounts::SELLER
+		));
 
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), EVE));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE));
 
 		let proposal = make_proposal(1);
 
 		assert_ok!(VotingModule::submit_proposal(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			proposal.clone(),
 			make_proposal(2),
 			make_proposal(3),
@@ -107,7 +111,7 @@ fn council_vote_not_house_council_member_should_fail() {
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
 		assert_noop!(
-			VotingModule::council_vote(Origin::signed(EVE), hash, true,),
+			VotingModule::council_vote(RuntimeOrigin::signed(EVE), hash, true,),
 			Error::<Test>::NotAHouseCouncilMember
 		);
 	});
@@ -117,15 +121,19 @@ fn council_vote_not_house_council_member_should_fail() {
 fn council_vote_proposal_not_exist_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(
+			RuntimeOrigin::signed(EVE),
+			EVE,
+			crate::ROLES::Accounts::SELLER
+		));
 
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), EVE));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE));
 
 		let proposal = make_proposal(1);
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
 		assert_noop!(
-			VotingModule::council_vote(Origin::signed(ALICE), hash, true,),
+			VotingModule::council_vote(RuntimeOrigin::signed(ALICE), hash, true,),
 			Error::<Test>::ProposalDoesNotExist
 		);
 	});
@@ -135,14 +143,18 @@ fn council_vote_proposal_not_exist_should_fail() {
 fn council_vote_proposal_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(
+			RuntimeOrigin::signed(EVE),
+			EVE,
+			crate::ROLES::Accounts::SELLER
+		));
 
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), EVE));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE));
 
 		let proposal = make_proposal(1);
 
 		assert_ok!(VotingModule::submit_proposal(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			proposal.clone(),
 			make_proposal(2),
 			make_proposal(3),
@@ -151,7 +163,7 @@ fn council_vote_proposal_should_succeed() {
 
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
-		assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash, true,));
+		assert_ok!(VotingModule::council_vote(RuntimeOrigin::signed(ALICE), hash, true,));
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
@@ -170,15 +182,19 @@ fn council_vote_proposal_should_succeed() {
 fn council_close_vote_not_house_council_member_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(
+			RuntimeOrigin::signed(EVE),
+			EVE,
+			crate::ROLES::Accounts::SELLER
+		));
 
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), EVE));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE));
 
 		let proposal = make_proposal(1);
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
 		assert_noop!(
-			VotingModule::council_close_vote(Origin::signed(EVE), hash,),
+			VotingModule::council_close_vote(RuntimeOrigin::signed(EVE), hash,),
 			Error::<Test>::NotAHouseCouncilMember
 		);
 	});
@@ -188,15 +204,19 @@ fn council_close_vote_not_house_council_member_should_fail() {
 fn council_close_vote_proposal_not_exist_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(
+			RuntimeOrigin::signed(EVE),
+			EVE,
+			crate::ROLES::Accounts::SELLER
+		));
 
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), EVE));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE));
 
 		let proposal = make_proposal(1);
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
 		assert_noop!(
-			VotingModule::council_close_vote(Origin::signed(ALICE), hash,),
+			VotingModule::council_close_vote(RuntimeOrigin::signed(ALICE), hash,),
 			Error::<Test>::ProposalDoesNotExist
 		);
 	});
@@ -210,20 +230,20 @@ fn council_close_vote_proposal_not_pass_should_succeed() {
 
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
 		assert_ok!(
-			RoleModule::account_approval(Origin::signed(ALICE), EVE)
+			RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE)
 		);
 
 		let proposal = make_proposal(1);
 
 		assert_ok!(
 			VotingModule::submit_proposal(
-				Origin::signed(EVE),
+				RuntimeOrigin::signed(EVE),
 				proposal.clone(),
 				make_proposal(2),
 				make_proposal(3),
@@ -244,7 +264,7 @@ fn council_close_vote_proposal_not_pass_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_close_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 			)
 		);
@@ -283,20 +303,20 @@ fn council_close_vote_proposal_pass_should_succeed() {
 
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
 		assert_ok!(
-			RoleModule::account_approval(Origin::signed(ALICE), EVE)
+			RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE)
 		);
 
 		let proposal = make_proposal(1);
 
 		assert_ok!(
 			VotingModule::submit_proposal(
-				Origin::signed(EVE),
+				RuntimeOrigin::signed(EVE),
 				proposal.clone(),
 				make_proposal(2),
 				make_proposal(3),
@@ -308,7 +328,7 @@ fn council_close_vote_proposal_pass_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 				true,
 			)
@@ -316,7 +336,7 @@ fn council_close_vote_proposal_pass_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(BOB),
+				RuntimeOrigin::signed(BOB),
 				hash,
 				true,
 			)
@@ -324,7 +344,7 @@ fn council_close_vote_proposal_pass_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(CHARLIE),
+				RuntimeOrigin::signed(CHARLIE),
 				hash,
 				true,
 			)
@@ -341,7 +361,7 @@ fn council_close_vote_proposal_pass_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_close_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 			)
 		);
@@ -386,14 +406,18 @@ fn council_close_vote_proposal_pass_should_succeed() {
 fn investor_vote_without_having_invetsor_role_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(
+			RuntimeOrigin::signed(EVE),
+			EVE,
+			crate::ROLES::Accounts::SELLER
+		));
 
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), EVE));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE));
 
 		let proposal = make_proposal(1);
 
 		assert_ok!(VotingModule::submit_proposal(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			proposal.clone(),
 			make_proposal(2),
 			make_proposal(3),
@@ -403,7 +427,7 @@ fn investor_vote_without_having_invetsor_role_should_fail() {
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
 		assert_noop!(
-			VotingModule::investor_vote(Origin::signed(ALICE), hash, true,),
+			VotingModule::investor_vote(RuntimeOrigin::signed(ALICE), hash, true,),
 			Error::<Test>::NotAnInvestor
 		);
 	});
@@ -414,19 +438,23 @@ fn investor_vote_with_bad_proposal_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(ALICE),
+			RuntimeOrigin::signed(ALICE),
 			ALICE,
 			crate::ROLES::Accounts::INVESTOR
 		));
-		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(
+			RuntimeOrigin::signed(EVE),
+			EVE,
+			crate::ROLES::Accounts::SELLER
+		));
 
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), EVE));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE));
 
 		let proposal = make_proposal(1);
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
 		assert_noop!(
-			VotingModule::investor_vote(Origin::signed(ALICE), hash, true,),
+			VotingModule::investor_vote(RuntimeOrigin::signed(ALICE), hash, true,),
 			Error::<Test>::ProposalDoesNotExist
 		);
 	});
@@ -438,18 +466,18 @@ fn investor_vote_should_succeed() {
 
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(ALICE),
+			RuntimeOrigin::signed(ALICE),
 			ALICE,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
 		assert_ok!(
-			RoleModule::account_approval(Origin::signed(ALICE), EVE)
+			RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE)
 		);
 
 		let proposal = make_proposal(1);
@@ -457,7 +485,7 @@ fn investor_vote_should_succeed() {
 
 		assert_ok!(
 			VotingModule::submit_proposal(
-				Origin::signed(EVE),
+				RuntimeOrigin::signed(EVE),
 				proposal,
 				make_proposal(2),
 				make_proposal(3),
@@ -467,7 +495,7 @@ fn investor_vote_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 				true,
 			)
@@ -475,7 +503,7 @@ fn investor_vote_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(BOB),
+				RuntimeOrigin::signed(BOB),
 				hash,
 				true,
 			)
@@ -483,7 +511,7 @@ fn investor_vote_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(CHARLIE),
+				RuntimeOrigin::signed(CHARLIE),
 				hash,
 				true,
 			)
@@ -500,7 +528,7 @@ fn investor_vote_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_close_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 			)
 		);
@@ -511,7 +539,7 @@ fn investor_vote_should_succeed() {
 
 		assert_ok!(
 			VotingModule::investor_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 				true,
 			)
@@ -536,18 +564,18 @@ fn investor_vote_proposal_fail_should_succeed() {
 
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(ALICE),
+			RuntimeOrigin::signed(ALICE),
 			ALICE,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(EVE),
+			RuntimeOrigin::signed(EVE),
 			EVE,
 			crate::ROLES::Accounts::SELLER
 		));
 
 		assert_ok!(
-			RoleModule::account_approval(Origin::signed(ALICE), EVE)
+			RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE)
 		);
 
 		let proposal = make_proposal(1);
@@ -555,7 +583,7 @@ fn investor_vote_proposal_fail_should_succeed() {
 
 		assert_ok!(
 			VotingModule::submit_proposal(
-				Origin::signed(EVE),
+				RuntimeOrigin::signed(EVE),
 				proposal,
 				make_proposal(2),
 				make_proposal(3),
@@ -565,7 +593,7 @@ fn investor_vote_proposal_fail_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 				true,
 			)
@@ -573,7 +601,7 @@ fn investor_vote_proposal_fail_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(BOB),
+				RuntimeOrigin::signed(BOB),
 				hash,
 				true,
 			)
@@ -581,7 +609,7 @@ fn investor_vote_proposal_fail_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_vote(
-				Origin::signed(CHARLIE),
+				RuntimeOrigin::signed(CHARLIE),
 				hash,
 				true,
 			)
@@ -598,7 +626,7 @@ fn investor_vote_proposal_fail_should_succeed() {
 
 		assert_ok!(
 			VotingModule::council_close_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 			)
 		);
@@ -610,7 +638,7 @@ fn investor_vote_proposal_fail_should_succeed() {
 
 		assert_ok!(
 			VotingModule::investor_vote(
-				Origin::signed(ALICE),
+				RuntimeOrigin::signed(ALICE),
 				hash,
 				false,
 			)

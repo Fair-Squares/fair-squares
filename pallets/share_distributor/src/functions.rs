@@ -4,8 +4,7 @@
 //4) transfer tokens to owners
 use super::*;
 use enum_iterator::all;
-use num_traits::float::FloatCore;
-use sp_runtime::{traits::SaturatedConversion, FixedPointNumber, FixedU128};
+use sp_runtime::traits::SaturatedConversion;
 
 impl<T: Config> Pallet<T> {
 	///The function below create a virtual account from the NFT collection and item id's
@@ -83,7 +82,7 @@ impl<T: Config> Pallet<T> {
 
 			let price1 = Self::balance_to_f64_option0(price).unwrap();
 			let contribution1 = Self::balance_to_f64_option0(i.1).unwrap();
-			let frac = (contribution1 / price1).round();
+			let frac = ((contribution1 / price1) as f64).round();
 			let mut share = FixedU128::saturating_from_rational(contribution0, price0)
 				.saturating_mul_int(1000u128);
 			let fl = share as f64;

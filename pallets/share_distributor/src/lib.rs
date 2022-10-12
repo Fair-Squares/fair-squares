@@ -64,7 +64,8 @@ pub mod pallet {
 		+ HousingFund::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 		type AssetId: IsType<<Self as Assets::Config>::AssetId> + Parameter + From<u32> + Ord + Copy;
 		#[pallet::constant]
@@ -138,7 +139,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// This call creates a virtual account from the asset's collection_id and item_id.
 		/// The caller must hold the Servicer role
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn create_virtual(
 			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,

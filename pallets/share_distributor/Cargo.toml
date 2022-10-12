@@ -14,14 +14,16 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 enum-iterator = "1.2.0"
-num-traits = {version="0.2.15",default-features = false}
-sp-arithmetic = {version="5.0.0",default-features = false}
+num-traits = { version = "0.2.15", default-features = false }
+sp-arithmetic = { version = "5.0.0", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
-scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30"}
+scale-info = { version = "2.1.1", default-features = false, features = [
+	"derive",
+] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30", optional = true }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.30" }
@@ -34,8 +36,8 @@ pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "pol
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
 sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.30" }
-pallet-roles = { default-features = false, path="../roles" }
-pallet-nft = { default-features = false, path="../nft" }
+pallet-roles = { default-features = false, path = "../roles" }
+pallet-nft = { default-features = false, path = "../nft" }
 pallet-voting = { default-features = false, path = "../voting" }
 pallet-onboarding = { default-features = false, path = "../onboarding" }
 pallet-housing_fund = { default-features = false, path = "../housing_fund" }
@@ -68,12 +70,12 @@ std = [
 	"pallet-roles/std",
 	"pallet-nft/std",
 	"pallet-onboarding/std",
-	
+
 ]
 
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-support/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
-	]
+]
 try-runtime = ["frame-support/try-runtime"]

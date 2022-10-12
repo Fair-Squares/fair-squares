@@ -134,11 +134,11 @@ impl<T: Config> Pallet<T> {
 
 	pub fn get_formatted_collective_proposal(
 		call: <T as Config>::Prop,
-	) -> Option<<T as Votes::Config>::Call> {
+	) -> Option<<T as Votes::Config>::RuntimeCall> {
 		let call_encoded: Vec<u8> = call.encode();
 		let ref_call_encoded = &call_encoded;
 
-		if let Ok(call_formatted) = <T as Votes::Config>::Call::decode(&mut &ref_call_encoded[..]) {
+		if let Ok(call_formatted) = <T as Votes::Config>::RuntimeCall::decode(&mut &ref_call_encoded[..]) {
 			Some(call_formatted)
 		} else {
 			None
