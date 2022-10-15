@@ -143,5 +143,5 @@ benchmarks! {
 
 
 
-	impl_benchmark_test_suite!(Roles, crate::mock::new_test_ext(), crate::mock::Test)
+	impl_benchmark_test_suite!(Roles, crate::mock::new_test_ext(4), crate::mock::Test)
 }

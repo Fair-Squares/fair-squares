@@ -129,6 +129,8 @@ impl pallet_uniques::Config for Test {
 	type ValueLimit = ValueLimit;
 	type WeightInfo = ();
 	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
 }
 
 impl pallet_sudo::Config for Test {
