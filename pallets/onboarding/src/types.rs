@@ -76,7 +76,7 @@ impl<T: Config> VotingCalls<T> {
 			reject_edit: Box::new(call.clone()),
 			reject_destroy: Box::new(call.clone()),
 			democracy_status: Box::new(call.clone()),
-			after_vote_status: Box::new(call.clone()),
+			after_vote_status: Box::new(call),
 		};
 		Vcalls::<T>::insert(collection, item, calls);
 		Ok(())

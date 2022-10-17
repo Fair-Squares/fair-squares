@@ -7,46 +7,50 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use codec::{Decode, Encode};
+use pallet_election_provider_multi_phase::SolutionAccuracyOf;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
-use pallet_election_provider_multi_phase::SolutionAccuracyOf;
-use sp_api::impl_runtime_apis;
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use pallet_session::historical::{self as pallet_session_historical};
+#[cfg(any(feature = "std", test))]
+pub use pallet_staking::StakerStatus;
+use sp_api::impl_runtime_apis;
+use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
+use sp_runtime::generic::Era;
 pub use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,curve::PiecewiseLinear,Perbill, Permill,
+	create_runtime_str,
+	curve::PiecewiseLinear,
+	generic, impl_opaque_keys,
 	traits::{
-		SaturatedConversion,Extrinsic,ConvertInto,AccountIdLookup, BlakeTwo256, Block as BlockT, 
-		IdentifyAccount, NumberFor, Verify,OpaqueKeys,StaticLookup},
-	transaction_validity::{TransactionPriority,TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, FixedPointNumber, Perquintill, MultiSignature, Percent,
+		AccountIdLookup, BlakeTwo256, Block as BlockT, ConvertInto, Extrinsic, IdentifyAccount,
+		NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup, Verify,
+	},
+	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
+	ApplyExtrinsicResult, FixedPointNumber, MultiSignature, Perbill, Percent, Permill, Perquintill,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-use sp_runtime::generic::Era;
-use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
-#[cfg(any(feature = "std", test))]
-pub use pallet_staking::StakerStatus;
 
 // A few exports that help ease life for downstream crates.
 use frame_election_provider_support::{
 	onchain, BalancingConfig, ElectionDataProvider, SequentialPhragmen,
 };
 pub use frame_support::{
-	construct_runtime, parameter_types,pallet_prelude::Get,
+	construct_runtime,
+	pallet_prelude::Get,
+	parameter_types,
 	traits::{
-		AsEnsureOriginWithArg, ConstU128, ConstU32, ConstU64, ConstU16, ConstU8, EitherOfDiverse,
-		EqualPrivilegeOnly, KeyOwnerProofSystem, Randomness, StorageInfo,
-		Contains,U128CurrencyToVote,
-
+		AsEnsureOriginWithArg, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, Contains,
+		EitherOfDiverse, EqualPrivilegeOnly, KeyOwnerProofSystem, Randomness, StorageInfo,
+		U128CurrencyToVote,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		ConstantMultiplier, DispatchClass,IdentityFee, Weight,
+		ConstantMultiplier, DispatchClass, IdentityFee, Weight,
 	},
 	PalletId, StorageValue,
 };
@@ -55,31 +59,31 @@ pub mod constants;
 use constants::{currency::*, time::*};
 pub use frame_system::Call as SystemCall;
 use frame_system::{
-	EnsureRoot, EnsureSigned,
 	limits::{BlockLength, BlockWeights},
+	EnsureRoot, EnsureSigned,
 };
 pub use pallet_balances::Call as BalancesCall;
 use pallet_nft::NftPermissions;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 
+pub use node_primitives::{
+	AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Moment, Signature,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
-pub use node_primitives::{AccountId, Signature};
-pub use node_primitives::{AccountIndex, Balance, BlockNumber, Hash, Index, Moment};
 
 pub use pallet_democracy;
 
 //import fs-pallets
+pub use pallet_bidding;
 pub use pallet_housing_fund;
-pub use pallet_nft;
-pub use pallet_nft::{Acc, CollectionId, ItemId, NftPermission};
-pub use pallet_roles;
+pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 pub use pallet_onboarding;
-pub use pallet_voting;
+pub use pallet_roles;
 pub use pallet_share_distributor;
 pub use pallet_utility;
-pub use pallet_bidding;
+pub use pallet_voting;
 // flag add pallet use
 
 type MoreThanHalfCouncil = EitherOfDiverse<
@@ -128,14 +132,12 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	state_version: 1,
 };
 
-
 /// The BABE epoch configuration at genesis.
 pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 	sp_consensus_babe::BabeEpochConfiguration {
 		c: PRIMARY_PROBABILITY,
 		allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
 	};
-
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -232,7 +234,6 @@ impl frame_system::Config for Runtime {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
-
 impl pallet_grandpa::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -260,7 +261,6 @@ impl pallet_timestamp::Config for Runtime {
 	type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
 	type WeightInfo = ();
 }
-
 
 parameter_types! {
 	// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
@@ -359,7 +359,6 @@ where
 	}
 }
 
-
 impl frame_system::offchain::SigningTypes for Runtime {
 	type Public = <Signature as Verify>::Signer;
 	type Signature = Signature;
@@ -405,12 +404,10 @@ impl pallet_identity::Config for Runtime {
 	type MaxAdditionalFields = MaxAdditionalFields;
 	type MaxRegistrars = MaxRegistrars;
 	type Slashed = Treasury;
-	type ForceOrigin = MoreThanHalfCouncil ;
-	type RegistrarOrigin = MoreThanHalfCouncil ;
+	type ForceOrigin = MoreThanHalfCouncil;
+	type RegistrarOrigin = MoreThanHalfCouncil;
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
-
-
 
 impl pallet_offences::Config for Runtime {
 	type Event = Event;
@@ -504,9 +501,9 @@ parameter_types! {
 	pub const UnsignedPhase: u32 = EPOCH_DURATION_IN_BLOCKS / 4;
 
 	// signed config
-	pub const SignedRewardBase: Balance = 1 * DOLLARS;
-	pub const SignedDepositBase: Balance = 1 * DOLLARS;
-	pub const SignedDepositByte: Balance = 1 * CENTS;
+	pub const SignedRewardBase: Balance = DOLLARS;
+	pub const SignedDepositBase: Balance = DOLLARS;
+	pub const SignedDepositByte: Balance = CENTS;
 
 	pub BetterUnsignedThreshold: Perbill = Perbill::from_rational(1u32, 10_000);
 
@@ -637,9 +634,9 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 	type GovernanceFallback = onchain::BoundedExecution<OnChainSeqPhragmen>;
 	type Solver = SequentialPhragmen<AccountId, SolutionAccuracyOf<Self>, OffchainRandomBalancing>;
 	type ForceOrigin = EitherOfDiverse<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
->;
+		EnsureRoot<AccountId>,
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 2, 3>,
+	>;
 	type MaxElectableTargets = ConstU16<{ u16::MAX }>;
 	type MaxElectingVoters = MaxElectingVoters;
 	type BenchmarkingConfig = ElectionProviderBenchmarkConfig;
@@ -689,7 +686,6 @@ impl pallet_mmr::Config for Runtime {
 	type WeightInfo = ();
 }
 
-
 impl pallet_balances::Config for Runtime {
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
@@ -713,7 +709,6 @@ impl pallet_transaction_payment::Config for Runtime {
 	type FeeMultiplierUpdate = ();
 }
 
-
 impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -723,7 +718,7 @@ parameter_types! {
 	// Deposit to create a class of assets is 100 Dollars
 	pub const CollectionDeposit: Balance = 100 * DOLLARS;
 	// Deposit to create an item is 1 Dollars
-	pub const ItemDeposit: Balance = 1 * DOLLARS;
+	pub const ItemDeposit: Balance = DOLLARS;
 	pub const KeyLimit: u32 = 32;
 	pub const ValueLimit: u32 = 256;
 	// Base deposit to add metadata is 10 CENTS
@@ -834,13 +829,13 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 
 parameter_types! {
 	pub const ProposalBond: Permill = Permill::from_percent(5);
-	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
-	pub const SpendPeriod: BlockNumber = 1 * DAYS;
+	pub const ProposalBondMinimum: Balance = DOLLARS;
+	pub const SpendPeriod: BlockNumber = DAYS;
 	pub const Burn: Permill = Permill::from_percent(50);
-	pub const TipCountdown: BlockNumber = 1 * DAYS;
+	pub const TipCountdown: BlockNumber = DAYS;
 	pub const TipFindersFee: Percent = Percent::from_percent(20);
-	pub const TipReportDepositBase: Balance = 1 * DOLLARS;
-	pub const DataDepositPerByte: Balance = 1 * CENTS;
+	pub const TipReportDepositBase: Balance = DOLLARS;
+	pub const DataDepositPerByte: Balance = CENTS;
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const MaximumReasonLength: u32 = 300;
 	pub const MaxApprovals: u32 = 100;
@@ -873,9 +868,9 @@ impl pallet_treasury::Config for Runtime {
 
 parameter_types! {
 	pub const PreimageMaxSize: u32 = 4096 * 1024;
-	pub const PreimageBaseDeposit: Balance = 1 * DOLLARS;
+	pub const PreimageBaseDeposit: Balance = DOLLARS;
 	// One cent: $10,000 / MB
-	pub const PreimageByteDeposit: Balance = 1 * CENTS;
+	pub const PreimageByteDeposit: Balance = CENTS;
 }
 
 impl pallet_preimage::Config for Runtime {
@@ -913,7 +908,7 @@ parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 24 * 60 * MINUTES;
 	pub const VotingPeriod: BlockNumber = 3 * MINUTES;//28 * 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
-	pub const MinimumDeposit: Balance = 1 * DOLLARS;
+	pub const MinimumDeposit: Balance = DOLLARS;
 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
 	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
 	pub const MaxProposals: u32 = 100;
@@ -988,9 +983,9 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 
 parameter_types! {
 	pub const Delay: BlockNumber = 0 * MINUTES;//3 * MINUTES;
-	pub const CheckDelay: BlockNumber = 1 * MINUTES;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber = MINUTES;//3 * MINUTES;
 	pub const InvestorVoteAmount: u128 = 10 * DOLLARS;
-	pub const CheckPeriod: BlockNumber = 1 * MINUTES;
+	pub const CheckPeriod: BlockNumber = MINUTES;
 }
 
 impl pallet_voting::Config for Runtime {
@@ -1009,8 +1004,8 @@ impl pallet_voting::Config for Runtime {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100 * DOLLARS;
-	pub const ApprovalDeposit: Balance = 1 * DOLLARS;
-	pub const MetadataDepositPerByte: Balance = 1 * DOLLARS;
+	pub const ApprovalDeposit: Balance = DOLLARS;
+	pub const MetadataDepositPerByte: Balance = DOLLARS;
 	pub const StringLimit: u32 = 50;
 }
 
@@ -1034,7 +1029,7 @@ impl pallet_assets::Config for Runtime {
 parameter_types! {
 	pub const AssetsFees: Balance = 25 * DOLLARS;
 }
-impl pallet_share_distributor::Config for Runtime{
+impl pallet_share_distributor::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
 	type AssetId = u32;
@@ -1153,7 +1148,6 @@ mod mmr {
 	pub use pallet_mmr::primitives::*;
 }
 
-
 #[cfg(feature = "runtime-benchmarks")]
 #[macro_use]
 extern crate frame_benchmarking;
@@ -1162,7 +1156,7 @@ extern crate frame_benchmarking;
 mod benches {
 	define_benchmarks!(
 		[frame_benchmarking, BaselineBench::<Runtime>]
-		[frame_system, SystemBench::<Runtime>]		
+		[frame_system, SystemBench::<Runtime>]
 		[pallet_babe, Babe]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
@@ -1239,7 +1233,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	
+
 	impl sp_session::SessionKeys<Block> for Runtime {
 		fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
 			opaque::SessionKeys::generate(seed)

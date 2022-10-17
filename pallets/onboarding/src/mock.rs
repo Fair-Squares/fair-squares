@@ -1,11 +1,11 @@
 use super::*;
 use crate as pallet_onboarding;
-use frame_support::traits::{
-	AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly,
+use frame_support::{
+	parameter_types,
+	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly},
+	weights::Weight,
+	PalletId,
 };
-use frame_support::PalletId;
-use frame_support::{parameter_types, weights::Weight};
-use frame_system;
 
 use crate::Nft::NftPermissions;
 use frame_system::{EnsureRoot, EnsureSigned};
@@ -17,9 +17,6 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
-
-use pallet_collective;
-use pallet_democracy;
 
 type CouncilCollective = pallet_collective::Instance1;
 type AccountId = AccountId32;
@@ -288,7 +285,6 @@ impl pallet_housing_fund::Config for Test {
 	type PalletId = HousingFundPalletId;
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
-
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
