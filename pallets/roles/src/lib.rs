@@ -57,14 +57,15 @@ mod benchmarking;
 
 mod functions;
 mod types;
-pub mod weights;
+//pub mod weights;
 pub use crate::types::*;
 pub use pallet_sudo as SUDO;
 use sp_std::{fmt::Debug, prelude::*};
-pub use weights::WeightInfo;
+//pub use weights::WeightInfo;
 #[frame_support::pallet]
 pub mod pallet {
 	pub use super::*;
+	use frame_system::WeightInfo;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -203,7 +204,8 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(T::MaxMembers::get()))]
+		#[pallet::weight(10_000)]
 		///Account creation function. Only one role per account is permitted.
 		pub fn set_role(
 			origin: OriginFor<T>,
@@ -257,7 +259,8 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(T::MaxMembers::get()))]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(T::MaxMembers::get()))]
+		#[pallet::weight(10_000)]
 		///Approval function for Sellers and Servicers. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
@@ -273,7 +276,8 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::rejection(T::MaxMembers::get()))]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::rejection(T::MaxMembers::get()))]
+		#[pallet::weight(10_000)]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
@@ -287,7 +291,8 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_admin(T::MaxMembers::get()))]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::set_admin(T::MaxMembers::get()))]
+		#[pallet::weight(10_000)]
 		///The caller will transfer his admin authority to a different account
 		pub fn set_manager(
 			origin: OriginFor<T>,

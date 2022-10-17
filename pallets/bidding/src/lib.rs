@@ -29,8 +29,8 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
-pub use weights::WeightInfo;
+//pub mod weights;
+//pub use weights::WeightInfo;
 
 mod structs;
 pub use crate::structs::*;
@@ -43,7 +43,7 @@ pub use pallet_share_distributor as ShareDistributor;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-
+	use frame_system::WeightInfo;
 	use frame_system::pallet_prelude::*;
 
 	pub const PERCENT_FACTOR: u64 = 100;
@@ -135,12 +135,12 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		pub fn force_process_onboarded_asset(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			Self::process_onboarded_assets()
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		pub fn force_process_finalised_asset(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			Self::process_finalised_assets()
 		}
@@ -151,7 +151,7 @@ use frame_support::pallet_prelude::*;
 
 impl<T: Config> Pallet<T> {
 	fn begin_block(now: T::BlockNumber) -> Weight {
-		let max_block_weight: u64 = 1000;
+		let max_block_weight= Weight::from_ref_time(1000 as u64);
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
 			Self::process_onboarded_assets().ok();

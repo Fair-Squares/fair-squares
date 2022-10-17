@@ -54,12 +54,12 @@ use sp_runtime::{
 };
 use sp_std::boxed::Box;
 pub use types::*;
-use weights::WeightInfo;
+//use weights::WeightInfo;
 
 mod benchmarking;
 pub mod functions;
 pub mod types;
-pub mod weights;
+//pub mod weights;
 
 #[cfg(test)]
 pub mod mock;
@@ -79,6 +79,7 @@ pub use pallet::*;
 pub mod pallet {
 
 	use super::*;
+	use frame_system::WeightInfo;
 	use frame_support::{pallet_prelude::*, traits::EnsureOrigin};
 	use frame_system::pallet_prelude::OriginFor;
 
@@ -188,7 +189,8 @@ pub mod pallet {
 		/// - `metadata`: Arbitrary data about a Collection, e.g. IPFS hash or name
 		///
 		/// Emits CollectionCreated event
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::create_collection())]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::create_collection())]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn create_collection(
 			origin: OriginFor<T>,
@@ -216,7 +218,8 @@ pub mod pallet {
 		/// - `collection_id`: The Collection of the asset to be minted.
 		/// - `item_id`: The Collection of the asset to be minted.
 		/// - `metadata`: Arbitrary data about an Item, e.g. IPFS hash or symbol
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint())]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::mint())]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn mint(
 			origin: OriginFor<T>,
@@ -245,7 +248,8 @@ pub mod pallet {
 		/// - `collection_id`: The Collection of the asset to be transferred.
 		/// - `item_id`: The Item of the asset to be transferred.
 		/// - `dest`: The account to receive ownership of the asset.
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::transfer())]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::transfer())]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn transfer(
 			origin: OriginFor<T>,
@@ -271,7 +275,8 @@ pub mod pallet {
 		/// Parameters:
 		/// - `collection_id`: The Collection of the asset to be burned.
 		/// - `item_id`: The Item of the asset to be burned.
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn())]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::burn())]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn burn(
 			origin: OriginFor<T>,
@@ -294,7 +299,8 @@ pub mod pallet {
 		///
 		/// Parameters:
 		/// - `collection_id`: The identifier of the asset Collection to be destroyed.
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::destroy_collection())]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::destroy_collection())]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn destroy_collection(
 			origin: OriginFor<T>,

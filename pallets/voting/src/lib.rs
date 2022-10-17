@@ -33,8 +33,8 @@ use COLL::Instance1;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
-pub use weights::WeightInfo;
+//pub mod weights;
+//pub use weights::WeightInfo;
 
 mod structs;
 
@@ -49,6 +49,7 @@ type DemoBalanceOf<T> =
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	use frame_system::WeightInfo;
 	use frame_support::{
 		inherent::Vec,
 		pallet_prelude::*,
@@ -564,7 +565,7 @@ impl<T: Config> Pallet<T> {
 	/// Check the proposals being processed in the collective pallet
 	/// Check the proposals being processed in the democracy pallet
 	fn begin_block(now: T::BlockNumber) -> Weight {
-		let max_block_weight: u64 = 1000;
+		let max_block_weight = Weight::from_ref_time(1000 as u64);
 
 		if (now % T::CheckPeriod::get()).is_zero() {
 			let collectives_iter = CollectiveProposals::<T>::iter();

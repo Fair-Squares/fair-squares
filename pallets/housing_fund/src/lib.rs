@@ -27,7 +27,7 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
+//pub mod weights;
 
 mod functions;
 mod structs;
@@ -35,11 +35,12 @@ mod structs;
 pub use crate::structs::*;
 pub use pallet_nft as NFT;
 pub use pallet_roles as ROLES;
-pub use weights::WeightInfo;
+//pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	use frame_system::WeightInfo;
 	use frame_support::{
 		traits::{Currency, ExistenceRequirement, Get},
 		transactional, PalletId,
@@ -166,7 +167,8 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - 'amount': the amount deposited in the fund
 		/// Emits ContributeSucceeded event when successful
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::contribute_to_fund())]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::contribute_to_fund())]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn contribute_to_fund(
 			origin: OriginFor<T>,
@@ -253,7 +255,8 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - amount : the amount to be withdrawn from the fund
 		/// Emits WithdrawalSucceeded event when successful
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::withdraw_fund())]
+		//#[pallet::weight(<T as pallet::Config>::WeightInfo::withdraw_fund())]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn withdraw_fund(
 			origin: OriginFor<T>,
