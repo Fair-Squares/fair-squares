@@ -1,9 +1,9 @@
 use crate::{
 	chain_spec,
 	cli::{Cli, Subcommand},
-	command_helper::{inherent_benchmark_data, BenchmarkExtrinsicBuilder},
 	service,
 };
+use super::benchmarking::{inherent_benchmark_data, RemarkBuilder, TransferKeepAliveBuilder};
 use frame_benchmarking_cli::{BenchmarkCmd, SUBSTRATE_REFERENCE_HARDWARE};
 use fs_node_runtime::Block;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
@@ -137,7 +137,7 @@ pub fn run() -> sc_cli::Result<()> {
 					},
 					BenchmarkCmd::Overhead(cmd) => {
 						let PartialComponents { client, .. } = service::new_partial(&config)?;
-						let ext_builder = BenchmarkExtrinsicBuilder::new(client.clone());
+						let ext_builder = RemarkBuilder::new(partial.client.clone());
 
 						cmd.run(config, client, inherent_benchmark_data()?, Arc::new(ext_builder))
 					},

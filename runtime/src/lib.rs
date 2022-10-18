@@ -28,7 +28,7 @@ pub use sp_runtime::{
 		NumberFor, OpaqueKeys, SaturatedConversion, StaticLookup, Verify,
 	},
 	transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, FixedPointNumber, MultiSignature, Perbill, Percent, Permill, Perquintill,
+	ApplyExtrinsicResult, FixedPointNumber, MultiSignature,FixedU128, Perbill, Percent, Permill, Perquintill,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
@@ -151,7 +151,7 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 
 /// We allow for 2 seconds of compute with a 6 second average block time.
-const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
+const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_mul(2);
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
@@ -646,7 +646,7 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 parameter_types! {
 	pub const PostUnbondPoolsWindow: u32 = 4;
 	pub const NominationPoolsPalletId: PalletId = PalletId(*b"py/nopls");
-	pub const MinPointsToBalance: u32 = 10;
+	pub const MaxPointsToBalance: u8 = 10;
 }
 
 use sp_runtime::traits::Convert;
@@ -667,14 +667,16 @@ impl pallet_nomination_pools::Config for Runtime {
 	type WeightInfo = ();
 	type Event = Event;
 	type Currency = Balances;
+	type CurrencyBalance = Balance;
 	type BalanceToU256 = BalanceToU256;
 	type U256ToBalance = U256ToBalance;
 	type StakingInterface = pallet_staking::Pallet<Self>;
+	type RewardCounter = FixedU128;
 	type PostUnbondingPoolsWindow = PostUnbondPoolsWindow;
 	type MaxMetadataLen = ConstU32<256>;
 	type MaxUnbonding = ConstU32<8>;
 	type PalletId = NominationPoolsPalletId;
-	type MinPointsToBalance = MinPointsToBalance;
+	type MaxPointsToBalance = MaxPointsToBalance;
 }
 
 impl pallet_mmr::Config for Runtime {
@@ -758,7 +760,7 @@ parameter_types! {
 impl pallet_roles::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
-	type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = ();//pallet_roles::weights::SubstrateWeight<Runtime>;
 	type MaxMembers = MaxMembers;
 }
 
@@ -767,7 +769,7 @@ parameter_types! {
 }
 impl pallet_nft::Config for Runtime {
 	type Event = Event;
-	type WeightInfo = pallet_nft::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = ();//pallet_nft::weights::SubstrateWeight<Runtime>;
 	type NftCollectionId = CollectionId;
 	type NftItemId = ItemId;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
@@ -790,7 +792,7 @@ impl pallet_housing_fund::Config for Runtime {
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
 	type MaxFundContribution = MaxFundContribution;
-	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = ();//pallet_housing_fund::weights::SubstrateWeight<Runtime>;
 	type PalletId = HousingFundPalletId;
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
@@ -805,7 +807,7 @@ impl pallet_onboarding::Config for Runtime {
 	type Currency = Balances;
 	type Prop = Call;
 	type ProposalFee = ProposalFee;
-	type WeightInfo = pallet_onboarding::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = ();//pallet_onboarding::weights::SubstrateWeight<Runtime>;
 	type FeesAccount = FeesAccount;
 }
 parameter_types! {
@@ -991,7 +993,7 @@ parameter_types! {
 impl pallet_voting::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
-	type WeightInfo = pallet_voting::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = ();//pallet_voting::weights::SubstrateWeight<Runtime>;
 	type Delay = Delay;
 	type CheckDelay = CheckDelay;
 	type InvestorVoteAmount = InvestorVoteAmount;
@@ -1053,7 +1055,7 @@ parameter_types! {
 
 impl pallet_bidding::Config for Runtime {
 	type Event = Event;
-	type WeightInfo = pallet_bidding::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = ();//pallet_bidding::weights::SubstrateWeight<Runtime>;
 	type Currency = Balances;
 	type SimultaneousAssetBidder = SimultaneousAssetBidder;
 	type MaxTriesBid = MaxTriesBid;
@@ -1283,17 +1285,17 @@ impl_runtime_apis! {
 	}
 
 	impl sp_consensus_babe::BabeApi<Block> for Runtime {
-		fn configuration() -> sp_consensus_babe::BabeGenesisConfiguration {
+		fn configuration() -> sp_consensus_babe::BabeConfiguration {
 			// The choice of `c` parameter (where `1 - c` represents the
 			// probability of a slot being empty), is done in accordance to the
 			// slot duration and expected target block time, for safely
 			// resisting network delays of maximum two seconds.
 			// <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
-			sp_consensus_babe::BabeGenesisConfiguration {
+			sp_consensus_babe::BabeConfiguration {
 				slot_duration: Babe::slot_duration(),
 				epoch_length: EpochDuration::get(),
 				c: BABE_GENESIS_EPOCH_CONFIG.c,
-				genesis_authorities: Babe::authorities().to_vec(),
+				authorities: Babe::authorities().to_vec(),
 				randomness: Babe::randomness(),
 				allowed_slots: BABE_GENESIS_EPOCH_CONFIG.allowed_slots,
 			}
