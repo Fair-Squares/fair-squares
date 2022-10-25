@@ -1,0 +1,54 @@
+[package]
+name = "pallet-roles"
+version = "4.0.0-dev"
+description = "Roles management Pallet"
+authors = ["Fair Squares"]
+homepage = "https://fair-squares.nl"
+edition = "2021"
+license = "Apache 2.0"
+publish = false
+repository = "https://github.com/Fair-Squares/fair-squares"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
+	"derive",
+] }
+scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29"}
+frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29", optional = true }
+pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+serde = { version = "1.0.136", default-features = false, features = ["derive"] }
+
+[dev-dependencies]
+sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+
+
+[features]
+default = ["std"]
+std = [
+	"serde/std",
+	"codec/std",
+	"scale-info/std",
+	"pallet-balances/std",
+	"frame-support/std",
+	"frame-system/std",
+	"frame-benchmarking/std",
+	"pallet-sudo/std",
+	"pallet-balances/std",
+	"sp-std/std",
+]
+
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	]
+try-runtime = ["frame-support/try-runtime"]
