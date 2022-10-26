@@ -4,6 +4,7 @@
 //4) transfer tokens to owners
 use super::*;
 use enum_iterator::all;
+#[allow(unused_imports)]
 use num_traits::float::FloatCore;
 use sp_runtime::{traits::SaturatedConversion, FixedPointNumber, FixedU128};
 

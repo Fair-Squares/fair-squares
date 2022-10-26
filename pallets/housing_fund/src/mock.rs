@@ -19,7 +19,6 @@ pub(crate) type Balance = u128;
 type AccountId = u64;
 pub type CollectionId = u32;
 pub type ItemId = u32;
-pub type NftCollection = crate::NFT::PossibleCollections;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
