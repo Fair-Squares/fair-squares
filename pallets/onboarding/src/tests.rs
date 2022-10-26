@@ -136,7 +136,7 @@ fn create_proposal_2() {
 
 		let status_bis: AssetStatus = Houses::<Test>::get(coll_id, item_id).unwrap().status;
 		assert_ne!(status.clone(), status_bis.clone());
-		println!("status1:{:?}\nstatus2:{:?}", status, status_bis);
+		println!("status1:{status:?}\nstatus2:{status_bis:?}");
 
 		expect_events(vec![
 			crate::Event::ProposalCreated {

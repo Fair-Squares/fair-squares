@@ -152,7 +152,7 @@ use frame_support::pallet_prelude::*;
 impl<T: Config> Pallet<T> {
 	fn begin_block(now: T::BlockNumber) -> Weight {
 		let max_block_weight: u64 = 1000;
-
+		#[allow(unused)]
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
 			Self::process_onboarded_assets();
 			Self::process_finalised_assets();
@@ -392,7 +392,7 @@ impl<T: Config> Pallet<T> {
 		// The definitive shares will be determined by this loop
 		// Each round, 100% is decremented by the share of the contribution processed
 		for item in eligible_contributions.iter() {
-			let mut item_share = Self::u64_to_balance_option(0).unwrap();
+			let item_share;
 
 			// We are checking the last item so it takes the remaining percentage
 			if count == contributions_length {

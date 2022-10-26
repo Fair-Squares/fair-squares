@@ -133,7 +133,7 @@ fn share_distributor0() {
 		let balance1 = Assets::Pallet::<Test>::balance(id, EVE);
 
 		let _infos = ShareDistributor::tokens_infos(new_owner0.clone()).unwrap().owners;
-		println!("Tokens own by DAVE:{:?}\nTokens own by Eve:{:?}", balance0, balance1);
+		println!("Tokens own by DAVE:{balance0:?}\nTokens own by Eve:{balance1:?}");
 		println!("Total supply {:?}", Assets::Pallet::<Test>::total_supply(id));
 
 		// Bob creates a second proposal without submiting for review
@@ -169,7 +169,7 @@ fn share_distributor0() {
 		let virtual1 = Virtual::<Test>::get(coll_id1, item_id1).unwrap();
 
 		//Check that virtual accounts are different
-		println!("Virtual account nbr1:{:?}\nVirtual account nbr2:{:?}", virtual0, virtual1);
+		println!("Virtual account nbr1:{virtual0:?}\nVirtual account nbr2:{virtual1:?}");
 		assert_ne!(virtual0.virtual_account, virtual1.virtual_account);
 		//Check that virtual accounts are the new owners
 		assert_eq!(new_owner0, virtual0.virtual_account);
@@ -274,7 +274,7 @@ fn share_distributor1() {
 		);
 		let infos = ShareDistributor::tokens_infos(new_owner0.clone()).unwrap().owners;
 
-		println!("Again, new owners are:\n{:?}", infos);
+		println!("Again, new owners are:\n{infos:?}");
 
 		assert_eq!(owners.len() > 1, true);
 		expect_events(vec![

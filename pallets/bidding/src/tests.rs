@@ -264,6 +264,7 @@ fn create_investor_list_second_case_should_succeed() {
 }
 
 #[test]
+#[allow(unused_assignments)]
 fn create_investor_list_third_case_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let mut block_number = System::block_number();
@@ -303,6 +304,7 @@ fn create_investor_list_third_case_should_succeed() {
 }
 
 #[test]
+#[allow(unused_assignments)]
 fn create_investor_list_fourth_case_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let mut block_number = System::block_number();
