@@ -14,7 +14,7 @@ impl<T: Config> Pallet<T> {
 		item_id: T::NftItemId,
 	) -> DispatchResult {
 		//Create virtual account
-		let text0 = format!("{:?}_{:?}_account", collection_id, item_id.clone());
+		let text0 = format!("{collection_id:?}_{:?}_account", item_id.clone());
 		let bytes = text0.as_bytes();
 		let array: &[u8; 8] = &bytes[0..8].try_into().unwrap();
 		let account: T::AccountId = PalletId(*array).into_account_truncating();

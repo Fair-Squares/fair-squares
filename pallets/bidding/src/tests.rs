@@ -267,7 +267,7 @@ fn create_investor_list_second_case_should_succeed() {
 fn create_investor_list_third_case_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let mut block_number = System::block_number();
-		let mut amount = 20;
+		let mut _amount = 20;
 
 		for account_id in 1..8 {
 			assert_ok!(RoleModule::set_role(
