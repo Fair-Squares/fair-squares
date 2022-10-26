@@ -980,10 +980,9 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 		}
 	}
 }
-
 parameter_types! {
-	pub const Delay: BlockNumber = 0 * MINUTES;//3 * MINUTES;
-	pub const CheckDelay: BlockNumber = MINUTES;//3 * MINUTES;
+	pub const Delay: BlockNumber = MINUTES;// No-delay;
+	pub const CheckDelay: BlockNumber = MINUTES;//No-delay;
 	pub const InvestorVoteAmount: u128 = 10 * DOLLARS;
 	pub const CheckPeriod: BlockNumber = MINUTES;
 }
