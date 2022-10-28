@@ -341,7 +341,7 @@ parameter_types! {
 impl pallet_roles::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
-	type WeightInfo = ();
+	type WeightInfo =  pallet_roles::weights::SubstrateWeight<Runtime>;
 	type MaxMembers = MaxMembers;
 }
 

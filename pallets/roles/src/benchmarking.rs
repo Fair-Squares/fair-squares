@@ -1,6 +1,5 @@
 #![cfg(feature = "runtime-benchmarks")]
-
-use super::*;
+use crate::*;
 use frame_benchmarking::{account, benchmarks};
 use frame_system::RawOrigin;
 
@@ -142,5 +141,5 @@ benchmarks! {
 
 
 
-	impl_benchmark_test_suite!(Roles, crate::tests::new_test_ext(), crate::tests::Test)
+	impl_benchmark_test_suite!(Pallet, crate::mock::new_test_ext(4), crate::mock::Test)
 }
