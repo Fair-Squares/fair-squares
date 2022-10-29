@@ -10,10 +10,12 @@
 //!
 //! #### Dispatchable Functions
 //!
-//! No dispachable functions
+//! * 'force_process_onboarded_asset' - extrinsic to manually launch the process of onboarded assets
+//! * 'process_finalised_assets' - extrinsic to manually launch the process of onboarded assets
 //!
 //! #### Functions
-//! * 'process_asset' - execute the workflow to associate an asset to a list of investors
+//! * 'process_finalised_assets' - execute the token distribution between investors for the finalised assets
+//! * 'process_onboarded_assets' - execute the workflow to associate an onboarded asset to a list of investors and make
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -27,8 +29,8 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
-pub use weights::WeightInfo;
+//pub mod weights;
+//pub use weights::WeightInfo;
 
 mod structs;
 pub use crate::structs::*;
@@ -43,6 +45,7 @@ pub mod pallet {
 	use super::*;
 
 	use frame_system::pallet_prelude::*;
+	use frame_system::WeightInfo;
 
 	pub const PERCENT_FACTOR: u64 = 100;
 
@@ -133,12 +136,12 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		pub fn force_process_onboarded_asset(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			Self::process_onboarded_assets()
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		pub fn force_process_finalised_asset(_origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			Self::process_finalised_assets()
 		}
@@ -149,16 +152,17 @@ use frame_support::pallet_prelude::*;
 
 impl<T: Config> Pallet<T> {
 	fn begin_block(now: T::BlockNumber) -> Weight {
-		let max_block_weight: u64 = 1000;
+		let max_block_weight= Weight::from_ref_time(1000 as u64);
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
-			Self::process_onboarded_assets();
-			Self::process_finalised_assets();
+			Self::process_onboarded_assets().ok();
+			Self::process_finalised_assets().ok();
 		}
 
 		max_block_weight
 	}
 
+	/// Process finalised assets to distribute tokens among investors for assets
 	pub fn process_finalised_assets() -> DispatchResultWithPostInfo {
 		// We retrieve houses with finalised status
 		let houses = Onboarding::Pallet::<T>::get_finalised_houses();
@@ -202,6 +206,7 @@ impl<T: Config> Pallet<T> {
 		Ok(().into())
 	}
 
+	/// Process onboarded assets to make make a bid on them and define a investors list
 	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
 		let houses = Onboarding::Pallet::<T>::get_onboarded_houses();
 

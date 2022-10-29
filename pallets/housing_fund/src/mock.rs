@@ -137,7 +137,7 @@ impl pallet_housing_fund::Config for Test {
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
 	type MaxFundContribution = MaxFundContribution;
-	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Test>;
+	type WeightInfo = ();
 	type PalletId = HousingFundPalletId;
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }

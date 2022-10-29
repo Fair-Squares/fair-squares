@@ -138,7 +138,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// This call creates a virtual account from the asset's collection_id and item_id.
 		/// The caller must hold the Servicer role
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+		#[pallet::weight(10_000)]
 		pub fn create_virtual(
 			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
