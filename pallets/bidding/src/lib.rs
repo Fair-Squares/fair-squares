@@ -155,8 +155,8 @@ impl<T: Config> Pallet<T> {
 		let max_block_weight= Weight::from_ref_time(1000 as u64);
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
-			Self::process_onboarded_assets();
-			Self::process_finalised_assets();
+			Self::process_onboarded_assets().ok();
+			Self::process_finalised_assets().ok();
 		}
 
 		max_block_weight
