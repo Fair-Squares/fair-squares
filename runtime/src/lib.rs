@@ -360,7 +360,7 @@ impl pallet_housing_fund::Config for Runtime {
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
 	type MaxFundContribution = MaxFundContribution;
-	type WeightInfo = ();
+	type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
 	type PalletId = HousingFundPalletId;
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
