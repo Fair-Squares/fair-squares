@@ -204,9 +204,9 @@ fn share_distributor1() {
 			block_number: 1,
 			contributions: vec![HousingFund::ContributionLog {
 				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(15_000).unwrap(),
-				block_number: 1,,
+				block_number: 1,
 			}],
-			withdraws: Vec::new(),,
+			withdraws: Vec::new(),
 		};
 
 		let contribution_dave = HousingFund::Contribution {
@@ -220,7 +220,7 @@ fn share_distributor1() {
 				amount: HousingFund::Pallet::<Test>::u64_to_balance_option(25_000).unwrap(),
 				block_number: 1,
 			}],
-			withdraws: Vec::new(),,
+			withdraws: Vec::new(),
 		};
 
 		// Add contributions to storage
@@ -290,7 +290,7 @@ fn share_distributor1() {
 				nft_transfer_from: old_owner0,
 				when,
 			}
-			.into(),,
+			.into(),
 		]);
 	})
 }
