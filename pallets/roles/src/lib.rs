@@ -60,7 +60,7 @@ mod types;
 pub mod weights;
 pub use crate::types::*;
 pub use pallet_sudo as SUDO;
-use sp_std::{fmt::Debug, prelude::*};
+use sp_std::{prelude::*};
 pub use weights::WeightInfo;
 #[frame_support::pallet]
 pub mod pallet {

@@ -14,8 +14,9 @@
 //! * 'process_finalised_assets' - extrinsic to manually launch the process of onboarded assets
 //!
 //! #### Functions
-//! * 'process_finalised_assets' - execute the token distribution between investors for the finalised assets
-//! * 'process_onboarded_assets' - execute the workflow to associate an onboarded asset to a list of investors and make
+//! * 'process_finalised_finalised_assets' - execute the token distribution between investors for the finalised assets
+//! * 'process_onboarded_assetss' - execute the token distribution between investors for the finalised assets
+//! * 'process_onboarded_assets' - execute the workflow to associate an onboarded onboarded asset to a list of investors and make and make
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -163,6 +164,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Process finalised assets to distribute tokens among investors for assets
+	/// Process finalised assets to distribute tokens among investors for assets
 	pub fn process_finalised_assets() -> DispatchResultWithPostInfo {
 		// We retrieve houses with finalised status
 		let houses = Onboarding::Pallet::<T>::get_finalised_houses();
@@ -206,6 +208,7 @@ impl<T: Config> Pallet<T> {
 		Ok(().into())
 	}
 
+	/// Process onboarded assets to make make a bid on them and define a investors list
 	/// Process onboarded assets to make make a bid on them and define a investors list
 	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
 		let houses = Onboarding::Pallet::<T>::get_onboarded_houses();
@@ -393,7 +396,7 @@ impl<T: Config> Pallet<T> {
 		// The definitive shares will be determined by this loop
 		// Each round, 100% is decremented by the share of the contribution processed
 		for item in eligible_contributions.iter() {
-			let mut item_share = Self::u64_to_balance_option(0).unwrap();
+			let item_share;
 
 			// We are checking the last item so it takes the remaining percentage
 			if count == contributions_length {
