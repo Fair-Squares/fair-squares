@@ -191,7 +191,7 @@ pub mod pallet {
 			let council_member = COLL::Pallet::<T, Instance1>::members()[0].clone();
 			// create the final dispatch call of the proposal in democracy
 			let call = Call::<T>::call_dispatch {
-				account_id: council_member,
+				account_id: council_member.clone(),
 				proposal_hash,
 				proposal: proposal.clone(),
 			};
@@ -220,8 +220,7 @@ pub mod pallet {
 			// Retrieve the index of the proposal in Collective pallet
 			let collective_index = COLL::Pallet::<T, Instance1>::proposal_count();
 
-			let collective_origin =
-				Self::get_origin(COLL::Pallet::<T, Instance1>::members()[0].clone());
+			let collective_origin = Self::get_origin(council_member.clone());
 
 			let result = COLL::Pallet::<T, Instance1>::propose(
 				collective_origin,
@@ -291,7 +290,7 @@ pub mod pallet {
 
 			// Call Democracy note_pre_image
 			DEMO::Pallet::<T>::note_preimage(
-				RawOrigin::Signed(account_id.clone()).into(),
+				Self::get_origin(account_id.clone()),
 				proposal_encoded,
 			)?;
 
@@ -363,7 +362,6 @@ pub mod pallet {
 			proposal
 				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id).into())
 				.ok();
-
 			Ok(().into())
 		}
 
