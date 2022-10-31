@@ -53,7 +53,6 @@ use pallet_nft::NftPermissions;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 
 /// Import the template pallet.
-pub use pallet_template;
 pub use pallet_roles;
 pub use pallet_housing_fund;
 pub use pallet_utility;
@@ -290,12 +289,6 @@ impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
 }
-
-/// Configure the pallet-template in pallets/template.
-impl pallet_template::Config for Runtime {
-	type Event = Event;
-}
-
 
 parameter_types! {
 	// Deposit to create a class of assets is 100 Dollars
@@ -643,8 +636,6 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Uniques: pallet_uniques,
 		Sudo: pallet_sudo,
-		// Include the custom logic from the pallet-template in the runtime.
-		TemplateModule: pallet_template,
 		RoleModule: pallet_roles,
 		HousingFundModule: pallet_housing_fund,
 		NftModule: pallet_nft,
@@ -703,7 +694,6 @@ mod benches {
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
 		[pallet_timestamp, Timestamp]
-		[pallet_template, TemplateModule]
 		[pallet_roles, RoleModule]
 		[pallet_housing_fund, HousingFundModule]
 		[pallet_nft, NftModule]
