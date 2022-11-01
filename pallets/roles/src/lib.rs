@@ -60,7 +60,7 @@ mod types;
 pub mod weights;
 pub use crate::types::*;
 pub use pallet_sudo as SUDO;
-use sp_std::{prelude::*};
+use sp_std::prelude::*;
 pub use weights::WeightInfo;
 #[frame_support::pallet]
 pub mod pallet {
@@ -265,9 +265,9 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
+			Self::approve_account(sender, account.clone())?;
 			let members = Self::total_members();
 			TotalMembers::<T>::put(members + 1);
-			Self::approve_account(sender, account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(())
