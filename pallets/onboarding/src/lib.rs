@@ -103,7 +103,7 @@ pub mod pallet {
 			+ Dispatchable<Origin = <Self as frame_system::Config>::Origin>
 			+ From<Call<Self>>;
 		#[pallet::constant]
-		type ProposalFee: Get<BalanceOf<Self>>;
+		type ProposalFee: Get<u64>;
 		type WeightInfo: WeightInfo;
 
 		#[pallet::constant]
@@ -463,7 +463,7 @@ pub mod pallet {
 			let balance1 = <T as Config>::Currency::free_balance(&caller);
 
 			let res0 = Self::balance_to_u64_option(price.unwrap()).unwrap();
-			let perc = Self::balance_to_u64_option(T::ProposalFee::get()).unwrap();
+			let perc = T::ProposalFee::get();
 			let res1 = perc * res0 / 100;
 			let balance0 = Self::u64_to_balance_option(res1).unwrap();
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);

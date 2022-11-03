@@ -266,9 +266,9 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			let members = Self::total_members();
-			TotalMembers::<T>::put(members + 1);
+			let members = Self::total_members();			
 			Self::approve_account(sender, account.clone())?;
+			TotalMembers::<T>::put(members + 1);
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(())

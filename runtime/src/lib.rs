@@ -550,7 +550,7 @@ impl pallet_democracy::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ProposalFee: Balance= 50 * DOLLARS;
+	pub const ProposalFee: u64= 10;
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
