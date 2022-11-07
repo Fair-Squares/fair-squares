@@ -153,7 +153,7 @@ use frame_support::pallet_prelude::*;
 
 impl<T: Config> Pallet<T> {
 	fn begin_block(now: T::BlockNumber) -> Weight {
-		let max_block_weight= Weight::from_ref_time(1000 as u64);
+		let max_block_weight= Weight::from_ref_time(1000_u64);
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
 			Self::process_onboarded_assets().ok();

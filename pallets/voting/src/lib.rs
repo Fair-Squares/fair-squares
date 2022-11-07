@@ -565,7 +565,7 @@ impl<T: Config> Pallet<T> {
 	/// Check the proposals being processed in the collective pallet
 	/// Check the proposals being processed in the democracy pallet
 	fn begin_block(now: T::BlockNumber) -> Weight {
-		let max_block_weight = Weight::from_ref_time(1000 as u64);
+		let max_block_weight = Weight::from_ref_time(1000_u64);
 
 		if (now % T::CheckPeriod::get()).is_zero() {
 			let collectives_iter = CollectiveProposals::<T>::iter();

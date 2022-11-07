@@ -65,27 +65,27 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: HousingFundModule Contributions (r:1 w:1)
 	// Storage: System Account (r:1 w:1)
 	fn contribute_to_fund() -> Weight {
-		Weight::from_ref_time(71_245_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(4 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
+		Weight::from_ref_time(71_245_000_u64)
+			.saturating_add(T::DbWeight::get().reads(4_u64))
+			.saturating_add(T::DbWeight::get().writes(3_u64))
 	}
 	// Storage: RoleModule InvestorLog (r:1 w:0)
 	// Storage: HousingFundModule Contributions (r:1 w:1)
 	// Storage: HousingFundModule FundBalance (r:1 w:1)
 	// Storage: System Account (r:1 w:1)
 	fn withdraw_fund() -> Weight {
-		Weight::from_ref_time(86_203_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(4 as u64))
-			.saturating_add(T::DbWeight::get().writes(3 as u64))
+		Weight::from_ref_time(86_203_000_u64)
+			.saturating_add(T::DbWeight::get().reads(4_u64))
+			.saturating_add(T::DbWeight::get().writes(3_u64))
 	}
 	// Storage: HousingFundModule FundBalance (r:1 w:1)
 	// Storage: HousingFundModule Contributions (r:10 w:10)
 	// Storage: System Account (r:1 w:1)
 	// Storage: HousingFundModule Reservations (r:0 w:1)
 	fn house_bidding() -> Weight {
-		Weight::from_ref_time(168_208_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(12 as u64))
-			.saturating_add(T::DbWeight::get().writes(13 as u64))
+		Weight::from_ref_time(168_208_000_u64)
+			.saturating_add(T::DbWeight::get().reads(12_u64))
+			.saturating_add(T::DbWeight::get().writes(13_u64))
 	}
 }
 
@@ -96,26 +96,26 @@ impl WeightInfo for () {
 	// Storage: HousingFundModule Contributions (r:1 w:1)
 	// Storage: System Account (r:1 w:1)
 	fn contribute_to_fund() -> Weight {
-		Weight::from_ref_time(71_245_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(4 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		Weight::from_ref_time(71_245_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(4_u64))
+			.saturating_add(RocksDbWeight::get().writes(3_u64))
 	}
 	// Storage: RoleModule InvestorLog (r:1 w:0)
 	// Storage: HousingFundModule Contributions (r:1 w:1)
 	// Storage: HousingFundModule FundBalance (r:1 w:1)
 	// Storage: System Account (r:1 w:1)
 	fn withdraw_fund() -> Weight {
-		Weight::from_ref_time(86_203_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(4 as u64))
-			.saturating_add(RocksDbWeight::get().writes(3 as u64))
+		Weight::from_ref_time(86_203_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(4_u64))
+			.saturating_add(RocksDbWeight::get().writes(3_u64))
 	}
 	// Storage: HousingFundModule FundBalance (r:1 w:1)
 	// Storage: HousingFundModule Contributions (r:10 w:10)
 	// Storage: System Account (r:1 w:1)
 	// Storage: HousingFundModule Reservations (r:0 w:1)
 	fn house_bidding() -> Weight {
-		Weight::from_ref_time(168_208_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(12 as u64))
-			.saturating_add(RocksDbWeight::get().writes(13 as u64))
+		Weight::from_ref_time(168_208_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(12_u64))
+			.saturating_add(RocksDbWeight::get().writes(13_u64))
 	}
 }

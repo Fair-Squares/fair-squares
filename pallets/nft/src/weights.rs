@@ -68,9 +68,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques ClassAccount (r:0 w:1)
 	// Storage: NftModule Collections (r:0 w:1)
 	fn create_collection() -> Weight {
-		Weight::from_ref_time(64_040_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(3 as u64))
-			.saturating_add(T::DbWeight::get().writes(4 as u64))
+		Weight::from_ref_time(64_040_000_u64)
+			.saturating_add(T::DbWeight::get().reads(3_u64))
+			.saturating_add(T::DbWeight::get().writes(4_u64))
 	}
 	// Storage: RoleModule AccountsRolesLog (r:1 w:0)
 	// Storage: NftModule ItemsCount (r:1 w:1)
@@ -82,18 +82,18 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Account (r:0 w:1)
 	// Storage: NftModule Items (r:0 w:1)
 	fn mint() -> Weight {
-		Weight::from_ref_time(97_272_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(7 as u64))
-			.saturating_add(T::DbWeight::get().writes(6 as u64))
+		Weight::from_ref_time(97_272_000_u64)
+			.saturating_add(T::DbWeight::get().reads(7_u64))
+			.saturating_add(T::DbWeight::get().writes(6_u64))
 	}
 	// Storage: Uniques Asset (r:1 w:1)
 	// Storage: Uniques Class (r:1 w:0)
 	// Storage: Uniques Account (r:0 w:2)
 	// Storage: Uniques ItemPriceOf (r:0 w:1)
 	fn transfer() -> Weight {
-		Weight::from_ref_time(58_109_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(2 as u64))
-			.saturating_add(T::DbWeight::get().writes(4 as u64))
+		Weight::from_ref_time(58_109_000_u64)
+			.saturating_add(T::DbWeight::get().reads(2_u64))
+			.saturating_add(T::DbWeight::get().writes(4_u64))
 	}
 	// Storage: RoleModule AccountsRolesLog (r:1 w:0)
 	// Storage: Uniques Class (r:1 w:1)
@@ -104,9 +104,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques CollectionMaxSupply (r:0 w:1)
 	// Storage: NftModule Collections (r:0 w:1)
 	fn destroy_collection() -> Weight {
-		Weight::from_ref_time(92_182_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(4 as u64))
-			.saturating_add(T::DbWeight::get().writes(6 as u64))
+		Weight::from_ref_time(92_182_000_u64)
+			.saturating_add(T::DbWeight::get().reads(4_u64))
+			.saturating_add(T::DbWeight::get().writes(6_u64))
 	}
 	// Storage: RoleModule AccountsRolesLog (r:1 w:0)
 	// Storage: Uniques Asset (r:1 w:1)
@@ -116,9 +116,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques ItemPriceOf (r:0 w:1)
 	// Storage: NftModule Items (r:0 w:1)
 	fn burn() -> Weight {
-		Weight::from_ref_time(78_597_000 as u64)
-			.saturating_add(T::DbWeight::get().reads(4 as u64))
-			.saturating_add(T::DbWeight::get().writes(6 as u64))
+		Weight::from_ref_time(78_597_000_u64)
+			.saturating_add(T::DbWeight::get().reads(4_u64))
+			.saturating_add(T::DbWeight::get().writes(6_u64))
 	}
 }
 
@@ -130,9 +130,9 @@ impl WeightInfo for () {
 	// Storage: Uniques ClassAccount (r:0 w:1)
 	// Storage: NftModule Collections (r:0 w:1)
 	fn create_collection() -> Weight {
-		Weight::from_ref_time(64_040_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(3 as u64))
-			.saturating_add(RocksDbWeight::get().writes(4 as u64))
+		Weight::from_ref_time(64_040_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(3_u64))
+			.saturating_add(RocksDbWeight::get().writes(4_u64))
 	}
 	// Storage: RoleModule AccountsRolesLog (r:1 w:0)
 	// Storage: NftModule ItemsCount (r:1 w:1)
@@ -144,18 +144,18 @@ impl WeightInfo for () {
 	// Storage: Uniques Account (r:0 w:1)
 	// Storage: NftModule Items (r:0 w:1)
 	fn mint() -> Weight {
-		Weight::from_ref_time(97_272_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(7 as u64))
-			.saturating_add(RocksDbWeight::get().writes(6 as u64))
+		Weight::from_ref_time(97_272_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(7_u64))
+			.saturating_add(RocksDbWeight::get().writes(6_u64))
 	}
 	// Storage: Uniques Asset (r:1 w:1)
 	// Storage: Uniques Class (r:1 w:0)
 	// Storage: Uniques Account (r:0 w:2)
 	// Storage: Uniques ItemPriceOf (r:0 w:1)
 	fn transfer() -> Weight {
-		Weight::from_ref_time(58_109_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(2 as u64))
-			.saturating_add(RocksDbWeight::get().writes(4 as u64))
+		Weight::from_ref_time(58_109_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(2_u64))
+			.saturating_add(RocksDbWeight::get().writes(4_u64))
 	}
 	// Storage: RoleModule AccountsRolesLog (r:1 w:0)
 	// Storage: Uniques Class (r:1 w:1)
@@ -166,9 +166,9 @@ impl WeightInfo for () {
 	// Storage: Uniques CollectionMaxSupply (r:0 w:1)
 	// Storage: NftModule Collections (r:0 w:1)
 	fn destroy_collection() -> Weight {
-		Weight::from_ref_time(92_182_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(4 as u64))
-			.saturating_add(RocksDbWeight::get().writes(6 as u64))
+		Weight::from_ref_time(92_182_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(4_u64))
+			.saturating_add(RocksDbWeight::get().writes(6_u64))
 	}
 	// Storage: RoleModule AccountsRolesLog (r:1 w:0)
 	// Storage: Uniques Asset (r:1 w:1)
@@ -178,8 +178,8 @@ impl WeightInfo for () {
 	// Storage: Uniques ItemPriceOf (r:0 w:1)
 	// Storage: NftModule Items (r:0 w:1)
 	fn burn() -> Weight {
-		Weight::from_ref_time(78_597_000 as u64)
-			.saturating_add(RocksDbWeight::get().reads(4 as u64))
-			.saturating_add(RocksDbWeight::get().writes(6 as u64))
+		Weight::from_ref_time(78_597_000_u64)
+			.saturating_add(RocksDbWeight::get().reads(4_u64))
+			.saturating_add(RocksDbWeight::get().writes(6_u64))
 	}
 }
