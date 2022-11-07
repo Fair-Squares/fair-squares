@@ -79,6 +79,7 @@ pub use pallet::*;
 pub mod pallet {
 
 	use super::*;
+	//use frame_system::WeightInfo;
 	use frame_support::{pallet_prelude::*, traits::EnsureOrigin};
 	use frame_system::pallet_prelude::OriginFor;
 

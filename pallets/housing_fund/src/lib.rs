@@ -44,6 +44,7 @@ pub mod pallet {
 		traits::{Currency, ExistenceRequirement, Get},
 		transactional, PalletId,
 	};
+	//use frame_system::WeightInfo;
 	use sp_std::vec;
 
 	pub const PERCENT_FACTOR: u64 = 100000;

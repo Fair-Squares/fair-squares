@@ -72,8 +72,8 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
-pub use weights::WeightInfo;
+//pub mod weights;
+//pub use weights::WeightInfo;
 
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -84,6 +84,7 @@ pub type CallOf<T> = <T as Votes::Config>::Call;
 pub mod pallet {
 	use super::*;
 	use frame_support::{pallet_prelude::*, PalletId};
+	use frame_system::WeightInfo;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -102,7 +103,7 @@ pub mod pallet {
 			+ Dispatchable<Origin = <Self as frame_system::Config>::Origin>
 			+ From<Call<Self>>;
 		#[pallet::constant]
-		type ProposalFee: Get<BalanceOf<Self>>;
+		type ProposalFee: Get<u64>;
 		type WeightInfo: WeightInfo;
 
 		#[pallet::constant]
@@ -266,7 +267,7 @@ pub mod pallet {
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		//#[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::do_something(100))]
+		#[pallet::weight(10_000)]
 		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
@@ -282,7 +283,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn change_status(
 			origin: OriginFor<T>,
@@ -303,7 +304,7 @@ pub mod pallet {
 		}
 
 		/// Modify the price of an Existing proposal
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn set_price(
 			origin: OriginFor<T>,
@@ -343,7 +344,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		pub fn reject_edit(
 			origin: OriginFor<T>,
 			collection: NftCollectionOf,
@@ -395,7 +396,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		pub fn reject_destroy(
 			origin: OriginFor<T>,
 			collection: NftCollectionOf,
@@ -441,7 +442,7 @@ pub mod pallet {
 		/// `create_and_submit_proposal` - Creation and submission of a proposal.
 		/// the proposal submission is optionnal, and can be disabled through the value
 		/// of the boolean `submit`.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn create_and_submit_proposal(
 			origin: OriginFor<T>,
@@ -462,7 +463,7 @@ pub mod pallet {
 			let balance1 = <T as Config>::Currency::free_balance(&caller);
 
 			let res0 = Self::balance_to_u64_option(price.unwrap()).unwrap();
-			let perc = Self::balance_to_u64_option(T::ProposalFee::get()).unwrap();
+			let perc = T::ProposalFee::get();
 			let res1 = perc * res0 / 100;
 			let balance0 = Self::u64_to_balance_option(res1).unwrap();
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
@@ -573,7 +574,7 @@ pub mod pallet {
 		}
 
 		///Submit an awaiting proposal for review
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000)]
 		#[transactional]
 		pub fn submit_awaiting(
 			origin: OriginFor<T>,

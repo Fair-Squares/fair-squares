@@ -33,8 +33,8 @@ use COLL::Instance1;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-pub mod weights;
-pub use weights::WeightInfo;
+//pub mod weights;
+//pub use weights::WeightInfo;
 
 mod structs;
 
@@ -56,6 +56,7 @@ pub mod pallet {
 		traits::{ReservableCurrency, UnfilteredDispatchable},
 		weights::GetDispatchInfo,
 	};
+	use frame_system::WeightInfo;
 	use frame_system::{pallet_prelude::*, RawOrigin};
 
 	use scale_info::prelude::boxed::Box;
@@ -562,7 +563,7 @@ impl<T: Config> Pallet<T> {
 	/// Check the proposals being processed in the collective pallet
 	/// Check the proposals being processed in the democracy pallet
 	fn begin_block(now: T::BlockNumber) -> Weight {
-		let max_block_weight: u64 = 1000;
+		let max_block_weight = Weight::from_ref_time(1000_u64);
 
 		if (now % T::CheckPeriod::get()).is_zero() {
 			let collectives_iter = CollectiveProposals::<T>::iter();
