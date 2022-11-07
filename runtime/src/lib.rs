@@ -372,7 +372,7 @@ impl pallet_nft::Config for Runtime {
 }
 
 parameter_types! {
-	pub const Delay: BlockNumber = 0 * MINUTES;//3 * MINUTES;
+	pub const Delay: BlockNumber = MINUTES;//3 * MINUTES;
 	pub const CheckDelay: BlockNumber = MINUTES;//3 * MINUTES;
 	pub const InvestorVoteAmount: u128 = 10 * DOLLARS;
 	pub const CheckPeriod: BlockNumber = MINUTES;
