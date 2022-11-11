@@ -1,9 +1,17 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+//Pallets needed: 
+//- Roles for the Representative role
+//- Democracy for the voting system 
+//- Share_Distributor for the conviction weight calculation based on asset shares
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/reference/frame-pallets/>
+//Needed calls:
+//Call 1) Create a Representative role
+
+pub use pallet_roles as Roles;
+pub use pallet_democracy as Dem;
+pub use pallet_share_distributor as Share;
 pub use pallet::*;
+
 
 //#[cfg(test)]
 //mod mock;
@@ -26,7 +34,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + pallet_roles::Config + pallet_democracy::Config + pallet_share_distributor::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
