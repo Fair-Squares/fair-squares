@@ -33,6 +33,7 @@ pub enum Accounts {
 	SELLER,
 	TENANT,
 	SERVICER,
+	REPRESENTATIVE,
 }
 
 impl Default for Accounts {
@@ -161,3 +162,42 @@ impl<T: Config> Servicer<T> {
 }
 //-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
 //--------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------
+//-------------REPRESENTATIVE STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
+
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Representative<T: Config> {
+	pub account_id: T::AccountId,
+	pub age: BlockNumberOf<T>,
+	pub activated: bool,
+	pub assets_accounts: Vec<T::AccountId>,
+}
+impl<T: Config> Representative<T>
+where
+	types::Representative<T>: EncodeLike<types::Representative<T>>,
+{
+	//--------------------------------------------------------------------
+	//-------------REPRESENTATIVE CREATION METHOD_BEGIN----------------------
+	pub fn new(acc: OriginFor<T>) -> DispatchResult {
+		let caller = ensure_signed(acc)?;
+		let now = <frame_system::Pallet<T>>::block_number();
+		ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
+
+		let rep = Representative { account_id: caller, age: now, activated: false, assets_accounts: Vec::new()};
+
+		RepApprovalList::<T>::mutate(|val| {
+			val.push(rep);
+		});
+
+		Ok(())
+	}
+
+	//-------------HOUSE REPRESENTATIVE CREATION METHOD_END----------------------
+	//------------------------------------------------------------------
+}
+
+//-------------REPRESENTATIVE STRUCT DECLARATION & IMPLEMENTATION_END----------------------
+//-------------------------------------------------------------------------------------

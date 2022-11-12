@@ -10,6 +10,7 @@
 pub use pallet_roles as Roles;
 pub use pallet_democracy as Dem;
 pub use pallet_share_distributor as Share;
+pub use pallet_nft as Nft;
 pub use pallet::*;
 
 
@@ -34,7 +35,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_roles::Config + pallet_democracy::Config + pallet_share_distributor::Config{
+	pub trait Config: frame_system::Config + pallet_roles::Config + pallet_democracy::Config + pallet_share_distributor::Config + pallet_nft::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
@@ -108,5 +109,8 @@ pub mod pallet {
 				},
 			}
 		}
+
+
+		//Create Representative Role
 	}
 }

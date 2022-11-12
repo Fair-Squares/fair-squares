@@ -26,6 +26,7 @@ pallet-balances = { version = "4.0.0-dev", default-features = false, git = "http
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-roles = { default-features = false, path="../roles" }
 pallet-share_distributor = { default-features = false, path="../share_distributor" }
+pallet-nft = { default-features = false, path="../nft" }
 
 [dev-dependencies]
 sp-core = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
@@ -47,6 +48,7 @@ std = [
 	"pallet-balances/std",
 	"pallet-roles/std",
 	"pallet-share_distributor/std",
+	"pallet-nft/std",
 ]
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
 try-runtime = ["frame-support/try-runtime"]

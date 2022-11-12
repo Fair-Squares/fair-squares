@@ -97,6 +97,12 @@ pub mod pallet {
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller<T>, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn reps)]
+	///Registry of Sellers organized by AccountId
+	pub(super) type RepresentativeLog<T: Config> =
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, Representative<T>, OptionQuery>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn tenants)]
 	///Registry of Tenants organized by AccountId
 	pub(super) type TenantLog<T: Config> =
@@ -113,11 +119,25 @@ pub mod pallet {
 	pub(super) fn InitApprovalList<T: Config>() -> Idle<T> {
 		(Vec::new(), Vec::new())
 	}
+
+	#[pallet::type_value]
+	///Initializing function for the approval waiting list
+	pub(super) fn InitRepApprovalList<T: Config>() -> Vec<Representative<T>> {
+		Vec::new()
+	}
+
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_approvals)]
 	///Approval waiting list for Sellers and Servicers
 	pub(super) type RoleApprovalList<T: Config> =
 		StorageValue<_, Idle<T>, ValueQuery, InitApprovalList<T>>;
+
+	
+	#[pallet::storage]
+	#[pallet::getter(fn get_pending_representatives)]
+	///Approval waiting list for Representatives
+	pub(super) type RepApprovalList<T: Config> =
+		StorageValue<_, Vec<Representative<T>>, ValueQuery, InitRepApprovalList<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_roles)]
@@ -251,6 +271,14 @@ pub mod pallet {
 						account.clone(),
 					));
 					Servicer::<T>::new(servicer).map_err(|_| <Error<T>>::InitializationError)?;
+					Self::deposit_event(Event::CreationRequestCreated(now, account));
+				},
+				Accounts::REPRESENTATIVE => {
+					Self::check_role_approval_list(account.clone())?;
+					let representative = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+						account.clone(),
+					));
+					Representative::<T>::new(representative).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 			}

@@ -4030,6 +4030,7 @@ dependencies = [
  "frame-system",
  "pallet-balances",
  "pallet-democracy",
+ "pallet-nft",
  "pallet-roles",
  "pallet-scheduler",
  "pallet-share_distributor",
