@@ -39,15 +39,6 @@ fn test_struct_methods() {
 		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
 		//--checking storage-------------
 		assert_eq!(
-			RoleModule::get_pending_house_sellers(),
-			vec![HouseSeller {
-				account_id: 1,
-				age: System::block_number(),
-				activated: false,
-				verifier: 4
-			}],
-		);
-		assert_eq!(
 			RoleModule::get_pending_servicers(),
 			vec![Servicer {
 				account_id: 2,
@@ -68,7 +59,20 @@ fn test_struct_methods() {
 				activated: false,
 				assets_accounts: vec![],
 			}]
-		)
+		);
+
+		// Notary
+		assert_ok!(Notary::<Test>::new(Origin::signed(5)));
+		// Test notary approval list
+		assert_eq!(
+			RoleModule::get_pending_notaries(),
+			vec![Notary {
+				account_id: 5,
+				age: System::block_number(),
+				activated: false,
+				verifier: 4
+			}]
+		);
 	});
 }
 
@@ -170,6 +174,45 @@ fn test_account_creation() {
 			Error::<Test>::TotalMembersExceeded
 		);
 	})
+}
+
+#[test]
+fn test_role_notary() {
+	new_test_ext(0).execute_with(|| {
+		let admin = 0;
+		let user1 = 1;
+
+		// user1: set_role - notary
+		assert_ok!(RoleModule::set_role(Origin::signed(user1), user1, Acc::NOTARY));
+
+		// check notary approval list
+		assert_eq!(
+			RoleModule::get_pending_notaries(),
+			vec![Notary {
+				account_id: user1,
+				activated: false,
+				verifier: admin,
+				age: System::block_number()
+			}]
+		);
+
+		// approve notary
+		assert_ok!(RoleModule::account_approval(Origin::signed(admin), user1));
+
+		// check notary storage
+		assert_eq!(
+			RoleModule::notaries(user1).unwrap(),
+			Notary {
+				account_id: user1,
+				activated: true,
+				verifier: admin,
+				age: System::block_number()
+			}
+		);
+
+		// check total members
+		assert_eq!(RoleModule::total_members(), 1);
+	});
 }
 
 #[test]
