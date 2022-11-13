@@ -162,7 +162,7 @@ pub mod pallet {
 	#[pallet::getter(fn get_pending_representatives)]
 	///Approval waiting list for Representatives
 	pub(super) type RepApprovalList<T: Config> =
-		StorageValue<_, Vec<Representative<T>>, ValueQuery, InitRepApprovalList<T>>;
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, Representative<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_roles)]

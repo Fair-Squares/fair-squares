@@ -120,8 +120,8 @@ pub mod pallet {
 			let caller = ensure_signed(origin)?;
 			//Check that the caller is a stored virtual account
 			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
-			//Check that the account is in the representativ waiting list
-			//ensure!(Roles::Pallet::<T>::get_pending_representatives().contains(&account),"problem");
+			//Check that the account is in the representative waiting list
+			ensure!(!Roles::Pallet::<T>::get_pending_representatives(&account).is_none(),"problem");
 			//Approve role request
 
 			Ok(())

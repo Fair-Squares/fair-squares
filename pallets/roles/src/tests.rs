@@ -61,13 +61,13 @@ fn test_struct_methods() {
 		assert_ok!(Representative::<Test>::new(Origin::signed(3)));
 		//checking struct in Representative waiting list
 		assert_eq!(
-			RoleModule::get_pending_representatives(),
-			vec![Representative {
+			RoleModule::get_pending_representatives(3).unwrap(),
+			Representative {
 				account_id: 3,
 				age: System::block_number(),
 				activated: false,
 				assets_accounts: vec![],
-			}]
+			}
 		)
 	});
 }
