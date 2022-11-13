@@ -102,8 +102,8 @@ where
 
 		let hw = HouseSeller { account_id: caller, age: now, activated: false, verifier: admin };
 
-		RoleApprovalList::<T>::mutate(|val| {
-			val.0.push(hw);
+		SellerApprovalList::<T>::mutate(|list| {
+			list.push(hw);
 		});
 
 		Ok(())
@@ -154,8 +154,9 @@ impl<T: Config> Servicer<T> {
 		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 		let sv = Servicer { account_id: caller, age: now, activated: false, verifier: admin };
-		RoleApprovalList::<T>::mutate(|val| {
-			val.1.push(sv);
+
+		ServicerApprovalList::<T>::mutate(|list| {
+			list.push(sv);
 		});
 		Ok(())
 	}
@@ -186,7 +187,12 @@ where
 		let now = <frame_system::Pallet<T>>::block_number();
 		ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
 
-		let rep = Representative { account_id: caller, age: now, activated: false, assets_accounts: Vec::new()};
+		let rep = Representative {
+			account_id: caller,
+			age: now,
+			activated: false,
+			assets_accounts: Vec::new(),
+		};
 
 		RepApprovalList::<T>::mutate(|val| {
 			val.push(rep);
