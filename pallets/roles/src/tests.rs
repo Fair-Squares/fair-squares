@@ -57,7 +57,23 @@ fn test_struct_methods() {
 					verifier: 4
 				}]
 			)
+		);
+
+		//Representative
+		assert_ok!(Representative::<Test>::new(Origin::signed(3)));
+		//checking struct in Representative waiting list
+		assert_eq!(
+			RoleModule::get_pending_representatives(),
+			vec![Representative {
+				account_id: 3,
+				age: System::block_number(),
+				activated: false,
+				assets_accounts: vec![],
+			}]
 		)
+		
+
+
 	});
 }
 
