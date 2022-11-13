@@ -28,7 +28,7 @@ fn test_struct_methods() {
 			)
 		);
 		//---house seller should fail successfully----
-		assert_ne!(RoleModule::get_pending_approvals(), (vec![], vec![])); //assert_ne! is not supported at the moment, as this expression should panick
+		assert_ne!(RoleModule::get_pending_approvals(), (vec![], vec![]));
 
 		//-------tenant-----------
 		assert_ok!(Tenant::<Test>::new(Origin::signed(1)));
