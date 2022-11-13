@@ -33,6 +33,7 @@ pub enum Accounts {
 	SELLER,
 	TENANT,
 	SERVICER,
+	NOTARY,
 	REPRESENTATIVE,
 }
 
@@ -207,3 +208,36 @@ where
 
 //-------------REPRESENTATIVE STRUCT DECLARATION & IMPLEMENTATION_END----------------------
 //-------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------
+//-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Notary<T: Config> {
+	pub account_id: T::AccountId,
+	pub age: BlockNumberOf<T>,
+	pub activated: bool,
+	pub verifier: T::AccountId,
+}
+impl<T: Config> Notary<T>
+where
+	types::Notary<T>: EncodeLike<types::Notary<T>>,
+{
+	pub fn new(acc: OriginFor<T>) -> DispatchResult {
+		let caller = ensure_signed(acc)?;
+		let now = <frame_system::Pallet<T>>::block_number();
+
+		ensure!(!NotaryLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
+
+		let admin = SUDO::Pallet::<T>::key().unwrap();
+		let notary = Notary { account_id: caller, age: now, activated: false, verifier: admin };
+		NotaryApprovalList::<T>::mutate(|list| {
+			list.push(notary);
+		});
+
+		Ok(())
+	}
+}
+//-------------------------------------------------------------------------------------
+//-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
