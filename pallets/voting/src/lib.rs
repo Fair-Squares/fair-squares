@@ -56,8 +56,8 @@ pub mod pallet {
 		traits::{ReservableCurrency, UnfilteredDispatchable},
 		weights::GetDispatchInfo,
 	};
+	use frame_system::pallet_prelude::*;
 	use frame_system::WeightInfo;
-	use frame_system::{pallet_prelude::*, RawOrigin};
 
 	use scale_info::prelude::boxed::Box;
 

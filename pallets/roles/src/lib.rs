@@ -60,7 +60,7 @@ mod types;
 pub mod weights;
 pub use crate::types::*;
 pub use pallet_sudo as SUDO;
-use sp_std::{prelude::*};
+use sp_std::prelude::*;
 pub use weights::WeightInfo;
 #[frame_support::pallet]
 pub mod pallet {
@@ -97,6 +97,11 @@ pub mod pallet {
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, HouseSeller<T>, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn notaries)]
+	pub(super) type NotaryLog<T: Config> =
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, Notary<T>, OptionQuery>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn reps)]
 	///Registry of Sellers organized by AccountId
 	pub(super) type RepresentativeLog<T: Config> =
@@ -115,24 +120,44 @@ pub mod pallet {
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer<T>, OptionQuery>;
 
 	#[pallet::type_value]
-	///Initializing function for the approval waiting list
-	pub(super) fn InitApprovalList<T: Config>() -> Idle<T> {
-		(Vec::new(), Vec::new())
+	/// Initializer for the approval list of house sellers
+	pub(super) fn InitPendingSellerList<T: Config>() -> Vec<HouseSeller<T>> {
+		Vec::new()
 	}
 
 	#[pallet::type_value]
-	///Initializing function for the approval waiting list
+	/// Initializer for the approval list of servicers
+	pub(super) fn InitPendingServicerList<T: Config>() -> Vec<Servicer<T>> {
+		Vec::new()
+	}
+
+	#[pallet::type_value]
+	/// Initializer for the approval list of notaries
+	pub(super) fn InitPendingNotaryList<T: Config>() -> Vec<Notary<T>> {
+		Vec::new()
+	}
+
+	#[pallet::type_value]
+	/// Initializer for the approval list of representatives
 	pub(super) fn InitRepApprovalList<T: Config>() -> Vec<Representative<T>> {
 		Vec::new()
 	}
 
 	#[pallet::storage]
-	#[pallet::getter(fn get_pending_approvals)]
-	///Approval waiting list for Sellers and Servicers
-	pub(super) type RoleApprovalList<T: Config> =
-		StorageValue<_, Idle<T>, ValueQuery, InitApprovalList<T>>;
+	#[pallet::getter(fn get_pending_house_sellers)]
+	pub(super) type SellerApprovalList<T: Config> =
+		StorageValue<_, Vec<HouseSeller<T>>, ValueQuery, InitPendingSellerList<T>>;
 
-	
+	#[pallet::storage]
+	#[pallet::getter(fn get_pending_servicers)]
+	pub(super) type ServicerApprovalList<T: Config> =
+		StorageValue<_, Vec<Servicer<T>>, ValueQuery, InitPendingServicerList<T>>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn get_pending_notaries)]
+	pub(super) type NotaryApprovalList<T: Config> =
+		StorageValue<_, Vec<Notary<T>>, ValueQuery, InitPendingNotaryList<T>>;
+
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_representatives)]
 	///Approval waiting list for Representatives
@@ -187,6 +212,8 @@ pub mod pallet {
 		SellerCreated(T::BlockNumber, T::AccountId),
 		/// Servicer role successfully attributed
 		ServicerCreated(T::BlockNumber, T::AccountId),
+		/// Notary role successfully attributed
+		NotaryCreated(T::BlockNumber, T::AccountId),
 		/// Request for new role accepted
 		AccountCreationApproved(T::BlockNumber, T::AccountId),
 		/// Request for new role Rejected
@@ -273,12 +300,21 @@ pub mod pallet {
 					Servicer::<T>::new(servicer).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
-				Accounts::REPRESENTATIVE => {
+				Accounts::NOTARY => {
 					Self::check_role_approval_list(account.clone())?;
-					let representative = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let notary = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Representative::<T>::new(representative).map_err(|_| <Error<T>>::InitializationError)?;
+					Notary::<T>::new(notary).map_err(|_| <Error<T>>::InitializationError)?;
+					Self::deposit_event(Event::CreationRequestCreated(now, account));
+				},
+				Accounts::REPRESENTATIVE => {
+					Self::check_role_approval_list(account.clone())?;
+					let representative = <T as frame_system::Config>::Origin::from(
+						RawOrigin::Signed(account.clone()),
+					);
+					Representative::<T>::new(representative)
+						.map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account));
 				},
 			}
@@ -294,7 +330,7 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			let members = Self::total_members();			
+			let members = Self::total_members();
 			Self::approve_account(sender, account.clone())?;
 			TotalMembers::<T>::put(members + 1);
 			let now = <frame_system::Pallet<T>>::block_number();

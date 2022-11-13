@@ -1,43 +1,77 @@
 pub use super::*;
 
 impl<T: Config> Pallet<T> {
-	//Helper function for account creation approval by admin only
-	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
-		let (sellers, servicers) = Self::get_pending_approvals();
-		let mut exist: bool = false;
+	// Helper function for approving sellers.
+	pub fn approve_seller(sender: T::AccountId, who: T::AccountId) -> bool {
+		let sellers = Self::get_pending_house_sellers();
 
 		for (index, sell) in sellers.iter().enumerate() {
 			if sell.account_id == who.clone() {
-				exist = true;
 				let mut seller = sell.clone();
 				seller.activated = true;
 				seller.verifier = sender.clone();
 				HouseSellerLog::<T>::insert(&who, seller);
-				RoleApprovalList::<T>::mutate(|val| {
-					val.0.remove(index);
+				SellerApprovalList::<T>::mutate(|list| {
+					list.remove(index);
 				});
 				AccountsRolesLog::<T>::insert(&who, Accounts::SELLER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerCreated(now, who.clone()));
-				break
+				return true;
 			}
 		}
+		false
+	}
+
+	// Helper function for approving servicers
+	pub fn approve_servicer(sender: T::AccountId, who: T::AccountId) -> bool {
+		let servicers = Self::get_pending_servicers();
+
 		for (index, serv) in servicers.iter().enumerate() {
 			if serv.account_id == who.clone() {
-				exist = true;
 				let mut servicer = serv.clone();
 				servicer.activated = true;
 				servicer.verifier = sender;
 				ServicerLog::<T>::insert(&who, servicer);
-				RoleApprovalList::<T>::mutate(|val| {
-					val.1.remove(index);
+				ServicerApprovalList::<T>::mutate(|list| {
+					list.remove(index);
 				});
 				AccountsRolesLog::<T>::insert(&who, Accounts::SERVICER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerCreated(now, who));
-				break
+				return true;
 			}
 		}
+		false
+	}
+
+	// Helper function for approving notaries
+	pub fn approve_notary(sender: T::AccountId, who: T::AccountId) -> bool {
+		let notaries = Self::get_pending_notaries();
+
+		for (index, notary) in notaries.iter().enumerate() {
+			if notary.account_id == who.clone() {
+				let mut notary_ = notary.clone();
+				notary_.activated = true;
+				notary_.verifier = sender;
+				NotaryLog::<T>::insert(&who, notary_);
+				NotaryApprovalList::<T>::mutate(|list| {
+					list.remove(index);
+				});
+				AccountsRolesLog::<T>::insert(&who, Accounts::NOTARY);
+				let now = <frame_system::Pallet<T>>::block_number();
+				Self::deposit_event(Event::NotaryCreated(now, who));
+				return true;
+			}
+		}
+		false
+	}
+
+	//Helper function for account creation approval by admin only
+	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
+		let exist = Self::approve_seller(sender.clone(), who.clone())
+			|| Self::approve_servicer(sender.clone(), who.clone())
+			|| Self::approve_notary(sender, who);
 		ensure!(exist, Error::<T>::NotInWaitingList);
 		Ok(())
 	}
@@ -54,29 +88,30 @@ impl<T: Config> Pallet<T> {
 
 	//Helper function for account creation rejection by admin only
 	pub fn reject_account(who: T::AccountId) -> DispatchResult {
-		let (sellers, servicers) = Self::get_pending_approvals();
+		let sellers = Self::get_pending_house_sellers();
+		let servicers = Self::get_pending_servicers();
 		let mut exist: bool = false;
 		for (index, sell) in sellers.iter().enumerate() {
 			if sell.account_id == who.clone() {
 				exist = true;
-				RoleApprovalList::<T>::mutate(|val| {
-					val.0.remove(index);
+				SellerApprovalList::<T>::mutate(|list| {
+					list.remove(index);
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerAccountCreationRejected(now, who.clone()));
-				break
+				break;
 			}
 		}
 
 		for (index, serv) in servicers.iter().enumerate() {
 			if serv.account_id == who.clone() {
 				exist = true;
-				RoleApprovalList::<T>::mutate(|val| {
-					val.1.remove(index);
+				ServicerApprovalList::<T>::mutate(|list| {
+					list.remove(index);
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
-				break
+				break;
 			}
 		}
 		ensure!(exist, Error::<T>::NotInWaitingList);
@@ -84,13 +119,14 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn check_role_approval_list(account: AccountIdOf<T>) -> DispatchResult {
-		let (sellers, servicers) = Self::get_pending_approvals();
+		let sellers = Self::get_pending_house_sellers();
 		if !sellers.is_empty() {
 			for seller in sellers.iter() {
 				let id = &seller.account_id;
 				ensure!(&account != id, Error::<T>::AlreadyWaiting);
 			}
 		}
+		let servicers = Self::get_pending_servicers();
 		if !servicers.is_empty() {
 			for servicer in servicers.iter() {
 				let id = &servicer.account_id;
