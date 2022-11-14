@@ -60,6 +60,7 @@ pub use pallet_voting;
 pub use pallet_onboarding;
 pub use pallet_share_distributor;
 pub use pallet_bidding;
+pub use pallet_asset_management;
 // flag add pallet use
 
 /// An index to a block.
@@ -617,6 +618,11 @@ impl pallet_bidding::Config for Runtime {
 	type MinimumSharePerInvestor = MinimumSharePerInvestor;
 	type NewAssetScanPeriod = NewAssetScanPeriod;
 }
+impl pallet_asset_management::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = ();
+}
+
 // flag add pallet config
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -649,6 +655,7 @@ construct_runtime!(
 		ShareDistributor: pallet_share_distributor,
 		Assets:pallet_assets,
 		BiddingModule: pallet_bidding,
+		AssetManagementModule: pallet_asset_management,
 		// flag add pallet runtime
 	}
 );
@@ -699,6 +706,7 @@ mod benches {
 		[pallet_nft, NftModule]
 		[pallet_onboarding, OnboardingModule]
 		[pallet_share_distributor,ShareDistributor]
+		//[pallet_asset_management, AssetManagementModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -902,6 +910,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			add_benchmark!(params, batches, pallet_share_distributor, ShareDistributor);
+			//add_benchmark!(params, batches, pallet_asset_management, AssetManagementModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

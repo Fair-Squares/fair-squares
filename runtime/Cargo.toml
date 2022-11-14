@@ -71,6 +71,7 @@ pallet-voting = { version = "4.0.0-dev", default-features = false, path = "../pa
 pallet-onboarding = { version = "4.0.0-dev", default-features = false, path = "../pallets/onboarding" }
 pallet-share_distributor = { version = "4.0.0-dev", default-features = false, path = "../pallets/share_distributor" }
 pallet-bidding = { version = "4.0.0-dev", default-features = false, path = "../pallets/bidding" }
+pallet-asset_management = { version = "4.0.0-dev", default-features = false, path = "../pallets/asset_management" }
 ### add new pallet config
 
 [build-dependencies]
@@ -119,6 +120,7 @@ std = [
 	"pallet-onboarding/std",
 	"pallet-share_distributor/std",
 	"pallet-bidding/std",
+	"pallet-asset_management/std",
 	### add new std
 ]
 runtime-benchmarks = [
@@ -139,6 +141,7 @@ runtime-benchmarks = [
 	"pallet-onboarding/runtime-benchmarks",
 	"pallet-share_distributor/runtime-benchmarks",
 	"pallet-bidding/runtime-benchmarks",
+	"pallet-asset_management/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -161,5 +164,6 @@ try-runtime = [
 	"pallet-onboarding/try-runtime",
 	"pallet-share_distributor/try-runtime",
 	"pallet-bidding/try-runtime",
+	"pallet-asset_management/try-runtime",
 	### add new try-runtime
 ]

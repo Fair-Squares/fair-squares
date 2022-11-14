@@ -33,6 +33,8 @@ pub enum Accounts {
 	SELLER,
 	TENANT,
 	SERVICER,
+	NOTARY,
+	REPRESENTATIVE,
 }
 
 impl Default for Accounts {
@@ -101,8 +103,8 @@ where
 
 		let hw = HouseSeller { account_id: caller, age: now, activated: false, verifier: admin };
 
-		RoleApprovalList::<T>::mutate(|val| {
-			val.0.push(hw);
+		SellerApprovalList::<T>::mutate(|list| {
+			list.push(hw);
 		});
 
 		Ok(())
@@ -153,11 +155,89 @@ impl<T: Config> Servicer<T> {
 		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 		let sv = Servicer { account_id: caller, age: now, activated: false, verifier: admin };
-		RoleApprovalList::<T>::mutate(|val| {
-			val.1.push(sv);
+
+		ServicerApprovalList::<T>::mutate(|list| {
+			list.push(sv);
 		});
 		Ok(())
 	}
 }
 //-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
 //--------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------
+//-------------REPRESENTATIVE STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
+
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Representative<T: Config> {
+	pub account_id: T::AccountId,
+	pub age: BlockNumberOf<T>,
+	pub activated: bool,
+	pub assets_accounts: Vec<T::AccountId>,
+}
+impl<T: Config> Representative<T>
+where
+	types::Representative<T>: EncodeLike<types::Representative<T>>,
+{
+	//--------------------------------------------------------------------
+	//-------------REPRESENTATIVE CREATION METHOD_BEGIN----------------------
+	pub fn new(acc: OriginFor<T>) -> DispatchResult {
+		let caller = ensure_signed(acc)?;
+		let now = <frame_system::Pallet<T>>::block_number();
+		ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
+
+		let rep = Representative {
+			account_id: caller,
+			age: now,
+			activated: false,
+			assets_accounts: Vec::new(),
+		};
+
+		RepApprovalList::<T>::mutate(|val| {
+			val.push(rep);
+		});
+
+		Ok(())
+	}
+
+	//-------------HOUSE REPRESENTATIVE CREATION METHOD_END----------------------
+	//------------------------------------------------------------------
+}
+
+//-------------REPRESENTATIVE STRUCT DECLARATION & IMPLEMENTATION_END----------------------
+//-------------------------------------------------------------------------------------
+
+//-------------------------------------------------------------------------------------
+//-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Notary<T: Config> {
+	pub account_id: T::AccountId,
+	pub age: BlockNumberOf<T>,
+	pub activated: bool,
+	pub verifier: T::AccountId,
+}
+impl<T: Config> Notary<T>
+where
+	types::Notary<T>: EncodeLike<types::Notary<T>>,
+{
+	pub fn new(acc: OriginFor<T>) -> DispatchResult {
+		let caller = ensure_signed(acc)?;
+		let now = <frame_system::Pallet<T>>::block_number();
+
+		ensure!(!NotaryLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
+
+		let admin = SUDO::Pallet::<T>::key().unwrap();
+		let notary = Notary { account_id: caller, age: now, activated: false, verifier: admin };
+		NotaryApprovalList::<T>::mutate(|list| {
+			list.push(notary);
+		});
+
+		Ok(())
+	}
+}
+//-------------------------------------------------------------------------------------
+//-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------

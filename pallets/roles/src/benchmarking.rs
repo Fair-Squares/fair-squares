@@ -115,7 +115,7 @@ benchmarks! {
 
 	}:account_rejection(RawOrigin::Signed(key_account.clone()),user.clone())
 	verify{
-		ensure!(Pallet::<T>::get_pending_approvals().0.len() == 0, "Seller not removed");
+		ensure!(Pallet::<T>::get_pending_house_sellers().len() == 0, "Seller not removed");
 	}
 
 	set_admin{
