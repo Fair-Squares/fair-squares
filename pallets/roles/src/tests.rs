@@ -52,27 +52,14 @@ fn test_struct_methods() {
 		assert_ok!(Representative::<Test>::new(Origin::signed(3)));
 		//checking struct in Representative waiting list
 		assert_eq!(
-			RoleModule::get_pending_representatives(),
-			vec![Representative {
+			RoleModule::get_pending_representatives(3).unwrap(),
+			Representative {
 				account_id: 3,
 				age: System::block_number(),
 				activated: false,
 				assets_accounts: vec![],
-			}]
-		);
-
-		// Notary
-		assert_ok!(Notary::<Test>::new(Origin::signed(5)));
-		// Test notary approval list
-		assert_eq!(
-			RoleModule::get_pending_notaries(),
-			vec![Notary {
-				account_id: 5,
-				age: System::block_number(),
-				activated: false,
-				verifier: 4
-			}]
-		);
+			}
+		)
 	});
 }
 

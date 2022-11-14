@@ -7,13 +7,14 @@
 //Needed calls:
 //Call 1) Create a Representative role
 
+pub use pallet::*;
 pub use pallet_roles as Roles;
 pub use pallet_democracy as Dem;
 pub use pallet_share_distributor as Share;
 pub use pallet_nft as Nft;
-pub use pallet::*;
 
 
+mod functions;
 //#[cfg(test)]
 //mod mock;
 
@@ -25,6 +26,7 @@ pub use pallet::*;
 
 #[frame_support::pallet]
 pub mod pallet {
+	use super::*;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 	use frame_system::WeightInfo;
@@ -64,6 +66,8 @@ pub mod pallet {
 	pub enum Error<T> {
 		/// Error names should be descriptive.
 		NoneValue,
+		/// The account is not an Asset account
+		NotAnAssetAccount,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 	}
@@ -110,7 +114,20 @@ pub mod pallet {
 			}
 		}
 
+		/// approve a Representative role request
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn representative_approval(origin: OriginFor<T>, account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
+			let caller = ensure_signed(origin)?;
+			//Check that the caller is a stored virtual account
+			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
+			//Check that the account is in the representative waiting list
+			ensure!(!Roles::Pallet::<T>::get_pending_representatives(&account).is_none(),"problem");
+			//Approve role request
+			Self::approve_representative(caller,account).ok();
 
-		//Create Representative Role
+			Ok(())
+		}
+
+
 	}
 }
