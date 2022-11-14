@@ -416,12 +416,12 @@ fn get_finalised_houses_with_finalised_houses() {
 		let collection_id = NftColl::OFFICESTEST.value();
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
-		// we simulate for the the presence of an finalised house by changing its status
+		// we simulate for the the presence of a finalised house by changing its status
 		assert_ok!(OnboardingModule::change_status(
 			Origin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
-			AssetStatus::FINALISED,
+			AssetStatus::FINALISED
 		));
 
 		let price2 = 200_000_000;
@@ -503,12 +503,12 @@ fn get_finalising_houses_with_finalising_houses() {
 		let collection_id = NftColl::OFFICESTEST.value();
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
-		// we simulate for the the presence of an finalised house by changing its status
+		// we simulate for the the presence of a finalising house by changing its status
 		assert_ok!(OnboardingModule::change_status(
 			Origin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
-			AssetStatus::FINALISING,
+			AssetStatus::FINALISING
 		));
 
 		let price2 = 200_000_000;
@@ -526,7 +526,7 @@ fn get_finalising_houses_with_finalising_houses() {
 		assert_eq!(finalising_houses.len(), 1);
 
 		let house = finalising_houses[0].clone();
-		assert_eq!(house.2.status, AssetStatus::FINALISING,);
-		assert_eq!(house.2.price, Some(price),);
+		assert_eq!(house.2.status, AssetStatus::FINALISING);
+		assert_eq!(house.2.price, Some(price));
 	});
 }
