@@ -207,7 +207,7 @@ impl<T: Config> Pallet<T> {
 		let reservation = reservation_wrap.unwrap();
 
 		// We tag the reserved amount in the contribution as used
-		for (account_id, balance) in reservation.contributions.into_iter() {
+		for (account_id, balance) in reservation.clone().contributions.into_iter() {
 			Contributions::<T>::mutate(account_id.clone(), |val| {
 				let mut unwrap_val = val.clone().unwrap();
 				unwrap_val.use_reserved_amount(balance);
