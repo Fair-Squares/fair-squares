@@ -165,8 +165,8 @@ impl<T: Config> Pallet<T> {
 		types::Asset<T>,
 	)> {
 		Houses::<T>::iter()
-			.filter(|val| val.2.status == status)
-			.map(|elt| (elt.0, elt.1, elt.2))
+			.filter(|(_, _, house)| house.status == status)
+			.map(|(collection_id, item_id, house)| (collection_id, item_id, house))
 			.collect()
 	}
 
