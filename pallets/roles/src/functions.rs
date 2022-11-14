@@ -133,13 +133,8 @@ impl<T: Config> Pallet<T> {
 				ensure!(&account != id, Error::<T>::AlreadyWaiting);
 			}
 		}
-		let representatives = Self::get_pending_representatives();
-		if !representatives.is_empty() {
-			for representative in representatives.iter() {
-				let id = &representative.account_id;
-				ensure!(&account != id, Error::<T>::AlreadyWaiting);
-			}
-		}
+		ensure!(!RepApprovalList::<T>::contains_key(&account),Error::<T>::AlreadyWaiting);
+		
 
 		Ok(())
 	}

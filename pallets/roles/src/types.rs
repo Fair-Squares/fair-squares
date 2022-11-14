@@ -189,14 +189,15 @@ where
 		ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
 
 		let rep = Representative {
-			account_id: caller,
+			account_id: caller.clone(),
 			age: now,
 			activated: false,
 			assets_accounts: Vec::new(),
 		};
 
-		RepApprovalList::<T>::mutate(|val| {
-			val.push(rep);
+		RepApprovalList::<T>::mutate(caller,|val| {
+			//val.push(rep);
+			*val=Some(rep);
 		});
 
 		Ok(())
