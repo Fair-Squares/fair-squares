@@ -104,7 +104,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn reps)]
 	///Registry of Sellers organized by AccountId
-	pub(super) type RepresentativeLog<T: Config> =
+	pub type RepresentativeLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Representative<T>, OptionQuery>;
 
 	#[pallet::storage]
@@ -161,13 +161,13 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_representatives)]
 	///Approval waiting list for Representatives
-	pub(super) type RepApprovalList<T: Config> =
+	pub type RepApprovalList<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Representative<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_roles)]
 	///Registry of Roles by AccountId
-	pub(super) type AccountsRolesLog<T: Config> =
+	pub type AccountsRolesLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
 
 	#[pallet::type_value]

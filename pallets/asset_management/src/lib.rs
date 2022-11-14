@@ -14,7 +14,7 @@ pub use pallet_share_distributor as Share;
 pub use pallet_nft as Nft;
 
 
-
+mod functions;
 //#[cfg(test)]
 //mod mock;
 
@@ -123,6 +123,7 @@ pub mod pallet {
 			//Check that the account is in the representative waiting list
 			ensure!(!Roles::Pallet::<T>::get_pending_representatives(&account).is_none(),"problem");
 			//Approve role request
+			Self::approve_representative(caller,account).ok();
 
 			Ok(())
 		}
