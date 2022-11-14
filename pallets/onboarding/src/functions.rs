@@ -159,15 +159,23 @@ impl<T: Config> Pallet<T> {
 		T::FeesAccount::get().into_account_truncating()
 	}
 
-	pub fn get_onboarded_houses() -> Vec<(
+	fn get_houses_by_status(status: types::AssetStatus) -> Vec<(
 		<T as pallet_nft::Config>::NftCollectionId,
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
 		Houses::<T>::iter()
-			.filter(|val| val.2.status == types::AssetStatus::ONBOARDED)
+			.filter(|val| val.2.status == status)
 			.map(|elt| (elt.0, elt.1, elt.2))
 			.collect()
+	}
+
+	pub fn get_onboarded_houses() -> Vec<(
+		<T as pallet_nft::Config>::NftCollectionId,
+		<T as pallet_nft::Config>::NftItemId,
+		types::Asset<T>,
+	)> {
+		Self::get_houses_by_status(types::AssetStatus::ONBOARDED)
 	}
 
 	pub fn get_finalised_houses() -> Vec<(
@@ -175,9 +183,14 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Houses::<T>::iter()
-			.filter(|val| val.2.status == types::AssetStatus::FINALISED)
-			.map(|elt| (elt.0, elt.1, elt.2))
-			.collect()
+		Self::get_houses_by_status(types::AssetStatus::FINALISED)
+	}
+
+	pub fn get_finalising_houses() -> Vec<(
+		<T as pallet_nft::Config>::NftCollectionId,
+		<T as pallet_nft::Config>::NftItemId,
+		types::Asset<T>,
+	)> {
+		Self::get_houses_by_status(types::AssetStatus::FINALISING)
 	}
 }
