@@ -28,7 +28,7 @@ pub enum AssetStatus {
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct Asset<T: Config> {
 	/// Asset status
-	pub(super) status: AssetStatus,
+	pub status: AssetStatus,
 	/// Asset creation block
 	pub(super) created: BlockNumberOf<T>,
 	/// NFT infos
