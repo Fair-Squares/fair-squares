@@ -189,5 +189,6 @@ fn share_distributor0() {
         assert_ok!(AssetManagement::representative_approval(origin3,FERDIE,coll_id1,item_id1));
 		//check that Ferdie is now in RepresentiveLog, and not anymore in RepApprovalList
 		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE),true);
+		assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE),false);
 	});
 }

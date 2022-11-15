@@ -221,7 +221,7 @@ pub mod pallet {
 			// Retrieve the index of the proposal in Collective pallet
 			let collective_index = COLL::Pallet::<T, Instance1>::proposal_count();
 
-			let collective_origin = Self::get_origin(council_member.clone());
+			let collective_origin = Self::get_origin(council_member);
 
 			let result = COLL::Pallet::<T, Instance1>::propose(
 				collective_origin,

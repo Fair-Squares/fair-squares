@@ -106,7 +106,7 @@ pub mod pallet {
 			// Read a value from storage.
 			match <Something<T>>::get() {
 				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
+				None => Err(Error::<T>::NoneValue.into()),
 				Some(old) => {
 					// Increment the value read from storage; will error in the event of overflow.
 					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
@@ -124,7 +124,7 @@ pub mod pallet {
 			//Check that the caller is a stored virtual account
 			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
 			//Check that the account is in the representative waiting list
-			ensure!(!Roles::Pallet::<T>::get_pending_representatives(&account).is_none(),"problem");
+			ensure!(Roles::Pallet::<T>::get_pending_representatives(&account).is_some(),"problem");
 			//Approve role request
 			Self::approve_representative(caller,account).ok();
 

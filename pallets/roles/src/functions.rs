@@ -9,14 +9,14 @@ impl<T: Config> Pallet<T> {
 			if sell.account_id == who.clone() {
 				let mut seller = sell.clone();
 				seller.activated = true;
-				seller.verifier = sender.clone();
+				seller.verifier = sender;
 				HouseSellerLog::<T>::insert(&who, seller);
 				SellerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
 				});
 				AccountsRolesLog::<T>::insert(&who, Accounts::SELLER);
 				let now = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::SellerCreated(now, who.clone()));
+				Self::deposit_event(Event::SellerCreated(now, who));
 				return true;
 			}
 		}
