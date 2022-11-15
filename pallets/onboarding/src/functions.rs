@@ -44,9 +44,9 @@ impl<T: Config> Pallet<T> {
 	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: AssetStatus) {
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
 		Houses::<T>::mutate(collection_id, item_id, |val| {
-			let mut v0 = val.clone().unwrap();
-			v0.status = status;
-			*val = Some(v0);
+			let mut asset = val.clone().unwrap();
+			asset.status = status;
+			*val = Some(asset);
 		});
 	}
 
@@ -84,8 +84,8 @@ impl<T: Config> Pallet<T> {
 		_infos: Asset<T>,
 	) -> DispatchResult {
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
-		let origin: OriginFor<T> = frame_system::RawOrigin::Root.into();
-		let origin2: OriginFor<T> = frame_system::RawOrigin::Signed(buyer.clone()).into();
+		let origin_root: OriginFor<T> = frame_system::RawOrigin::Root.into();
+		let origin_buyer: OriginFor<T> = frame_system::RawOrigin::Signed(buyer.clone()).into();
 
 		//Check that the house item exists and has the correct status
 		ensure!(
@@ -117,7 +117,7 @@ impl<T: Config> Pallet<T> {
 			ExistenceRequirement::KeepAlive,
 		)?;
 		let to = T::Lookup::unlookup(buyer.clone());
-		Nft::Pallet::<T>::transfer(origin, collection, item_id, to)?;
+		Nft::Pallet::<T>::transfer(origin_root, collection, item_id, to)?;
 		Self::deposit_event(Event::TokenSold {
 			owner,
 			buyer,
@@ -127,7 +127,7 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(origin2, collection, item_id, AssetStatus::PURCHASED).ok();
+		Self::change_status(origin_buyer, collection, item_id, AssetStatus::PURCHASED).ok();
 
 		Ok(())
 	}
@@ -159,15 +159,23 @@ impl<T: Config> Pallet<T> {
 		T::FeesAccount::get().into_account_truncating()
 	}
 
+	fn get_houses_by_status(status: types::AssetStatus) -> Vec<(
+		<T as pallet_nft::Config>::NftCollectionId,
+		<T as pallet_nft::Config>::NftItemId,
+		types::Asset<T>
+	)> {
+		Houses::<T>::iter()
+    	.filter(|(_, _, house)| house.status == status)
+      .map(|(collection_id, item_id, house)| (collection_id, item_id, house))
+      .collect()
+	}
+
 	pub fn get_onboarded_houses() -> Vec<(
 		<T as pallet_nft::Config>::NftCollectionId,
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Houses::<T>::iter()
-			.filter(|val| val.2.status == types::AssetStatus::ONBOARDED)
-			.map(|elt| (elt.0, elt.1, elt.2))
-			.collect()
+		Self::get_houses_by_status(types::AssetStatus::ONBOARDED)
 	}
 
 	pub fn get_finalised_houses() -> Vec<(
@@ -175,9 +183,14 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Houses::<T>::iter()
-			.filter(|val| val.2.status == types::AssetStatus::FINALISED)
-			.map(|elt| (elt.0, elt.1, elt.2))
-			.collect()
+		Self::get_houses_by_status(types::AssetStatus::FINALISED)
+	}
+
+	pub fn get_finalising_houses() -> Vec<(
+		<T as pallet_nft::Config>::NftCollectionId,
+		<T as pallet_nft::Config>::NftItemId,
+		types::Asset<T>,
+	)> {
+		Self::get_houses_by_status(types::AssetStatus::FINALISING)
 	}
 }
