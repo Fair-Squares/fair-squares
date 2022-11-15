@@ -13,7 +13,7 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
 	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok(); 
-    RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok();//FERDIE approval will be tested
+    	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok();//FERDIE approval will be tested
 	
 }
 
