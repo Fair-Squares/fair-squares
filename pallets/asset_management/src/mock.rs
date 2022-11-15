@@ -327,8 +327,15 @@ impl pallet_housing_fund::Config for Test {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
+
 impl pallet_asset_management::Config for Test {
 	type Event = Event;
+	type Call = Call;
+	type Delay = Delay;
+	type CheckDelay = CheckDelay;
+	type InvestorVoteAmount = InvestorVoteAmount;
+	type CheckPeriod = CheckPeriod;
+	type MinimumDepositVote = MinimumDeposit;
 	type Currency = Balances;
 	type WeightInfo = ();
 }
@@ -338,7 +345,7 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const DAVE: AccountId = AccountId::new([6u8; 32]);
 pub const EVE: AccountId = AccountId::new([5u8; 32]);
-pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
+//pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
 pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
 pub const GERARD: AccountId = AccountId::new([8u8; 32]);
 
