@@ -7,7 +7,7 @@ impl<T: Config> Pallet<T> {
     pub fn approve_representative(caller: T::AccountId, who:T::AccountId) -> DispatchResult{
         let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();
         representative.activated = true;
-        representative.assets_accounts.push(caller.clone());
+        representative.assets_accounts.push(caller);
         Roles::RepresentativeLog::<T>::insert(&who,representative);
         Roles::RepApprovalList::<T>::remove(&who);
         Roles::AccountsRolesLog::<T>::insert(&who, Roles::Accounts::REPRESENTATIVE);

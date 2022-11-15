@@ -12,14 +12,18 @@ pub use pallet_roles as Roles;
 pub use pallet_democracy as Dem;
 pub use pallet_share_distributor as Share;
 pub use pallet_nft as Nft;
-
+pub use pallet_onboarding as Onboarding;
+pub use pallet_housing_fund as HFund;
 
 mod functions;
-//#[cfg(test)]
-//mod mock;
+mod types;
+pub use crate::types::*;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
 
 //#[cfg(feature = "runtime-benchmarks")]
 //mod benchmarking;
@@ -27,8 +31,6 @@ mod functions;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
 	use frame_system::WeightInfo;
 
 	#[pallet::pallet]
@@ -37,9 +39,10 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_roles::Config + pallet_democracy::Config + pallet_share_distributor::Config + pallet_nft::Config{
+	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 		type WeightInfo: WeightInfo;
 	}
 
@@ -103,7 +106,7 @@ pub mod pallet {
 			// Read a value from storage.
 			match <Something<T>>::get() {
 				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
+				None => Err(Error::<T>::NoneValue.into()),
 				Some(old) => {
 					// Increment the value read from storage; will error in the event of overflow.
 					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
@@ -121,7 +124,7 @@ pub mod pallet {
 			//Check that the caller is a stored virtual account
 			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
 			//Check that the account is in the representative waiting list
-			ensure!(!Roles::Pallet::<T>::get_pending_representatives(&account).is_none(),"problem");
+			ensure!(Roles::Pallet::<T>::get_pending_representatives(&account).is_some(),"problem");
 			//Approve role request
 			Self::approve_representative(caller,account).ok();
 
