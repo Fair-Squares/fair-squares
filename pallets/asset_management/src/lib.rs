@@ -12,14 +12,18 @@ pub use pallet_roles as Roles;
 pub use pallet_democracy as Dem;
 pub use pallet_share_distributor as Share;
 pub use pallet_nft as Nft;
-
+pub use pallet_onboarding as Onboarding;
+pub use pallet_housing_fund as HFund;
 
 mod functions;
-//#[cfg(test)]
-//mod mock;
+mod types;
+pub use crate::types::*;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
 
 //#[cfg(feature = "runtime-benchmarks")]
 //mod benchmarking;
@@ -37,9 +41,10 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_roles::Config + pallet_democracy::Config + pallet_share_distributor::Config + pallet_nft::Config{
+	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 		type WeightInfo: WeightInfo;
 	}
 

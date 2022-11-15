@@ -620,6 +620,7 @@ impl pallet_bidding::Config for Runtime {
 }
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
+	type Currency = Balances;
 	type WeightInfo = ();
 }
 
