@@ -18,6 +18,7 @@ pub use pallet_housing_fund as HFund;
 mod functions;
 mod types;
 pub use crate::types::*;
+pub use functions::*;
 
 #[cfg(test)]
 mod mock;
@@ -86,6 +87,7 @@ pub mod pallet {
 		NotAnAssetAccount,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		DuplicatePreimage,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
