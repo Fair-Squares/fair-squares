@@ -87,7 +87,12 @@ pub mod pallet {
 		NotAnAssetAccount,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		///The proposal could not be created
+		FailedToCreateProposal,
+		///This Preimage already exists
 		DuplicatePreimage,
+		///Not an owner in the corresponding virtual account
+		NotAnOwner,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -96,17 +101,43 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		
+		///Owners Voting system
+		///One owner trigger a vote session with a proposal
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn representative_vote(origin:OriginFor<T>,virtual_account: T::AccountId) -> DispatchResult{
+			let caller = ensure_signed(origin)?;
+			//Ensure that the caller is an owner related to the virtual account
+
+			//Make proposal
+			let deposit = T::MinimumDeposit::get();
+			//Get NFT infos from virtual_account
+
+			//Create the call 
+			//let rep_call = Call::<T>::representative_approval {
+			//	rep_account:
+			//	collection:
+			//	item:
+			//};
+			//ensure!(rep_call.is_some(),Error::<T>::FailedToCreateProposal);
+
+			//Create the proposal hash
+			//let prop_hash = Self::create_proposal_hash_and_note(caller,rep_call);
+
+
+			
+			Ok(())
+		}
 
 		/// approve a Representative role request
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn representative_approval(origin: OriginFor<T>, account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
+		pub fn representative_approval(origin: OriginFor<T>, rep_account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
 			//Check that the caller is a stored virtual account
 			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
 			//Check that the account is in the representative waiting list
-			ensure!(Roles::Pallet::<T>::get_pending_representatives(&account).is_some(),"problem");
+			ensure!(Roles::Pallet::<T>::get_pending_representatives(&rep_account).is_some(),"problem");
 			//Approve role request
-			Self::approve_representative(caller,account).ok();
+			Self::approve_representative(caller,rep_account).ok();
 
 			Ok(())
 		}
