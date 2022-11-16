@@ -133,9 +133,24 @@ impl<T: Config> Pallet<T> {
 				ensure!(&account != id, Error::<T>::AlreadyWaiting);
 			}
 		}
-		ensure!(!RepApprovalList::<T>::contains_key(&account),Error::<T>::AlreadyWaiting);
-		
+		ensure!(!RepApprovalList::<T>::contains_key(&account), Error::<T>::AlreadyWaiting);
 
 		Ok(())
+	}
+
+	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
+		let now = <frame_system::Pallet<T>>::block_number();
+		for account in representatives.into_iter() {
+			AccountsRolesLog::<T>::insert(&account, Accounts::REPRESENTATIVE);
+			RepresentativeLog::<T>::insert(
+				&account,
+				Representative::<T> {
+					account_id: account.clone(),
+					age: now,
+					activated: true,
+					assets_accounts: vec![],
+				},
+			);
+		}
 	}
 }

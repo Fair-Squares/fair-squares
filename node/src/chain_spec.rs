@@ -1,6 +1,7 @@
 use fs_node_runtime::{
-	AccountId, AuraConfig, pallet_roles, BalancesConfig, CouncilConfig, GenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig,RoleModuleConfig, NftModuleConfig, WASM_BINARY,
+	pallet_roles, AccountId, AuraConfig, BalancesConfig, CouncilConfig, GenesisConfig,
+	GrandpaConfig, NftModuleConfig, RoleModuleConfig, Signature, SudoConfig, SystemConfig,
+	WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -156,9 +157,13 @@ fn testnet_genesis(
 			key: Some(root_key),
 		},
 		transaction_payment: Default::default(),
-		
+
 		role_module: RoleModuleConfig {
 			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			representatives: vec![
+				get_account_id_from_seed::<sr25519::Public>("Alice//Representative"),
+				get_account_id_from_seed::<sr25519::Public>("Bob//Representative"),
+			],
 		},
 		nft_module: NftModuleConfig {
 			owner: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
