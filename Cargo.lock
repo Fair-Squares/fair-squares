@@ -4112,6 +4112,7 @@ dependencies = [
 name = "pallet-bidding"
 version = "4.0.0-dev"
 dependencies = [
+ "enum-iterator",
  "frame-benchmarking",
  "frame-support",
  "frame-system",

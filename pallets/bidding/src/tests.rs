@@ -631,7 +631,7 @@ fn process_onboarded_assets_cannot_assemble_investor_should_fail() {
 		);
 	});
 }
-
+use crate::Onboarding::Event;
 #[test]
 fn process_onboarded_assets_should_succeed() {
 	new_test_ext().execute_with(|| {
@@ -698,7 +698,11 @@ fn process_onboarded_assets_should_succeed() {
 
 		assert_ok!(BiddingModule::process_onboarded_assets());
 
-		let event = <frame_system::Pallet<Test>>::events()
+		let mut events = <frame_system::Pallet<Test>>::events();
+
+		events.pop();
+
+		let event = events
 			.pop()
 			.expect("Expected at least one EventRecord to be found")
 			.event;
@@ -712,6 +716,11 @@ fn process_onboarded_assets_should_succeed() {
 				100,
 				block_number
 			))
+		);
+
+		assert_eq!(
+			pallet_onboarding::Houses::<Test>::get(collection_id, item_id).unwrap().status,
+			crate::Onboarding::AssetStatus::FINALISING
 		);
 	});
 }
@@ -850,7 +859,11 @@ fn process_finalised_assets_should_succeed() {
 
 		assert_ok!(BiddingModule::process_onboarded_assets());
 
-		let mut event = <frame_system::Pallet<Test>>::events()
+		let mut events = <frame_system::Pallet<Test>>::events();
+
+		events.pop();
+
+		let mut event = events
 			.pop()
 			.expect("Expected at least one EventRecord to be found")
 			.event;
@@ -892,5 +905,12 @@ fn process_finalised_assets_should_succeed() {
 				block_number
 			))
 		);
+
+		assert_ok!(OnboardingModule::change_status(
+			Origin::signed(AMANI),
+			NftCollection::OFFICESTEST,
+			item_id,
+			crate::Onboarding::AssetStatus::PURCHASED
+		));
 	});
 }
