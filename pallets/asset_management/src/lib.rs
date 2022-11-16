@@ -18,6 +18,7 @@ pub use pallet_housing_fund as HFund;
 mod functions;
 mod types;
 pub use crate::types::*;
+pub use functions::*;
 
 #[cfg(test)]
 mod mock;
@@ -42,17 +43,30 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Call: Parameter
+			+ UnfilteredDispatchable<Origin = <Self as frame_system::Config>::Origin>
+			+ From<Call<Self>>
+			+ GetDispatchInfo;
+		type Delay: Get<Self::BlockNumber>;
+		type CheckDelay: Get<Self::BlockNumber>;
+		type InvestorVoteAmount: Get<u128>;
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 		type WeightInfo: WeightInfo;
+
+		#[pallet::constant]
+		type MinimumDepositVote: Get<BalanceOf<Self>>;
+
+		#[pallet::constant]
+		type CheckPeriod: Get<Self::BlockNumber>;
 	}
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/main-docs/build/runtime-storage/
 	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
+	#[pallet::getter(fn democracy_proposals)]
+	pub type DemocracyProposals<T: Config> =
+		StorageMap<_, Blake2_128Concat, T::Hash, BlockNumberOf<T>, OptionQuery>;
+
+
+	
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
@@ -73,6 +87,12 @@ pub mod pallet {
 		NotAnAssetAccount,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		///The proposal could not be created
+		FailedToCreateProposal,
+		///This Preimage already exists
+		DuplicatePreimage,
+		///Not an owner in the corresponding virtual account
+		NotAnOwner,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -80,53 +100,44 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/main-docs/build/origins/
-			let who = ensure_signed(origin)?;
-
-			// Update storage.
-			<Something<T>>::put(something);
-
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
-			// Return a successful DispatchResultWithPostInfo
-			Ok(())
-		}
-
-		/// An example dispatchable that may throw a custom error.
+		
+		///Owners Voting system
+		///One owner trigger a vote session with a proposal
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
+		pub fn representative_vote(origin:OriginFor<T>,virtual_account: T::AccountId) -> DispatchResult{
+			let caller = ensure_signed(origin)?;
+			//Ensure that the caller is an owner related to the virtual account
 
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
+			//Make proposal
+			let deposit = T::MinimumDeposit::get();
+			//Get NFT infos from virtual_account
+
+			//Create the call 
+			//let rep_call = Call::<T>::representative_approval {
+			//	rep_account:
+			//	collection:
+			//	item:
+			//};
+			//ensure!(rep_call.is_some(),Error::<T>::FailedToCreateProposal);
+
+			//Create the proposal hash
+			//let prop_hash = Self::create_proposal_hash_and_note(caller,rep_call);
+
+
+			
+			Ok(())
 		}
 
 		/// approve a Representative role request
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn representative_approval(origin: OriginFor<T>, account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
+		pub fn representative_approval(origin: OriginFor<T>, rep_account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
 			//Check that the caller is a stored virtual account
 			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
 			//Check that the account is in the representative waiting list
-			ensure!(Roles::Pallet::<T>::get_pending_representatives(&account).is_some(),"problem");
+			ensure!(Roles::Pallet::<T>::get_pending_representatives(&rep_account).is_some(),"problem");
 			//Approve role request
-			Self::approve_representative(caller,account).ok();
+			Self::approve_representative(caller,rep_account).ok();
 
 			Ok(())
 		}
