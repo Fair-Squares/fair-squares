@@ -43,24 +43,24 @@ use frame_system::{
 	EnsureRoot, EnsureSigned,
 };
 pub use pallet_balances::Call as BalancesCall;
+pub use pallet_democracy;
+use pallet_nft::NftPermissions;
+pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
-pub use pallet_democracy;
-use pallet_nft::NftPermissions;
-pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 
+pub use pallet_asset_management;
+pub use pallet_bidding;
+pub use pallet_housing_fund;
+pub use pallet_onboarding;
 /// Import the template pallet.
 pub use pallet_roles;
-pub use pallet_housing_fund;
+pub use pallet_share_distributor;
 pub use pallet_utility;
 pub use pallet_voting;
-pub use pallet_onboarding;
-pub use pallet_share_distributor;
-pub use pallet_bidding;
-pub use pallet_asset_management;
 // flag add pallet use
 
 /// An index to a block.
@@ -125,8 +125,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	state_version: 1,
 };
 
-
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -140,7 +138,6 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 
 /// We allow for 2 seconds of compute with a 6 second average block time.
 const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_mul(2);
-
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
@@ -329,13 +326,37 @@ impl pallet_uniques::Config for Runtime {
 }
 
 parameter_types! {
+	pub const BasicDeposit: Balance = deposit(1, 258); // 258 bytes on-chain
+	pub const FieldDeposit: Balance = deposit(0, 66); // 66 bytes on-chain
+	pub const SubAccountDeposit: Balance = deposit(1, 53);
+	pub const MaxAdditionalFields: u32 = 100;
+	pub const MaxRegistrars: u32 = 20;
+	pub const MaxSubAccounts: u32 = 100;
+}
+
+impl pallet_identity::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+	type BasicDeposit = BasicDeposit;
+	type FieldDeposit = FieldDeposit;
+	type MaxRegistrars = MaxRegistrars;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type RegistrarOrigin = EnsureRoot<AccountId>;
+	type MaxAdditionalFields = MaxAdditionalFields;
+	type MaxSubAccounts = MaxSubAccounts;
+	type Slashed = Treasury;
+	type SubAccountDeposit = SubAccountDeposit;
+	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
 	pub const MaxMembers:u32 =200;
 }
 /// Configure the pallet-roles in pallets/roles.
 impl pallet_roles::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
-	type WeightInfo =  pallet_roles::weights::SubstrateWeight<Runtime>;
+	type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
 	type MaxMembers = MaxMembers;
 }
 
@@ -643,6 +664,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Uniques: pallet_uniques,
 		Sudo: pallet_sudo,
+		Identity: pallet_identity,
 		RoleModule: pallet_roles,
 		HousingFundModule: pallet_housing_fund,
 		NftModule: pallet_nft,
@@ -707,6 +729,7 @@ mod benches {
 		[pallet_nft, NftModule]
 		[pallet_onboarding, OnboardingModule]
 		[pallet_share_distributor,ShareDistributor]
+		[pallet_identity, Identity]
 		//[pallet_asset_management, AssetManagementModule]
 		// flag add pallet bench_macro
 	);

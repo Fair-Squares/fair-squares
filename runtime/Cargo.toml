@@ -53,6 +53,7 @@ pallet-treasury = { git = "https://github.com/paritytech/substrate", branch = "p
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-preimage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
+pallet-identity = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
@@ -110,6 +111,7 @@ std = [
 	"pallet-scheduler/std",
 	"pallet-preimage/std",
 	"pallet-treasury/std",
+	"pallet-identity/std",
 	"pallet-roles/std",
 	"pallet-housing_fund/std",
 	"pallet-nft/std",
@@ -132,12 +134,13 @@ runtime-benchmarks = [
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
+	"pallet-identity/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",
 	"pallet-housing_fund/runtime-benchmarks",
 	"pallet-nft/runtime-benchmarks",
 	"pallet-voting/runtime-benchmarks",
-	"pallet-utility/runtime-benchmarks",
 	"pallet-onboarding/runtime-benchmarks",
 	"pallet-share_distributor/runtime-benchmarks",
 	"pallet-bidding/runtime-benchmarks",
@@ -156,11 +159,12 @@ try-runtime = [
 	"pallet-sudo/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
+	"pallet-utility/try-runtime",
+	"pallet-identity/try-runtime",
 	"pallet-roles/try-runtime",
 	"pallet-housing_fund/try-runtime",
 	"pallet-nft/try-runtime",
 	"pallet-voting/try-runtime",
-	"pallet-utility/try-runtime",
 	"pallet-onboarding/try-runtime",
 	"pallet-share_distributor/try-runtime",
 	"pallet-bidding/try-runtime",
