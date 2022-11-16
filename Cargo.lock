@@ -1872,6 +1872,7 @@ dependencies = [
  "pallet-bidding",
  "pallet-collective",
  "pallet-democracy",
+ "pallet-finalizer",
  "pallet-grandpa",
  "pallet-housing_fund",
  "pallet-nft",
@@ -4165,6 +4166,21 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 4.0.0 (git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.29)",
+]
+
+[[package]]
+name = "pallet-finalizer"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std 4.0.0 (git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.29)",
