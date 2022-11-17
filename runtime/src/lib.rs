@@ -326,9 +326,9 @@ impl pallet_uniques::Config for Runtime {
 }
 
 parameter_types! {
-	pub const BasicDeposit: Balance = deposit(1, 258); // 258 bytes on-chain
-	pub const FieldDeposit: Balance = deposit(0, 66); // 66 bytes on-chain
-	pub const SubAccountDeposit: Balance = deposit(1, 53);
+	pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
+	pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
+	pub const SubAccountDeposit: Balance = 2 * DOLLARS;   // 53 bytes on-chain
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 1;
 	pub const MaxSubAccounts: u32 = 100;
