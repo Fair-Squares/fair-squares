@@ -715,7 +715,7 @@ mod benches {
 		[pallet_onboarding, OnboardingModule]
 		[pallet_share_distributor,ShareDistributor]
 		//[pallet_asset_management, AssetManagementModule]
-		[pallet_finalizer, FinalizerModule]
+		// [pallet_finalizer, FinalizerModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -920,7 +920,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			add_benchmark!(params, batches, pallet_share_distributor, ShareDistributor);
 			//add_benchmark!(params, batches, pallet_asset_management, AssetManagementModule);
-			add_benchmark!(params, batches, pallet_finalizer, FinalizerModule);
+			// add_benchmark!(params, batches, pallet_finalizer, FinalizerModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
