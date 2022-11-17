@@ -7,7 +7,11 @@ use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_runtime::{
+    traits::{IdentifyAccount, Verify},
+    AccountId32,
+};
+use std::str::FromStr;
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -161,8 +165,8 @@ fn testnet_genesis(
 		role_module: RoleModuleConfig {
 			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 			representatives: vec![
-				get_account_id_from_seed::<sr25519::Public>("Alice//Representative"),
-				get_account_id_from_seed::<sr25519::Public>("Bob//Representative"),
+				AccountId32::from_str("5HErWv2YuCrjoW3bDjGoist4vVryCAhWGk2YcCqdwTG1SMMH").unwrap(),
+				AccountId32::from_str("5FFDJcwqRCFPFKM44DhFC3ituGwgaQKxpp75Ger9xNs3GCiU").unwrap(),
 			],
 		},
 		nft_module: NftModuleConfig {

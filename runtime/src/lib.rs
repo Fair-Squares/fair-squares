@@ -330,7 +330,7 @@ parameter_types! {
 	pub const FieldDeposit: Balance = deposit(0, 66); // 66 bytes on-chain
 	pub const SubAccountDeposit: Balance = deposit(1, 53);
 	pub const MaxAdditionalFields: u32 = 100;
-	pub const MaxRegistrars: u32 = 20;
+	pub const MaxRegistrars: u32 = 1;
 	pub const MaxSubAccounts: u32 = 100;
 }
 
