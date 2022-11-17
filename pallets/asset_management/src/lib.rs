@@ -1,11 +1,4 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-//Pallets needed: 
-//- Roles for the Representative role
-//- Democracy for the voting system 
-//- Share_Distributor for the conviction weight calculation based on asset shares
-
-//Needed calls:
-//Call 1) Create a Representative role
 
 pub use pallet::*;
 pub use pallet_roles as Roles;
@@ -36,8 +29,10 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
+	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config{
@@ -60,10 +55,11 @@ pub mod pallet {
 		type CheckPeriod: Get<Self::BlockNumber>;
 	}
 
+	//Store the referendum_index and the struct containing the virtual_account/caller/potential_rep/vote_result
 	#[pallet::storage]
-	#[pallet::getter(fn democracy_proposals)]
-	pub type DemocracyProposals<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::Hash, BlockNumberOf<T>, OptionQuery>;
+	#[pallet::getter(fn proposals)]
+	pub type ProposalsLog<T: Config> =
+		StorageMap<_, Blake2_128Concat, Dem::ReferendumIndex, RepVote<T>, OptionQuery>;
 
 
 	
@@ -76,6 +72,15 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+
+		///A vote session to elect a representative has started
+		RepresentativeVoteSessionStarted{
+			caller: T::AccountId,
+			candidate: T::AccountId,
+			asset_account: T::AccountId,
+		},
+
+
 	}
 
 	// Errors inform users that something went wrong.
@@ -93,6 +98,8 @@ pub mod pallet {
 		DuplicatePreimage,
 		///Not an owner in the corresponding virtual account
 		NotAnOwner,
+		///The Asset Does not Exists
+		NotAnAsset
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -104,26 +111,46 @@ pub mod pallet {
 		///Owners Voting system
 		///One owner trigger a vote session with a proposal
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn representative_vote(origin:OriginFor<T>,virtual_account: T::AccountId) -> DispatchResult{
-			let caller = ensure_signed(origin)?;
+		pub fn representative_session(origin:OriginFor<T>,asset_type: Nft::PossibleCollections, asset_id: T::NftItemId,representative: T::AccountId ) -> DispatchResult{
+			let caller = ensure_signed(origin.clone())?;
+
+			//Get the asset virtual account if it exists
+			let collection_id: T::NftCollectionId = asset_type.value().into();
+			let ownership = Share::Pallet::<T>::virtual_acc(collection_id,asset_id);
+			ensure!(!ownership.clone().is_none(),Error::<T>::NotAnAsset);
+			let virtual_account = ownership.clone().unwrap().virtual_account;
+
 			//Ensure that the caller is an owner related to the virtual account
+			let owners = ownership.unwrap().owners;
+			ensure!(owners.contains(&caller),Error::<T>::NotAnOwner);
 
 			//Make proposal
 			let deposit = T::MinimumDeposit::get();
-			//Get NFT infos from virtual_account
 
 			//Create the call 
-			//let rep_call = Call::<T>::representative_approval {
-			//	rep_account:
-			//	collection:
-			//	item:
-			//};
-			//ensure!(rep_call.is_some(),Error::<T>::FailedToCreateProposal);
+			let rep_call = Call::<T>::representative_approval {
+				rep_account: representative.clone(),
+				collection: collection_id,
+				item: asset_id
+			};
+			
+			//Create and add the proposal
+			let prop_hash = Self::create_proposal_hash_and_note(caller.clone(),rep_call.into());
+			Dem::Pallet::<T>::propose(origin,prop_hash,deposit).ok();
 
-			//Create the proposal hash
-			//let prop_hash = Self::create_proposal_hash_and_note(caller,rep_call);
+			let threshold = Dem::VoteThreshold::SimpleMajority;
+			let delay = <T as Config>::Delay::get();
+			let referendum_index =
+			Dem::Pallet::<T>::internal_start_referendum(prop_hash, threshold, delay);
 
-
+			//Create data for proposals Log
+			RepVote::<T>::new(caller.clone(),virtual_account.clone(),representative.clone(),referendum_index).ok();
+			
+			Self::deposit_event(Event::RepresentativeVoteSessionStarted{
+				caller: caller,
+				candidate: representative,
+				asset_account: virtual_account,
+			});
 			
 			Ok(())
 		}
