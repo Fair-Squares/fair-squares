@@ -1,9 +1,29 @@
+//! # Finalizer pallet
+//!
+//! The finalizer pallet provides methods to the notary and the seller to manage house purchase
+//! and to the seller to cancel a purchase
+//!
+//! ## Overview
+//!
+//! The finalizer pallet provides methods to the notary to validate or reject house purchase
+//! and to the seller to cancel a purchase
+//!
+//! ## Interface
+//!
+//! ### Dispatchable Functions
+//!
+//! * 'validate_transaction_asset' - a notary validate a purchase transaction after checked informations
+//! * 'reject_transaction_asset' - a notary reject a purchase
+//! * 'reject_transaction_asset' - a house owner can cancel the purchase transaction after notary validation
+
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
+pub use pallet_roles as Roles;
+pub use pallet_nft as Nft;
+pub use pallet_onboarding as Onboarding;
+pub use pallet_housing_fund as HousingFund;
 
 #[cfg(test)]
 mod mock;
@@ -23,85 +43,224 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
+	pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: 
+		frame_system::Config 
+		+ Roles::Config
+		+ Nft::Config
+		+ Onboarding::Config
+		+ HousingFund::Config
+	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
 	}
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/main-docs/build/runtime-storage/
-	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
-
-	// Pallets use events to inform users when important changes are made.
-	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		NotaryValidatedAssetTransaction(
+			AccountIdOf<T>,
+			T::NftCollectionId,
+			T::NftItemId,
+		),
+		NotaryRejectedAssetTransaction(
+			AccountIdOf<T>,
+			T::NftCollectionId,
+			T::NftItemId,
+		),
+		SellerCancelledAssetTransaction(
+			AccountIdOf<T>,
+			T::NftCollectionId,
+			T::NftItemId,
+		),
 	}
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
-		/// Error names should be descriptive.
-		NoneValue,
-		/// Errors should have helpful documentation associated with them.
-		StorageOverflow,
+		/// Must have the notary role
+		NotANotary,
+		/// Must have the seller role
+		NotASeller,
+		/// Must be the owner of the house
+		NotTheHouseOwner,
+		/// Asset must exist in storage
+		AssetDoesNotExist,
+		/// Asset must have FINALISED status
+		HouseHasNotFinalisedStatus,
+		/// Asset must have FINALISING status
+		HouseHasNotFinalisingStatus
 	}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		
+		/// The notary set the house status to FINALISED
+		/// The origin must be signed
+		/// - collection_id: the collection id of the nft asset
+		/// - nft_item_id: the id of the nft asset
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/main-docs/build/origins/
-			let who = ensure_signed(origin)?;
+		pub fn validate_transaction_asset(
+			origin: OriginFor<T>, 
+			collection_id: T::NftCollectionId,
+			nft_item_id: T::NftItemId
+		) -> DispatchResult {
+			let who = ensure_signed(origin.clone())?;
 
-			// Update storage.
-			<Something<T>>::put(something);
+			// Check that the account has the notary role
+			ensure!(Roles::Pallet::<T>::notaries(who.clone()).is_some(), Error::<T>::NotANotary);
 
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
-			// Return a successful DispatchResultWithPostInfo
+			// Check that the house exists in storage
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
+			ensure!(
+				house_wrap.is_some(),
+				Error::<T>::AssetDoesNotExist
+			);
+
+			// Ensure the house status is FINALISING
+			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING, Error::<T>::HouseHasNotFinalisingStatus);
+
+			let collection = Self::get_possible_collection(collection_id.clone());
+
+			Onboarding::Pallet::<T>::change_status(
+				origin, 
+				collection, 
+				nft_item_id.clone(), 
+				Onboarding::AssetStatus::FINALISED
+			).ok();
+
+			Self::deposit_event(Event::NotaryValidatedAssetTransaction(
+				who,
+				collection_id,
+				nft_item_id,
+			));
+
 			Ok(())
 		}
 
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
+		/// The notary set the house status to REJECTED
+		/// The origin must be signed
+		/// - collection_id: the collection id of the nft asset
+		/// - nft_item_id: the id of the nft asset
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		pub fn reject_transaction_asset(
+			origin: OriginFor<T>, 
+			collection_id: T::NftCollectionId,
+			nft_item_id: T::NftItemId
+		) -> DispatchResult {
+			let who = ensure_signed(origin.clone())?;
 
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
+			// Check that the account has the notary role
+			ensure!(Roles::Pallet::<T>::notaries(who.clone()).is_some(), Error::<T>::NotANotary);
+
+			// Check that the house exists in storage
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
+			ensure!(
+				house_wrap.is_some(),
+				Error::<T>::AssetDoesNotExist
+			);
+
+			// Ensure the house status is FINALISING
+			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING, Error::<T>::HouseHasNotFinalisingStatus);
+
+			let collection = Self::get_possible_collection(collection_id.clone());
+
+			Onboarding::Pallet::<T>::change_status(
+				origin, 
+				collection, 
+				nft_item_id.clone(), 
+				Onboarding::AssetStatus::REJECTED
+			).ok();
+
+			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id.clone(), nft_item_id.clone()).ok();
+
+			Self::deposit_event(Event::NotaryRejectedAssetTransaction(
+				who,
+				collection_id,
+				nft_item_id,
+			));
+
+			Ok(())
+		}
+
+		/// The seller set the house status to CANCELLED
+		/// The origin must be signed
+		/// - collection_id: the collection id of the nft asset
+		/// - nft_item_id: the id of the nft asset
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		pub fn cancel_transaction_asset(
+			origin: OriginFor<T>, 
+			collection_id: T::NftCollectionId,
+			nft_item_id: T::NftItemId
+		) -> DispatchResult {
+			let who = ensure_signed(origin.clone())?;
+
+			// Check that the account has the notary role
+			ensure!(Roles::Pallet::<T>::sellers(who.clone()).is_some(), Error::<T>::NotASeller);
+
+			// Check that the house exists in storage
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
+			ensure!(
+				house_wrap.is_some(),
+				Error::<T>::AssetDoesNotExist
+			);
+
+			let owner: T::AccountId = Nft::Pallet::<T>::owner(collection_id, nft_item_id).unwrap();
+
+			// Ensure the caller is the owner of the house
+			ensure!(who.clone() == owner, Error::<T>::NotTheHouseOwner);
+
+			// Ensure the house status is FINALISED
+			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISED, Error::<T>::HouseHasNotFinalisedStatus);
+
+			let collection = Self::get_possible_collection(collection_id.clone());
+
+			Onboarding::Pallet::<T>::change_status(
+				origin, 
+				collection, 
+				nft_item_id.clone(), 
+				Onboarding::AssetStatus::CANCELLED
+			).ok();
+
+			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id.clone(), nft_item_id.clone()).ok();
+
+			Self::deposit_event(Event::SellerCancelledAssetTransaction(
+				who,
+				collection_id,
+				nft_item_id,
+			));
+
+			Ok(())
+		}
+	}
+}
+
+pub use frame_support::{
+	inherent::Vec,
+};
+use enum_iterator::all;
+impl<T: Config> Pallet<T> {
+
+	fn get_possible_collection(collection_id: T::NftCollectionId) -> Nft::PossibleCollections {
+		let collections = all::<Nft::PossibleCollections>().collect::<Vec<_>>();
+		let mut possible_collection = Nft::PossibleCollections::HOUSES;
+		for item in collections.iter() {
+			let value: T::NftCollectionId = item.value().into();
+			if value == collection_id {
+				possible_collection = *item;
+				break;
 			}
 		}
+		possible_collection
 	}
 }

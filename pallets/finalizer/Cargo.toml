@@ -13,6 +13,8 @@ repository = "https://github.com/substrate-developer-hub/substrate-node-template
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
+enum-iterator = "1.2.0"
+num-traits = {version="0.2.15",default-features = false}
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
@@ -21,6 +23,20 @@ frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
 frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
+pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
+pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
+pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
+pallet-roles = { default-features = false, path="../roles" }
+pallet-nft = { default-features = false, path="../nft" }
+pallet-voting = { default-features = false, path = "../voting" }
+pallet-onboarding = { default-features = false, path = "../onboarding" }
+pallet-bidding = { default-features = false, path = "../bidding" }
+pallet-housing_fund = { default-features = false, path = "../housing_fund" }
+pallet-share_distributor = { default-features = false, path = "../share_distributor" }
 
 [dev-dependencies]
 sp-core = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
@@ -38,6 +54,19 @@ std = [
 	"frame-system/std",
 	"scale-info/std",
 	"sp-runtime/std",
+	"pallet-uniques/std",
+	"pallet-balances/std",
+	"pallet-collective/std",
+	"pallet-democracy/std",
+	"pallet-scheduler/std",
+	"pallet-roles/std",
+	"pallet-nft/std",
+	"pallet-voting/std",
+	"pallet-onboarding/std",
+	"pallet-bidding/std",
+	"pallet-housing_fund/std",
+	"pallet-assets/std",
+	"pallet-share_distributor/std",
 ]
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
 try-runtime = ["frame-support/try-runtime"]
