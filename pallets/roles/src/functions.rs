@@ -17,7 +17,7 @@ impl<T: Config> Pallet<T> {
 				AccountsRolesLog::<T>::insert(&who, Accounts::SELLER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerCreated(now, who));
-				return true;
+				return true
 			}
 		}
 		false
@@ -39,7 +39,7 @@ impl<T: Config> Pallet<T> {
 				AccountsRolesLog::<T>::insert(&who, Accounts::SERVICER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerCreated(now, who));
-				return true;
+				return true
 			}
 		}
 		false
@@ -61,7 +61,7 @@ impl<T: Config> Pallet<T> {
 				AccountsRolesLog::<T>::insert(&who, Accounts::NOTARY);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryCreated(now, who));
-				return true;
+				return true
 			}
 		}
 		false
@@ -69,9 +69,9 @@ impl<T: Config> Pallet<T> {
 
 	//Helper function for account creation approval by admin only
 	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
-		let exist = Self::approve_seller(sender.clone(), who.clone())
-			|| Self::approve_servicer(sender.clone(), who.clone())
-			|| Self::approve_notary(sender, who);
+		let exist = Self::approve_seller(sender.clone(), who.clone()) ||
+			Self::approve_servicer(sender.clone(), who.clone()) ||
+			Self::approve_notary(sender, who);
 		ensure!(exist, Error::<T>::NotInWaitingList);
 		Ok(())
 	}
@@ -99,7 +99,7 @@ impl<T: Config> Pallet<T> {
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerAccountCreationRejected(now, who.clone()));
-				break;
+				break
 			}
 		}
 
@@ -111,7 +111,7 @@ impl<T: Config> Pallet<T> {
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
-				break;
+				break
 			}
 		}
 		ensure!(exist, Error::<T>::NotInWaitingList);
@@ -133,9 +133,24 @@ impl<T: Config> Pallet<T> {
 				ensure!(&account != id, Error::<T>::AlreadyWaiting);
 			}
 		}
-		ensure!(!RepApprovalList::<T>::contains_key(&account),Error::<T>::AlreadyWaiting);
-		
+		ensure!(!RepApprovalList::<T>::contains_key(&account), Error::<T>::AlreadyWaiting);
 
 		Ok(())
+	}
+
+	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
+		let now = <frame_system::Pallet<T>>::block_number();
+		for account in representatives.into_iter() {
+			AccountsRolesLog::<T>::insert(&account, Accounts::REPRESENTATIVE);
+			RepresentativeLog::<T>::insert(
+				&account,
+				Representative::<T> {
+					account_id: account.clone(),
+					age: now,
+					activated: true,
+					assets_accounts: vec![],
+				},
+			);
+		}
 	}
 }

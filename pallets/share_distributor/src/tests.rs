@@ -73,11 +73,11 @@ fn share_distributor0() {
 		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
 		//put some funds in FairSquare SlashFees account
 		let fees_account = Onboarding::Pallet::<Test>::account_id();
-		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account,  150_000u32.into());
+		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account, 150_000u32.into());
 
 		let price1 = 40_000;
 		let price2 = 30_000;
-		prep_test(price1,  price2,  metadata0,  metadata1,  metadata2);
+		prep_test(price1, price2, metadata0, metadata1, metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
@@ -93,32 +93,32 @@ fn share_distributor0() {
 		.ok();
 
 		//Store initial owner
-		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0,  item_id0).unwrap();
+		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0, item_id0).unwrap();
 
 		//Execute virtual account transactions
 		assert_ok!(ShareDistributor::virtual_account(coll_id0, item_id0));
 		//Store new owner
-		let new_owner0 = ShareDistributor::virtual_acc(coll_id0,  item_id0).unwrap().virtual_account;
+		let new_owner0 = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account;
 
 		//Execute nft transaction
-		assert_ok!(ShareDistributor::nft_transaction(coll_id0,  item_id0,  new_owner0.clone()));
+		assert_ok!(ShareDistributor::nft_transaction(coll_id0, item_id0, new_owner0.clone()));
 
 		//Compare new & old owner
-		assert_ne!(old_owner0,  new_owner0);
+		assert_ne!(old_owner0, new_owner0);
 
 		//Create a FundOperation struct for this asset
-		let fund_op = HousingFund::FundOperation  {
+		let fund_op = HousingFund::FundOperation {
 			nft_collection_id: coll_id0,
 			nft_item_id: item_id0,
 			amount: price1,
 			block_number: 1,
 			contributions: vec![(EVE, 25_000), (DAVE, 15_000)],
 		};
-		let id = ShareDistributor::virtual_acc(coll_id0,  item_id0).unwrap().token_id;
+		let id = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().token_id;
 		//Add new owners and asset to housing fund
-		HousingFund::Reservations::<Test>::insert((coll_id0,  item_id0),  fund_op);
-		println!("Reservations {:?}",  HousingFund::Reservations::<Test>::get((coll_id0,  item_id0)));
-		println!("Virtual Account {:?}",  ShareDistributor::virtual_acc(coll_id0,  item_id0));
+		HousingFund::Reservations::<Test>::insert((coll_id0, item_id0), fund_op);
+		println!("Reservations {:?}", HousingFund::Reservations::<Test>::get((coll_id0, item_id0)));
+		println!("Virtual Account {:?}", ShareDistributor::virtual_acc(coll_id0, item_id0));
 
 		//Create token
 		assert_ok!(ShareDistributor::create_tokens(origin, coll_id0, item_id0, new_owner0.clone()));
@@ -141,7 +141,7 @@ fn share_distributor0() {
 		let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id1 as usize] - 1;
 
 		//Store initial owner
-		let old_owner1 = pallet_nft::Pallet::<Test>::owner(coll_id1,  item_id1).unwrap();
+		let old_owner1 = pallet_nft::Pallet::<Test>::owner(coll_id1, item_id1).unwrap();
 
 		//Change first asset status to FINALISED
 		Onboarding::Pallet::<Test>::change_status(
@@ -156,17 +156,17 @@ fn share_distributor0() {
 		assert_ok!(ShareDistributor::virtual_account(coll_id1, item_id1));
 
 		//Store new owner
-		let new_owner1 = ShareDistributor::virtual_acc(coll_id1,  item_id1).unwrap().virtual_account;
+		let new_owner1 = ShareDistributor::virtual_acc(coll_id1, item_id1).unwrap().virtual_account;
 
 		//Execute nft transaction
-		assert_ok!(ShareDistributor::nft_transaction(coll_id1,  item_id1,  new_owner1.clone()));
+		assert_ok!(ShareDistributor::nft_transaction(coll_id1, item_id1, new_owner1.clone()));
 
 		//Compare new & old owner
-		assert_ne!(old_owner1,  new_owner1);
+		assert_ne!(old_owner1, new_owner1);
 
 		//Get the virtual accounts
-		let virtual0 = Virtual::<Test>::get(coll_id0,  item_id0).unwrap();
-		let virtual1 = Virtual::<Test>::get(coll_id1,  item_id1).unwrap();
+		let virtual0 = Virtual::<Test>::get(coll_id0, item_id0).unwrap();
+		let virtual1 = Virtual::<Test>::get(coll_id1, item_id1).unwrap();
 
 		//Check that virtual accounts are different
 		println!("Virtual account nbr1:{:?}\nVirtual account nbr2:{:?}", virtual0, virtual1);
@@ -185,11 +185,11 @@ fn share_distributor1() {
 		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
 		//put some funds in FairSquare SlashFees account
 		let fees_account = Onboarding::Pallet::<Test>::account_id();
-		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account,  150_000u32.into());
+		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account, 150_000u32.into());
 
 		let price1 = 40_000;
 		let price2 = 30_000;
-		prep_test(price1,  price2,  metadata0,  metadata1,  metadata2);
+		prep_test(price1, price2, metadata0, metadata1, metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
@@ -228,7 +228,7 @@ fn share_distributor1() {
 		HousingFund::Contributions::<Test>::insert(DAVE, contribution_dave);
 
 		//Create a FundOperation struct for this asset
-		let fund_op = HousingFund::FundOperation  {
+		let fund_op = HousingFund::FundOperation {
 			nft_collection_id: coll_id0,
 			nft_item_id: item_id0,
 			amount: price1,
@@ -237,7 +237,7 @@ fn share_distributor1() {
 		};
 
 		//Add new owners and asset to housing fund
-		HousingFund::Reservations::<Test>::insert((coll_id0,  item_id0),  fund_op);
+		HousingFund::Reservations::<Test>::insert((coll_id0, item_id0), fund_op);
 
 		// Update the Housing fund to fit with the contributions
 		HousingFund::FundBalance::<Test>::mutate(|val| {
@@ -254,9 +254,9 @@ fn share_distributor1() {
 		.ok();
 
 		//Store initial owner
-		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0,  item_id0).unwrap();
+		let old_owner0 = pallet_nft::Pallet::<Test>::owner(coll_id0, item_id0).unwrap();
 
-		assert_ok!(ShareDistributor::create_virtual(origin,  coll_id0,  item_id0));
+		assert_ok!(ShareDistributor::create_virtual(origin, coll_id0, item_id0));
 		let when = <frame_system::Pallet<Test>>::block_number();
 		let new_owner0 = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account;
 		let owners = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().owners;

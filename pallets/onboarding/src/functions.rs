@@ -159,15 +159,17 @@ impl<T: Config> Pallet<T> {
 		T::FeesAccount::get().into_account_truncating()
 	}
 
-	fn get_houses_by_status(status: types::AssetStatus) -> Vec<(
+	fn get_houses_by_status(
+		status: types::AssetStatus,
+	) -> Vec<(
 		<T as pallet_nft::Config>::NftCollectionId,
 		<T as pallet_nft::Config>::NftItemId,
-		types::Asset<T>
+		types::Asset<T>,
 	)> {
 		Houses::<T>::iter()
-    	.filter(|(_, _, house)| house.status == status)
-      .map(|(collection_id, item_id, house)| (collection_id, item_id, house))
-      .collect()
+			.filter(|(_, _, house)| house.status == status)
+			.map(|(collection_id, item_id, house)| (collection_id, item_id, house))
+			.collect()
 	}
 
 	pub fn get_onboarded_houses() -> Vec<(

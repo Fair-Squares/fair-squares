@@ -195,9 +195,9 @@ where
 			assets_accounts: Vec::new(),
 		};
 
-		RepApprovalList::<T>::mutate(caller,|val| {
+		RepApprovalList::<T>::mutate(caller, |val| {
 			//val.push(rep);
-			*val=Some(rep);
+			*val = Some(rep);
 		});
 
 		Ok(())

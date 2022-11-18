@@ -183,11 +183,12 @@ pub mod pallet {
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		pub new_admin: Option<T::AccountId>,
+		pub representatives: Vec<T::AccountId>,
 	}
 	#[cfg(feature = "std")]
 	impl<T: Config> Default for GenesisConfig<T> {
 		fn default() -> Self {
-			Self { new_admin: Default::default() }
+			Self { new_admin: Default::default(), representatives: vec![] }
 		}
 	}
 
@@ -198,6 +199,8 @@ pub mod pallet {
 			let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
 			let source = T::Lookup::unlookup(servicer0); //Source
 			crate::Pallet::<T>::set_manager(origin, source).ok();
+
+			crate::Pallet::<T>::init_representatives(self.representatives.clone());
 		}
 	}
 
