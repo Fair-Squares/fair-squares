@@ -16,6 +16,19 @@ pub fn prep_roles() {
 	                                                                            // will be tested
 }
 
+fn next_block() {
+	System::set_block_number(System::block_number() + 1);
+	Scheduler::on_initialize(System::block_number());
+	//Democracy::begin_block(System::block_number());
+}
+
+fn fast_forward_to(n: u64) {
+	while System::block_number() < n {
+		next_block();
+	}
+}
+
+
 #[test]
 fn representative() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -185,9 +198,23 @@ fn share_distributor0() {
 		assert_eq!(RoleModule::get_pending_representatives(FERDIE).unwrap().activated, false);
 
 		//approve FERDIE REPRESENTATIVE
-		assert_ok!(AssetManagement::representative_approval(origin3, FERDIE, coll_id1, item_id1));
+		//assert_ok!(AssetManagement::representative_approval(origin3, FERDIE, coll_id1, item_id1));
 		//check that Ferdie is now in RepresentiveLog, and not anymore in RepApprovalList
-		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
-		assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE), false);
+		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
+		//assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE), false);
+		let origin4 = Origin::signed(EVE);
+		let origin5 = Origin::signed(DAVE);
+
+		assert_ok!(AssetManagement::representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
+		let ref_index = Democracy::referendum_count();
+		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
+		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
+
+		let initial_block_number = System::block_number();
+		let end_block_number = initial_block_number
+			.saturating_add(<Test as crate::Config>::Delay::get());
+		
+
+
 	});
 }
