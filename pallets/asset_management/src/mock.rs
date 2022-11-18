@@ -39,7 +39,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Event<T>},
-        AssetManagement: pallet_asset_management::{Pallet, Call, Storage, Event<T>},
+		AssetManagement: pallet_asset_management::{Pallet, Call, Storage, Event<T>},
 		OnboardingModule: pallet_onboarding::{Pallet, Call, Storage, Event<T>},
 		VotingModule: pallet_voting::{Pallet, Call, Storage, Event<T>},
 		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},

@@ -114,7 +114,9 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn get_contributions() -> Vec<(AccountIdOf<T>, Contribution<T>)> {
-		Contributions::<T>::iter().map(|(account_id, contribution)| (account_id, contribution)).collect()
+		Contributions::<T>::iter()
+			.map(|(account_id, contribution)| (account_id, contribution))
+			.collect()
 	}
 
 	/// Cancel a house bidding

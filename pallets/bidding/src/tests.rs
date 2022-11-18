@@ -702,10 +702,7 @@ fn process_onboarded_assets_should_succeed() {
 
 		events.pop();
 
-		let event = events
-			.pop()
-			.expect("Expected at least one EventRecord to be found")
-			.event;
+		let event = events.pop().expect("Expected at least one EventRecord to be found").event;
 
 		// check that the event has been raised
 		assert_eq!(
@@ -718,10 +715,9 @@ fn process_onboarded_assets_should_succeed() {
 			))
 		);
 
-		assert_eq!(
-			pallet_onboarding::Houses::<Test>::get(collection_id, item_id).unwrap().status,
-			crate::Onboarding::AssetStatus::FINALISING
-		);
+		let asset = pallet_onboarding::Houses::<Test>::get(collection_id, item_id).unwrap();
+
+		assert_eq!(asset.status, crate::Onboarding::AssetStatus::FINALISING);
 	});
 }
 
@@ -863,10 +859,7 @@ fn process_finalised_assets_should_succeed() {
 
 		events.pop();
 
-		let mut event = events
-			.pop()
-			.expect("Expected at least one EventRecord to be found")
-			.event;
+		let mut event = events.pop().expect("Expected at least one EventRecord to be found").event;
 
 		// check that the event has been raised
 		assert_eq!(

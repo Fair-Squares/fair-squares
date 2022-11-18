@@ -1,9 +1,15 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+//Pallets needed:
+//- Roles for the Representative role
+//- Democracy for the voting system
+//- Share_Distributor for the conviction weight calculation based on asset shares
+
+//Needed calls:
+//Call 1) Create a Representative role
 
 pub use pallet::*;
-pub use pallet_roles as Roles;
 pub use pallet_democracy as Dem;
-pub use pallet_share_distributor as Share;
+pub use pallet_housing_fund as HFund;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_housing_fund as HFund;
@@ -183,7 +189,11 @@ pub mod pallet {
 		pub fn representative_approval(origin: OriginFor<T>, rep_account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
 			//Check that the caller is a stored virtual account
-			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
+			ensure!(
+				caller ==
+					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				Error::<T>::NotAnAssetAccount
+			);
 			//Check that the account is in the representative waiting list
 			ensure!(Roles::Pallet::<T>::get_pending_representatives(&rep_account).is_some(),"problem");
 			//Approve role request
@@ -191,7 +201,5 @@ pub mod pallet {
 
 			Ok(())
 		}
-
-
 	}
 }
