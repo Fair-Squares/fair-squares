@@ -61,6 +61,7 @@ pub use pallet_roles;
 pub use pallet_share_distributor;
 pub use pallet_utility;
 pub use pallet_voting;
+pub use pallet_finalizer;
 // flag add pallet use
 
 /// An index to a block.
@@ -639,10 +640,22 @@ impl pallet_bidding::Config for Runtime {
 	type MinimumSharePerInvestor = MinimumSharePerInvestor;
 	type NewAssetScanPeriod = NewAssetScanPeriod;
 }
+
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
+	type Call = Call;
+	type Delay = Delay;
+	type CheckDelay = CheckDelay;
+	type InvestorVoteAmount = InvestorVoteAmount;
+	type CheckPeriod = CheckPeriod;
 	type Currency = Balances;
+	type MinimumDepositVote = MinimumDeposit;
 	type WeightInfo = ();
+}
+
+impl pallet_finalizer::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_finalizer::weights::SubstrateWeight<Runtime>;
 }
 
 // flag add pallet config
@@ -679,6 +692,7 @@ construct_runtime!(
 		Assets:pallet_assets,
 		BiddingModule: pallet_bidding,
 		AssetManagementModule: pallet_asset_management,
+		FinalizerModule: pallet_finalizer,
 		// flag add pallet runtime
 	}
 );
@@ -731,6 +745,7 @@ mod benches {
 		[pallet_share_distributor,ShareDistributor]
 		[pallet_identity, Identity]
 		//[pallet_asset_management, AssetManagementModule]
+		// [pallet_finalizer, FinalizerModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -935,6 +950,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			add_benchmark!(params, batches, pallet_share_distributor, ShareDistributor);
 			//add_benchmark!(params, batches, pallet_asset_management, AssetManagementModule);
+			// add_benchmark!(params, batches, pallet_finalizer, FinalizerModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
