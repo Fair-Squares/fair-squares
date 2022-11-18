@@ -7,7 +7,7 @@ pub use pallet_share_distributor as Share;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_housing_fund as HFund;
-pub use pallet_assets as Assets;
+pub use pallet_assets as Assetss;
 
 mod functions;
 mod types;
@@ -36,7 +36,7 @@ pub mod pallet {
 	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config + Assets::Config{
+	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config + Assetss::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Call: Parameter
@@ -166,10 +166,13 @@ pub mod pallet {
 			let ownership = Share::Pallet::<T>::virtual_acc(infos.collection_id,infos.item_id).unwrap();
 			ensure!(Self::caller_can_vote(&voter,ownership.clone()),Error::<T>::NotAnOwner);
 			//Get number of FS tokens own by caller
-			let tokens = Assets::Pallet::<T>::balance(ownership.token_id.into(),voter);
+			let tokens = Assetss::Pallet::<T>::balance(ownership.token_id.into(),voter);
 			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
 			//What is happening here!! testing will tell us...
 			Dem::AccountVote::Standard { vote: v, balance: tokens };
+
+			//ToDo -> hook needed to look for the end of the referendum, 
+			//and change the field vote_result in the struct RepVote
 
 
 			Ok(())
