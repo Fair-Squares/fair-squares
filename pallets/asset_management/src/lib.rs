@@ -9,11 +9,12 @@
 
 pub use pallet::*;
 pub use pallet_democracy as Dem;
-pub use pallet_housing_fund as HFund;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_housing_fund as HFund;
 pub use pallet_assets as Assetss;
+pub use pallet_roles as Roles;
+pub use pallet_share_distributor as Share;
 
 mod functions;
 mod types;
