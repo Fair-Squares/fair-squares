@@ -167,6 +167,10 @@ pub mod pallet {
 			ensure!(Self::caller_can_vote(&voter,ownership.clone()),Error::<T>::NotAnOwner);
 			//Get number of FS tokens own by caller
 			let tokens = Assets::Pallet::<T>::balance(ownership.token_id.into(),voter);
+			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
+			//What is happening here!! testing will tell us...
+			Dem::AccountVote::Standard { vote: v, balance: tokens };
+
 
 			Ok(())
 		}
