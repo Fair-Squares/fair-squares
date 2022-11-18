@@ -14,9 +14,12 @@
 //! * 'force_process_onboarded_asset' - extrinsic to manually launch the process of finalised assets
 //!
 //! #### Functions
-//! * 'process_finalised_finalised_assets' - execute the token distribution between investors for the finalised assets
-//! * 'process_onboarded_assetss' - execute the token distribution between investors for the finalised assets
-//! * 'process_onboarded_assets' - execute the workflow to associate an onboarded onboarded asset to a list of investors and make and make
+//! * 'process_finalised_finalised_assets' - execute the token distribution between investors for
+//!   the finalised assets
+//! * 'process_onboarded_assetss' - execute the token distribution between investors for the
+//!   finalised assets
+//! * 'process_onboarded_assets' - execute the workflow to associate an onboarded onboarded asset to
+//!   a list of investors and make and make
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -45,8 +48,7 @@ pub use pallet_share_distributor as ShareDistributor;
 pub mod pallet {
 	use super::*;
 
-	use frame_system::pallet_prelude::*;
-	use frame_system::WeightInfo;
+	use frame_system::{pallet_prelude::*, WeightInfo};
 
 	pub const PERCENT_FACTOR: u64 = 100;
 
@@ -149,8 +151,8 @@ pub mod pallet {
 	}
 }
 
-use frame_support::pallet_prelude::*;
 use enum_iterator::all;
+use frame_support::pallet_prelude::*;
 
 impl<T: Config> Pallet<T> {
 	fn begin_block(now: T::BlockNumber) -> Weight {
@@ -173,7 +175,7 @@ impl<T: Config> Pallet<T> {
 			// If no houses are found, an event is raised
 			let block = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::NoHousesFinalisedFound(block));
-			return Ok(().into());
+			return Ok(().into())
 		}
 
 		let houses_iter = houses.iter();
@@ -215,18 +217,18 @@ impl<T: Config> Pallet<T> {
 
 		if houses.is_empty() {
 			Self::deposit_event(Event::NoHousesOnboardedFound(block_number));
-			return Ok(().into());
+			return Ok(().into())
 		}
 
 		for (collection_id, item_id, house) in houses.into_iter() {
 			// Checks on price format
 			if house.price.is_none() {
-				continue;
+				continue
 			}
 
 			let amount_wrap = Self::convert_balance(house.price.unwrap());
 			if amount_wrap.is_none() {
-				continue;
+				continue
 			}
 
 			let amount = amount_wrap.unwrap();
@@ -234,8 +236,13 @@ impl<T: Config> Pallet<T> {
 
 			// Check if Housing Fund has enough fund for the asset
 			if !Housing_Fund::Pallet::<T>::check_available_fund(amount) {
-				Self::deposit_event(Event::HousingFundNotEnough(collection_id, item_id, amount, block_number));
-				continue;
+				Self::deposit_event(Event::HousingFundNotEnough(
+					collection_id,
+					item_id,
+					amount,
+					block_number,
+				));
+				continue
 			}
 
 			// Retrives the ivestors list and their contributions
@@ -244,9 +251,12 @@ impl<T: Config> Pallet<T> {
 			// Checki that the investor list creation was successful
 			if investor_shares.is_empty() {
 				Self::deposit_event(Event::FailedToAssembleInvestors(
-					collection_id, item_id, amount, block_number,
+					collection_id,
+					item_id,
+					amount,
+					block_number,
 				));
-				continue;
+				continue
 			}
 
 			Self::deposit_event(Event::InvestorListCreationSuccessful(
@@ -278,18 +288,20 @@ impl<T: Config> Pallet<T> {
 						let value: T::NftCollectionId = item.value().into();
 						if value == collection_id {
 							possible_collection = *item;
-							break;
+							break
 						}
 					}
 
-					let owner: T::AccountId = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
+					let owner: T::AccountId =
+						Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 
 					Onboarding::Pallet::<T>::change_status(
-						frame_system::RawOrigin::Signed(owner).into(), 
-						possible_collection, 
-						item_id, 
-						Onboarding::AssetStatus::FINALISING
-					).ok();
+						frame_system::RawOrigin::Signed(owner).into(),
+						possible_collection,
+						item_id,
+						Onboarding::AssetStatus::FINALISING,
+					)
+					.ok();
 				},
 				Err(_e) => {
 					Self::deposit_event(Event::HouseBiddingFailed(
@@ -299,7 +311,7 @@ impl<T: Config> Pallet<T> {
 						block_number,
 						investor_shares,
 					));
-					continue;
+					continue
 				},
 			}
 
@@ -329,17 +341,17 @@ impl<T: Config> Pallet<T> {
 
 		// We check that the total amount of the contributions allow to buy the asset
 		// And that the minimum number of investors is ok
-		if contributions.0 < amount
-			|| contributions_length
-				< (percent
-					/ Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
+		if contributions.0 < amount ||
+			contributions_length <
+				(percent /
+					Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
 		{
-			return result;
+			return result
 		}
 
 		// We have at least more than the maximum possible investors
-		if contributions_length
-			>= (percent / Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap())
+		if contributions_length >=
+			(percent / Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap())
 		{
 			result = Self::get_common_investor_distribution(
 				amount,
@@ -348,8 +360,8 @@ impl<T: Config> Pallet<T> {
 			);
 		}
 		// We have the minimum of investors
-		else if contributions_length
-			== (percent / Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
+		else if contributions_length ==
+			(percent / Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
 		{
 			result = Self::get_common_investor_distribution(
 				amount,
@@ -417,23 +429,23 @@ impl<T: Config> Pallet<T> {
 			} else if item.1 >= actual_percentage {
 				// The current account is given a median share as its maximum available share will
 				// break the distribution rule
-				item_share = actual_percentage
-					/ Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
+				item_share = actual_percentage /
+					Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
 			} else {
 				// We calculate what is the share if a median rule is applied on the actual
 				// contribution and the remaining ones
-				let share_median_diff = (actual_percentage - item.1)
-					/ Self::u64_to_balance_option(contributions_length - count).unwrap();
+				let share_median_diff = (actual_percentage - item.1) /
+					Self::u64_to_balance_option(contributions_length - count).unwrap();
 
 				// We check that the distribution between accounts will respect rules if the maximum
 				// available share is given to the current account
-				if share_median_diff
-					< Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap()
+				if share_median_diff <
+					Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap()
 				{
 					// The current account is given a median share as its maximum available share
 					// will break the distribution rule
-					item_share = actual_percentage
-						/ Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
+					item_share = actual_percentage /
+						Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
 				} else {
 					// The account is given its maximum available share as the remaining
 					// contributions will follow the min-max rule
@@ -448,7 +460,7 @@ impl<T: Config> Pallet<T> {
 			count += 1;
 
 			if actual_percentage == zero_percent {
-				break;
+				break
 			}
 		}
 
@@ -539,16 +551,16 @@ impl<T: Config> Pallet<T> {
 		let mut value: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
 		// If the available amount is greater than the maximum amount, then the maximum amount is
 		// returned
-		if contribution.available_balance
-			>= Self::get_amount_percentage(amount, T::MaximumSharePerInvestor::get())
+		if contribution.available_balance >=
+			Self::get_amount_percentage(amount, T::MaximumSharePerInvestor::get())
 		{
 			share = Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap();
 			value = Self::get_amount_percentage(amount, T::MaximumSharePerInvestor::get());
 		}
 		// If the avalable amount is greater than the minimum but less than the maximum amount then
 		// the share is calculated as a percentage
-		else if contribution.available_balance
-			>= Self::get_amount_percentage(amount, T::MinimumSharePerInvestor::get())
+		else if contribution.available_balance >=
+			Self::get_amount_percentage(amount, T::MinimumSharePerInvestor::get())
 		{
 			share =
 				contribution.available_balance * Self::u64_to_balance_option(100).unwrap() / amount;
@@ -562,8 +574,8 @@ impl<T: Config> Pallet<T> {
 		amount: Housing_Fund::BalanceOf<T>,
 		percentage: u64,
 	) -> Housing_Fund::BalanceOf<T> {
-		amount * Self::u64_to_balance_option(percentage).unwrap()
-			/ Self::u64_to_balance_option(100).unwrap()
+		amount * Self::u64_to_balance_option(percentage).unwrap() /
+			Self::u64_to_balance_option(100).unwrap()
 	}
 
 	fn convert_balance(amount: Onboarding::BalanceOf<T>) -> Option<Housing_Fund::BalanceOf<T>> {

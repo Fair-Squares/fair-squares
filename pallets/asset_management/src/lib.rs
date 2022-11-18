@@ -1,19 +1,19 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-//Pallets needed: 
+//Pallets needed:
 //- Roles for the Representative role
-//- Democracy for the voting system 
+//- Democracy for the voting system
 //- Share_Distributor for the conviction weight calculation based on asset shares
 
 //Needed calls:
 //Call 1) Create a Representative role
 
 pub use pallet::*;
-pub use pallet_roles as Roles;
 pub use pallet_democracy as Dem;
-pub use pallet_share_distributor as Share;
+pub use pallet_housing_fund as HFund;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
-pub use pallet_housing_fund as HFund;
+pub use pallet_roles as Roles;
+pub use pallet_share_distributor as Share;
 
 mod functions;
 mod types;
@@ -39,7 +39,15 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config{
+	pub trait Config:
+		frame_system::Config
+		+ HFund::Config
+		+ Onboarding::Config
+		+ Roles::Config
+		+ Dem::Config
+		+ Share::Config
+		+ Nft::Config
+	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
@@ -119,18 +127,25 @@ pub mod pallet {
 
 		/// approve a Representative role request
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn representative_approval(origin: OriginFor<T>, account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
+		pub fn representative_approval(
+			origin: OriginFor<T>,
+			account: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+		) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
 			//Check that the caller is a stored virtual account
-			ensure!(caller == Share::Pallet::<T>::virtual_acc(collection,item).unwrap().virtual_account, Error::<T>::NotAnAssetAccount);
+			ensure!(
+				caller ==
+					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				Error::<T>::NotAnAssetAccount
+			);
 			//Check that the account is in the representative waiting list
-			ensure!(Roles::Pallet::<T>::get_pending_representatives(&account).is_some(),"problem");
+			ensure!(Roles::Pallet::<T>::get_pending_representatives(&account).is_some(), "problem");
 			//Approve role request
-			Self::approve_representative(caller,account).ok();
+			Self::approve_representative(caller, account).ok();
 
 			Ok(())
 		}
-
-
 	}
 }
