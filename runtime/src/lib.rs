@@ -618,9 +618,16 @@ impl pallet_bidding::Config for Runtime {
 	type MinimumSharePerInvestor = MinimumSharePerInvestor;
 	type NewAssetScanPeriod = NewAssetScanPeriod;
 }
+
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
+	type Call = Call;
+	type Delay = Delay;
+	type CheckDelay = CheckDelay;
+	type InvestorVoteAmount = InvestorVoteAmount;
+	type CheckPeriod = CheckPeriod;
 	type Currency = Balances;
+	type MinimumDepositVote = MinimumDeposit;
 	type WeightInfo = ();
 }
 
