@@ -7,6 +7,7 @@ pub use pallet_share_distributor as Share;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_housing_fund as HFund;
+pub use pallet_assets as Assets;
 
 mod functions;
 mod types;
@@ -35,7 +36,7 @@ pub mod pallet {
 	
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config{
+	pub trait Config: frame_system::Config + HFund::Config + Onboarding::Config +Roles::Config + Dem::Config + Share::Config + Nft::Config + Assets::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type Call: Parameter
@@ -92,7 +93,11 @@ pub mod pallet {
 		///Not an owner in the corresponding virtual account
 		NotAnOwner,
 		///The Asset Does not Exists
-		NotAnAsset
+		NotAnAsset,
+		///This referendum does not exists
+		NotAValidReferendum,
+		///This referendum is over
+		ReferendumCompleted,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -114,9 +119,7 @@ pub mod pallet {
 			let virtual_account = ownership.clone().unwrap().virtual_account;
 
 			//Ensure that the caller is an owner related to the virtual account
-			let owners = ownership.unwrap().owners;
-			ensure!(owners.contains(&caller),Error::<T>::NotAnOwner);
-
+			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
 			//Make proposal
 			let deposit = T::MinimumDeposit::get();
 
@@ -137,14 +140,34 @@ pub mod pallet {
 			Dem::Pallet::<T>::internal_start_referendum(prop_hash, threshold, delay);
 
 			//Create data for proposals Log
-			RepVote::<T>::new(caller.clone(),virtual_account.clone(),representative.clone(),referendum_index).ok();
+			RepVote::<T>::new(caller.clone(),virtual_account.clone(),representative.clone(),referendum_index,collection_id,asset_id).ok();
 			
+			//Emit Event
 			Self::deposit_event(Event::RepresentativeVoteSessionStarted{
 				caller: caller,
 				candidate: representative,
 				asset_account: virtual_account,
 			});
 			
+			Ok(())
+		}
+
+		///Vote action
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn owners_vote(origin: OriginFor<T>, referendum_index: Dem::ReferendumIndex) -> DispatchResult {
+			let voter = ensure_signed(origin)?;
+			//Check that the referendum exists and is active
+			ensure!(ProposalsLog::<T>::contains_key(referendum_index),Error::<T>::NotAValidReferendum);
+			//Check the referendum status
+			let infos = Self::proposals(referendum_index).unwrap();
+			let status = infos.vote_result;
+			ensure!(status==VoteResult::AWAITING,Error::<T>::ReferendumCompleted);
+			//check that caller can vote
+			let ownership = Share::Pallet::<T>::virtual_acc(infos.collection_id,infos.item_id).unwrap();
+			ensure!(Self::caller_can_vote(&voter,ownership.clone()),Error::<T>::NotAnOwner);
+			//Get number of FS tokens own by caller
+			let tokens = Assets::Pallet::<T>::balance(ownership.token_id.into(),voter);
+
 			Ok(())
 		}
 

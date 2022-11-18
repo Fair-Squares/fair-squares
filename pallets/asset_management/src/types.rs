@@ -44,6 +44,10 @@ pub struct RepVote<T: Config> {
 	pub caller_account: T::AccountId,
 	///Virtual account corresponding to the asset
 	pub virtual_account: T::AccountId,
+	///Asset collection_id
+	pub collection_id: T::NftCollectionId,
+	///Asset item_id
+	pub item_id: T::NftItemId,
 	///Candidate for the representative role
 	pub candidate_account: T::AccountId,
 	///Vote result
@@ -58,11 +62,13 @@ impl<T: Config> RepVote<T> {
 		caller_account: T::AccountId,
 		virtual_account: T::AccountId,
 		candidate_account: T::AccountId,
-		referendum_index: Dem::ReferendumIndex,	
+		referendum_index: Dem::ReferendumIndex,
+		collection_id: T::NftCollectionId,
+		item_id: T::NftItemId,
 	) -> DispatchResult {
 		let vote_result = VoteResult::AWAITING;
 		let when = <frame_system::Pallet<T>>::block_number();
-		let session = RepVote::<T>{caller_account,virtual_account,candidate_account,vote_result,when};
+		let session = RepVote::<T>{caller_account,virtual_account,collection_id,item_id,candidate_account,vote_result,when};
 		ProposalsLog::<T>::insert(referendum_index,session);
 		Ok(())
 		

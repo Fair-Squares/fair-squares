@@ -29,5 +29,11 @@ impl<T: Config> Pallet<T> {
         }
         proposal_hash
     }
+
+    pub fn caller_can_vote(caller: &T::AccountId,ownership:Share::Ownership<T>) ->bool{
+        let owners = ownership.owners;
+		owners.contains(caller)
+    }
+
     
 }
