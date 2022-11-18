@@ -154,7 +154,7 @@ pub mod pallet {
 
 		///Vote action
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn owners_vote(origin: OriginFor<T>, referendum_index: Dem::ReferendumIndex) -> DispatchResult {
+		pub fn owners_vote(origin: OriginFor<T>, referendum_index: Dem::ReferendumIndex, vote:bool) -> DispatchResult {
 			let voter = ensure_signed(origin)?;
 			//Check that the referendum exists and is active
 			ensure!(ProposalsLog::<T>::contains_key(referendum_index),Error::<T>::NotAValidReferendum);
