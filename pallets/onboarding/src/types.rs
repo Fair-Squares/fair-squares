@@ -21,6 +21,7 @@ pub enum AssetStatus {
 	PURCHASED,
 	REJECTED,
 	SLASH,
+	CANCELLED,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebugNoBound, TypeInfo)]

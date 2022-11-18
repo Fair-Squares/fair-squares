@@ -51,6 +51,7 @@ impl system::Config for Test {
 
 impl pallet_template::Config for Test {
 	type Event = Event;
+	type WeightInfo = ();
 }
 
 // Build genesis storage according to the mock runtime.
