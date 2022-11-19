@@ -350,6 +350,13 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_utility::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 parameter_types! {
 	pub const MaxMembers:u32 =200;
 }
@@ -678,6 +685,7 @@ construct_runtime!(
 		Uniques: pallet_uniques,
 		Sudo: pallet_sudo,
 		Identity: pallet_identity,
+		Utility: pallet_utility,
 		RoleModule: pallet_roles,
 		HousingFundModule: pallet_housing_fund,
 		NftModule: pallet_nft,
@@ -744,6 +752,7 @@ mod benches {
 		[pallet_onboarding, OnboardingModule]
 		[pallet_share_distributor,ShareDistributor]
 		[pallet_identity, Identity]
+		[pallet_utility, Utility]
 		//[pallet_asset_management, AssetManagementModule]
 		// [pallet_finalizer, FinalizerModule]
 		// flag add pallet bench_macro
