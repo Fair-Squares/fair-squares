@@ -193,6 +193,7 @@ fn share_distributor0() {
 		//assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE), false);
 		let origin4 = Origin::signed(EVE);
 		let origin5 = Origin::signed(DAVE);
+		let origin6 = Origin::signed(virtual0.virtual_account);
 
 		assert_ok!(AssetManagement::representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
 		let ref_index = 0;
@@ -205,8 +206,16 @@ fn share_distributor0() {
 			.saturating_add(<Test as crate::Config>::Delay::get())
 			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
 
+			//A call dispatch works as expected
+			let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
+				rep_account: FERDIE,
+				collection: coll_id0,
+				item: item_id0
+			};
+			assert_ok!(rep_call.dispatch_bypass_filter(origin6));
+
 		//System::set_block_number(end_block_number+5);
-		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
+		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
 		
 
 

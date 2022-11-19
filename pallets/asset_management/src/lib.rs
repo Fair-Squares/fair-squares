@@ -124,6 +124,7 @@ pub mod pallet {
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id,asset_id);
 			ensure!(!ownership.clone().is_none(),Error::<T>::NotAnAsset);
 			let virtual_account = ownership.clone().unwrap().virtual_account;
+			let origin_v = RawOrigin::Signed(virtual_account.clone());
 
 			//Ensure that the caller is an owner related to the virtual account
 			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
@@ -138,8 +139,8 @@ pub mod pallet {
 			};
 			
 			//Create and add the proposal
-			let prop_hash = Self::create_proposal_hash_and_note(caller.clone(),rep_call.into());
-			Dem::Pallet::<T>::propose(origin,prop_hash,deposit.into()).ok();
+			let prop_hash = Self::create_proposal_hash_and_note(virtual_account.clone(),rep_call.into());
+			Dem::Pallet::<T>::propose(origin_v.into(),prop_hash,deposit.into()).ok();
 
 			let threshold = Dem::VoteThreshold::SimpleMajority;
 			let delay = <T as Config>::Delay::get();

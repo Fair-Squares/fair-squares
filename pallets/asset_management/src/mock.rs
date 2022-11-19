@@ -1,5 +1,5 @@
 use super::*;
-use crate as pallet_asset_management;
+pub use crate as pallet_asset_management;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly},
