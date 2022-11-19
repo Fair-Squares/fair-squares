@@ -139,7 +139,7 @@ pub mod pallet {
 			
 			//Create and add the proposal
 			let prop_hash = Self::create_proposal_hash_and_note(caller.clone(),rep_call.into());
-			Dem::Pallet::<T>::propose(origin,prop_hash,deposit).ok();
+			Dem::Pallet::<T>::propose(origin,prop_hash,deposit.into()).ok();
 
 			let threshold = Dem::VoteThreshold::SimpleMajority;
 			let delay = <T as Config>::Delay::get();

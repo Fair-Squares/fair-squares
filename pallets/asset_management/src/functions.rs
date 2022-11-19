@@ -17,7 +17,7 @@ impl<T: Config> Pallet<T> {
         Ok(())
     }
 
-    pub fn create_proposal_hash_and_note(caller: T::AccountId,call:<T as pallet::Config>::Call) -> T::Hash {
+    pub fn create_proposal_hash_and_note(caller: T::AccountId,call:<T as Config>::Call) -> T::Hash {
         let origin = RawOrigin::Signed(caller);
         let call_wrap = Box::new(call);
         let proposal_hash = T::Hashing::hash_of(&call_wrap);
