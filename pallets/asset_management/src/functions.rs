@@ -22,11 +22,7 @@ impl<T: Config> Pallet<T> {
         let call_wrap = Box::new(call);
         let proposal_hash = T::Hashing::hash_of(&call_wrap);
         let proposal_encoded: Vec<u8> = proposal_hash.encode();
-        match Dem::Pallet::<T>::note_preimage(origin.into(), proposal_encoded.clone()) {
-            Ok(_) => (),
-            Err(x) if x == Error::<T>::DuplicatePreimage.into() => (),
-            Err(x) => panic!("{:?}", x),
-        }
+        Dem::Pallet::<T>::note_preimage(origin.into(), proposal_encoded.clone()).ok();
         proposal_hash
     }
 

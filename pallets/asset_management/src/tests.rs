@@ -16,17 +16,6 @@ pub fn prep_roles() {
 	                                                                            // will be tested
 }
 
-fn next_block() {
-	System::set_block_number(System::block_number() + 1);
-	Scheduler::on_initialize(System::block_number());
-	//Democracy::begin_block(System::block_number());
-}
-
-fn fast_forward_to(n: u64) {
-	while System::block_number() < n {
-		next_block();
-	}
-}
 
 
 #[test]
@@ -193,7 +182,7 @@ fn share_distributor0() {
 		assert_eq!(new_owner0, virtual0.virtual_account);
 		assert_eq!(new_owner1, virtual1.virtual_account);
 
-		let origin3 = Origin::signed(virtual1.virtual_account);
+		//let origin3 = Origin::signed(virtual1.virtual_account);
 		//Representative Role status  before Approval
 		assert_eq!(RoleModule::get_pending_representatives(FERDIE).unwrap().activated, false);
 
@@ -206,13 +195,18 @@ fn share_distributor0() {
 		let origin5 = Origin::signed(DAVE);
 
 		assert_ok!(AssetManagement::representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
-		let ref_index = Democracy::referendum_count();
+		let ref_index = 0;
+		println!("\n\nReferendum number is: {:?}\n\n",ref_index.clone());
 		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
 		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
 
 		let initial_block_number = System::block_number();
 		let end_block_number = initial_block_number
-			.saturating_add(<Test as crate::Config>::Delay::get());
+			.saturating_add(<Test as crate::Config>::Delay::get())
+			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+		System::set_block_number(end_block_number+3);
+		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
 		
 
 
