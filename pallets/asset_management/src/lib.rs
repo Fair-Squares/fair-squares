@@ -80,6 +80,11 @@ pub mod pallet {
 			candidate: T::AccountId,
 			asset_account: T::AccountId,
 		},
+		InvestorVoted{
+			caller: T::AccountId,
+			session_number: Dem::ReferendumIndex,
+			when: BlockNumberOf<T>,
+		}
 
 
 	}
@@ -110,6 +115,14 @@ pub mod pallet {
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+	
+	//	fn on_initialize(n: T::BlockNumber) -> Weight {
+//			Self::begin_block(n)
+		//}
+	}
+
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		
@@ -174,16 +187,20 @@ pub mod pallet {
 			let ownership = Share::Pallet::<T>::virtual_acc(infos.collection_id,infos.item_id).unwrap();
 			ensure!(Self::caller_can_vote(&voter,ownership.clone()),Error::<T>::NotAnOwner);
 			//Get number of FS tokens own by caller
-			let tokens = Assetss::Pallet::<T>::balance(ownership.token_id.into(),voter);
+			let tokens = Assetss::Pallet::<T>::balance(ownership.token_id.into(),&voter);
 			let token0 = Self::balance_to_u128_option(tokens).unwrap();
 			let token1 = Self::u128_to_balance_option(token0).unwrap();
-			let b = <T as Config>::MinimumDepositVote::get();
-			//let token0: <T as Dem::Config>::Balance = tokens.saturated_into::<<T as Dem::Config>::Balance>();
 
 			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
 			
-			Dem::Pallet::<T>::vote(origin,referendum_index,Dem::AccountVote::Standard { vote: v, balance: token1 }).ok();
-
+			Dem::Pallet::<T>::vote(origin.clone(),referendum_index.clone(),Dem::AccountVote::Standard { vote: v, balance: token1 }).ok();
+			
+			//Emit event
+			Self::deposit_event(Event::InvestorVoted{
+				caller: voter,
+				session_number: referendum_index,
+				when: <frame_system::Pallet<T>>::block_number(),
+			});
 			//ToDo -> hook needed to look for the end of the referendum, 
 			//and change the field vote_result in the struct RepVote
 

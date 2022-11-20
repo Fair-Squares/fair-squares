@@ -181,6 +181,8 @@ fn share_distributor0() {
 		//Check that virtual accounts are the new owners
 		assert_eq!(new_owner0, virtual0.virtual_account);
 		assert_eq!(new_owner1, virtual1.virtual_account);
+		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual0.virtual_account,5_000_000_000,1_000_000_000).ok();
+		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual1.virtual_account,5_000_000_000,1_000_000_000).ok();
 
 		//let origin3 = Origin::signed(virtual1.virtual_account);
 		//Representative Role status  before Approval
@@ -210,18 +212,20 @@ fn share_distributor0() {
 			.saturating_add(<Test as crate::Config>::Delay::get())
 			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
 
-			Democracy::on_initialize(end_block_number + 5);
-			System::set_block_number(end_block_number+5);
+			Democracy::on_initialize(end_block_number);
+			System::set_block_number(end_block_number);
 			ref_infos = Democracy::referendum_info(0).unwrap();
+			
 			println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
 
-			//A call dispatch works as expected
+			//A Representative call dispatch works as expected
 		//	let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
 		//		rep_account: FERDIE,
 		//		collection: coll_id0,
 		//		item: item_id0
 		//	};
 		//	assert_ok!(rep_call.dispatch_bypass_filter(origin6));
+		
 	
 
 		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);

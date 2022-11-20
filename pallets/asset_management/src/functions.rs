@@ -22,7 +22,7 @@ impl<T: Config> Pallet<T> {
         let call_wrap = Box::new(call);
         let proposal_hash = T::Hashing::hash_of(&call_wrap);
         let proposal_encoded: Vec<u8> = proposal_hash.encode();
-        Dem::Pallet::<T>::note_preimage(origin.into(), proposal_encoded.clone()).ok();
+        Dem::Pallet::<T>::note_preimage(origin.into(), proposal_encoded).ok();
         proposal_hash
     }
 
@@ -31,9 +31,7 @@ impl<T: Config> Pallet<T> {
 		owners.contains(caller)
     }
 
-
-
-    pub fn balance_to_u128_option(input: <T as Assetss::Config>::Balance) -> Option<u128> {
+      pub fn balance_to_u128_option(input: <T as Assetss::Config>::Balance) -> Option<u128> {
 		input.try_into().ok()
 	}
     pub fn u128_to_balance_option(input: u128) -> Option<DemoBalanceOf<T>> {
