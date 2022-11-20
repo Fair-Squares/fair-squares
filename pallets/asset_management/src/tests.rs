@@ -214,13 +214,15 @@ fn share_distributor0() {
 
 			Democracy::on_initialize(end_block_number);
 			System::set_block_number(end_block_number);
+			AssetManagement::begin_block(end_block_number);
 			ref_infos = Democracy::referendum_info(0).unwrap();
 			let b = match ref_infos{
 				pallet_democracy::ReferendumInfo::Finished{approved,end:_} => approved,
 				_=> false,
 			} ;
 
-			
+			System::set_block_number(end_block_number+1);
+			AssetManagement::begin_block(System::block_number());
 			println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
 			println!("\n\nvote result is:{:?}",b);
 			let prop0 = AssetManagement::proposals(0).unwrap().vote_result;
