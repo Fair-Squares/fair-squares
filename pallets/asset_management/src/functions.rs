@@ -37,5 +37,34 @@ impl<T: Config> Pallet<T> {
     pub fn u128_to_balance_option(input: u128) -> Option<DemoBalanceOf<T>> {
 		input.try_into().ok()
 	}
+
+    pub fn begin_block(now: T::BlockNumber) -> Weight {
+        let max_block_weight = Weight::from_ref_time(1000_u64);
+        if (now % <T as Config>::CheckPeriod::get()).is_zero() {
+        let indexes = ProposalsIndexes::<T>::iter();
+        for index in indexes {
+            //check if the status is Finished
+            let ref_infos: RefInfos<T>= Dem::Pallet::<T>::referendum_info(index.1.clone()).unwrap();
+            let b = match ref_infos{
+				pallet_democracy::ReferendumInfo::Finished{approved,end:_} => (1,approved),
+				_=> (0,false),
+			} ;
+            if b.0==1{
+                //get the local prop_infos and update vote result if referendum ended
+                ProposalsLog::<T>::mutate(index.1,|val|{
+                    let mut val0 = val.clone().unwrap();
+                    if b.1==true{
+                        val0.vote_result=VoteResult::ACCEPTED
+                    } else {val0.vote_result=VoteResult::REJECTED}
+                    *val = Some(val0)
+                    
+                });
+
+            }
+
+        }
+    }
+        max_block_weight    
+    }
     
 }

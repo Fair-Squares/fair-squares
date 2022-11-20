@@ -69,6 +69,12 @@ pub mod pallet {
 	pub type ProposalsLog<T: Config> =
 		StorageMap<_, Blake2_128Concat, Dem::ReferendumIndex, RepVote<T>, OptionQuery>;	
 
+	#[pallet::storage]
+	#[pallet::getter(fn indexes)]
+	pub type ProposalsIndexes<T: Config> =
+		StorageMap<_, Blake2_128Concat, T::AccountId, Dem::ReferendumIndex, OptionQuery>;	
+	
+
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
@@ -118,9 +124,9 @@ pub mod pallet {
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 	
-	//	fn on_initialize(n: T::BlockNumber) -> Weight {
-//			Self::begin_block(n)
-		//}
+		fn on_initialize(n: T::BlockNumber) -> Weight {
+			Self::begin_block(n)
+		}
 	}
 
 	#[pallet::call]
