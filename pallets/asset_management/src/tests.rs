@@ -193,29 +193,38 @@ fn share_distributor0() {
 		//assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE), false);
 		let origin4 = Origin::signed(EVE);
 		let origin5 = Origin::signed(DAVE);
-		let origin6 = Origin::signed(virtual0.virtual_account);
+		//let origin6 = Origin::signed(virtual0.virtual_account);
 
 		assert_ok!(AssetManagement::representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
 		let ref_index = 0;
-		println!("\n\nReferendum number is: {:?}\n\n",ref_index.clone());
+		//Referendum status before vote
+		let mut ref_infos = Democracy::referendum_info(0).unwrap();
+		println!("\n\nReferendum status before vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
+
+		//Investors vote
 		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
 		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
-
+		
 		let initial_block_number = System::block_number();
 		let end_block_number = initial_block_number
 			.saturating_add(<Test as crate::Config>::Delay::get())
 			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
 
-			//A call dispatch works as expected
-			let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
-				rep_account: FERDIE,
-				collection: coll_id0,
-				item: item_id0
-			};
-			assert_ok!(rep_call.dispatch_bypass_filter(origin6));
+			Democracy::on_initialize(end_block_number + 5);
+			System::set_block_number(end_block_number+5);
+			ref_infos = Democracy::referendum_info(0).unwrap();
+			println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
 
-		//System::set_block_number(end_block_number+5);
-		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
+			//A call dispatch works as expected
+		//	let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
+		//		rep_account: FERDIE,
+		//		collection: coll_id0,
+		//		item: item_id0
+		//	};
+		//	assert_ok!(rep_call.dispatch_bypass_filter(origin6));
+	
+
+		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
 		
 
 

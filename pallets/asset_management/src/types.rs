@@ -7,7 +7,7 @@ pub use frame_support::{
     weights::GetDispatchInfo,
 	sp_runtime::{
 		traits::{AccountIdConversion, Hash, One, Saturating, StaticLookup, Zero},
-		PerThing, Percent,
+		PerThing, Percent,FixedU128
 	},
 	storage::child,
 	traits::{
@@ -27,6 +27,10 @@ pub type BalanceOf<T> =
 	<<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
+
+pub type DemoBalanceOf<T> =
+	<<T as Dem::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
 #[cfg_attr(feature = "std", derive(Debug))]

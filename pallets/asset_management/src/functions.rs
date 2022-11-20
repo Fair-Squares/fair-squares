@@ -31,5 +31,13 @@ impl<T: Config> Pallet<T> {
 		owners.contains(caller)
     }
 
+
+
+    pub fn balance_to_u128_option(input: <T as Assetss::Config>::Balance) -> Option<u128> {
+		input.try_into().ok()
+	}
+    pub fn u128_to_balance_option(input: u128) -> Option<DemoBalanceOf<T>> {
+		input.try_into().ok()
+	}
     
 }

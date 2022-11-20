@@ -163,11 +163,11 @@ pub mod pallet {
 		///Vote action
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn owners_vote(origin: OriginFor<T>, referendum_index: Dem::ReferendumIndex, vote:bool) -> DispatchResult {
-			let voter = ensure_signed(origin)?;
+			let voter = ensure_signed(origin.clone())?;
 			//Check that the referendum exists and is active
 			ensure!(ProposalsLog::<T>::contains_key(referendum_index),Error::<T>::NotAValidReferendum);
 			//Check the referendum status
-			let infos = Self::proposals(referendum_index).unwrap();
+			let infos = Self::proposals(&referendum_index).unwrap();
 			let status = infos.vote_result;
 			ensure!(status==VoteResult::AWAITING,Error::<T>::ReferendumCompleted);
 			//check that caller can vote
@@ -175,9 +175,14 @@ pub mod pallet {
 			ensure!(Self::caller_can_vote(&voter,ownership.clone()),Error::<T>::NotAnOwner);
 			//Get number of FS tokens own by caller
 			let tokens = Assetss::Pallet::<T>::balance(ownership.token_id.into(),voter);
+			let token0 = Self::balance_to_u128_option(tokens).unwrap();
+			let token1 = Self::u128_to_balance_option(token0).unwrap();
+			let b = <T as Config>::MinimumDepositVote::get();
+			//let token0: <T as Dem::Config>::Balance = tokens.saturated_into::<<T as Dem::Config>::Balance>();
+
 			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
-			//What is happening here!! testing will tell us...
-			Dem::AccountVote::Standard { vote: v, balance: tokens };
+			
+			Dem::Pallet::<T>::vote(origin,referendum_index,Dem::AccountVote::Standard { vote: v, balance: token1 }).ok();
 
 			//ToDo -> hook needed to look for the end of the referendum, 
 			//and change the field vote_result in the struct RepVote
