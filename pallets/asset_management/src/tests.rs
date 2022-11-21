@@ -1,5 +1,5 @@
 pub use super::*;
-pub use crate::mock::*;
+use mock::*;
 pub use frame_support::{assert_noop, assert_ok};
 use frame_system::pallet_prelude::OriginFor;
 
@@ -204,6 +204,19 @@ fn share_distributor0() {
 		//Investors vote
 		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
 		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
+
+		//Voting events emmited
+		expect_events(vec![mock::Event::AssetManagement(crate::Event::InvestorVoted {
+			caller: EVE,
+			session_number: 0,
+			when: System::block_number(),
+		}),
+		mock::Event::AssetManagement(crate::Event::InvestorVoted {
+			caller: DAVE,
+			session_number: 0,
+			when: System::block_number(),
+		})
+		]);
 		
 		let initial_block_number = System::block_number();
 		let end_block_number = initial_block_number
