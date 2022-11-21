@@ -19,10 +19,14 @@ impl<T: Config> Pallet<T> {
 
     pub fn create_proposal_hash_and_note(caller: T::AccountId,call:<T as Config>::Call) -> T::Hash {
         let origin = RawOrigin::Signed(caller);
-        let call_wrap = Box::new(call);
-        let proposal_hash = T::Hashing::hash_of(&call_wrap);
+        //let call_wrap = Box::new(call);
+        let proposal_hash = T::Hashing::hash_of(&call);
         let proposal_encoded: Vec<u8> = proposal_hash.encode();
-        Dem::Pallet::<T>::note_preimage(origin.into(), proposal_encoded).ok();
+        match Dem::Pallet::<T>::note_preimage(origin.into(), proposal_encoded){
+            Ok(_) => (),
+            Err(x) if x == Error::<T>::DuplicatePreimage.into() => (),
+            Err(x) => panic!("{:?}", x),
+        }
         proposal_hash
     }
 

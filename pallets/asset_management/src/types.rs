@@ -11,7 +11,7 @@ pub use frame_support::{
 	},
 	storage::child,
 	traits::{
-		UnfilteredDispatchable,Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency, WithdrawReasons,
+		UnfilteredDispatchable,Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency, WithdrawReasons, Contains
 	},
 	PalletId,
 };

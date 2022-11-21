@@ -248,23 +248,23 @@ fn share_distributor0() {
 
 		
 		//---TEST_1:---
-		//Here, by moving to the next block, after investor votes, we're exting the Call to be executed
+		//Here, by moving to the next block, after investor votes, we're expecting the Call to be executed 
+		//=> This might not be possible in testing environment..
 		//UnComent after Commenting TEST_0 and TEST_2:
 
 		
-		//let b = match ref_infos{
-		//	pallet_democracy::ReferendumInfo::Finished{approved,end:_} => approved,
-		//	_=> false,
-		//} ;
-		//	System::set_block_number(end_block_number+1);
-		//	Democracy::on_initialize(System::block_number());
-		//	AssetManagement::begin_block(System::block_number());
-		//	System::set_block_number(System::block_number()+1);
+		let b = match ref_infos{
+			pallet_democracy::ReferendumInfo::Finished{approved,end:_} => approved,
+			_=> false,
+		} ;
+			System::set_block_number(end_block_number+1);
+			Democracy::on_initialize(end_block_number+1);
+			AssetManagement::begin_block(end_block_number+1);
 
-		//	println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
-		//	println!("\n\nvote result is:{:?}",b);
-		//	let prop0 = AssetManagement::proposals(0).unwrap().vote_result;
-		//	println!("\n\nVote results:{:?}\n\n",prop0);
+			println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
+			println!("\n\nvote result is:{:?}",b);
+			let prop0 = AssetManagement::proposals(0).unwrap().vote_result;
+			println!("\n\nVote results:{:?}\n\n",prop0);
 
 		//---TEST_1:---
 
@@ -273,7 +273,7 @@ fn share_distributor0() {
 
 		//---TEST_2---
 		//Checking the call format by directly doing a Representative call dispatch,and see if it works as expected.
-		// Uncomment after commenting TEST_0 and TEST_1, both located above.
+		// Uncomment after commenting TEST_0.
 
 			let origin6 = Origin::signed(virtual0.virtual_account);
 			let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
@@ -286,7 +286,7 @@ fn share_distributor0() {
 		//---TEST_2---
 		
 	
-		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2. 
+		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result of a correctly executed call. 
 		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);		
 
 
