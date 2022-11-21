@@ -181,25 +181,23 @@ fn share_distributor0() {
 		//Check that virtual accounts are the new owners
 		assert_eq!(new_owner0, virtual0.virtual_account);
 		assert_eq!(new_owner1, virtual1.virtual_account);
-		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual0.virtual_account,5_000_000_000,1_000_000_000).ok();
-		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual1.virtual_account,5_000_000_000,1_000_000_000).ok();
+		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual0.virtual_account.clone(),5_000_000_000,1_000_000_000).ok();
+		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual1.virtual_account.clone(),5_000_000_000,1_000_000_000).ok();
 
-		//let origin3 = Origin::signed(virtual1.virtual_account);
+		
 		//Representative Role status  before Approval
 		assert_eq!(RoleModule::get_pending_representatives(FERDIE).unwrap().activated, false);
 
-		//approve FERDIE REPRESENTATIVE
-		//assert_ok!(AssetManagement::representative_approval(origin3, FERDIE, coll_id1, item_id1));
-		//check that Ferdie is now in RepresentiveLog, and not anymore in RepApprovalList
-		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
-		//assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE), false);
+		
+
+		
 		let origin4 = Origin::signed(EVE);
 		let origin5 = Origin::signed(DAVE);
-		//let origin6 = Origin::signed(virtual0.virtual_account);
-
+		
+		//Create voting session, aka Referendum.
 		assert_ok!(AssetManagement::representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
 		let ref_index = 0;
-		//Referendum status before vote
+		//Get Referendum status before vote
 		let mut ref_infos = Democracy::referendum_info(0).unwrap();
 		println!("\n\nReferendum status before vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
 
@@ -216,30 +214,67 @@ fn share_distributor0() {
 			System::set_block_number(end_block_number);
 			AssetManagement::begin_block(end_block_number);
 			ref_infos = Democracy::referendum_info(0).unwrap();
-			let b = match ref_infos{
-				pallet_democracy::ReferendumInfo::Finished{approved,end:_} => approved,
-				_=> false,
-			} ;
 
-			System::set_block_number(end_block_number+1);
-			AssetManagement::begin_block(System::block_number());
-			println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
-			println!("\n\nvote result is:{:?}",b);
-			let prop0 = AssetManagement::proposals(0).unwrap().vote_result;
-			println!("\n\nVote results:{:?}\n\n",prop0);
 
-			//A Representative call dispatch works as expected
-		//	let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
-		//		rep_account: FERDIE,
-		//		collection: coll_id0,
-		//		item: item_id0
-		//	};
-		//	assert_ok!(rep_call.dispatch_bypass_filter(origin6));
-		
-	
+
+		//---TEST_0:--- 
+		//Approve FERDIE REPRESENTATIVE- In this section, we test that the representative_aproval extrinsic works as expected.
+		//Uncomment after commenting TEST_1 and TEST_2 below.
+
+		//let origin3 = Origin::signed(virtual1.virtual_account); 
+		//assert_ok!(AssetManagement::representative_approval(origin3, FERDIE, coll_id1, item_id1));
+
+		//Check that Ferdie is now in RepresentiveLog, and not anymore in RepApprovalList
 
 		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
+		//assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE), false);
+
+		//---TEST_0:---
+
+
+
 		
+		//---TEST_1:---
+		//Here, by moving to the next block, after investor votes, we're exting the Call to be executed
+		//UnComent after Commenting TEST_0 and TEST_2:
+
+		
+		//let b = match ref_infos{
+		//	pallet_democracy::ReferendumInfo::Finished{approved,end:_} => approved,
+		//	_=> false,
+		//} ;
+		//	System::set_block_number(end_block_number+1);
+		//	Democracy::on_initialize(System::block_number());
+		//	AssetManagement::begin_block(System::block_number());
+		//	System::set_block_number(System::block_number()+1);
+
+		//	println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
+		//	println!("\n\nvote result is:{:?}",b);
+		//	let prop0 = AssetManagement::proposals(0).unwrap().vote_result;
+		//	println!("\n\nVote results:{:?}\n\n",prop0);
+
+		//---TEST_1:---
+
+
+
+
+		//---TEST_2---
+		//Checking the call format by directly doing a Representative call dispatch,and see if it works as expected.
+		// Uncomment after commenting TEST_0 and TEST_1, both located above.
+
+			let origin6 = Origin::signed(virtual0.virtual_account);
+			let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
+				rep_account: FERDIE,
+				collection: coll_id0,
+				item: item_id0
+			};
+			assert_ok!(rep_call.dispatch_bypass_filter(origin6));
+
+		//---TEST_2---
+		
+	
+		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2. 
+		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);		
 
 
 	});

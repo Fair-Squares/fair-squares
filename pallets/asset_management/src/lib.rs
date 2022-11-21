@@ -90,8 +90,12 @@ pub mod pallet {
 			caller: T::AccountId,
 			session_number: Dem::ReferendumIndex,
 			when: BlockNumberOf<T>,
-		}
-
+		},
+		RepresentativeCandidateApproved{
+			candidate: T::AccountId,
+			asset_account: T::AccountId,
+			when: BlockNumberOf<T>,
+		},
 
 	}
 
@@ -227,7 +231,13 @@ pub mod pallet {
 			//Check that the account is in the representative waiting list
 			ensure!(Roles::Pallet::<T>::get_pending_representatives(&rep_account).is_some(),"problem");
 			//Approve role request
-			Self::approve_representative(caller,rep_account).ok();
+			Self::approve_representative(caller.clone(),rep_account.clone()).ok();
+
+			Self::deposit_event(Event::RepresentativeCandidateApproved{
+				candidate: rep_account,
+				asset_account: caller,
+				when: <frame_system::Pallet<T>>::block_number(),
+			});
 
 			Ok(())
 		}
