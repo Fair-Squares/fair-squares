@@ -120,6 +120,8 @@ pub mod pallet {
 		NotAValidReferendum,
 		///This referendum is over
 		ReferendumCompleted,
+		///Not enough funds in the account
+		NotEnoughFunds,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -147,12 +149,24 @@ pub mod pallet {
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id,asset_id);
 			ensure!(!ownership.clone().is_none(),Error::<T>::NotAnAsset);
 			let virtual_account = ownership.clone().unwrap().virtual_account;
+			let deposit = T::MinimumDeposit::get();
+
+			//Ensure that the virtual account has enough funds
+			for f in ownership.clone().unwrap().owners{
+				<T as Dem::Config>::Currency::transfer(
+					&f,
+					&virtual_account,
+					deposit,
+					ExistenceRequirement::AllowDeath,
+				).ok();
+			}
 			let origin_v = RawOrigin::Signed(virtual_account.clone());
 
 			//Ensure that the caller is an owner related to the virtual account
 			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
-			//Make proposal
-			let deposit = T::MinimumDeposit::get();
+			
+			//move funds to virtual account
+			
 
 			//Create the call 
 			let rep_call = Call::<T>::representative_approval {
