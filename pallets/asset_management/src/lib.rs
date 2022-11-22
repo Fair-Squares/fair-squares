@@ -141,8 +141,10 @@ pub mod pallet {
 		///Owners Voting system
 		///One owner trigger a vote session with a proposal
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn representative_session(origin:OriginFor<T>,asset_type: Nft::PossibleCollections, asset_id: T::NftItemId,representative: T::AccountId ) -> DispatchResult{
+		pub fn representative_session(origin:OriginFor<T>,asset_type: Nft::PossibleCollections, asset_id: T::NftItemId,representative: T::AccountId ) -> DispatchResultWithPostInfo{
 			let caller = ensure_signed(origin.clone())?;
+			//Check that the account is in the representative waiting list
+			ensure!(Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),"problem");
 
 			//Get the asset virtual account if it exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
@@ -160,14 +162,11 @@ pub mod pallet {
 					ExistenceRequirement::AllowDeath,
 				).ok();
 			}
-			let origin_v = RawOrigin::Signed(virtual_account.clone());
+			let origin_v:<T as frame_system::Config>::Origin = RawOrigin::Signed(virtual_account.clone()).into();
 
 			//Ensure that the caller is an owner related to the virtual account
 			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
 			
-			//move funds to virtual account
-			
-
 			//Create the call 
 			let rep_call = Call::<T>::representative_approval {
 				rep_account: representative.clone(),
@@ -175,9 +174,17 @@ pub mod pallet {
 				item: asset_id
 			};
 			
+			//let rep_call = Box::new(call);
+			
 			//Create and add the proposal
-			let prop_hash = Self::create_proposal_hash_and_note(virtual_account.clone(),rep_call.into());
-			Dem::Pallet::<T>::propose(origin_v.into(),prop_hash,deposit.into()).ok();
+			let prop_hash = T::Hashing::hash_of(&rep_call);
+			let proposal_encoded: Vec<u8> = prop_hash.encode();
+			Dem::Pallet::<T>::note_preimage(origin_v.clone(), proposal_encoded)?;
+
+			//let prop_hash = Self::create_proposal_hash_and_note(virtual_account.clone(),rep_call.into());	
+					
+			
+			Dem::Pallet::<T>::propose(origin_v,prop_hash,deposit.into()).ok();
 
 			let threshold = Dem::VoteThreshold::SimpleMajority;
 			let delay = <T as Config>::Delay::get();
@@ -194,7 +201,7 @@ pub mod pallet {
 				asset_account: virtual_account,
 			});
 			
-			Ok(())
+			Ok(().into())
 		}
 
 		///Vote action
@@ -242,8 +249,7 @@ pub mod pallet {
 					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
-			//Check that the account is in the representative waiting list
-			ensure!(Roles::Pallet::<T>::get_pending_representatives(&rep_account).is_some(),"problem");
+			
 			//Approve role request
 			Self::approve_representative(caller.clone(),rep_account.clone()).ok();
 

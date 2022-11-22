@@ -18,17 +18,18 @@ impl<T: Config> Pallet<T> {
     }
 
     pub fn create_proposal_hash_and_note(caller: T::AccountId,call:<T as Config>::Call) -> T::Hash {
-        let origin = RawOrigin::Signed(caller);
+        let origin:<T as frame_system::Config>::Origin = RawOrigin::Signed(caller).into();
         let call_wrap = Box::new(call);
         let proposal_hash = T::Hashing::hash_of(&call_wrap);
         let proposal_encoded: Vec<u8> = call_wrap.encode();
-        match Dem::Pallet::<T>::note_preimage(origin.into(), proposal_encoded){
+        match Dem::Pallet::<T>::note_preimage(origin, proposal_encoded){
             Ok(_) => (),
             Err(x) if x == Error::<T>::DuplicatePreimage.into() => (),
             Err(x) => panic!("{:?}", x),
         }
         proposal_hash
     }
+
 
     pub fn caller_can_vote(caller: &T::AccountId,ownership:Share::Ownership<T>) ->bool{
         let owners = ownership.owners;

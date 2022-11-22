@@ -296,7 +296,7 @@ fn share_distributor0() {
 		
 	
 		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result of a correctly executed call. 
-		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);		
+		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);		
 
 
 	});
