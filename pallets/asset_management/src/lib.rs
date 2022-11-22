@@ -168,17 +168,17 @@ pub mod pallet {
 			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
 			
 			//Create the call 
-			let rep_call = Call::<T>::representative_approval {
+			let call = Call::<T>::representative_approval {
 				rep_account: representative.clone(),
 				collection: collection_id,
 				item: asset_id
 			};
 			
-			//let rep_call = Box::new(call);
+			let rep_call = Box::new(call);
 			
 			//Create and add the proposal
 			let prop_hash = T::Hashing::hash_of(&rep_call);
-			let proposal_encoded: Vec<u8> = prop_hash.encode();
+			let proposal_encoded: Vec<u8> = rep_call.encode();
 			Dem::Pallet::<T>::note_preimage(origin_v.clone(), proposal_encoded)?;
 
 			//let prop_hash = Self::create_proposal_hash_and_note(virtual_account.clone(),rep_call.into());	
