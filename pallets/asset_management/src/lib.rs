@@ -1,11 +1,29 @@
-#![cfg_attr(not(feature = "std"), no_std)]
-//Pallets needed:
-//- Roles for the Representative role
-//- Democracy for the voting system
-//- Share_Distributor for the conviction weight calculation based on asset shares
+//!# Asset_Management Pallet
+//!
+//!The Asset_Management pallet is used for everything that is related to
+//!the asset management by its owners.
+//!
+//!## Overview
+//!
+//!The Asset_Management gives the possibility to the asset Owners, through governance, 
+//!to implement the following actions:
+//!- Elect a Representative that will micro-manage the asset
+//!- Demote a previously elected Representative
+//!- Allow the representative to submit a list of Tenants to the Owners
+//!- Allow the owners to vote on list of tenants submitted by the Representative
+//!
+//!### Dispatchable Functions
+//!
+//!* `launch_representative_session` - An Owner creates a referendum for the available proposals: 
+//!   Elect or demote a Representative.
+//!
+//!* `owners_vote` - Each asset owner can vote on ongoing referendum.
+//!
+//!* `representative_approval` - Private call used as a proposal for Representative election.
+//!
+//!* `demote_representative` - Private call used as a proposal for Representative demotion.
 
-//Needed calls:
-//Call 1) Create a Representative role
+#![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
 pub use pallet_democracy as Dem;
@@ -86,16 +104,19 @@ pub mod pallet {
 			candidate: T::AccountId,
 			asset_account: T::AccountId,
 		},
+		///An investor voted
 		InvestorVoted{
 			caller: T::AccountId,
 			session_number: Dem::ReferendumIndex,
 			when: BlockNumberOf<T>,
 		},
+		///A representative role was granted
 		RepresentativeCandidateApproved{
 			candidate: T::AccountId,
 			asset_account: T::AccountId,
 			when: BlockNumberOf<T>,
 		},
+		///An account was stripped of its Representative role
 		RepresentativeDemoted{
 			candidate: T::AccountId,
 			asset_account: T::AccountId,
@@ -128,9 +149,7 @@ pub mod pallet {
 		NotEnoughFunds,
 	}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 	
@@ -252,7 +271,9 @@ pub mod pallet {
 
 		
 
-		///Vote action
+		///The function below allows the owner to vote.
+		///The balance locked and used for vote conviction corresponds 
+		///to the number of ownership tokens possessed by the voter.  
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn owners_vote(origin: OriginFor<T>, referendum_index: Dem::ReferendumIndex, vote:bool) -> DispatchResult {
 			let voter = ensure_signed(origin.clone())?;
@@ -286,7 +307,9 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// approve a Representative role request
+		///Approval of a Representative role request
+		///The caller is the virtual account linked 
+		///to the asset
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn representative_approval(origin: OriginFor<T>, rep_account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
@@ -309,7 +332,9 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Demote an elected Representative
+		///Demotion of a previously elected Representative
+		///The caller is the virtual account linked 
+		///to the asset
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn demote_representative(origin: OriginFor<T>, rep_account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
