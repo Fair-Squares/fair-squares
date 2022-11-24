@@ -584,6 +584,7 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 	fn contains(c: &Call) -> bool {
 		match c {
 			Call::Democracy(_) => false,
+			Call::AssetManagementModule(pallet_asset_management::Call::execute_call_dispatch { .. }) => false,
 			Call::Council(_) => false,
 			Call::NftModule(_) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,

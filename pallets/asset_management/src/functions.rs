@@ -43,6 +43,10 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 
+    pub fn get_formatted_call(call: <T as Config>::Call) -> <T as Config>::Call {
+		call
+	}
+
     pub fn begin_block(now: T::BlockNumber) -> Weight {
         let max_block_weight = Weight::from_ref_time(1000_u64);
         if (now % <T as Config>::CheckPeriod::get()).is_zero() {
