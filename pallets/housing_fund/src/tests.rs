@@ -670,7 +670,7 @@ fn cancel_house_bidding_with_valid_values_should_succeed() {
 			})
 		);
 
-		assert_eq!(HousingFundModule::reservations((1, 1)).is_none(), true);
+		assert!(HousingFundModule::reservations((1, 1)).is_none());
 
 		// Check the amount reserved for the account
 		assert_eq!(
@@ -711,8 +711,8 @@ fn fund_info_can_take_off_should_succeed() {
 		// contribute to the fund
 		fund_info.contribute_transferable(100);
 		// check that the test is correct
-		assert_eq!(fund_info.can_take_off(50), true);
-		assert_eq!(fund_info.can_take_off(110), false);
+		assert!(fund_info.can_take_off(50));
+		assert!(!fund_info.can_take_off(110));
 	});
 }
 
@@ -771,8 +771,8 @@ fn contribution_can_reserve_should_succeed() {
 		// get the account contribution
 		let contribution = HousingFundModule::contributions(1).unwrap();
 		// check if the method respond correctly
-		assert_eq!(contribution.can_reserve(30), true);
-		assert_eq!(contribution.can_reserve(60), false);
+		assert!(contribution.can_reserve(30));
+		assert!(!contribution.can_reserve(60));
 	});
 }
 
@@ -842,7 +842,7 @@ fn check_available_fund_not_enough_fund_should_fail() {
 
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 20));
 
-		assert_eq!(HousingFundModule::check_available_fund(20), false);
+		assert!(!HousingFundModule::check_available_fund(20));
 	});
 }
 
@@ -859,7 +859,7 @@ fn check_available_fund_has_enough_fund_should_succeed() {
 
 		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
 
-		assert_eq!(HousingFundModule::check_available_fund(20), true);
+		assert!(HousingFundModule::check_available_fund(20));
 	});
 }
 
@@ -1050,8 +1050,8 @@ fn validate_house_bidding_with_valid_values_should_succeed() {
 			})
 		);
 
-		assert_eq!(HousingFundModule::reservations((1, 1)).is_none(), true);
-		assert_eq!(HousingFundModule::purchases((1, 1)).is_some(), true);
+		assert!(HousingFundModule::reservations((1, 1)).is_none());
+		assert!(HousingFundModule::purchases((1, 1)).is_some());
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()

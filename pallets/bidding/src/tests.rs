@@ -215,12 +215,12 @@ fn create_investor_list_should_succeed() {
 
 		let investor_list = BiddingModule::create_investor_list(100);
 
-		assert_eq!(investor_list.contains(&(1, 20)), true);
-		assert_eq!(investor_list.contains(&(2, 20)), true);
-		assert_eq!(investor_list.contains(&(3, 20)), true);
-		assert_eq!(investor_list.contains(&(4, 20)), true);
-		assert_eq!(investor_list.contains(&(5, 10)), true);
-		assert_eq!(investor_list.contains(&(6, 10)), true);
+		assert!(investor_list.contains(&(1, 20)));
+		assert!(investor_list.contains(&(2, 20)));
+		assert!(investor_list.contains(&(3, 20)));
+		assert!(investor_list.contains(&(4, 20)));
+		assert!(investor_list.contains(&(5, 10)));
+		assert!(investor_list.contains(&(6, 10)));
 	});
 }
 
@@ -254,12 +254,12 @@ fn create_investor_list_second_case_should_succeed() {
 		let investor_list = BiddingModule::create_investor_list(100);
 
 		assert_eq!(investor_list.len(), 6);
-		assert_eq!(investor_list.contains(&(1, 20)), true);
-		assert_eq!(investor_list.contains(&(2, 20)), true);
-		assert_eq!(investor_list.contains(&(3, 20)), true);
-		assert_eq!(investor_list.contains(&(4, 15)), true);
-		assert_eq!(investor_list.contains(&(5, 15)), true);
-		assert_eq!(investor_list.contains(&(6, 10)), true);
+		assert!(investor_list.contains(&(1, 20)));
+		assert!(investor_list.contains(&(2, 20)));
+		assert!(investor_list.contains(&(3, 20)));
+		assert!(investor_list.contains(&(4, 15)));
+		assert!(investor_list.contains(&(5, 15)));
+		assert!(investor_list.contains(&(6, 10)));
 	});
 }
 

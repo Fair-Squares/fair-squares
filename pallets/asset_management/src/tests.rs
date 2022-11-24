@@ -208,7 +208,7 @@ fn share_distributor0() {
 		.ok();
 
 		//Representative Role status  before Approval
-		assert_eq!(RoleModule::get_pending_representatives(FERDIE).unwrap().activated, false);
+		assert!(!RoleModule::get_pending_representatives(FERDIE).unwrap().activated);
 
 		let origin4 = Origin::signed(EVE);
 		let origin5 = Origin::signed(DAVE);
@@ -277,8 +277,8 @@ fn share_distributor0() {
 
 		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result
 		// of a correctly executed call.
-		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
-		assert_eq!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE), true);
+		assert!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE));
+		assert!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 
 
 		//////////////////////////////////////////////////////////////////////////////////////////
@@ -287,7 +287,7 @@ fn share_distributor0() {
 		
 		// Ferdie(Representative) proposes a tenant(GERARD)
 		// Check if GERARD has the tenant role
-		assert_eq!(Roles::TenantLog::<Test>::contains_key(GERARD), true);
+		assert!(Roles::TenantLog::<Test>::contains_key(GERARD));
 
 		// Check the tenants of the house
 		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
@@ -386,6 +386,6 @@ fn share_distributor0() {
 
 		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result
 		// of a correctly executed call.
-		assert_eq!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE), false);
+		assert!(!Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 	});
 }

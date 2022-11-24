@@ -422,7 +422,7 @@ pub mod pallet {
 			// Ensure that the caller is a representative
 			ensure!(Roles::Pallet::<T>::reps(caller.clone()).is_some(), Error::<T>::NotARepresentative);
 
-			let representative = caller.clone();
+			let representative = caller;
 
 			// Get the asset virtual account if exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
@@ -437,7 +437,7 @@ pub mod pallet {
 			// Ensure that the tenant is not linked to an asset
 			ensure!(tenant0.asset_account.is_none(), Error::<T>::AssetAlreadyLinked);
 
-			let asset_account = ownership.clone().unwrap().virtual_account;
+			let asset_account = ownership.unwrap().virtual_account;
 
 			let deposit = T::MinimumDeposit::get();
 
@@ -452,8 +452,8 @@ pub mod pallet {
 
 			let call = Call::<T>::link_tenant_to_asset {
 				tenant: tenant.clone(),
-				collection: collection_id.clone(),
-				item: asset_id.clone(),
+				collection: collection_id,
+				item: asset_id,
 			};
 
 			let proposal_hash = Self::create_proposal_hash_and_note(asset_account.clone(), call);
@@ -497,9 +497,9 @@ pub mod pallet {
 			
 			// Ensure the caller is the virtual account of the asset
 			let asset_account = Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
-			ensure!(caller == asset_account.clone(), Error::<T>::NotAnAssetAccount);
+			ensure!(caller == asset_account, Error::<T>::NotAnAssetAccount);
 
-			Self::tenant_link_asset(tenant.clone(), collection.clone(), item.clone(), asset_account.clone()).ok();
+			Self::tenant_link_asset(tenant.clone(), collection, item, asset_account.clone()).ok();
 
 			Self::deposit_event(Event::TenantLinkedToAsset {
 				tenant,

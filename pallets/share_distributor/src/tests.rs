@@ -276,7 +276,7 @@ fn share_distributor1() {
 
 		println!("Again, new owners are:\n{:?}", infos);
 
-		assert_eq!(owners.len() > 1, true);
+		assert!(owners.len() > 1);
 		expect_events(vec![
 			crate::Event::VirtualCreated {
 				account: new_owner0.clone(),
