@@ -112,6 +112,12 @@ pub mod pallet {
 			candidate: T::AccountId,
 			asset_account: T::AccountId,
 		},
+		/// A voting session to link a tenant to an asset has started
+		TenantVoteSessionStarted {
+			caller: T::AccountId,
+			candidate: T::AccountId,
+			asset_account: T::AccountId,
+		},
 		///An investor voted
 		InvestorVoted {
 			caller: T::AccountId,
@@ -139,6 +145,12 @@ pub mod pallet {
 		NoneValue,
 		/// The account is not an Asset account
 		NotAnAssetAccount,
+		/// The account is not a representative
+		NotARepresentative,
+		/// The candidate is not a tenant
+		NotATenant,
+		/// An asset is already linked to a provided tenant
+		AssetAlreadyLinked,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 		///The proposal could not be created
@@ -383,6 +395,96 @@ pub mod pallet {
 				when: <frame_system::Pallet<T>>::block_number(),
 			});
 
+			Ok(())
+		}
+
+		/// A representative triggers a vote session with a proposal for a tenant to be link with an asset
+		/// The origin must be a representative
+		/// - asset_type: type of the asset
+		/// - asset_id: id of the asset
+		/// - tenant: an account with the tenant role
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn propose_tenant(
+			origin: OriginFor<T>,
+			asset_type: Nft::PossibleCollections,
+			asset_id: T::NftItemId,
+			tenant: T::AccountId,
+		) -> DispatchResult {
+			let caller = ensure_signed(origin.clone())?;
+
+			// Ensure that the caller is a representative
+			ensure!(Roles::Pallet::<T>::reps(caller.clone()).is_some(), Error::<T>::NotARepresentative);
+
+			// Get the asset virtual account if exists
+			let collection_id: T::NftCollectionId = asset_type.value().into();
+			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
+			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
+
+			// Ensure that provided account is a valid tenant
+			let tenant0 = Roles::Pallet::<T>::tenants(tenant.clone());
+			ensure!(tenant0.is_some(), Error::<T>::NotATenant);
+
+			let tenant0 = tenant0.unwrap();
+			// Ensure that the tenant is not linked to an asset
+			ensure!(tenant0.asset_account.is_none(), Error::<T>::AssetAlreadyLinked);
+
+			let asset_account = ownership.clone().unwrap().virtual_account;
+
+			let deposit = T::MinimumDeposit::get();
+
+			// Ensure that the virtual account has enough funds
+			for f in ownership.unwrap().owners {
+				<T as Dem::Config>::Currency::transfer(
+					&f,
+					&asset_account,
+					deposit,
+					ExistenceRequirement::AllowDeath,
+				)
+				.ok();
+			}
+
+			let call = Call::<T>::link_tenant_to_asset {
+				tenant: tenant.clone(),
+				asset_account: asset_account.clone(),
+			};
+
+			let proposal_hash = Self::create_proposal_hash_and_note(asset_account.clone(), call);
+
+			let threshold = Dem::VoteThreshold::SimpleMajority;
+
+			let delay = <T as Config>::Delay::get();
+
+			let referendum_index =
+				Dem::Pallet::<T>::internal_start_referendum(proposal_hash, threshold, delay);
+
+			// Create data for proposals Log
+			RepVote::<T>::new(
+				caller.clone(),
+				asset_account.clone(),
+				tenant.clone(),
+				referendum_index,
+				collection_id,
+				asset_id,
+			)
+			.ok();
+
+			//Emit Event
+			Self::deposit_event(Event::TenantVoteSessionStarted {
+				caller,
+				candidate: tenant,
+				asset_account,
+			});
+
+			Ok(())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn link_tenant_to_asset(
+			origin: OriginFor<T>,
+			tenant: T::AccountId,
+			asset_account: T::AccountId
+		) -> DispatchResult {
+			// TODO
 			Ok(())
 		}
 	}
