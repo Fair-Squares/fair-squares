@@ -195,7 +195,6 @@ pub mod pallet {
 					ExistenceRequirement::AllowDeath,
 				).ok();
 			}
-
 			//Create the call 
 			let proposal_call = Call::<T>::representative_approval {
 				rep_account: representative.clone(),
@@ -203,25 +202,8 @@ pub mod pallet {
 				item: asset_id,
 			};
 
-			let proposal = Box::new(Self::get_formatted_call(proposal_call.into()));
-
-			let call = Call::<T>::execute_call_dispatch {
-				account_id: virtual_account.clone(),
-				proposal: proposal.clone(),
-			};
-			let call_formatted = Self::get_formatted_call(call.into());
-			let call_dispatch = Box::new(call_formatted);
-
-			let proposal_hash = T::Hashing::hash_of(&call_dispatch);
-			let proposal_encoded: Vec<u8> = call_dispatch.encode();
-
-			let virtual_account_origin:<T as frame_system::Config>::Origin = RawOrigin::Signed(virtual_account.clone()).into();
-
-			// Call Democracy note_pre_image
-			Dem::Pallet::<T>::note_preimage(
-				virtual_account_origin.clone(),
-				proposal_encoded,
-			)?;
+			//Format the call and create the proposal Hash
+			let proposal_hash = Self::create_proposal_hash_and_note(virtual_account.clone(),proposal_call);
 
 			let threshold = Dem::VoteThreshold::SimpleMajority;
 			let delay = <T as Config>::Delay::get();
@@ -248,71 +230,7 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		///Owners Voting system
-		///One owner trigger a vote session with a proposal
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn representative_session(origin:OriginFor<T>,asset_type: Nft::PossibleCollections, asset_id: T::NftItemId,representative: T::AccountId ) -> DispatchResultWithPostInfo{
-			let caller = ensure_signed(origin.clone())?;
-			//Check that the account is in the representative waiting list
-			ensure!(Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),"problem");
-
-			//Get the asset virtual account if it exists
-			let collection_id: T::NftCollectionId = asset_type.value().into();
-			let ownership = Share::Pallet::<T>::virtual_acc(collection_id,asset_id);
-			ensure!(!ownership.clone().is_none(),Error::<T>::NotAnAsset);
-			let virtual_account = ownership.clone().unwrap().virtual_account;
-			let deposit = T::MinimumDeposit::get();
-
-			//Ensure that the virtual account has enough funds
-			for f in ownership.clone().unwrap().owners{
-				<T as Dem::Config>::Currency::transfer(
-					&f,
-					&virtual_account,
-					deposit,
-					ExistenceRequirement::AllowDeath,
-				).ok();
-			}
-			let origin_v:<T as frame_system::Config>::Origin = RawOrigin::Signed(virtual_account.clone()).into();
-
-			//Ensure that the caller is an owner related to the virtual account
-			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
-			
-			//Create the call 
-			let call = Call::<T>::representative_approval {
-				rep_account: representative.clone(),
-				collection: collection_id,
-				item: asset_id
-			};
-			
-			let rep_call = Box::new(call);
-			
-			//Create and add the proposal
-			let prop_hash = T::Hashing::hash_of(&rep_call);
-			let proposal_encoded: Vec<u8> = rep_call.encode();
-			Dem::Pallet::<T>::note_preimage(origin_v.clone(), proposal_encoded)?;
-
-			//let prop_hash = Self::create_proposal_hash_and_note(virtual_account.clone(),rep_call.into());	
-					
-			
-			Dem::Pallet::<T>::propose(origin_v,prop_hash,deposit.into()).ok();
-
-			let threshold = Dem::VoteThreshold::SimpleMajority;
-			let delay = <T as Config>::Delay::get();
-			let referendum_index =
-			Dem::Pallet::<T>::internal_start_referendum(prop_hash, threshold, delay);
-
-			//Create data for proposals Log
-			RepVote::<T>::new(caller.clone(),virtual_account.clone(),representative.clone(),referendum_index,collection_id,asset_id).ok();
-			
-			//Emit Event
-			Self::deposit_event(Event::RepresentativeVoteSessionStarted{
-				caller: caller,
-				candidate: representative,
-				asset_account: virtual_account,
-			});
-			
-			Ok(().into())
-		}
+		
 
 		///Vote action
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
@@ -342,8 +260,7 @@ pub mod pallet {
 				session_number: referendum_index,
 				when: <frame_system::Pallet<T>>::block_number(),
 			});
-			//ToDo -> hook needed to look for the end of the referendum, 
-			//and change the field vote_result in the struct RepVote
+
 
 
 			Ok(())

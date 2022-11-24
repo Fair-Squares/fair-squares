@@ -17,11 +17,19 @@ impl<T: Config> Pallet<T> {
         Ok(())
     }
 
-    pub fn create_proposal_hash_and_note(caller: T::AccountId,call:<T as Config>::Call) -> T::Hash {
-        let origin:<T as frame_system::Config>::Origin = RawOrigin::Signed(caller).into();
-        let call_wrap = Box::new(call);
-        let proposal_hash = T::Hashing::hash_of(&call_wrap);
-        let proposal_encoded: Vec<u8> = call_wrap.encode();
+    pub fn create_proposal_hash_and_note(caller: T::AccountId,proposal_call:pallet::Call<T>) -> T::Hash {
+        let origin:<T as frame_system::Config>::Origin = RawOrigin::Signed(caller.clone()).into();
+        let proposal = Box::new(Self::get_formatted_call(proposal_call.into()));
+
+			let call = Call::<T>::execute_call_dispatch {
+				account_id: caller.clone(),
+				proposal: proposal.clone(),
+			};
+			let call_formatted = Self::get_formatted_call(call.into());
+			let call_dispatch = Box::new(call_formatted);
+
+			let proposal_hash = T::Hashing::hash_of(&call_dispatch);
+			let proposal_encoded: Vec<u8> = call_dispatch.encode();
         match Dem::Pallet::<T>::note_preimage(origin, proposal_encoded){
             Ok(_) => (),
             Err(x) if x == Error::<T>::DuplicatePreimage.into() => (),

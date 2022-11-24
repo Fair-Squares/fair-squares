@@ -207,7 +207,7 @@ fn share_distributor0() {
 		let origin5 = Origin::signed(DAVE);
 		
 		//Create voting session, aka Referendum.
-		assert_ok!(AssetManagement::representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
+		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
 		let ref_index = 0;
 		//Get Referendum status before vote
 		let mut ref_infos = Democracy::referendum_info(0).unwrap();
@@ -296,7 +296,7 @@ fn share_distributor0() {
 		
 	
 		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result of a correctly executed call. 
-		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);		
+		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);		
 
 
 	});
