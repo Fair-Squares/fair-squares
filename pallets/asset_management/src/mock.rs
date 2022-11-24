@@ -1,5 +1,5 @@
 use super::*;
-use crate as pallet_asset_management;
+pub use crate as pallet_asset_management;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly},
@@ -221,7 +221,7 @@ impl pallet_nft::Config for Test {
 }
 
 parameter_types! {
-	pub const Delay: BlockNumber = 0;//3 * MINUTES;
+	pub const Delay: BlockNumber = 2;//3 * MINUTES;
 	pub const CheckDelay: BlockNumber = 1;//3 * MINUTES;
 	pub const InvestorVoteAmount: u128 = 1;
 	pub const CheckPeriod: BlockNumber = 1;
@@ -326,7 +326,6 @@ impl pallet_housing_fund::Config for Test {
 	type PalletId = HousingFundPalletId;
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
-
 
 impl pallet_asset_management::Config for Test {
 	type Event = Event;

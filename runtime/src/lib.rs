@@ -27,7 +27,7 @@ use sp_version::RuntimeVersion;
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{
-		EitherOfDiverse,EqualPrivilegeOnly,AsEnsureOriginWithArg,ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,
+		EitherOfDiverse,EqualPrivilegeOnly,AsEnsureOriginWithArg,ConstU128, ConstU32, ConstU64, ConstU8, KeyOwnerProofSystem, Randomness, StorageInfo,Contains,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -350,6 +350,13 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_utility::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 parameter_types! {
 	pub const MaxMembers:u32 =200;
 }
@@ -572,6 +579,23 @@ impl pallet_democracy::Config for Runtime {
 	type MaxProposals = MaxProposals;
 }
 
+pub struct DontAllowCollectiveAndDemocracy;
+impl Contains<Call> for DontAllowCollectiveAndDemocracy {
+	fn contains(c: &Call) -> bool {
+		match c {
+			Call::Democracy(_) => false,
+			Call::AssetManagementModule(pallet_asset_management::Call::execute_call_dispatch { .. }) => false,
+			Call::Council(_) => false,
+			Call::NftModule(_) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
+			// Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::reject_edit { .. }) => false,
+			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy { .. }) => false,
+			_ => true,
+		}
+	}
+}
+
 parameter_types! {
 	pub const ProposalFee: u64= 10;
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
@@ -678,6 +702,7 @@ construct_runtime!(
 		Uniques: pallet_uniques,
 		Sudo: pallet_sudo,
 		Identity: pallet_identity,
+		Utility: pallet_utility,
 		RoleModule: pallet_roles,
 		HousingFundModule: pallet_housing_fund,
 		NftModule: pallet_nft,
@@ -744,6 +769,7 @@ mod benches {
 		[pallet_onboarding, OnboardingModule]
 		[pallet_share_distributor,ShareDistributor]
 		[pallet_identity, Identity]
+		[pallet_utility, Utility]
 		//[pallet_asset_management, AssetManagementModule]
 		// [pallet_finalizer, FinalizerModule]
 		// flag add pallet bench_macro

@@ -12,18 +12,19 @@
 //!
 //! ### Dispatchable Functions
 //!
-//! * 'validate_transaction_asset' - a notary validate a purchase transaction after checked informations
+//! * 'validate_transaction_asset' - a notary validate a purchase transaction after checked
+//!   informations
 //! * 'reject_transaction_asset' - a notary reject a purchase
-//! * 'reject_transaction_asset' - a house owner can cancel the purchase transaction after notary validation
-
+//! * 'reject_transaction_asset' - a house owner can cancel the purchase transaction after notary
+//!   validation
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
-pub use pallet_roles as Roles;
+pub use pallet_housing_fund as HousingFund;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
-pub use pallet_housing_fund as HousingFund;
+pub use pallet_roles as Roles;
 
 #[cfg(test)]
 mod mock;
@@ -51,8 +52,8 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: 
-		frame_system::Config 
+	pub trait Config:
+		frame_system::Config
 		+ Roles::Config
 		+ Nft::Config
 		+ Onboarding::Config
@@ -68,21 +69,9 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		NotaryValidatedAssetTransaction(
-			AccountIdOf<T>,
-			T::NftCollectionId,
-			T::NftItemId,
-		),
-		NotaryRejectedAssetTransaction(
-			AccountIdOf<T>,
-			T::NftCollectionId,
-			T::NftItemId,
-		),
-		SellerCancelledAssetTransaction(
-			AccountIdOf<T>,
-			T::NftCollectionId,
-			T::NftItemId,
-		),
+		NotaryValidatedAssetTransaction(AccountIdOf<T>, T::NftCollectionId, T::NftItemId),
+		NotaryRejectedAssetTransaction(AccountIdOf<T>, T::NftCollectionId, T::NftItemId),
+		SellerCancelledAssetTransaction(AccountIdOf<T>, T::NftCollectionId, T::NftItemId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -99,21 +88,20 @@ pub mod pallet {
 		/// Asset must have FINALISED status
 		HouseHasNotFinalisedStatus,
 		/// Asset must have FINALISING status
-		HouseHasNotFinalisingStatus
+		HouseHasNotFinalisingStatus,
 	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		
 		/// The notary set the house status to FINALISED
 		/// The origin must be signed
 		/// - collection_id: the collection id of the nft asset
 		/// - nft_item_id: the id of the nft asset
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn validate_transaction_asset(
-			origin: OriginFor<T>, 
+			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
-			nft_item_id: T::NftItemId
+			nft_item_id: T::NftItemId,
 		) -> DispatchResult {
 			let who = ensure_signed(origin.clone())?;
 
@@ -121,23 +109,24 @@ pub mod pallet {
 			ensure!(Roles::Pallet::<T>::notaries(who.clone()).is_some(), Error::<T>::NotANotary);
 
 			// Check that the house exists in storage
-			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
-			ensure!(
-				house_wrap.is_some(),
-				Error::<T>::AssetDoesNotExist
-			);
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id, nft_item_id);
+			ensure!(house_wrap.is_some(), Error::<T>::AssetDoesNotExist);
 
 			// Ensure the house status is FINALISING
-			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING, Error::<T>::HouseHasNotFinalisingStatus);
+			ensure!(
+				house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING,
+				Error::<T>::HouseHasNotFinalisingStatus
+			);
 
-			let collection = Self::get_possible_collection(collection_id.clone());
+			let collection = Self::get_possible_collection(collection_id);
 
 			Onboarding::Pallet::<T>::change_status(
-				origin, 
-				collection, 
-				nft_item_id.clone(), 
-				Onboarding::AssetStatus::FINALISED
-			).ok();
+				origin,
+				collection,
+				nft_item_id,
+				Onboarding::AssetStatus::FINALISED,
+			)
+			.ok();
 
 			Self::deposit_event(Event::NotaryValidatedAssetTransaction(
 				who,
@@ -154,9 +143,9 @@ pub mod pallet {
 		/// - nft_item_id: the id of the nft asset
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn reject_transaction_asset(
-			origin: OriginFor<T>, 
+			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
-			nft_item_id: T::NftItemId
+			nft_item_id: T::NftItemId,
 		) -> DispatchResult {
 			let who = ensure_signed(origin.clone())?;
 
@@ -164,25 +153,26 @@ pub mod pallet {
 			ensure!(Roles::Pallet::<T>::notaries(who.clone()).is_some(), Error::<T>::NotANotary);
 
 			// Check that the house exists in storage
-			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
-			ensure!(
-				house_wrap.is_some(),
-				Error::<T>::AssetDoesNotExist
-			);
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id, nft_item_id);
+			ensure!(house_wrap.is_some(), Error::<T>::AssetDoesNotExist);
 
 			// Ensure the house status is FINALISING
-			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING, Error::<T>::HouseHasNotFinalisingStatus);
+			ensure!(
+				house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING,
+				Error::<T>::HouseHasNotFinalisingStatus
+			);
 
-			let collection = Self::get_possible_collection(collection_id.clone());
+			let collection = Self::get_possible_collection(collection_id);
 
 			Onboarding::Pallet::<T>::change_status(
-				origin, 
-				collection, 
-				nft_item_id.clone(), 
-				Onboarding::AssetStatus::REJECTED
-			).ok();
+				origin,
+				collection,
+				nft_item_id,
+				Onboarding::AssetStatus::REJECTED,
+			)
+			.ok();
 
-			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id.clone(), nft_item_id.clone()).ok();
+			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id, nft_item_id).ok();
 
 			Self::deposit_event(Event::NotaryRejectedAssetTransaction(
 				who,
@@ -199,9 +189,9 @@ pub mod pallet {
 		/// - nft_item_id: the id of the nft asset
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn cancel_transaction_asset(
-			origin: OriginFor<T>, 
+			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
-			nft_item_id: T::NftItemId
+			nft_item_id: T::NftItemId,
 		) -> DispatchResult {
 			let who = ensure_signed(origin.clone())?;
 
@@ -209,30 +199,31 @@ pub mod pallet {
 			ensure!(Roles::Pallet::<T>::sellers(who.clone()).is_some(), Error::<T>::NotASeller);
 
 			// Check that the house exists in storage
-			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
-			ensure!(
-				house_wrap.is_some(),
-				Error::<T>::AssetDoesNotExist
-			);
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id, nft_item_id);
+			ensure!(house_wrap.is_some(), Error::<T>::AssetDoesNotExist);
 
 			let owner: T::AccountId = Nft::Pallet::<T>::owner(collection_id, nft_item_id).unwrap();
 
 			// Ensure the caller is the owner of the house
-			ensure!(who.clone() == owner, Error::<T>::NotTheHouseOwner);
+			ensure!(who == owner, Error::<T>::NotTheHouseOwner);
 
 			// Ensure the house status is FINALISED
-			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISED, Error::<T>::HouseHasNotFinalisedStatus);
+			ensure!(
+				house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISED,
+				Error::<T>::HouseHasNotFinalisedStatus
+			);
 
-			let collection = Self::get_possible_collection(collection_id.clone());
+			let collection = Self::get_possible_collection(collection_id);
 
 			Onboarding::Pallet::<T>::change_status(
-				origin, 
-				collection, 
-				nft_item_id.clone(), 
-				Onboarding::AssetStatus::CANCELLED
-			).ok();
+				origin,
+				collection,
+				nft_item_id,
+				Onboarding::AssetStatus::CANCELLED,
+			)
+			.ok();
 
-			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id.clone(), nft_item_id.clone()).ok();
+			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id, nft_item_id).ok();
 
 			Self::deposit_event(Event::SellerCancelledAssetTransaction(
 				who,
@@ -245,12 +236,9 @@ pub mod pallet {
 	}
 }
 
-pub use frame_support::{
-	inherent::Vec,
-};
 use enum_iterator::all;
+pub use frame_support::inherent::Vec;
 impl<T: Config> Pallet<T> {
-
 	fn get_possible_collection(collection_id: T::NftCollectionId) -> Nft::PossibleCollections {
 		let collections = all::<Nft::PossibleCollections>().collect::<Vec<_>>();
 		let mut possible_collection = Nft::PossibleCollections::HOUSES;
@@ -258,7 +246,7 @@ impl<T: Config> Pallet<T> {
 			let value: T::NftCollectionId = item.value().into();
 			if value == collection_id {
 				possible_collection = *item;
-				break;
+				break
 			}
 		}
 		possible_collection
