@@ -32,8 +32,8 @@ impl<T: Config> Pallet<T> {
 		tenant: T::AccountId,
 		collection: T::NftCollectionId,
 		item: T::NftItemId,
-		asset_account: T::AccountId
-	) -> DispatchResult{
+		asset_account: T::AccountId,
+	) -> DispatchResult {
 		// Update tenant info
 		let mut tenant0 = Roles::Pallet::<T>::tenants(&tenant).unwrap();
 		tenant0.asset_account = Some(asset_account);

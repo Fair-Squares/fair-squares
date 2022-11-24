@@ -131,7 +131,12 @@ impl<T: Config> Tenant<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
 		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
-		let tenant = Tenant { account_id: caller.clone(), rent: Zero::zero(), age: now, asset_account: None };
+		let tenant = Tenant {
+			account_id: caller.clone(),
+			rent: Zero::zero(),
+			age: now,
+			asset_account: None,
+		};
 		TenantLog::<T>::insert(caller, &tenant);
 		Ok(())
 	}

@@ -141,8 +141,8 @@ pub mod pallet {
 			tenant: T::AccountId,
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
-			asset_account: T::AccountId
-		}
+			asset_account: T::AccountId,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -405,8 +405,8 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// A representative triggers a vote session with a proposal for a tenant to be link with an asset
-		/// The origin must be a representative
+		/// A representative triggers a vote session with a proposal for a tenant to be link with an
+		/// asset The origin must be a representative
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - tenant: an account with the tenant role
@@ -420,7 +420,10 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 
 			// Ensure that the caller is a representative
-			ensure!(Roles::Pallet::<T>::reps(caller.clone()).is_some(), Error::<T>::NotARepresentative);
+			ensure!(
+				Roles::Pallet::<T>::reps(caller.clone()).is_some(),
+				Error::<T>::NotARepresentative
+			);
 
 			let representative = caller;
 
@@ -491,12 +494,13 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			tenant: T::AccountId,
 			collection: T::NftCollectionId,
-			item: T::NftItemId
+			item: T::NftItemId,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
-			
+
 			// Ensure the caller is the virtual account of the asset
-			let asset_account = Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
+			let asset_account =
+				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 			ensure!(caller == asset_account, Error::<T>::NotAnAssetAccount);
 
 			Self::tenant_link_asset(tenant.clone(), collection, item, asset_account.clone()).ok();
@@ -505,7 +509,7 @@ pub mod pallet {
 				tenant,
 				collection,
 				item,
-				asset_account
+				asset_account,
 			});
 
 			Ok(())

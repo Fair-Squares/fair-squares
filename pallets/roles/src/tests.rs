@@ -32,7 +32,12 @@ fn test_struct_methods() {
 		//-- checking Tenant storage------
 		assert_eq!(
 			RoleModule::tenants(1),
-			Some(Tenant { account_id: 1, rent: 0, age: System::block_number(), asset_account: None })
+			Some(Tenant {
+				account_id: 1,
+				rent: 0,
+				age: System::block_number(),
+				asset_account: None
+			})
 		);
 
 		//-----Servicer-----------------------------------------

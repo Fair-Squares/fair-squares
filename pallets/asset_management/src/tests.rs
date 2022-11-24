@@ -280,11 +280,10 @@ fn share_distributor0() {
 		assert!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE));
 		assert!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 
-
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////								TEST propose_tenant								//////
 		//////////////////////////////////////////////////////////////////////////////////////////
-		
+
 		// Ferdie(Representative) proposes a tenant(GERARD)
 		// Check if GERARD has the tenant role
 		assert!(Roles::TenantLog::<Test>::contains_key(GERARD));
@@ -316,12 +315,12 @@ fn share_distributor0() {
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: EVE,
 				session_number: 1,
-				when: System::block_number()
+				when: System::block_number(),
 			}),
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: DAVE,
 				session_number: 1,
-				when: System::block_number()
+				when: System::block_number(),
 			}),
 		]);
 
@@ -340,8 +339,10 @@ fn share_distributor0() {
 
 		// Check the asset_account of the tenant
 		let tenant0 = RoleModule::tenants(GERARD).unwrap();
-		assert_eq!(tenant0.asset_account.unwrap(), ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account);
-
+		assert_eq!(
+			tenant0.asset_account.unwrap(),
+			ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
+		);
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////								TEST demote_representative						//////
