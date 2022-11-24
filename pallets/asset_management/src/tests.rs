@@ -206,8 +206,8 @@ fn share_distributor0() {
 		let origin4 = Origin::signed(EVE);
 		let origin5 = Origin::signed(DAVE);
 		
-		//Create voting session, aka Referendum.
-		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE));
+		//Create voting session, aka Referendum to elect FERDIE as a representative.
+		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::ELECT_REPRESENTATIVE));
 		let ref_index = 0;
 		//Get Referendum status before vote
 		let mut ref_infos = Democracy::referendum_info(0).unwrap();
@@ -215,7 +215,7 @@ fn share_distributor0() {
 
 		//Investors vote
 		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
-		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
+		assert_ok!(AssetManagement::owners_vote(origin5.clone(),ref_index,true));
 
 		//Voting events emmited
 		expect_events(vec![mock::Event::AssetManagement(crate::Event::InvestorVoted {
@@ -238,29 +238,6 @@ fn share_distributor0() {
 			ref_infos = Democracy::referendum_info(0).unwrap();
 
 
-
-		//---TEST_0:--- 
-		//Approve FERDIE REPRESENTATIVE- In this section, we test that the representative_aproval extrinsic works as expected.
-		//Uncomment after commenting TEST_1 and TEST_2 below.
-
-		//let origin3 = Origin::signed(virtual1.virtual_account); 
-		//assert_ok!(AssetManagement::representative_approval(origin3, FERDIE, coll_id1, item_id1));
-
-		//Check that Ferdie is now in RepresentiveLog, and not anymore in RepApprovalList
-
-		//assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
-		//assert_eq!(Roles::RepApprovalList::<Test>::contains_key(FERDIE), false);
-
-		//---TEST_0:---
-
-
-
-		
-		//---TEST_1:---
-		//Here, by moving to the next block, after investor votes, we're expecting the Call to be executed 
-		//UnComent after Commenting TEST_0 and TEST_2:
-
-		
 		let b = match ref_infos{
 			pallet_democracy::ReferendumInfo::Finished{approved,end:_} => approved,
 			_=> false,
@@ -275,28 +252,46 @@ fn share_distributor0() {
 		fast_forward_to(end_block_number
 			.saturating_add(<Test as crate::Config>::Delay::get()));			
 
-		//---TEST_1:---
-
-
-
-
-		//---TEST_2---
-		//Checking the call format by directly doing a Representative call dispatch,and see if it works as expected.
-		// Uncomment after commenting TEST_0.
-
-		//	let origin6 = Origin::signed(virtual0.virtual_account);
-		//	let rep_call= pallet_asset_management::Call::<Test>::representative_approval {
-		//		rep_account: FERDIE,
-		//		collection: coll_id0,
-		//		item: item_id0
-		//	};
-		//	assert_ok!(rep_call.dispatch_bypass_filter(origin6));
-
-		//---TEST_2---
-		
-	
 		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result of a correctly executed call. 
-		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);		
+		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
+		assert_eq!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE), true);
+
+		
+		//Create voting session, aka Referendum to demote FERDIE from her/his representative role.
+		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::DEMOTE_REPRESENTATIVE));
+		
+		let ref_index = 1;
+		
+		//Investors vote
+		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
+		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
+
+		//Voting events emmited
+		expect_events(vec![mock::Event::AssetManagement(crate::Event::InvestorVoted {
+			caller: EVE,
+			session_number: 1,
+			when: System::block_number(),
+		}),
+		mock::Event::AssetManagement(crate::Event::InvestorVoted {
+			caller: DAVE,
+			session_number: 1,
+			when: System::block_number(),
+		})
+		]);
+		
+		let initial_block_number = System::block_number();
+		let end_block_number = initial_block_number
+			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+			fast_forward_to(end_block_number);
+		
+		//Proposal enactement should happen 2 blocks later 
+		fast_forward_to(end_block_number
+			.saturating_add(<Test as crate::Config>::Delay::get()));
+					
+
+		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result of a correctly executed call. 
+		assert_eq!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE), false);
 
 
 	});

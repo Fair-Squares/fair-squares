@@ -42,6 +42,14 @@ pub enum VoteResult {
 	REJECTED,
 }
 
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub enum VoteProposals {
+	ELECT_REPRESENTATIVE,
+	DEMOTE_REPRESENTATIVE,
+	
+}
+
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]

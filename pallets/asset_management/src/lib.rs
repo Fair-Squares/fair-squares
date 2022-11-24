@@ -96,6 +96,11 @@ pub mod pallet {
 			asset_account: T::AccountId,
 			when: BlockNumberOf<T>,
 		},
+		RepresentativeDemoted{
+			candidate: T::AccountId,
+			asset_account: T::AccountId,
+			when: BlockNumberOf<T>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -167,7 +172,9 @@ pub mod pallet {
 			origin:OriginFor<T>,
 			asset_type: Nft::PossibleCollections, 
 			asset_id: T::NftItemId,
-			representative: T::AccountId 
+			representative: T::AccountId,
+			proposal: VoteProposals
+
 		) -> DispatchResultWithPostInfo{
 
 			let caller = ensure_signed(origin.clone())?;
@@ -180,8 +187,7 @@ pub mod pallet {
 			//Ensure that the caller is an owner related to the virtual account
 			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
 
-			//Check that the account is in the representative waiting list
-			ensure!(Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),"problem");
+			
 
 			let virtual_account = ownership.clone().unwrap().virtual_account;
 			let deposit = T::MinimumDeposit::get();
@@ -196,11 +202,25 @@ pub mod pallet {
 				).ok();
 			}
 			//Create the call 
-			let proposal_call = Call::<T>::representative_approval {
-				rep_account: representative.clone(),
-				collection: collection_id,
-				item: asset_id,
+
+			let proposal_call= match proposal {
+				VoteProposals::ELECT_REPRESENTATIVE =>{ 
+					//Check that the account is in the representative waiting list
+			ensure!(Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),"No pending representative with this account");
+					 Call::<T>::representative_approval {
+						rep_account: representative.clone(),
+						collection: collection_id,
+						item: asset_id,
+					}},
+				VoteProposals::DEMOTE_REPRESENTATIVE => 
+					Call::<T>::demote_representative {
+						rep_account: representative.clone(),
+						collection: collection_id,
+						item: asset_id,
+					},
+				
 			};
+			
 
 			//Format the call and create the proposal Hash
 			let proposal_hash = Self::create_proposal_hash_and_note(virtual_account.clone(),proposal_call);
@@ -281,6 +301,29 @@ pub mod pallet {
 			Self::approve_representative(caller.clone(),rep_account.clone()).ok();
 
 			Self::deposit_event(Event::RepresentativeCandidateApproved{
+				candidate: rep_account,
+				asset_account: caller,
+				when: <frame_system::Pallet<T>>::block_number(),
+			});
+
+			Ok(())
+		}
+
+		/// Demote an elected Representative
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn demote_representative(origin: OriginFor<T>, rep_account: T::AccountId,collection: T::NftCollectionId,item: T::NftItemId) -> DispatchResult {
+			let caller = ensure_signed(origin)?;
+
+			//Check that the caller is a stored virtual account
+			ensure!(
+				caller == Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				Error::<T>::NotAnAssetAccount
+			);
+			
+			//Revoque Representative Role
+			Self::revoque_representative(rep_account.clone()).ok();
+
+			Self::deposit_event(Event::RepresentativeDemoted{
 				candidate: rep_account,
 				asset_account: caller,
 				when: <frame_system::Pallet<T>>::block_number(),
