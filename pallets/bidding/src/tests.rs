@@ -631,7 +631,7 @@ fn process_onboarded_assets_cannot_assemble_investor_should_fail() {
 		);
 	});
 }
-use crate::Onboarding::Event;
+
 #[test]
 fn process_onboarded_assets_should_succeed() {
 	new_test_ext().execute_with(|| {

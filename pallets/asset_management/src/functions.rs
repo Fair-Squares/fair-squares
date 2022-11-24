@@ -33,8 +33,8 @@ impl<T: Config> Pallet<T> {
         let proposal = Box::new(Self::get_formatted_call(proposal_call.into()));
 
 			let call = Call::<T>::execute_call_dispatch {
-				account_id: caller.clone(),
-				proposal: proposal.clone(),
+				account_id: caller,
+				proposal,
 			};
 			let call_formatted = Self::get_formatted_call(call.into());
 			let call_dispatch = Box::new(call_formatted);
@@ -72,7 +72,7 @@ impl<T: Config> Pallet<T> {
         let indexes = ProposalsIndexes::<T>::iter();
         for index in indexes {
             //check if the status is Finished
-            let ref_infos: RefInfos<T>= Dem::Pallet::<T>::referendum_info(index.1.clone()).unwrap();
+            let ref_infos: RefInfos<T>= Dem::Pallet::<T>::referendum_info(index.1).unwrap();
             let b = match ref_infos{
 				pallet_democracy::ReferendumInfo::Finished{approved,end:_} => (1,approved),
 				_=> (0,false),
@@ -81,7 +81,7 @@ impl<T: Config> Pallet<T> {
                 //get the local prop_infos and update vote result if referendum ended
                 ProposalsLog::<T>::mutate(index.1,|val|{
                     let mut val0 = val.clone().unwrap();
-                    if b.1==true{
+                    if b.1{
                         val0.vote_result=VoteResult::ACCEPTED
                     } else {val0.vote_result=VoteResult::REJECTED}
                     *val = Some(val0)

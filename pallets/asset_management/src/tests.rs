@@ -193,8 +193,8 @@ fn share_distributor0() {
 		//Check that virtual accounts are the new owners
 		assert_eq!(new_owner0, virtual0.virtual_account);
 		assert_eq!(new_owner1, virtual1.virtual_account);
-		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual0.virtual_account.clone(),5_000_000_000,1_000_000_000).ok();
-		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual1.virtual_account.clone(),5_000_000_000,1_000_000_000).ok();
+		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual0.virtual_account,5_000_000_000,1_000_000_000).ok();
+		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual1.virtual_account,5_000_000_000,1_000_000_000).ok();
 
 		
 		//Representative Role status  before Approval
@@ -207,7 +207,7 @@ fn share_distributor0() {
 		let origin5 = Origin::signed(DAVE);
 		
 		//Create voting session, aka Referendum to elect FERDIE as a representative.
-		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::ELECT_REPRESENTATIVE));
+		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::ElectRepresentative));
 		let ref_index = 0;
 		//Get Referendum status before vote
 		let mut ref_infos = Democracy::referendum_info(0).unwrap();
@@ -258,12 +258,12 @@ fn share_distributor0() {
 
 		
 		//Create voting session, aka Referendum to demote FERDIE from her/his representative role.
-		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::DEMOTE_REPRESENTATIVE));
+		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::DemoteRepresentative));
 		
 		let ref_index = 1;
 		
 		//Investors vote
-		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
+		assert_ok!(AssetManagement::owners_vote(origin4,ref_index,true));
 		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
 
 		//Voting events emmited

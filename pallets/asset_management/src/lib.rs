@@ -201,7 +201,7 @@ pub mod pallet {
 			//Get the asset virtual account if it exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id,asset_id);
-			ensure!(!ownership.clone().is_none(),Error::<T>::NotAnAsset);
+			ensure!(ownership.is_some(),Error::<T>::NotAnAsset);
 
 			//Ensure that the caller is an owner related to the virtual account
 			ensure!(Self::caller_can_vote(&caller,ownership.clone().unwrap()),Error::<T>::NotAnOwner);
@@ -212,7 +212,7 @@ pub mod pallet {
 			let deposit = T::MinimumDeposit::get();
 
 			//Ensure that the virtual account has enough funds
-			for f in ownership.clone().unwrap().owners{
+			for f in ownership.unwrap().owners{
 				<T as Dem::Config>::Currency::transfer(
 					&f,
 					&virtual_account,
@@ -223,7 +223,7 @@ pub mod pallet {
 			//Create the call 
 
 			let proposal_call= match proposal {
-				VoteProposals::ELECT_REPRESENTATIVE =>{ 
+				VoteProposals::ElectRepresentative =>{ 
 					//Check that the account is in the representative waiting list
 			ensure!(Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),"No pending representative with this account");
 					 Call::<T>::representative_approval {
@@ -231,7 +231,7 @@ pub mod pallet {
 						collection: collection_id,
 						item: asset_id,
 					}},
-				VoteProposals::DEMOTE_REPRESENTATIVE => 
+				VoteProposals::DemoteRepresentative => 
 					Call::<T>::demote_representative {
 						rep_account: representative.clone(),
 						collection: collection_id,
@@ -261,7 +261,7 @@ pub mod pallet {
 
 			//Emit Event
 			Self::deposit_event(Event::RepresentativeVoteSessionStarted{
-				caller: caller,
+				caller,
 				candidate: representative,
 				asset_account: virtual_account,
 			});
@@ -280,7 +280,7 @@ pub mod pallet {
 			//Check that the referendum exists and is active
 			ensure!(ProposalsLog::<T>::contains_key(referendum_index),Error::<T>::NotAValidReferendum);
 			//Check the referendum status
-			let infos = Self::proposals(&referendum_index).unwrap();
+			let infos = Self::proposals(referendum_index).unwrap();
 			let status = infos.vote_result;
 			ensure!(status==VoteResult::AWAITING,Error::<T>::ReferendumCompleted);
 			//check that caller can vote
@@ -293,7 +293,7 @@ pub mod pallet {
 
 			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
 			
-			Dem::Pallet::<T>::vote(origin.clone(),referendum_index.clone(),Dem::AccountVote::Standard { vote: v, balance: token1 }).ok();
+			Dem::Pallet::<T>::vote(origin.clone(),referendum_index,Dem::AccountVote::Standard { vote: v, balance: token1 }).ok();
 			
 			//Emit event
 			Self::deposit_event(Event::InvestorVoted{

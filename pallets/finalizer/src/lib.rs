@@ -121,7 +121,7 @@ pub mod pallet {
 			ensure!(Roles::Pallet::<T>::notaries(who.clone()).is_some(), Error::<T>::NotANotary);
 
 			// Check that the house exists in storage
-			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id, nft_item_id);
 			ensure!(
 				house_wrap.is_some(),
 				Error::<T>::AssetDoesNotExist
@@ -130,12 +130,12 @@ pub mod pallet {
 			// Ensure the house status is FINALISING
 			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING, Error::<T>::HouseHasNotFinalisingStatus);
 
-			let collection = Self::get_possible_collection(collection_id.clone());
+			let collection = Self::get_possible_collection(collection_id);
 
 			Onboarding::Pallet::<T>::change_status(
 				origin, 
 				collection, 
-				nft_item_id.clone(), 
+				nft_item_id, 
 				Onboarding::AssetStatus::FINALISED
 			).ok();
 
@@ -164,7 +164,7 @@ pub mod pallet {
 			ensure!(Roles::Pallet::<T>::notaries(who.clone()).is_some(), Error::<T>::NotANotary);
 
 			// Check that the house exists in storage
-			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id, nft_item_id);
 			ensure!(
 				house_wrap.is_some(),
 				Error::<T>::AssetDoesNotExist
@@ -173,16 +173,16 @@ pub mod pallet {
 			// Ensure the house status is FINALISING
 			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING, Error::<T>::HouseHasNotFinalisingStatus);
 
-			let collection = Self::get_possible_collection(collection_id.clone());
+			let collection = Self::get_possible_collection(collection_id);
 
 			Onboarding::Pallet::<T>::change_status(
 				origin, 
 				collection, 
-				nft_item_id.clone(), 
+				nft_item_id, 
 				Onboarding::AssetStatus::REJECTED
 			).ok();
 
-			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id.clone(), nft_item_id.clone()).ok();
+			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id, nft_item_id).ok();
 
 			Self::deposit_event(Event::NotaryRejectedAssetTransaction(
 				who,
@@ -209,7 +209,7 @@ pub mod pallet {
 			ensure!(Roles::Pallet::<T>::sellers(who.clone()).is_some(), Error::<T>::NotASeller);
 
 			// Check that the house exists in storage
-			let house_wrap = Onboarding::Houses::<T>::get(collection_id.clone(), nft_item_id.clone());
+			let house_wrap = Onboarding::Houses::<T>::get(collection_id, nft_item_id);
 			ensure!(
 				house_wrap.is_some(),
 				Error::<T>::AssetDoesNotExist
@@ -218,21 +218,21 @@ pub mod pallet {
 			let owner: T::AccountId = Nft::Pallet::<T>::owner(collection_id, nft_item_id).unwrap();
 
 			// Ensure the caller is the owner of the house
-			ensure!(who.clone() == owner, Error::<T>::NotTheHouseOwner);
+			ensure!(who == owner, Error::<T>::NotTheHouseOwner);
 
 			// Ensure the house status is FINALISED
 			ensure!(house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISED, Error::<T>::HouseHasNotFinalisedStatus);
 
-			let collection = Self::get_possible_collection(collection_id.clone());
+			let collection = Self::get_possible_collection(collection_id);
 
 			Onboarding::Pallet::<T>::change_status(
 				origin, 
 				collection, 
-				nft_item_id.clone(), 
+				nft_item_id, 
 				Onboarding::AssetStatus::CANCELLED
 			).ok();
 
-			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id.clone(), nft_item_id.clone()).ok();
+			HousingFund::Pallet::<T>::cancel_house_bidding(collection_id, nft_item_id).ok();
 
 			Self::deposit_event(Event::SellerCancelledAssetTransaction(
 				who,

@@ -45,8 +45,8 @@ pub enum VoteResult {
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum VoteProposals {
-	ELECT_REPRESENTATIVE,
-	DEMOTE_REPRESENTATIVE,
+	ElectRepresentative,
+	DemoteRepresentative,
 	
 }
 
@@ -83,7 +83,7 @@ impl<T: Config> RepVote<T> {
 		let vote_result = VoteResult::AWAITING;
 		let when = <frame_system::Pallet<T>>::block_number();
 		let session = RepVote::<T>{caller_account:caller_account.clone(),virtual_account,collection_id,item_id,candidate_account,vote_result,when};
-		ProposalsLog::<T>::insert(&referendum_index,session);
+		ProposalsLog::<T>::insert(referendum_index,session);
 		ProposalsIndexes::<T>::insert(caller_account,referendum_index);
 		Ok(())
 		

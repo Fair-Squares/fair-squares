@@ -43,8 +43,8 @@ fn validate_transaction_asset_no_notary_role_should_fail() {
 		assert_noop!(
 			FinalizerModule::validate_transaction_asset(
 				Origin::signed(AMANI),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			),
 			Error::<Test>::NotANotary
 		);
@@ -74,7 +74,7 @@ fn validate_transaction_asset_no_existing_house_should_fail() {
 		assert_noop!(
 			FinalizerModule::validate_transaction_asset(
 				Origin::signed(DAN),
-				collection_id.clone(),
+				collection_id,
 				1,
 			),
 			Error::<Test>::AssetDoesNotExist
@@ -130,8 +130,8 @@ fn validate_transaction_asset_no_finalising_status_should_fail() {
 		assert_noop!(
 			FinalizerModule::validate_transaction_asset(
 				Origin::signed(DAN),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			),
 			Error::<Test>::HouseHasNotFinalisingStatus
 		);
@@ -193,12 +193,12 @@ fn validate_transaction_asset_should_succeed() {
 		assert_ok!(
 			FinalizerModule::validate_transaction_asset(
 				Origin::signed(DAN),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			)
 		);
 
-		let house = OnboardingModule::houses(collection_id.clone(), item_id.clone()).unwrap();
+		let house = OnboardingModule::houses(collection_id, item_id).unwrap();
 		assert_eq!(house.status, crate::Onboarding::AssetStatus::FINALISED);
 
 		let event = <frame_system::Pallet<Test>>::events()
@@ -255,8 +255,8 @@ fn reject_transaction_asset_no_notary_role_should_fail() {
 		assert_noop!(
 			FinalizerModule::reject_transaction_asset(
 				Origin::signed(AMANI),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			),
 			Error::<Test>::NotANotary
 		);
@@ -286,7 +286,7 @@ fn reject_transaction_asset_no_existing_house_should_fail() {
 		assert_noop!(
 			FinalizerModule::reject_transaction_asset(
 				Origin::signed(DAN),
-				collection_id.clone(),
+				collection_id,
 				1,
 			),
 			Error::<Test>::AssetDoesNotExist
@@ -342,8 +342,8 @@ fn reject_transaction_asset_no_finalising_status_should_fail() {
 		assert_noop!(
 			FinalizerModule::reject_transaction_asset(
 				Origin::signed(DAN),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			),
 			Error::<Test>::HouseHasNotFinalisingStatus
 		);
@@ -418,7 +418,7 @@ fn reject_transaction_asset_should_succeed() {
 		assert_ok!(BiddingModule::process_onboarded_assets());
 
 		assert_eq!(
-			pallet_onboarding::Houses::<Test>::get(collection_id.clone(), item_id.clone()).unwrap().status,
+			pallet_onboarding::Houses::<Test>::get(collection_id, item_id).unwrap().status,
 			crate::Onboarding::AssetStatus::FINALISING
 		);
 
@@ -432,8 +432,8 @@ fn reject_transaction_asset_should_succeed() {
 		assert_ok!(
 			FinalizerModule::reject_transaction_asset(
 				Origin::signed(DAN),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			)
 		);
 
@@ -503,8 +503,8 @@ fn cancel_transaction_asset_no_seller_role_should_fail() {
 		assert_noop!(
 			FinalizerModule::cancel_transaction_asset(
 				Origin::signed(KEZIA),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			),
 			Error::<Test>::NotASeller
 		);
@@ -527,7 +527,7 @@ fn cancel_transaction_asset_no_existing_house_should_fail() {
 		assert_noop!(
 			FinalizerModule::cancel_transaction_asset(
 				Origin::signed(AMANI),
-				collection_id.clone(),
+				collection_id,
 				1,
 			),
 			Error::<Test>::AssetDoesNotExist
@@ -576,8 +576,8 @@ fn cancel_transaction_asset_no_finalised_status_should_fail() {
 		assert_noop!(
 			FinalizerModule::cancel_transaction_asset(
 				Origin::signed(AMANI),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			),
 			Error::<Test>::HouseHasNotFinalisedStatus
 		);
@@ -652,7 +652,7 @@ fn cancel_transaction_asset_should_succeed() {
 		assert_ok!(BiddingModule::process_onboarded_assets());
 
 		assert_eq!(
-			pallet_onboarding::Houses::<Test>::get(collection_id.clone(), item_id.clone()).unwrap().status,
+			pallet_onboarding::Houses::<Test>::get(collection_id, item_id).unwrap().status,
 			crate::Onboarding::AssetStatus::FINALISING
 		);
 
@@ -666,16 +666,16 @@ fn cancel_transaction_asset_should_succeed() {
 		assert_ok!(
 			FinalizerModule::validate_transaction_asset(
 				Origin::signed(DAN),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			)
 		);
 
 		assert_ok!(
 			FinalizerModule::cancel_transaction_asset(
 				Origin::signed(AMANI),
-				collection_id.clone(),
-				item_id.clone(),
+				collection_id,
+				item_id,
 			)
 		);
 
