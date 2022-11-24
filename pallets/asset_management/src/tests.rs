@@ -1,7 +1,7 @@
 pub use super::*;
-use mock::*;
 pub use frame_support::{assert_noop, assert_ok};
 use frame_system::pallet_prelude::OriginFor;
+use mock::*;
 
 pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
 
@@ -28,7 +28,6 @@ fn fast_forward_to(n: u64) {
 		next_block();
 	}
 }
-
 
 #[test]
 fn representative() {
@@ -193,106 +192,131 @@ fn share_distributor0() {
 		//Check that virtual accounts are the new owners
 		assert_eq!(new_owner0, virtual0.virtual_account);
 		assert_eq!(new_owner1, virtual1.virtual_account);
-		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual0.virtual_account,5_000_000_000,1_000_000_000).ok();
-		Balances::set_balance(frame_system::RawOrigin::Root.into(),virtual1.virtual_account,5_000_000_000,1_000_000_000).ok();
+		Balances::set_balance(
+			frame_system::RawOrigin::Root.into(),
+			virtual0.virtual_account,
+			5_000_000_000,
+			1_000_000_000,
+		)
+		.ok();
+		Balances::set_balance(
+			frame_system::RawOrigin::Root.into(),
+			virtual1.virtual_account,
+			5_000_000_000,
+			1_000_000_000,
+		)
+		.ok();
 
-		
 		//Representative Role status  before Approval
 		assert_eq!(RoleModule::get_pending_representatives(FERDIE).unwrap().activated, false);
 
-		
-
-		
 		let origin4 = Origin::signed(EVE);
 		let origin5 = Origin::signed(DAVE);
-		
+
 		//Create voting session, aka Referendum to elect FERDIE as a representative.
-		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::ElectRepresentative));
+		assert_ok!(AssetManagement::launch_representative_session(
+			origin4.clone(),
+			NftColl::OFFICESTEST,
+			item_id0,
+			FERDIE,
+			VoteProposals::ElectRepresentative
+		));
 		let ref_index = 0;
 		//Get Referendum status before vote
 		let mut ref_infos = Democracy::referendum_info(0).unwrap();
-		println!("\n\nReferendum status before vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
+		println!(
+			"\n\nReferendum status before vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
 
 		//Investors vote
-		assert_ok!(AssetManagement::owners_vote(origin4.clone(),ref_index,true));
-		assert_ok!(AssetManagement::owners_vote(origin5.clone(),ref_index,true));
+		assert_ok!(AssetManagement::owners_vote(origin4.clone(), ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin5.clone(), ref_index, true));
 
 		//Voting events emmited
-		expect_events(vec![mock::Event::AssetManagement(crate::Event::InvestorVoted {
-			caller: EVE,
-			session_number: 0,
-			when: System::block_number(),
-		}),
-		mock::Event::AssetManagement(crate::Event::InvestorVoted {
-			caller: DAVE,
-			session_number: 0,
-			when: System::block_number(),
-		})
+		expect_events(vec![
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: EVE,
+				session_number: 0,
+				when: System::block_number(),
+			}),
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: DAVE,
+				session_number: 0,
+				when: System::block_number(),
+			}),
 		]);
-		
+
 		let initial_block_number = System::block_number();
 		let end_block_number = initial_block_number
 			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
 
-			fast_forward_to(end_block_number);
-			ref_infos = Democracy::referendum_info(0).unwrap();
+		fast_forward_to(end_block_number);
+		ref_infos = Democracy::referendum_info(0).unwrap();
 
+		let b = match ref_infos {
+			pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => approved,
+			_ => false,
+		};
 
-		let b = match ref_infos{
-			pallet_democracy::ReferendumInfo::Finished{approved,end:_} => approved,
-			_=> false,
-		} ;
-
-		println!("\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",&ref_infos,System::block_number());
-		println!("\n\nvote result is:{:?}",b);
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+		println!("\n\nvote result is:{:?}", b);
 		let prop0 = AssetManagement::proposals(0).unwrap().vote_result;
-		println!("\n\nVote results:{:?}\n\n",prop0);
+		println!("\n\nVote results:{:?}\n\n", prop0);
 
-		//Proposal enactement should happen 2 blocks later 
-		fast_forward_to(end_block_number
-			.saturating_add(<Test as crate::Config>::Delay::get()));			
+		//Proposal enactement should happen 2 blocks later
+		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
-		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result of a correctly executed call. 
+		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result
+		// of a correctly executed call.
 		assert_eq!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE), true);
 		assert_eq!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE), true);
 
-		
 		//Create voting session, aka Referendum to demote FERDIE from her/his representative role.
-		assert_ok!(AssetManagement::launch_representative_session(origin4.clone(),NftColl::OFFICESTEST, item_id0,FERDIE,VoteProposals::DemoteRepresentative));
-		
+		assert_ok!(AssetManagement::launch_representative_session(
+			origin4.clone(),
+			NftColl::OFFICESTEST,
+			item_id0,
+			FERDIE,
+			VoteProposals::DemoteRepresentative
+		));
+
 		let ref_index = 1;
-		
+
 		//Investors vote
-		assert_ok!(AssetManagement::owners_vote(origin4,ref_index,true));
-		assert_ok!(AssetManagement::owners_vote(origin5,ref_index,true));
+		assert_ok!(AssetManagement::owners_vote(origin4, ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin5, ref_index, true));
 
 		//Voting events emmited
-		expect_events(vec![mock::Event::AssetManagement(crate::Event::InvestorVoted {
-			caller: EVE,
-			session_number: 1,
-			when: System::block_number(),
-		}),
-		mock::Event::AssetManagement(crate::Event::InvestorVoted {
-			caller: DAVE,
-			session_number: 1,
-			when: System::block_number(),
-		})
+		expect_events(vec![
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: EVE,
+				session_number: 1,
+				when: System::block_number(),
+			}),
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: DAVE,
+				session_number: 1,
+				when: System::block_number(),
+			}),
 		]);
-		
+
 		let initial_block_number = System::block_number();
 		let end_block_number = initial_block_number
 			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
 
-			fast_forward_to(end_block_number);
-		
-		//Proposal enactement should happen 2 blocks later 
-		fast_forward_to(end_block_number
-			.saturating_add(<Test as crate::Config>::Delay::get()));
-					
+		fast_forward_to(end_block_number);
 
-		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result of a correctly executed call. 
+		//Proposal enactement should happen 2 blocks later
+		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
+
+		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result
+		// of a correctly executed call.
 		assert_eq!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE), false);
-
-
 	});
 }

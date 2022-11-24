@@ -327,7 +327,6 @@ impl pallet_housing_fund::Config for Test {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
-
 impl pallet_asset_management::Config for Test {
 	type Event = Event;
 	type Call = Call;
