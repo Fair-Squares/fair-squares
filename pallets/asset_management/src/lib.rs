@@ -114,8 +114,8 @@ pub mod pallet {
 		},
 		/// A voting session to link a tenant to an asset has started
 		TenantVoteSessionStarted {
-			caller: T::AccountId,
-			candidate: T::AccountId,
+			representative: T::AccountId,
+			tenant: T::AccountId,
 			asset_account: T::AccountId,
 		},
 		///An investor voted
@@ -415,6 +415,8 @@ pub mod pallet {
 			// Ensure that the caller is a representative
 			ensure!(Roles::Pallet::<T>::reps(caller.clone()).is_some(), Error::<T>::NotARepresentative);
 
+			let representative = caller.clone();
+
 			// Get the asset virtual account if exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
@@ -432,16 +434,14 @@ pub mod pallet {
 
 			let deposit = T::MinimumDeposit::get();
 
-			// Ensure that the virtual account has enough funds
-			for f in ownership.unwrap().owners {
-				<T as Dem::Config>::Currency::transfer(
-					&f,
-					&asset_account,
-					deposit,
-					ExistenceRequirement::AllowDeath,
-				)
-				.ok();
-			}
+			// Ensure that the representative has enough funds
+			<T as Dem::Config>::Currency::transfer(
+				&representative,
+				&asset_account,
+				deposit,
+				ExistenceRequirement::AllowDeath,
+			)
+			.ok();
 
 			let call = Call::<T>::link_tenant_to_asset {
 				tenant: tenant.clone(),
@@ -459,7 +459,7 @@ pub mod pallet {
 
 			// Create data for proposals Log
 			RepVote::<T>::new(
-				caller.clone(),
+				representative.clone(),
 				asset_account.clone(),
 				tenant.clone(),
 				referendum_index,
@@ -470,8 +470,8 @@ pub mod pallet {
 
 			//Emit Event
 			Self::deposit_event(Event::TenantVoteSessionStarted {
-				caller,
-				candidate: tenant,
+				representative,
+				tenant,
 				asset_account,
 			});
 
@@ -484,7 +484,10 @@ pub mod pallet {
 			tenant: T::AccountId,
 			asset_account: T::AccountId
 		) -> DispatchResult {
-			// TODO
+			let caller = ensure_signed(origin)?;
+			// Ensure that the asset_account is valid
+			// Ensure that the caller is the virtual account of the asset
+			// 
 			Ok(())
 		}
 	}
