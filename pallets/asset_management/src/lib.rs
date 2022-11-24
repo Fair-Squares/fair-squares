@@ -136,6 +136,13 @@ pub mod pallet {
 			asset_account: T::AccountId,
 			when: BlockNumberOf<T>,
 		},
+		/// A tenant is linked with an asset
+		TenantLinkedToAsset {
+			tenant: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			asset_account: T::AccountId
+		}
 	}
 
 	// Errors inform users that something went wrong.
@@ -445,7 +452,8 @@ pub mod pallet {
 
 			let call = Call::<T>::link_tenant_to_asset {
 				tenant: tenant.clone(),
-				asset_account: asset_account.clone(),
+				collection: collection_id.clone(),
+				item: asset_id.clone(),
 			};
 
 			let proposal_hash = Self::create_proposal_hash_and_note(asset_account.clone(), call);
@@ -482,12 +490,24 @@ pub mod pallet {
 		pub fn link_tenant_to_asset(
 			origin: OriginFor<T>,
 			tenant: T::AccountId,
-			asset_account: T::AccountId
+			collection: T::NftCollectionId,
+			item: T::NftItemId
 		) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
-			// Ensure that the asset_account is valid
-			// Ensure that the caller is the virtual account of the asset
-			// 
+			
+			// Ensure the caller is the virtual account of the asset
+			let asset_account = Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
+			ensure!(caller == asset_account.clone(), Error::<T>::NotAnAssetAccount);
+
+			Self::tenant_link_asset(tenant.clone(), collection.clone(), item.clone(), asset_account.clone()).ok();
+
+			Self::deposit_event(Event::TenantLinkedToAsset {
+				tenant,
+				collection,
+				item,
+				asset_account
+			});
+
 			Ok(())
 		}
 	}

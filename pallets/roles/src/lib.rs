@@ -110,7 +110,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn tenants)]
 	///Registry of Tenants organized by AccountId
-	pub(super) type TenantLog<T: Config> =
+	pub type TenantLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Tenant<T>, OptionQuery>;
 
 	#[pallet::storage]
