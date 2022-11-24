@@ -345,8 +345,8 @@ pub mod pallet {
 				Error::<T>::NotAnAssetAccount
 			);
 			
-			//Revoque Representative Role
-			Self::revoque_representative(rep_account.clone()).ok();
+			//revoke Representative Role
+			Self::revoke_representative(rep_account.clone()).ok();
 
 			Self::deposit_event(Event::RepresentativeDemoted{
 				candidate: rep_account,
