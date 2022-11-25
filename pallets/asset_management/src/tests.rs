@@ -1,5 +1,5 @@
 pub use super::*;
-pub use frame_support::{assert_noop, assert_ok};
+pub use frame_support::{assert_err, assert_ok};
 use frame_system::pallet_prelude::OriginFor;
 use mock::*;
 
@@ -99,11 +99,11 @@ fn share_distributor0() {
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
-		let origin2 = Origin::signed(BOB);
+		let origin_bob = Origin::signed(BOB);
 
 		//Change first asset status to FINALISED
 		OnboardingModule::change_status(
-			origin2.clone(),
+			origin_bob.clone(),
 			NftColl::OFFICESTEST,
 			item_id0,
 			Onboarding::AssetStatus::FINALISED,
@@ -163,7 +163,7 @@ fn share_distributor0() {
 
 		//Change first asset status to FINALISED
 		OnboardingModule::change_status(
-			origin2,
+			origin_bob.clone(),
 			NftColl::APPARTMENTSTEST,
 			item_id1,
 			Onboarding::AssetStatus::FINALISED,
@@ -207,18 +207,19 @@ fn share_distributor0() {
 		)
 		.ok();
 
-		//Representative Role status  before Approval
+		//Representative Role status before Approval
 		assert!(!RoleModule::get_pending_representatives(FERDIE).unwrap().activated);
 
-		let origin4 = Origin::signed(EVE);
-		let origin5 = Origin::signed(DAVE);
+		let origin_eve = Origin::signed(EVE);
+		let origin_dave = Origin::signed(DAVE);
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////							TEST representative_approval						//////
 		//////////////////////////////////////////////////////////////////////////////////////////
+
 		//Create voting session, aka Referendum to elect FERDIE as a representative.
 		assert_ok!(AssetManagement::launch_representative_session(
-			origin4.clone(),
+			origin_eve.clone(),
 			NftColl::OFFICESTEST,
 			item_id0,
 			FERDIE,
@@ -234,8 +235,8 @@ fn share_distributor0() {
 		);
 
 		//Investors vote
-		assert_ok!(AssetManagement::owners_vote(origin4.clone(), ref_index, true));
-		assert_ok!(AssetManagement::owners_vote(origin5.clone(), ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_eve.clone(), ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_dave.clone(), ref_index, true));
 
 		//Voting events emmited
 		expect_events(vec![
@@ -283,6 +284,50 @@ fn share_distributor0() {
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////								TEST propose_tenant								//////
 		//////////////////////////////////////////////////////////////////////////////////////////
+		println!("\n\nTest start: propose_tenant");
+		// Bob(Not a representative) tries proposing a tenant(GERARD)
+		assert_err!(
+			AssetManagement::propose_tenant(origin_bob, NftColl::OFFICESTEST, item_id0, GERARD),
+			Error::<Test>::NotARepresentative
+		);
+
+		println!("\n\nPROPOSE_TENANT - : NOT A REPRESENTATIVE");
+
+		let origin_ferdie = Origin::signed(FERDIE);
+
+		assert_err!(
+			AssetManagement::propose_tenant(origin_ferdie.clone(), NftColl::OFFICES, 10, GERARD),
+			Error::<Test>::NotAnAsset
+		);
+		println!("\n\nPROPOSE_TENANT - : NOT AN ASSET");
+
+		let rep_ferdie = RoleModule::reps(FERDIE).unwrap();
+		println!("\nRepresentative Ferdie: {:?}", rep_ferdie);
+
+		// Ferdie(representative) proposes GERARD(tenant) for a house but the house is not under control of Ferdie
+		assert_err!(
+			AssetManagement::propose_tenant(
+				origin_ferdie.clone(),
+				NftColl::APPARTMENTSTEST,
+				item_id1,
+				GERARD
+			),
+			Error::<Test>::AssetOutOfControl
+		);
+		println!("\n\nPROPOSE_TENANT - : ASSEST NOT LINKED TO THE REPRESENTATIVE");
+
+		// Ferdie(Representative) proposes BOB(Not a tenant) as a tenant
+		assert_err!(
+			AssetManagement::propose_tenant(
+				origin_ferdie.clone(),
+				NftColl::OFFICESTEST,
+				item_id0,
+				BOB
+			),
+			Error::<Test>::NotATenant
+		);
+
+		println!("\n\nPROPOSE_TENANT - : NOT A TENANT");
 
 		// Ferdie(Representative) proposes a tenant(GERARD)
 		// Check if GERARD has the tenant role
@@ -296,19 +341,21 @@ fn share_distributor0() {
 		let tenant0 = RoleModule::tenants(GERARD).unwrap();
 		assert!(tenant0.asset_account.is_none());
 
-		// Create a voting session, aka referendum to propose GERARD as a tenant for house 0
-		let origin_ferdie = Origin::signed(FERDIE);
+		/***	START: Successful scenario of proposing a tenant    ***/
+		// Create a voting session, aka referendum to propose GERARD as a tenant for the first house
 		assert_ok!(AssetManagement::propose_tenant(
-			origin_ferdie,
+			origin_ferdie.clone(),
 			NftColl::OFFICESTEST,
 			item_id0,
 			GERARD
 		));
 
+		println!("\n\nPROPOSE_TENANT - : A SUCCESSFUL SCENARIO");
+
 		// Investors vote
 		let ref_index = 1;
-		assert_ok!(AssetManagement::owners_vote(origin4.clone(), ref_index, true));
-		assert_ok!(AssetManagement::owners_vote(origin5.clone(), ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_eve.clone(), ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_dave.clone(), ref_index, true));
 
 		// Voting events emitted
 		expect_events(vec![
@@ -344,12 +391,21 @@ fn share_distributor0() {
 			ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
 		);
 
+		/***	END: Successful scenario of proposing a tenant    ** */
+
+		// Ferdie(Representative) again proposes GERARD for the second house.
+		assert_err!(
+			AssetManagement::propose_tenant(origin_ferdie, NftColl::OFFICESTEST, item_id0, GERARD),
+			Error::<Test>::AssetAlreadyLinked
+		);
+		println!("\n\nPROPOSE_TENANT - : ASSET ALREADY LINKED TO A TENANT");
+
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////								TEST demote_representative						//////
 		//////////////////////////////////////////////////////////////////////////////////////////
 		//Create voting session, aka Referendum to demote FERDIE from her/his representative role.
 		assert_ok!(AssetManagement::launch_representative_session(
-			origin4.clone(),
+			origin_eve.clone(),
 			NftColl::OFFICESTEST,
 			item_id0,
 			FERDIE,
@@ -359,8 +415,8 @@ fn share_distributor0() {
 		let ref_index = 2;
 
 		//Investors vote
-		assert_ok!(AssetManagement::owners_vote(origin4, ref_index, true));
-		assert_ok!(AssetManagement::owners_vote(origin5, ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_eve, ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_dave, ref_index, true));
 
 		//Voting events emmited
 		expect_events(vec![

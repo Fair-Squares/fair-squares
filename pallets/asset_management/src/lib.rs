@@ -154,10 +154,14 @@ pub mod pallet {
 		NotAnAssetAccount,
 		/// The account is not a representative
 		NotARepresentative,
+		/// The asset is not linked to the representative
+		AssetOutOfControl,
 		/// The candidate is not a tenant
 		NotATenant,
-		/// An asset is already linked to a provided tenant
+		/// An asset is already linked to the provided tenant
 		AssetAlreadyLinked,
+		/// A tenant is already linked with the asset
+		TenantAlreadyLinked,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 		///The proposal could not be created
@@ -405,8 +409,8 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// A representative triggers a vote session with a proposal for a tenant to be link with an
-		/// asset The origin must be a representative
+		/// A representative triggers a vote session with a proposal for a tenant to be linked with an asset
+		/// The origin must be a representative
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - tenant: an account with the tenant role
@@ -420,10 +424,9 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 
 			// Ensure that the caller is a representative
-			ensure!(
-				Roles::Pallet::<T>::reps(caller.clone()).is_some(),
-				Error::<T>::NotARepresentative
-			);
+			let rep = Roles::Pallet::<T>::reps(caller.clone());
+			ensure!(rep.is_some(), Error::<T>::NotARepresentative);
+			let rep = rep.unwrap();
 
 			let representative = caller;
 
@@ -431,6 +434,9 @@ pub mod pallet {
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
+
+			let asset_account = ownership.unwrap().virtual_account;
+			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);
 
 			// Ensure that provided account is a valid tenant
 			let tenant0 = Roles::Pallet::<T>::tenants(tenant.clone());
@@ -440,7 +446,9 @@ pub mod pallet {
 			// Ensure that the tenant is not linked to an asset
 			ensure!(tenant0.asset_account.is_none(), Error::<T>::AssetAlreadyLinked);
 
-			let asset_account = ownership.unwrap().virtual_account;
+			// Ensure that the asset is not linked with a tenant
+			let house = Onboarding::Pallet::<T>::houses(collection_id, asset_id).unwrap();
+			ensure!(house.tenant.is_none(), Error::<T>::TenantAlreadyLinked);
 
 			let deposit = T::MinimumDeposit::get();
 
