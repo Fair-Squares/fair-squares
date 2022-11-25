@@ -35,14 +35,40 @@ impl<T: Config> Pallet<T> {
 		asset_account: T::AccountId,
 	) -> DispatchResult {
 		// Update tenant info
-		let mut tenant0 = Roles::Pallet::<T>::tenants(&tenant).unwrap();
-		tenant0.asset_account = Some(asset_account);
-		Roles::TenantLog::<T>::insert(&tenant, tenant0);
+		Roles::TenantLog::<T>::mutate(&tenant, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.asset_account = Some(asset_account);
+			*val = Some(val0);
+		});
 
 		// Update asset info
-		let mut house = Onboarding::Pallet::<T>::houses(&collection, &item).unwrap();
-		house.tenant = Some(tenant);
-		Onboarding::Houses::<T>::insert(&collection, &item, house);
+		Onboarding::Houses::<T>::mutate(collection, item, |house| {
+			let mut house0 = house.clone().unwrap();
+			house0.tenants.push(tenant);
+			*house = Some(house0);
+		});
+
+		Ok(())
+	}
+
+	pub fn tenant_unlink_asset(
+		tenant: T::AccountId,
+		collection: T::NftCollectionId,
+		item: T::NftItemId,
+	) -> DispatchResult {
+		// Update tenant info
+		Roles::TenantLog::<T>::mutate(&tenant, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.asset_account = None;
+			*val = Some(val0);
+		});
+
+		// Update asset info
+		Onboarding::Houses::<T>::mutate(collection, item, |house| {
+			let mut house0 = house.clone().unwrap();
+			house0.tenants.retain(|t| *t != tenant);
+			*house = Some(house0);
+		});
 
 		Ok(())
 	}

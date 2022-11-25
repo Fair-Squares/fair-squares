@@ -14,6 +14,7 @@ pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok(); //FERDIE approval will be tested
 	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::TENANT).ok();
+	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::TENANT).ok();
 }
 
 fn next_block() {
@@ -223,9 +224,9 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			FERDIE,
-			VoteProposals::ElectRepresentative
+			VoteProposals::Election
 		));
-		let ref_index = 0;
+		let mut ref_index = 0;
 		//Get Referendum status before vote
 		let mut ref_infos = Democracy::referendum_info(0).unwrap();
 		println!(
@@ -242,12 +243,12 @@ fn share_distributor0() {
 		expect_events(vec![
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: EVE,
-				session_number: 0,
+				session_number: ref_index,
 				when: System::block_number(),
 			}),
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: DAVE,
-				session_number: 0,
+				session_number: ref_index,
 				when: System::block_number(),
 			}),
 		]);
@@ -282,52 +283,67 @@ fn share_distributor0() {
 		assert!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 
 		//////////////////////////////////////////////////////////////////////////////////////////
-		/////								TEST propose_tenant								//////
+		/////							TEST launch_tenant_session							//////
 		//////////////////////////////////////////////////////////////////////////////////////////
-		println!("\n\nTest start: propose_tenant");
+		println!("\n\nTest start: launch_tenant_session");
 		// Bob(Not a representative) tries proposing a tenant(GERARD)
 		assert_err!(
-			AssetManagement::propose_tenant(origin_bob, NftColl::OFFICESTEST, item_id0, GERARD),
+			AssetManagement::launch_tenant_session(
+				origin_bob,
+				NftColl::OFFICESTEST,
+				item_id0,
+				GERARD,
+				VoteProposals::Election
+			),
 			Error::<Test>::NotARepresentative
 		);
 
-		println!("\n\nPROPOSE_TENANT - : NOT A REPRESENTATIVE");
+		println!("\n\nlaunch_tenant_session - : NOT A REPRESENTATIVE");
 
 		let origin_ferdie = Origin::signed(FERDIE);
 
 		assert_err!(
-			AssetManagement::propose_tenant(origin_ferdie.clone(), NftColl::OFFICES, 10, GERARD),
+			AssetManagement::launch_tenant_session(
+				origin_ferdie.clone(),
+				NftColl::OFFICES,
+				10,
+				GERARD,
+				VoteProposals::Election
+			),
 			Error::<Test>::NotAnAsset
 		);
-		println!("\n\nPROPOSE_TENANT - : NOT AN ASSET");
+		println!("\n\nlaunch_tenant_session - : NOT AN ASSET");
 
 		let rep_ferdie = RoleModule::reps(FERDIE).unwrap();
 		println!("\nRepresentative Ferdie: {:?}", rep_ferdie);
 
-		// Ferdie(representative) proposes GERARD(tenant) for a house but the house is not under control of Ferdie
+		// Ferdie(representative) proposes GERARD(tenant) for a house but the house is not under
+		// control of Ferdie
 		assert_err!(
-			AssetManagement::propose_tenant(
+			AssetManagement::launch_tenant_session(
 				origin_ferdie.clone(),
 				NftColl::APPARTMENTSTEST,
 				item_id1,
-				GERARD
+				GERARD,
+				VoteProposals::Election
 			),
 			Error::<Test>::AssetOutOfControl
 		);
-		println!("\n\nPROPOSE_TENANT - : ASSEST NOT LINKED TO THE REPRESENTATIVE");
+		println!("\n\nlaunch_tenant_session - : ASSEST NOT LINKED TO THE REPRESENTATIVE");
 
 		// Ferdie(Representative) proposes BOB(Not a tenant) as a tenant
 		assert_err!(
-			AssetManagement::propose_tenant(
+			AssetManagement::launch_tenant_session(
 				origin_ferdie.clone(),
 				NftColl::OFFICESTEST,
 				item_id0,
-				BOB
+				BOB,
+				VoteProposals::Election
 			),
 			Error::<Test>::NotATenant
 		);
 
-		println!("\n\nPROPOSE_TENANT - : NOT A TENANT");
+		println!("\n\nlaunch_tenant_session - : NOT A TENANT");
 
 		// Ferdie(Representative) proposes a tenant(GERARD)
 		// Check if GERARD has the tenant role
@@ -335,25 +351,26 @@ fn share_distributor0() {
 
 		// Check the tenants of the house
 		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
-		assert!(house0.tenant.is_none());
+		assert!(house0.tenants.is_empty());
 
 		// Check the asset_account of the tenant
 		let tenant0 = RoleModule::tenants(GERARD).unwrap();
 		assert!(tenant0.asset_account.is_none());
 
-		/***	START: Successful scenario of proposing a tenant    ***/
+		/***	START: Successful scenario of proposing a tenant    ** */
 		// Create a voting session, aka referendum to propose GERARD as a tenant for the first house
-		assert_ok!(AssetManagement::propose_tenant(
+		assert_ok!(AssetManagement::launch_tenant_session(
 			origin_ferdie.clone(),
 			NftColl::OFFICESTEST,
 			item_id0,
-			GERARD
+			GERARD,
+			VoteProposals::Election
 		));
 
-		println!("\n\nPROPOSE_TENANT - : A SUCCESSFUL SCENARIO");
+		println!("\n\nlaunch_tenant_session - : A SUCCESSFUL SCENARIO");
 
 		// Investors vote
-		let ref_index = 1;
+		ref_index += 1;
 		assert_ok!(AssetManagement::owners_vote(origin_eve.clone(), ref_index, true));
 		assert_ok!(AssetManagement::owners_vote(origin_dave.clone(), ref_index, true));
 
@@ -361,12 +378,12 @@ fn share_distributor0() {
 		expect_events(vec![
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: EVE,
-				session_number: 1,
+				session_number: ref_index,
 				when: System::block_number(),
 			}),
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: DAVE,
-				session_number: 1,
+				session_number: ref_index,
 				when: System::block_number(),
 			}),
 		]);
@@ -382,7 +399,7 @@ fn share_distributor0() {
 
 		// Check the tenants of the house
 		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
-		assert_eq!(house0.tenant, Some(GERARD));
+		assert_eq!(house0.tenants, vec![GERARD]);
 
 		// Check the asset_account of the tenant
 		let tenant0 = RoleModule::tenants(GERARD).unwrap();
@@ -395,10 +412,124 @@ fn share_distributor0() {
 
 		// Ferdie(Representative) again proposes GERARD for the second house.
 		assert_err!(
-			AssetManagement::propose_tenant(origin_ferdie, NftColl::OFFICESTEST, item_id0, GERARD),
-			Error::<Test>::AssetAlreadyLinked
+			AssetManagement::launch_tenant_session(
+				origin_ferdie.clone(),
+				NftColl::OFFICESTEST,
+				item_id0,
+				GERARD,
+				VoteProposals::Election
+			),
+			Error::<Test>::AlreadyLinkedWithAsset
 		);
-		println!("\n\nPROPOSE_TENANT - : ASSET ALREADY LINKED TO A TENANT");
+		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
+
+		// demote a tenant
+		assert_err!(
+			AssetManagement::launch_tenant_session(
+				origin_ferdie.clone(),
+				NftColl::OFFICESTEST,
+				item_id0,
+				HUNTER,
+				VoteProposals::Demotion
+			),
+			Error::<Test>::TenantAssetNotLinked
+		);
+		println!("\n\nlaunch_tenant_session - : DEMOTE A TENANT NOT LINKED WITH AN ASSET");
+
+		// Multiple tenants for an asset
+		assert_ok!(AssetManagement::launch_tenant_session(
+			origin_ferdie.clone(),
+			NftColl::OFFICESTEST,
+			item_id0,
+			HUNTER,
+			VoteProposals::Election
+		));
+
+		ref_index += 1;
+		assert_ok!(AssetManagement::owners_vote(origin_eve.clone(), ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_dave.clone(), ref_index, true));
+
+		// Voting events emitted
+		expect_events(vec![
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: EVE,
+				session_number: ref_index,
+				when: System::block_number(),
+			}),
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: DAVE,
+				session_number: ref_index,
+				when: System::block_number(),
+			}),
+		]);
+
+		let initial_block_number = System::block_number();
+		let end_block_number = initial_block_number
+			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+		fast_forward_to(end_block_number);
+
+		//Proposal enactement should happen 2 blocks later
+		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
+
+		// Check the tenants of the house
+		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+		assert_eq!(house0.tenants, vec![GERARD, HUNTER]);
+
+		// Check the asset_account of the tenant
+		let tenant1 = RoleModule::tenants(HUNTER).unwrap();
+		assert_eq!(
+			tenant1.asset_account.unwrap(),
+			ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
+		);
+
+		println!("\n\nlaunch_tenant_session - : MULTIPLE TENANTS FOR AN ASSET");
+
+		assert_ok!(AssetManagement::launch_tenant_session(
+			origin_ferdie,
+			NftColl::OFFICESTEST,
+			item_id0,
+			HUNTER,
+			VoteProposals::Demotion
+		));
+
+		ref_index += 1;
+		assert_ok!(AssetManagement::owners_vote(origin_eve.clone(), ref_index, true));
+		assert_ok!(AssetManagement::owners_vote(origin_dave.clone(), ref_index, true));
+
+		// Voting events emitted
+		expect_events(vec![
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: EVE,
+				session_number: ref_index,
+				when: System::block_number(),
+			}),
+			mock::Event::AssetManagement(crate::Event::InvestorVoted {
+				caller: DAVE,
+				session_number: ref_index,
+				when: System::block_number(),
+			}),
+		]);
+
+		let initial_block_number = System::block_number();
+		let end_block_number = initial_block_number
+			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+		fast_forward_to(end_block_number);
+
+		//Proposal enactement should happen 2 blocks later
+		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
+
+		// Check the tenants of the house
+		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+		assert_eq!(house0.tenants, vec![GERARD]);
+
+		// Check the asset_account of the tenant
+		assert!(RoleModule::tenants(HUNTER).unwrap().asset_account.is_none());
+		assert_eq!(
+			RoleModule::tenants(GERARD).unwrap().asset_account.unwrap(),
+			ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
+		);
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////								TEST demote_representative						//////
@@ -409,10 +540,10 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			FERDIE,
-			VoteProposals::DemoteRepresentative
+			VoteProposals::Demotion
 		));
 
-		let ref_index = 2;
+		ref_index += 1;
 
 		//Investors vote
 		assert_ok!(AssetManagement::owners_vote(origin_eve, ref_index, true));
@@ -422,12 +553,12 @@ fn share_distributor0() {
 		expect_events(vec![
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: EVE,
-				session_number: 2,
+				session_number: ref_index,
 				when: System::block_number(),
 			}),
 			mock::Event::AssetManagement(crate::Event::InvestorVoted {
 				caller: DAVE,
-				session_number: 2,
+				session_number: ref_index,
 				when: System::block_number(),
 			}),
 		]);

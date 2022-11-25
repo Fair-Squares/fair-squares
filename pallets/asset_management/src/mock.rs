@@ -347,6 +347,7 @@ pub const EVE: AccountId = AccountId::new([5u8; 32]);
 //pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
 pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
 pub const GERARD: AccountId = AccountId::new([8u8; 32]);
+pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {

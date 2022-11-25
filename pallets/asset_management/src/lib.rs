@@ -94,7 +94,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn proposals)]
 	pub type ProposalsLog<T: Config> =
-		StorageMap<_, Blake2_128Concat, Dem::ReferendumIndex, RepVote<T>, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, Dem::ReferendumIndex, ProposalRecord<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn indexes)]
@@ -143,6 +143,13 @@ pub mod pallet {
 			item: T::NftItemId,
 			asset_account: T::AccountId,
 		},
+		/// A tenant is demoted and unlinked with an asset
+		TenantDemoted {
+			tenant: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			asset_account: T::AccountId,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -159,9 +166,9 @@ pub mod pallet {
 		/// The candidate is not a tenant
 		NotATenant,
 		/// An asset is already linked to the provided tenant
-		AssetAlreadyLinked,
-		/// A tenant is already linked with the asset
-		TenantAlreadyLinked,
+		AlreadyLinkedWithAsset,
+		/// The tenant is not linked to the asset
+		TenantAssetNotLinked,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 		///The proposal could not be created
@@ -250,7 +257,7 @@ pub mod pallet {
 			//Create the call
 
 			let proposal_call = match proposal {
-				VoteProposals::ElectRepresentative => {
+				VoteProposals::Election => {
 					//Check that the account is in the representative waiting list
 					ensure!(
 						Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),
@@ -262,7 +269,7 @@ pub mod pallet {
 						item: asset_id,
 					}
 				},
-				VoteProposals::DemoteRepresentative => Call::<T>::demote_representative {
+				VoteProposals::Demotion => Call::<T>::demote_representative {
 					rep_account: representative.clone(),
 					collection: collection_id,
 					item: asset_id,
@@ -280,7 +287,7 @@ pub mod pallet {
 				Dem::Pallet::<T>::internal_start_referendum(proposal_hash, threshold, delay);
 
 			//Create data for proposals Log
-			RepVote::<T>::new(
+			ProposalRecord::<T>::new(
 				caller.clone(),
 				virtual_account.clone(),
 				representative.clone(),
@@ -409,26 +416,24 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// A representative triggers a vote session with a proposal for a tenant to be linked with an asset
-		/// The origin must be a representative
+		/// A representative triggers a vote session with a proposal for a tenant to be linked with
+		/// an asset The origin must be a representative
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - tenant: an account with the tenant role
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn propose_tenant(
+		pub fn launch_tenant_session(
 			origin: OriginFor<T>,
 			asset_type: Nft::PossibleCollections,
 			asset_id: T::NftItemId,
 			tenant: T::AccountId,
+			proposal: VoteProposals,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
 
 			// Ensure that the caller is a representative
 			let rep = Roles::Pallet::<T>::reps(caller.clone());
 			ensure!(rep.is_some(), Error::<T>::NotARepresentative);
-			let rep = rep.unwrap();
-
-			let representative = caller;
 
 			// Get the asset virtual account if exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
@@ -436,35 +441,54 @@ pub mod pallet {
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
 			let asset_account = ownership.unwrap().virtual_account;
-			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);
+			ensure!(
+				rep.unwrap().assets_accounts.contains(&asset_account),
+				Error::<T>::AssetOutOfControl
+			);
 
 			// Ensure that provided account is a valid tenant
 			let tenant0 = Roles::Pallet::<T>::tenants(tenant.clone());
 			ensure!(tenant0.is_some(), Error::<T>::NotATenant);
 
 			let tenant0 = tenant0.unwrap();
-			// Ensure that the tenant is not linked to an asset
-			ensure!(tenant0.asset_account.is_none(), Error::<T>::AssetAlreadyLinked);
-
-			// Ensure that the asset is not linked with a tenant
-			let house = Onboarding::Pallet::<T>::houses(collection_id, asset_id).unwrap();
-			ensure!(house.tenant.is_none(), Error::<T>::TenantAlreadyLinked);
+			match proposal {
+				VoteProposals::Election => {
+					// Ensure that the tenant is not linked to an asset
+					ensure!(tenant0.asset_account.is_none(), Error::<T>::AlreadyLinkedWithAsset);
+				},
+				VoteProposals::Demotion => {
+					// Ensure that the tenant is linked to the asset
+					ensure!(
+						tenant0.asset_account == Some(asset_account.clone()),
+						Error::<T>::TenantAssetNotLinked
+					);
+					let house = Onboarding::Pallet::<T>::houses(collection_id, asset_id).unwrap();
+					ensure!(house.tenants.contains(&tenant), Error::<T>::TenantAssetNotLinked)
+				},
+			};
 
 			let deposit = T::MinimumDeposit::get();
 
 			// Ensure that the representative has enough funds
 			<T as Dem::Config>::Currency::transfer(
-				&representative,
+				&caller,
 				&asset_account,
 				deposit,
 				ExistenceRequirement::AllowDeath,
 			)
 			.ok();
 
-			let call = Call::<T>::link_tenant_to_asset {
-				tenant: tenant.clone(),
-				collection: collection_id,
-				item: asset_id,
+			let call = match proposal {
+				VoteProposals::Election => Call::<T>::link_tenant_to_asset {
+					tenant: tenant.clone(),
+					collection: collection_id,
+					item: asset_id,
+				},
+				VoteProposals::Demotion => Call::<T>::unlink_tenant_to_asset {
+					tenant: tenant.clone(),
+					collection: collection_id,
+					item: asset_id,
+				},
 			};
 
 			let proposal_hash = Self::create_proposal_hash_and_note(asset_account.clone(), call);
@@ -477,8 +501,8 @@ pub mod pallet {
 				Dem::Pallet::<T>::internal_start_referendum(proposal_hash, threshold, delay);
 
 			// Create data for proposals Log
-			RepVote::<T>::new(
-				representative.clone(),
+			ProposalRecord::<T>::new(
+				caller.clone(),
 				asset_account.clone(),
 				tenant.clone(),
 				referendum_index,
@@ -489,7 +513,7 @@ pub mod pallet {
 
 			//Emit Event
 			Self::deposit_event(Event::TenantVoteSessionStarted {
-				representative,
+				representative: caller,
 				tenant,
 				asset_account,
 			});
@@ -497,6 +521,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// Link a tenant with an asset
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn link_tenant_to_asset(
 			origin: OriginFor<T>,
@@ -519,6 +544,28 @@ pub mod pallet {
 				item,
 				asset_account,
 			});
+
+			Ok(())
+		}
+
+		/// Unlink a tenant with an asset
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn unlink_tenant_to_asset(
+			origin: OriginFor<T>,
+			tenant: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+		) -> DispatchResult {
+			let caller = ensure_signed(origin)?;
+
+			// Ensure the caller is the virtual account of the asset
+			let asset_account =
+				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
+			ensure!(caller == asset_account, Error::<T>::NotAnAssetAccount);
+
+			Self::tenant_unlink_asset(tenant.clone(), collection, item).ok();
+
+			Self::deposit_event(Event::TenantDemoted { tenant, collection, item, asset_account });
 
 			Ok(())
 		}
