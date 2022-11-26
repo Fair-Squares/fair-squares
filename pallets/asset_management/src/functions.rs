@@ -28,6 +28,51 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn tenant_link_asset(
+		tenant: T::AccountId,
+		collection: T::NftCollectionId,
+		item: T::NftItemId,
+		asset_account: T::AccountId,
+	) -> DispatchResult {
+		// Update tenant info
+		Roles::TenantLog::<T>::mutate(&tenant, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.asset_account = Some(asset_account);
+			*val = Some(val0);
+		});
+
+		// Update asset info
+		Onboarding::Houses::<T>::mutate(collection, item, |house| {
+			let mut house0 = house.clone().unwrap();
+			house0.tenants.push(tenant);
+			*house = Some(house0);
+		});
+
+		Ok(())
+	}
+
+	pub fn tenant_unlink_asset(
+		tenant: T::AccountId,
+		collection: T::NftCollectionId,
+		item: T::NftItemId,
+	) -> DispatchResult {
+		// Update tenant info
+		Roles::TenantLog::<T>::mutate(&tenant, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.asset_account = None;
+			*val = Some(val0);
+		});
+
+		// Update asset info
+		Onboarding::Houses::<T>::mutate(collection, item, |house| {
+			let mut house0 = house.clone().unwrap();
+			house0.tenants.retain(|t| *t != tenant);
+			*house = Some(house0);
+		});
+
+		Ok(())
+	}
+
 	pub fn create_proposal_hash_and_note(
 		caller: T::AccountId,
 		proposal_call: pallet::Call<T>,

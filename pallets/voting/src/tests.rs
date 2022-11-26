@@ -51,10 +51,7 @@ fn submit_proposal_should_succeed() {
 
 		let hash = <Test as frame_system::Config>::Hashing::hash_of(&proposal);
 
-		assert_eq!(
-			VotingModule::voting_proposals(hash).is_some(),
-			true
-		);
+		assert!(VotingModule::voting_proposals(hash).is_some());
 
 		let voting_proposal = VotingModule::voting_proposals(hash).unwrap();
 
@@ -66,9 +63,9 @@ fn submit_proposal_should_succeed() {
 		assert_eq!(voting_proposal.proposal_hash, hash.clone());
 		assert_eq!(voting_proposal.collective_index, 0);
 		assert_eq!(voting_proposal.democracy_referendum_index, 0);
-		assert_eq!(voting_proposal.collective_step, false);
-		assert_eq!(voting_proposal.proposal_executed, false);
-		assert_eq!(voting_proposal.collective_closed, false);
+		assert!(!voting_proposal.collective_step);
+		assert!(!voting_proposal.proposal_executed);
+		assert!(!voting_proposal.collective_closed);
 
 		let block_number = System::block_number()
 			.saturating_add(<Test as crate::Config>::Delay::get())
@@ -79,10 +76,7 @@ fn submit_proposal_should_succeed() {
 			Some(block_number)
 		);
 
-		assert_eq!(
-			VotingModule::democracy_proposals(hash).is_none(),
-			true
-		);
+		assert!(VotingModule::democracy_proposals(hash).is_none());
 	});
 }
 
@@ -251,16 +245,13 @@ fn council_close_vote_proposal_not_pass_should_succeed() {
 
 		let voting_proposal = VotingModule::voting_proposals(hash).unwrap();
 
-		assert_eq!(voting_proposal.collective_closed, true);
-		assert_eq!(voting_proposal.collective_step, false);
+		assert!(voting_proposal.collective_closed);
+		assert!(!voting_proposal.collective_step);
 
 		// Simulate the regular block check to have the update storage computation
 		VotingModule::begin_block(end_block_number + 1);
 
-		assert_eq!(
-			VotingModule::collective_proposals(hash).is_none(),
-			true
-		);
+		assert!(VotingModule::collective_proposals(hash).is_none());
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
@@ -348,16 +339,13 @@ fn council_close_vote_proposal_pass_should_succeed() {
 
 		let voting_proposal = VotingModule::voting_proposals(hash).unwrap();
 
-		assert_eq!(voting_proposal.collective_closed, true);
-		assert_eq!(voting_proposal.collective_step, true);
+		assert!(voting_proposal.collective_closed);
+		assert!(voting_proposal.collective_step);
 
 		// Simulate the regular block check to have the update storage computation
 		VotingModule::begin_block(end_block_number + 1);
 
-		assert_eq!(
-			VotingModule::collective_proposals(hash).is_none(),
-			true
-		);
+		assert!(VotingModule::collective_proposals(hash).is_none());
 
 		let end_democracy_vote = end_block_number
 			.saturating_add(<Test as crate::Config>::Delay::get())
@@ -623,9 +611,6 @@ fn investor_vote_proposal_fail_should_succeed() {
 		Democracy::on_initialize(end_democracy_vote + 1);
 		VotingModule::begin_block(end_democracy_vote + 2);
 
-		assert_eq!(
-			VotingModule::democracy_proposals(hash).is_none(),
-			true
-		);
+		assert!(VotingModule::democracy_proposals(hash).is_none());
 	});
 }

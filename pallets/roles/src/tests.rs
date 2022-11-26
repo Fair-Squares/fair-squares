@@ -32,7 +32,12 @@ fn test_struct_methods() {
 		//-- checking Tenant storage------
 		assert_eq!(
 			RoleModule::tenants(1),
-			Some(Tenant { account_id: 1, rent: 0, age: System::block_number() })
+			Some(Tenant {
+				account_id: 1,
+				rent: 0,
+				age: System::block_number(),
+				asset_account: None
+			})
 		);
 
 		//-----Servicer-----------------------------------------
@@ -82,12 +87,12 @@ fn test_account_approval_rejection() {
 		let sell1 = RoleModule::get_pending_house_sellers();
 		assert_eq!(serv1.len(), 2);
 		assert_eq!(sell1.len(), 2);
-		assert_eq!(serv1[0].activated, false);
-		assert_eq!(serv1[1].activated, false);
+		assert!(!serv1[0].activated);
+		assert!(!serv1[1].activated);
 		assert_eq!(serv1[0].verifier, 4);
 		assert_eq!(serv1[1].verifier, 4);
-		assert_eq!(sell1[0].activated, false);
-		assert_eq!(sell1[1].activated, false);
+		assert!(!sell1[0].activated);
+		assert!(!sell1[1].activated);
 		assert_eq!(sell1[0].verifier, 4);
 		assert_eq!(sell1[1].verifier, 4);
 
@@ -101,11 +106,11 @@ fn test_account_approval_rejection() {
 		assert_eq!(serv2.len(), 0);
 		assert_eq!(sell2.len(), 0);
 		assert!(ServicerLog::<Test>::contains_key(2));
-		assert_eq!(RoleModule::servicers(2).unwrap().activated, true);
+		assert!(RoleModule::servicers(2).unwrap().activated);
 		assert_eq!(RoleModule::servicers(2).unwrap().verifier, 4);
 		assert!(!ServicerLog::<Test>::contains_key(5));
 		assert!(HouseSellerLog::<Test>::contains_key(3));
-		assert_eq!(RoleModule::sellers(3).unwrap().activated, true);
+		assert!(RoleModule::sellers(3).unwrap().activated);
 		assert_eq!(RoleModule::sellers(3).unwrap().verifier, 4);
 		assert!(!HouseSellerLog::<Test>::contains_key(6));
 	})

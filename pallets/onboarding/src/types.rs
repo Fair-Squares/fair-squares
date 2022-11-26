@@ -36,6 +36,8 @@ pub struct Asset<T: Config> {
 	pub(super) infos: ItemInfoOf<T>,
 	/// NFT Price
 	pub price: Option<BalanceOf<T>>,
+	/// Tenants
+	pub tenants: Vec<T::AccountId>,
 }
 
 impl<T: Config> Asset<T> {
@@ -47,7 +49,7 @@ impl<T: Config> Asset<T> {
 	) -> DispatchResult {
 		let status = AssetStatus::EDITING;
 		let created = <frame_system::Pallet<T>>::block_number();
-		let house = Asset::<T> { status, created, infos, price };
+		let house = Asset::<T> { status, created, infos, price, tenants: Default::default() };
 		Houses::<T>::insert(collection, item, house);
 
 		Ok(())

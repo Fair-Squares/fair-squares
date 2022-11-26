@@ -47,14 +47,14 @@ pub enum VoteResult {
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum VoteProposals {
-	ElectRepresentative,
-	DemoteRepresentative,
+	Election,
+	Demotion,
 }
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct RepVote<T: Config> {
+pub struct ProposalRecord<T: Config> {
 	///Asset owner who made the proposal
 	pub caller_account: T::AccountId,
 	///Virtual account corresponding to the asset
@@ -71,7 +71,7 @@ pub struct RepVote<T: Config> {
 	pub when: BlockNumberOf<T>,
 }
 
-impl<T: Config> RepVote<T> {
+impl<T: Config> ProposalRecord<T> {
 	pub fn new(
 		caller_account: T::AccountId,
 		virtual_account: T::AccountId,
@@ -82,7 +82,7 @@ impl<T: Config> RepVote<T> {
 	) -> DispatchResult {
 		let vote_result = VoteResult::AWAITING;
 		let when = <frame_system::Pallet<T>>::block_number();
-		let session = RepVote::<T> {
+		let session = ProposalRecord::<T> {
 			caller_account: caller_account.clone(),
 			virtual_account,
 			collection_id,

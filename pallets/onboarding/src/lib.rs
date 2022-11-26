@@ -601,7 +601,7 @@ pub mod pallet {
 			let price0 = Prices::<T>::get(collection_id, item_id).unwrap();
 
 			let data0 = Nft::Pallet::<T>::items(collection_id, item_id).unwrap().metadata;
-			let data1 = data.unwrap_or(data0.clone());
+			let data1 = data.unwrap_or_else(|| data0.clone());
 			let collection_owner = Nft::Pallet::<T>::collection_owner(collection_id).unwrap();
 			if data1 != data0 {
 				let res =
