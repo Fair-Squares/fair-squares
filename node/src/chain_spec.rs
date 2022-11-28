@@ -37,6 +37,52 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
 	(get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
 }
 
+pub fn get_endowed_accounts_with_balance() -> Vec<(AccountId, u128)> {
+	let accounts: Vec<AccountId> =
+		vec![
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			get_account_id_from_seed::<sr25519::Public>("Dave"),
+			get_account_id_from_seed::<sr25519::Public>("Eve"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+
+// All the accounts below have to be manually added to Polkadot.JS using the secret seed obtained with
+// for example:  `target/release/fs-node key inspect //KillMonger`
+// The account balance can then be customised, using the `/seed/balances.json` file
+
+			get_account_id_from_seed::<sr25519::Public>("KillMonger"),
+			get_account_id_from_seed::<sr25519::Public>("Aluman"),
+			get_account_id_from_seed::<sr25519::Public>("Shikamaru"),
+			get_account_id_from_seed::<sr25519::Public>("Geraldo"),
+			get_account_id_from_seed::<sr25519::Public>("Gabriel"),
+			get_account_id_from_seed::<sr25519::Public>("Henry"),
+			get_account_id_from_seed::<sr25519::Public>("Hans"),
+			get_account_id_from_seed::<sr25519::Public>("Obito"),
+		];
+	
+	let accounts_with_balance: Vec<(AccountId, u128)> = accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
+	let json_data = &include_bytes!("../../seed/balances.json")[..];
+	let additional_accounts_with_balance: Vec<(AccountId, u128)> = serde_json::from_slice(json_data).unwrap();
+	
+	let mut accounts = additional_accounts_with_balance.clone();
+	
+	accounts_with_balance.iter().for_each(|tup1| {
+		for tup2 in additional_accounts_with_balance.iter() {
+			if tup1.0 == tup2.0 {
+				return;
+			}
+		}
+		accounts.push(tup1.to_owned());
+	});
+
+	accounts
+}
+
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
@@ -54,16 +100,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				// Sudo account
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// Pre-funded accounts
-				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Geraldo"),
-					get_account_id_from_seed::<sr25519::Public>("Hans"),
-				],
+				get_endowed_accounts_with_balance(),
 				true,
 			)
 		},
@@ -98,20 +135,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				// Sudo account
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// Pre-funded accounts
-				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
-				],
+				get_endowed_accounts_with_balance(),
 				true,
 			)
 		},
@@ -134,7 +158,7 @@ fn testnet_genesis(
 	wasm_binary: &[u8],
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
 	root_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
+	endowed_accounts: Vec<(AccountId,u128)>,
 	_enable_println: bool,
 ) -> GenesisConfig {
 	GenesisConfig {
@@ -144,7 +168,7 @@ fn testnet_genesis(
 		},
 		balances: BalancesConfig {
 			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+			balances: endowed_accounts,
 		},
 		aura: AuraConfig {
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),

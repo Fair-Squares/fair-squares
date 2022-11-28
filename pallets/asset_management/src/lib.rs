@@ -14,14 +14,23 @@
 //!
 //!### Dispatchable Functions
 //!
-//! * `launch_representative_session` - An Owner creates a referendum for the available proposals:
-//!   Elect or demote a Representative.
+//! * `launch_representative_session` - An Owner creates a referendum for the following available proposals:
+//!   - Elect a Representative.
+//!   - Demote a Representative.
 //!
-//! * `owners_vote` - Each asset owner can vote on ongoing referendum.
+//! * `owners_vote` - Each asset owner can vote in an ongoing referendum.
 //!
-//! * `representative_approval` - Private call used as a proposal for Representative election.
+//! * `representative_approval` - Call used as a proposal for Representative election.
 //!
-//! * `demote_representative` - Private call used as a proposal for Representative demotion.
+//! * `demote_representative` - Call used as a proposal for Representative demotion.
+//!
+//! * `launch_tenant_session` - A Representative creates a referendum for the following available proposals: 
+//!   - Admit a Tenant for a given asset.
+//!   - Evict  a Tenant from a given asset.
+//!
+//! * `link_tenant_to_asset` - Call used as a proposal to link an accepted tenant with an existing asset.
+//!
+//! * `unlink_tenant_to_asset` - Call used as a proposal to remove the link between a tenant and an asset.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -254,8 +263,8 @@ pub mod pallet {
 				)
 				.ok();
 			}
-			//Create the call
 
+			//Create the call
 			let proposal_call = match proposal {
 				VoteProposals::Election => {
 					//Check that the account is in the representative waiting list
@@ -309,7 +318,10 @@ pub mod pallet {
 
 		///The function below allows the owner to vote.
 		///The balance locked and used for vote conviction corresponds
-		///to the number of ownership tokens possessed by the voter.  
+		///to the number of ownership tokens possessed by the voter.
+		/// The origin must be an owner of the asset
+		/// - referendum_index: index of the referendum the voter is taking part in
+		/// - vote: aye or nay
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn owners_vote(
 			origin: OriginFor<T>,
@@ -355,8 +367,10 @@ pub mod pallet {
 		}
 
 		///Approval of a Representative role request
-		///The caller is the virtual account linked
-		///to the asset
+		/// The origin must be the virtual account connected to the asset
+		/// - rep_account: account Of the candidate to the representative account
+		/// - collection: collection number of the asset.
+		/// - item: item number of the asset.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn representative_approval(
 			origin: OriginFor<T>,
@@ -386,8 +400,10 @@ pub mod pallet {
 		}
 
 		///Demotion of a previously elected Representative
-		///The caller is the virtual account linked
-		///to the asset
+		/// The origin must be the virtual account connected to the asset
+		/// - rep_account: account Of the candidate to the representative account
+		/// - collection: collection_id of the asset.
+		/// - item: item_id of the asset.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn demote_representative(
 			origin: OriginFor<T>,
@@ -521,7 +537,11 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Link a tenant with an asset
+		/// Link an accepted tenant with an existing asset
+		/// The origin must be the virtual account connected to the asset
+		/// - tenant: an account with the tenant role
+		/// - collection: collection_id of the asset
+		/// - item: item_id of the asset
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn link_tenant_to_asset(
 			origin: OriginFor<T>,
@@ -549,6 +569,10 @@ pub mod pallet {
 		}
 
 		/// Unlink a tenant with an asset
+		/// The origin must be the virtual account connected to the asset
+		/// - tenant: an account with the tenant role linked to the asset
+		/// - collection: collection_id of the asset
+		/// - item: item_id of the asset
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn unlink_tenant_to_asset(
 			origin: OriginFor<T>,
