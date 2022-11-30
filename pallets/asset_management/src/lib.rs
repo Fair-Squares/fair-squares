@@ -14,7 +14,8 @@
 //!
 //!### Dispatchable Functions
 //!
-//! * `launch_representative_session` - An Owner creates a referendum for the following available proposals:
+//! * `launch_representative_session` - An Owner creates a referendum for the following available
+//!   proposals:
 //!   - Elect a Representative.
 //!   - Demote a Representative.
 //!
@@ -24,13 +25,16 @@
 //!
 //! * `demote_representative` - Call used as a proposal for Representative demotion.
 //!
-//! * `launch_tenant_session` - A Representative creates a referendum for the following available proposals: 
+//! * `launch_tenant_session` - A Representative creates a referendum for the following available
+//!   proposals:
 //!   - Admit a Tenant for a given asset.
 //!   - Evict  a Tenant from a given asset.
 //!
-//! * `link_tenant_to_asset` - Call used as a proposal to link an accepted tenant with an existing asset.
+//! * `link_tenant_to_asset` - Call used as a proposal to link an accepted tenant with an existing
+//!   asset.
 //!
-//! * `unlink_tenant_to_asset` - Call used as a proposal to remove the link between a tenant and an asset.
+//! * `unlink_tenant_to_asset` - Call used as a proposal to remove the link between a tenant and an
+//!   asset.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
