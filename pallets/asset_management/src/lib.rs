@@ -454,7 +454,7 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 
 			// Ensure that the caller is a representative
-			let rep = Roles::Pallet::<T>::reps(caller.clone());			
+			let rep = Roles::Pallet::<T>::reps(caller.clone());
 			ensure!(rep.is_some(), Error::<T>::NotARepresentative);
 			let rep = rep.unwrap();
 			ensure!(rep.activated, Error::<T>::NotAnActiveRepresentative);
@@ -465,10 +465,7 @@ pub mod pallet {
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
 			let asset_account = ownership.unwrap().virtual_account;
-			ensure!(
-				rep.assets_accounts.contains(&asset_account),
-				Error::<T>::AssetOutOfControl
-			);
+			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);
 
 			// Ensure that provided account is a valid tenant
 			let tenant0 = Roles::Pallet::<T>::tenants(tenant.clone());
