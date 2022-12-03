@@ -454,9 +454,9 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 
 			// Ensure that the caller is a representative
-			let rep = Roles::Pallet::<T>::reps(caller.clone());
-			let status = Roles::Pallet::<T>::reps(caller.clone()).unwrap().activated;
+			let rep = Roles::Pallet::<T>::reps(caller.clone());			
 			ensure!(rep.clone().is_some(), Error::<T>::NotARepresentative);
+			let status = Roles::Pallet::<T>::reps(caller.clone()).unwrap().activated;
 			ensure!(status == true, Error::<T>::NotAnActiveRepresentative);
 
 			// Get the asset virtual account if exists
