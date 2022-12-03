@@ -455,9 +455,9 @@ pub mod pallet {
 
 			// Ensure that the caller is a representative
 			let rep = Roles::Pallet::<T>::reps(caller.clone());			
-			ensure!(rep.clone().is_some(), Error::<T>::NotARepresentative);
-			let status = Roles::Pallet::<T>::reps(caller.clone()).unwrap().activated;
-			ensure!(status == true, Error::<T>::NotAnActiveRepresentative);
+			ensure!(rep.is_some(), Error::<T>::NotARepresentative);
+			let rep = rep.unwrap();
+			ensure!(rep.activated, Error::<T>::NotAnActiveRepresentative);
 
 			// Get the asset virtual account if exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
@@ -466,7 +466,7 @@ pub mod pallet {
 
 			let asset_account = ownership.unwrap().virtual_account;
 			ensure!(
-				rep.unwrap().assets_accounts.contains(&asset_account),
+				rep.assets_accounts.contains(&asset_account),
 				Error::<T>::AssetOutOfControl
 			);
 
