@@ -174,6 +174,8 @@ pub mod pallet {
 		NotAnAssetAccount,
 		/// The account is not a representative
 		NotARepresentative,
+		/// Not an active Representative
+		NotAnActiveRepresentative,
 		/// The asset is not linked to the representative
 		AssetOutOfControl,
 		/// The candidate is not a tenant
@@ -184,19 +186,19 @@ pub mod pallet {
 		TenantAssetNotLinked,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
-		///The proposal could not be created
+		/// The proposal could not be created
 		FailedToCreateProposal,
-		///This Preimage already exists
+		/// This Preimage already exists
 		DuplicatePreimage,
-		///Not an owner in the corresponding virtual account
+		/// Not an owner in the corresponding virtual account
 		NotAnOwner,
-		///The Asset Does not Exists
+		/// The Asset Does not Exists
 		NotAnAsset,
-		///This referendum does not exists
+		/// This referendum does not exists
 		NotAValidReferendum,
-		///This referendum is over
+		/// This referendum is over
 		ReferendumCompleted,
-		///Not enough funds in the account
+		/// Not enough funds in the account
 		NotEnoughFunds,
 	}
 
@@ -454,6 +456,8 @@ pub mod pallet {
 			// Ensure that the caller is a representative
 			let rep = Roles::Pallet::<T>::reps(caller.clone());
 			ensure!(rep.is_some(), Error::<T>::NotARepresentative);
+			let rep = rep.unwrap();
+			ensure!(rep.activated, Error::<T>::NotAnActiveRepresentative);
 
 			// Get the asset virtual account if exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
@@ -461,10 +465,7 @@ pub mod pallet {
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
 			let asset_account = ownership.unwrap().virtual_account;
-			ensure!(
-				rep.unwrap().assets_accounts.contains(&asset_account),
-				Error::<T>::AssetOutOfControl
-			);
+			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);
 
 			// Ensure that provided account is a valid tenant
 			let tenant0 = Roles::Pallet::<T>::tenants(tenant.clone());
