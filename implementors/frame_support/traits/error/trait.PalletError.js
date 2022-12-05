@@ -1,4 +1,6 @@
 (function() {var implementors = {
+"pallet_asset_management":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_asset_management/pallet/enum.Error.html\" title=\"enum pallet_asset_management::pallet::Error\">Error</a>&lt;T&gt;"]],
+"pallet_finalizer":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_finalizer/pallet/enum.Error.html\" title=\"enum pallet_finalizer::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_housing_fund":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_housing_fund/pallet/enum.Error.html\" title=\"enum pallet_housing_fund::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_nft":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_nft/pallet/enum.Error.html\" title=\"enum pallet_nft::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_onboarding":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_onboarding/pallet/enum.Error.html\" title=\"enum pallet_onboarding::pallet::Error\">Error</a>&lt;T&gt;"]],

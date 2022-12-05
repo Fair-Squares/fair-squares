@@ -1,4 +1,5 @@
 (function() {var implementors = {
+"pallet_asset_management":[],
 "pallet_bidding":[],
 "pallet_housing_fund":[],
 "pallet_onboarding":[],
