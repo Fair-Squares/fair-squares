@@ -31,7 +31,7 @@ pub type BalanceOf<T> =
 pub struct Owners<T: Config> {
 	pub owners: Vec<(T::AccountId, <T as Assets::Config>::Balance)>,
 	///Creation Blocknumber
-	pub created: BlockNumberOf<T>,
+	pub created_at_block: BlockNumberOf<T>,
 	///TokenId
 	pub token_id: <T as pallet::Config>::AssetId,
 	///Total supply of tokens
@@ -41,10 +41,10 @@ pub struct Owners<T: Config> {
 impl<T: Config> Owners<T> {
 	pub fn new(virtual_account: T::AccountId) -> DispatchResult {
 		let owners = Vec::new();
-		let created = <frame_system::Pallet<T>>::block_number();
+		let created_at_block = <frame_system::Pallet<T>>::block_number();
 		let token_id: <T as pallet::Config>::AssetId = TokenId::<T>::get().into();
 		let supply = Zero::zero();
-		let tokens = Owners::<T> { owners, created, token_id, supply };
+		let tokens = Owners::<T> { owners, created_at_block, token_id, supply };
 
 		Tokens::<T>::insert(virtual_account, tokens);
 
