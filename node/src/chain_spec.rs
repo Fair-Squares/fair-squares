@@ -178,7 +178,7 @@ fn testnet_genesis(
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(root_key),
+			key: Some(root_key.clone()),
 		},
 		transaction_payment: Default::default(),
 
@@ -190,7 +190,7 @@ fn testnet_genesis(
 			],
 		},
 		nft_module: NftModuleConfig {
-			owner: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			owner: Some(root_key),
 			collection_id: Some(3),
 			created_by: Some(pallet_roles::Accounts::SERVICER),
 			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
