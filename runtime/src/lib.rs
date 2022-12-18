@@ -597,7 +597,7 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 }
 
 parameter_types! {
-	pub const ProposalFee: u64= 10;
+	pub const ProposalFee: u64= 100;
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
