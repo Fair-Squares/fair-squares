@@ -132,6 +132,8 @@ pub mod pallet {
 		InvalidValue,
 		/// This action is reserved to Accounts holding the SERVICER role.
 		ReservedToServicer,
+		/// Not enough funds in the fees_account
+		NotEnoughFees,
 	}
 
 	#[pallet::call]

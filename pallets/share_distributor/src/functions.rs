@@ -29,6 +29,10 @@ impl<T: Config> Pallet<T> {
 		//Onboarding pallet.
 		let fees_account = Onboarding::Pallet::<T>::account_id();
 		let fees = T::Fees::get();
+		//Ensure that we have enough money in the fees_account
+		let balance = <T as pallet::Config>::Currency::free_balance(&fees_account);
+		ensure!(fees.clone()<balance, Error::<T>::NotEnoughFees);
+
 		let res = <T as pallet::Config>::Currency::transfer(
 			&fees_account,
 			&account,
