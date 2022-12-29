@@ -62,6 +62,7 @@ pub use pallet_share_distributor;
 pub use pallet_utility;
 pub use pallet_voting;
 pub use pallet_finalizer;
+pub use pallet_tenancy;
 // flag add pallet use
 
 /// An index to a block.
@@ -682,6 +683,11 @@ impl pallet_finalizer::Config for Runtime {
 	type WeightInfo = pallet_finalizer::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_tenancy::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_tenancy::weights::SubstrateWeight<Runtime>;
+}
+
 // flag add pallet config
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -718,6 +724,7 @@ construct_runtime!(
 		BiddingModule: pallet_bidding,
 		AssetManagementModule: pallet_asset_management,
 		FinalizerModule: pallet_finalizer,
+		TenancyModule: pallet_tenancy,
 		// flag add pallet runtime
 	}
 );
@@ -772,6 +779,7 @@ mod benches {
 		[pallet_utility, Utility]
 		//[pallet_asset_management, AssetManagementModule]
 		// [pallet_finalizer, FinalizerModule]
+		[pallet_tenancy, TenancyModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -977,6 +985,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_share_distributor, ShareDistributor);
 			//add_benchmark!(params, batches, pallet_asset_management, AssetManagementModule);
 			// add_benchmark!(params, batches, pallet_finalizer, FinalizerModule);
+			add_benchmark!(params, batches, pallet_tenancy, TenancyModule);
 			// flag add pallet benchmark
 
 			Ok(batches)
