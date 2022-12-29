@@ -11,6 +11,16 @@ pub use pallet::*;
 //#[cfg(test)]
 //mod tests;
 
+pub use pallet_roles as Roles;
+pub use pallet_identity as Ident;
+pub use pallet_asset_management as Assets;
+
+mod functions;
+mod types;
+pub use functions::*;
+pub use types::*;
+
+
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
@@ -29,7 +39,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + Assets::Config + Ident::Config + Roles::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
