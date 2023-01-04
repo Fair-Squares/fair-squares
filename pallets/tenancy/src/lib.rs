@@ -35,6 +35,7 @@ pub mod pallet {
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
+	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -45,13 +46,17 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 	}
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/main-docs/build/runtime-storage/
+	
 	#[pallet::storage]
 	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn infos)]
+	/// Stores Tenant informations
+	pub type Tenants<T: Config> =
+	StorageMap<_, Blake2_128Concat, T::AccountId, RegisteredTenant<T>, OptionQuery>;
+
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
