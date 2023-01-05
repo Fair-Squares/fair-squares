@@ -18,7 +18,7 @@ pub use frame_support::{
 pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 pub use Ident::IdentityInfo;
 pub use scale_info::{
-	prelude::{format, vec},
+	prelude::{format, vec,boxed::Box},
 	TypeInfo,
 };
 pub use serde::{Deserialize, Serialize};

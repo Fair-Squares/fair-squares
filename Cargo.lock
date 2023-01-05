@@ -4471,6 +4471,7 @@ dependencies = [
  "frame-system",
  "pallet-asset_management",
  "pallet-identity",
+ "pallet-nft",
  "pallet-roles",
  "parity-scale-codec",
  "scale-info",

@@ -14,6 +14,7 @@ pub use pallet::*;
 pub use pallet_roles as Roles;
 pub use pallet_identity as Ident;
 pub use pallet_asset_management as Assets;
+pub use pallet_nft as Nft;
 
 mod functions;
 mod types;
@@ -40,7 +41,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Assets::Config + Ident::Config + Roles::Config {
+	pub trait Config: frame_system::Config + Assets::Config + Ident::Config + Roles::Config + Nft::Config{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
