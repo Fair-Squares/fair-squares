@@ -42,6 +42,7 @@ pub use pallet::*;
 pub use pallet_assets as Assetss;
 pub use pallet_democracy as Dem;
 pub use pallet_housing_fund as HFund;
+pub use pallet_identity as Ident;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_roles as Roles;
@@ -82,6 +83,7 @@ pub mod pallet {
 		+ Share::Config
 		+ Nft::Config
 		+ Assetss::Config
+		+ Ident::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
@@ -384,7 +386,7 @@ pub mod pallet {
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
 		) -> DispatchResult {
-			let caller = ensure_signed(origin)?;
+			let caller = ensure_signed(origin.clone())?;
 
 			//Check that the caller is a stored virtual account
 			ensure!(
@@ -394,7 +396,7 @@ pub mod pallet {
 			);
 
 			//Approve role request
-			Self::approve_representative(caller.clone(), rep_account.clone()).ok();
+			Self::approve_representative(origin, rep_account.clone()).ok();
 
 			Self::deposit_event(Event::RepresentativeCandidateApproved {
 				candidate: rep_account,

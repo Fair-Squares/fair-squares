@@ -4057,6 +4057,7 @@ dependencies = [
  "pallet-collective",
  "pallet-democracy",
  "pallet-housing_fund",
+ "pallet-identity",
  "pallet-nft",
  "pallet-onboarding",
  "pallet-roles",
