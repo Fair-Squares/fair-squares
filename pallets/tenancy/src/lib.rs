@@ -11,16 +11,15 @@ pub use pallet::*;
 //#[cfg(test)]
 //mod tests;
 
-pub use pallet_roles as Roles;
-pub use pallet_identity as Ident;
 pub use pallet_asset_management as Assets;
+pub use pallet_identity as Ident;
 pub use pallet_nft as Nft;
+pub use pallet_roles as Roles;
 
 mod functions;
 mod types;
 pub use functions::*;
 pub use types::*;
-
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -41,13 +40,14 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + Assets::Config + Ident::Config + Roles::Config + Nft::Config{
+	pub trait Config:
+		frame_system::Config + Assets::Config + Ident::Config + Roles::Config + Nft::Config
+	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
 	}
 
-	
 	#[pallet::storage]
 	#[pallet::getter(fn something)]
 	pub type Something<T> = StorageValue<_, u32>;
@@ -56,8 +56,7 @@ pub mod pallet {
 	#[pallet::getter(fn infos)]
 	/// Stores Tenant informations
 	pub type Tenants<T: Config> =
-	StorageMap<_, Blake2_128Concat, T::AccountId, RegisteredTenant<T>, OptionQuery>;
-
+		StorageMap<_, Blake2_128Concat, T::AccountId, RegisteredTenant<T>, OptionQuery>;
 
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/

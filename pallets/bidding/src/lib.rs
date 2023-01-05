@@ -118,7 +118,7 @@ pub mod pallet {
 		NoHousesFinalisedFound(BlockNumberOf<T>),
 		/// A finalised house has been distributed among investors
 		SellAssetToInvestorsSuccessful(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
-		
+
 		/// A finalised house failed to be distributed among investors
 		SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
 
