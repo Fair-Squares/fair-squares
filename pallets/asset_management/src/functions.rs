@@ -2,20 +2,23 @@
 //helper 1) get shares/owners from asset_id
 pub use super::*;
 pub use scale_info::prelude::boxed::Box;
-
+use sp_runtime::{
+	traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
+	DispatchError,
+};
 pub use frame_support::pallet_prelude::*;
 pub use sp_core::H256;
 impl<T: Config> Pallet<T> {
 	pub fn approve_representative(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
-		let caller = ensure_signed(origin)?;
+		let caller = ensure_signed(origin.clone())?;
 		let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();
 		representative.activated = true;
 		representative.assets_accounts.push(caller);
 		Roles::RepresentativeLog::<T>::insert(&who, representative);
 		Roles::RepApprovalList::<T>::remove(&who);
 		Roles::AccountsRolesLog::<T>::insert(&who, Roles::Accounts::REPRESENTATIVE);
-
-		Ident::Pallet::<T>::add_registrar(origin, who);
+		let who2 = T::Lookup::unlookup(who);
+		Ident::Pallet::<T>::add_registrar(origin, who2);
 
 		Ok(())
 	}
