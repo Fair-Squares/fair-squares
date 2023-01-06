@@ -53,6 +53,7 @@ frame_support::construct_runtime!(
 		ShareDistributor: pallet_share_distributor::{Pallet, Call, Storage, Event<T>},
 		Assets: pallet_assets::{Pallet, Storage, Config<T>, Event<T>},
 		HousingFund: pallet_housing_fund::{Pallet, Call, Storage,Event<T>},
+		Ident: pallet_identity::{Pallet, Call, Storage, Event<T>}
 
 	}
 );
@@ -161,6 +162,30 @@ parameter_types! {
 	pub const CooloffPeriod: BlockNumber = 5; //ok
 	pub const PreimageByteDeposit: Balance = 1; //ok
 	pub const MaxVotes: u32 = 100;
+}
+
+parameter_types! {
+	pub const BasicDeposit: Balance = 10 ;       // 258 bytes on-chain
+	pub const FieldDeposit: Balance = 250 ;        // 66 bytes on-chain
+	pub const SubAccountDeposit: Balance = 2 ;   // 53 bytes on-chain
+	pub const MaxAdditionalFields: u32 = 100;
+	pub const MaxRegistrars: u32 = 1;
+	pub const MaxSubAccounts: u32 = 100;
+}
+
+impl pallet_identity::Config for Test {
+	type Event = Event;
+	type Currency = Balances;
+	type BasicDeposit = BasicDeposit;
+	type FieldDeposit = FieldDeposit;
+	type MaxRegistrars = MaxRegistrars;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type RegistrarOrigin = EnsureRoot<AccountId>;
+	type MaxAdditionalFields = MaxAdditionalFields;
+	type MaxSubAccounts = MaxSubAccounts;
+	type Slashed = ();
+	type SubAccountDeposit = SubAccountDeposit;
+	type WeightInfo = ();
 }
 
 impl pallet_democracy::Config for Test {
