@@ -182,6 +182,7 @@ pub struct Representative<T: Config> {
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
 	pub assets_accounts: Vec<T::AccountId>,
+	pub index: u32
 }
 impl<T: Config> Representative<T>
 where
@@ -199,6 +200,7 @@ where
 			age: now,
 			activated: false,
 			assets_accounts: Vec::new(),
+			index: Default::default(),
 		};
 
 		RepApprovalList::<T>::mutate(caller, |val| {

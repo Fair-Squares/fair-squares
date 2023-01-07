@@ -666,6 +666,9 @@ impl pallet_bidding::Config for Runtime {
 	type NewAssetScanPeriod = NewAssetScanPeriod;
 }
 
+parameter_types! {
+	pub const JudgementFee: u64= 50;
+}
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -675,6 +678,7 @@ impl pallet_asset_management::Config for Runtime {
 	type CheckPeriod = CheckPeriod;
 	type Currency = Balances;
 	type MinimumDepositVote = MinimumDeposit;
+	type RepFees = JudgementFee;
 	type WeightInfo = ();
 }
 

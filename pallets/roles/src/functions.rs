@@ -147,8 +147,9 @@ impl<T: Config> Pallet<T> {
 				Representative::<T> {
 					account_id: account.clone(),
 					age: now,
-					activated: true,
+					activated: false,
 					assets_accounts: vec![],
+					index: 0
 				},
 			);
 		}

@@ -63,6 +63,7 @@ fn test_struct_methods() {
 				age: System::block_number(),
 				activated: false,
 				assets_accounts: vec![],
+				index: 0,
 			}
 		)
 	});

@@ -85,6 +85,12 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::storage]
+	#[pallet::getter(fn rep_num)]
+	///Number of active Representative
+	pub type RepNumber<T: Config> =
+	StorageValue<_,u32>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn investors)]
 	///Registry of Investors organized by AccountId
 	pub(super) type InvestorLog<T: Config> =

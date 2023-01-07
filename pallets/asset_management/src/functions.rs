@@ -2,6 +2,7 @@
 //helper 1) get shares/owners from asset_id
 pub use super::*;
 pub use scale_info::prelude::boxed::Box;
+pub use frame_system::Origin;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
 	DispatchError,
@@ -13,12 +14,35 @@ impl<T: Config> Pallet<T> {
 		let caller = ensure_signed(origin.clone())?;
 		let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();
 		representative.activated = true;
+		representative.assets_accounts.clear();
 		representative.assets_accounts.push(caller);
+		//get Rep number 
+		let mut index = Roles::Pallet::<T>::rep_num().unwrap();
+		//Update Rep index 
+		representative.index = index;
+		
+
 		Roles::RepresentativeLog::<T>::insert(&who, representative);
 		Roles::RepApprovalList::<T>::remove(&who);
 		Roles::AccountsRolesLog::<T>::insert(&who, Roles::Accounts::REPRESENTATIVE);
-		let who2 = T::Lookup::unlookup(who);
-		Ident::Pallet::<T>::add_registrar(origin, who2);
+		let who2 = T::Lookup::unlookup(who.clone());
+
+		//Set the representative as a registrar
+		Ident::Pallet::<T>::add_registrar(origin, who2.clone()).ok();
+		 	
+		//Set registrar fields
+		let origin2: OriginFor<T> = RawOrigin::Signed(who).into();
+		Ident::Pallet::<T>::set_fields(origin2.clone(),index,Default::default()).ok();
+		
+		//Set registrar fees
+		let fee0 = Self::balance_to_u128_option1( T::RepFees::get()).unwrap();
+		let fees = Self::u128_to_balance_option1(fee0).unwrap();
+		Ident::Pallet::<T>::set_fee(origin2,index,fees).ok();
+
+		//Update Rep number
+		index +=1;
+		Roles::RepNumber::<T>::put(index);
+
 
 		Ok(())
 	}
@@ -109,6 +133,14 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 	pub fn u128_to_balance_option(input: u128) -> Option<DemoBalanceOf<T>> {
+		input.try_into().ok()
+	}
+
+	pub fn balance_to_u128_option1(input: BalanceOf<T>) -> Option<u128> {
+		input.try_into().ok()
+	}
+
+	pub fn u128_to_balance_option1(input: u128) -> Option<IdentBalanceOf<T>> {
 		input.try_into().ok()
 	}
 

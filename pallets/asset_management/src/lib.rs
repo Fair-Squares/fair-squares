@@ -101,6 +101,9 @@ pub mod pallet {
 		type MinimumDepositVote: Get<BalanceOf<Self>>;
 
 		#[pallet::constant]
+		type RepFees: Get<BalanceOf<Self>>;
+
+		#[pallet::constant]
 		type CheckPeriod: Get<Self::BlockNumber>;
 	}
 
