@@ -352,6 +352,10 @@ impl pallet_housing_fund::Config for Test {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
+parameter_types! {
+	pub const JudgementFee: u64= 2;
+}
+
 impl pallet_asset_management::Config for Test {
 	type Event = Event;
 	type Call = Call;
@@ -360,6 +364,7 @@ impl pallet_asset_management::Config for Test {
 	type InvestorVoteAmount = InvestorVoteAmount;
 	type CheckPeriod = CheckPeriod;
 	type MinimumDepositVote = MinimumDeposit;
+	type RepFees = JudgementFee;
 	type Currency = Balances;
 	type WeightInfo = ();
 }
