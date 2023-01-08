@@ -2,7 +2,6 @@
 //helper 1) get shares/owners from asset_id
 pub use super::*;
 pub use scale_info::prelude::boxed::Box;
-pub use frame_system::Origin;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
 	DispatchError,
@@ -17,7 +16,7 @@ impl<T: Config> Pallet<T> {
 		representative.assets_accounts.clear();
 		representative.assets_accounts.push(caller);
 		//get Rep number 
-		let mut index = Roles::Pallet::<T>::rep_num().unwrap();
+		let mut index = Roles::Pallet::<T>::rep_num();
 		//Update Rep index 
 		representative.index = index;
 		
