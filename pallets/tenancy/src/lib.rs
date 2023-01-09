@@ -111,21 +111,24 @@ pub mod pallet {
 
 		/// An example dispatchable that may throw a custom error.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
+		pub fn request_asset(
+			origin: OriginFor<T>,
+			info: Box<IdentityInfo<T::MaxAdditionalFields>>,
+			asset_type: Nft::PossibleCollections,
+			asset_id: T::NftItemId,
+		) -> DispatchResult {
+			let caller = ensure_signed(origin.clone())?;
+		// Ensure that the caller has the tenancy role
+		ensure!(Roles::TenantLog::<T>::contains_key(caller), Error::<T>::NotATenant);
 
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
+		// Ensure that the asset is valid
+		let collection_id: T::NftCollectionId = asset_type.value().into();
+		let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
+		ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
+		let virtual_account = ownership.unwrap().virtual_account;
+		Self::request_helper(origin.clone(),virtual_account,info).ok();
+		Ok(())
+
 		}
 	}
 }

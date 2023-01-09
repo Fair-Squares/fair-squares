@@ -7,23 +7,12 @@ impl<T: Config> Pallet<T> {
 	/// - asset_type: type of the asset
 	/// - asset_id: item_id of the asset
 	/// - representative: account id of the representative
-	pub fn request_asset(
+	pub fn request_helper(
 		origin: OriginFor<T>,
-		info: Box<IdentityInfo<T::MaxAdditionalFields>>,
-		asset_type: Nft::PossibleCollections,
-		asset_id: T::NftItemId,
+		virtual_account: T::AccountId,
+		info: Box<IdentityInfo<T::MaxAdditionalFields>>,		
 		//representative: T::AccountId,
-	) -> DispatchResult {
-		let caller = ensure_signed(origin.clone())?;
-
-		// Ensure that the caller has the tenancy role
-		ensure!(Roles::TenantLog::<T>::contains_key(caller), Error::<T>::NotATenant);
-
-		// Ensure that the asset is valid
-		let collection_id: T::NftCollectionId = asset_type.value().into();
-		let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
-		ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
-		let virtual_account = ownership.unwrap().virtual_account;
+	) -> DispatchResult {	
 
 
 		let reps = Roles::RepresentativeLog::<T>::iter_keys();
