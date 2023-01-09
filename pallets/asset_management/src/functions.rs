@@ -25,7 +25,21 @@ impl<T: Config> Pallet<T> {
 		Roles::AccountsRolesLog::<T>::insert(&who, Roles::Accounts::REPRESENTATIVE);
 		let who2 = T::Lookup::unlookup(who.clone());
 
-		//Set the representative as a registrar
+		//Check that the Representative is not already a Registrar
+		//If a Representative is revoked from a given asset, and approved
+		//for anither asset, we don't want to repeat the registrar settings]
+
+		let mut check0 = false;
+		let v = Ident::Pallet::<T>::registrars();
+		for i in v {
+			let reg = i.unwrap();
+			if reg.account == who.clone(){
+				check0 = true;
+			}
+		}
+
+		if check0 == false {
+			//Set the representative as a registrar
 		Ident::Pallet::<T>::add_registrar(origin, who2).ok();
 
 		//Set registrar fields
@@ -36,10 +50,14 @@ impl<T: Config> Pallet<T> {
 		let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
 		let fees = Self::u128_to_balance_option1(fee0).unwrap();
 		Ident::Pallet::<T>::set_fee(origin2, index, fees).ok();
-
+		
 		//Update Rep number
 		index += 1;
 		Roles::RepNumber::<T>::put(index);
+		}
+		
+
+		
 
 		Ok(())
 	}
