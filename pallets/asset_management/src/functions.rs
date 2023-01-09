@@ -27,7 +27,7 @@ impl<T: Config> Pallet<T> {
 
 		//Check that the Representative is not already a Registrar
 		//If a Representative is revoked from a given asset, and approved
-		//for anither asset, we don't want to repeat the registrar settings]
+		//for another asset, we don't want to repeat the registrar settings
 
 		let mut check0 = false;
 		let v = Ident::Pallet::<T>::registrars();
