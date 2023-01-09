@@ -4474,6 +4474,7 @@ dependencies = [
  "pallet-identity",
  "pallet-nft",
  "pallet-roles",
+ "pallet-share_distributor",
  "parity-scale-codec",
  "scale-info",
  "serde",

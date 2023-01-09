@@ -1,13 +1,13 @@
 //Helper functions that will be used in proposal's calls
 //helper 1) get shares/owners from asset_id
 pub use super::*;
+pub use frame_support::pallet_prelude::*;
 pub use scale_info::prelude::boxed::Box;
+pub use sp_core::H256;
 use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
 	DispatchError,
 };
-pub use frame_support::pallet_prelude::*;
-pub use sp_core::H256;
 impl<T: Config> Pallet<T> {
 	pub fn approve_representative(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 		let caller = ensure_signed(origin.clone())?;
@@ -15,11 +15,10 @@ impl<T: Config> Pallet<T> {
 		representative.activated = true;
 		representative.assets_accounts.clear();
 		representative.assets_accounts.push(caller);
-		//get Rep number 
+		//get Rep number
 		let mut index = Roles::Pallet::<T>::rep_num();
-		//Update Rep index 
+		//Update Rep index
 		representative.index = index;
-		
 
 		Roles::RepresentativeLog::<T>::insert(&who, representative);
 		Roles::RepApprovalList::<T>::remove(&who);
@@ -27,21 +26,20 @@ impl<T: Config> Pallet<T> {
 		let who2 = T::Lookup::unlookup(who.clone());
 
 		//Set the representative as a registrar
-		Ident::Pallet::<T>::add_registrar(origin, who2.clone()).ok();
-		 	
+		Ident::Pallet::<T>::add_registrar(origin, who2).ok();
+
 		//Set registrar fields
 		let origin2: OriginFor<T> = RawOrigin::Signed(who).into();
-		Ident::Pallet::<T>::set_fields(origin2.clone(),index,Default::default()).ok();
-		
+		Ident::Pallet::<T>::set_fields(origin2.clone(), index, Default::default()).ok();
+
 		//Set registrar fees
-		let fee0 = Self::balance_to_u128_option1( T::RepFees::get()).unwrap();
+		let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
 		let fees = Self::u128_to_balance_option1(fee0).unwrap();
-		Ident::Pallet::<T>::set_fee(origin2,index,fees).ok();
+		Ident::Pallet::<T>::set_fee(origin2, index, fees).ok();
 
 		//Update Rep number
-		index +=1;
+		index += 1;
 		Roles::RepNumber::<T>::put(index);
-
 
 		Ok(())
 	}

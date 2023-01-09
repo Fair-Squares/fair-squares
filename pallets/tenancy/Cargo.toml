@@ -16,17 +16,19 @@ targets = ["x86_64-unknown-linux-gnu"]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
-scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
+scale-info = { version = "2.1.1", default-features = false, features = [
+	"derive",
+] }
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
 frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
 sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
 serde = { version = "1.0.136", default-features = false, features = ["derive"] }
 pallet-identity = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-roles = { default-features = false, path="../roles" }
-pallet-asset_management = { default-features = false, path="../asset_management" }
-pallet-nft = { default-features = false, path="../nft" }
-
+pallet-roles = { default-features = false, path = "../roles" }
+pallet-asset_management = { default-features = false, path = "../asset_management" }
+pallet-nft = { default-features = false, path = "../nft" }
+pallet-share_distributor = { default-features = false, path = "../share_distributor" }
 
 
 [dev-dependencies]
@@ -49,7 +51,7 @@ std = [
 	"pallet-identity/std",
 	"pallet-roles/std",
 	"pallet-asset_management/std",
-	"pallet-nft/std"
+	"pallet-nft/std",
 ]
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
 try-runtime = ["frame-support/try-runtime"]

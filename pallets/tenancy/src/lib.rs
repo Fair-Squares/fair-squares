@@ -15,6 +15,7 @@ pub use pallet_asset_management as Assets;
 pub use pallet_identity as Ident;
 pub use pallet_nft as Nft;
 pub use pallet_roles as Roles;
+pub use pallet_share_distributor as Share;
 
 mod functions;
 mod types;
@@ -75,6 +76,14 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// Invalid asset id given
+		NotAnAsset,
+		/// The caller is not a tenant
+		NotATenant,
+		/// Invalid representative given
+		NotARepresentative,
+		/// Asset is not linked to the representative
+		AssetNotLinked,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -108,7 +117,7 @@ pub mod pallet {
 			// Read a value from storage.
 			match <Something<T>>::get() {
 				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
+				None => Err(Error::<T>::NoneValue.into()),
 				Some(old) => {
 					// Increment the value read from storage; will error in the event of overflow.
 					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
