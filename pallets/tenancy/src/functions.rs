@@ -11,7 +11,6 @@ impl<T: Config> Pallet<T> {
 		origin: OriginFor<T>,
 		virtual_account: T::AccountId,
 		info: Box<IdentityInfo<T::MaxAdditionalFields>>,		
-		//representative: T::AccountId,
 	) -> DispatchResult {	
 
 
@@ -24,18 +23,6 @@ impl<T: Config> Pallet<T> {
 
 			}
 		}
-
-
-		// Ensure that the account specified by `representative` has representative role
-		//let rep = Roles::Pallet::<T>::reps(representative);
-		//ensure!(rep.is_some(), Error::<T>::NotARepresentative);
-		//let rep = rep.unwrap();
-
-		// Ensure that the asset is linked with the representative
-		//ensure!(rep.assets_accounts.contains(&virtual_account), Error::<T>::AssetNotLinked);
-
-		//Ident::Pallet::<T>::set_identity(origin.clone(), info).ok();
-		//Ident::Pallet::<T>::request_judgement(origin, rep.index, 50u32.into()).ok();
 
 		Ok(())
 	}

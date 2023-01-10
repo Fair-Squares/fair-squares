@@ -293,7 +293,8 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::NotARepresentative
 		);
@@ -308,7 +309,8 @@ fn share_distributor0() {
 				NftColl::OFFICES,
 				10,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::NotAnAsset
 		);
@@ -325,7 +327,8 @@ fn share_distributor0() {
 				NftColl::APPARTMENTSTEST,
 				item_id1,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::AssetOutOfControl
 		);
@@ -338,7 +341,8 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				BOB,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::NotATenant
 		);
@@ -364,7 +368,8 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			GERARD,
-			VoteProposals::Election
+			VoteProposals::Election,
+			Ident::Judgement::Reasonable,
 		));
 
 		println!("\n\nlaunch_tenant_session - : A SUCCESSFUL SCENARIO");
@@ -417,7 +422,8 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::AlreadyLinkedWithAsset
 		);
@@ -430,7 +436,8 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				HUNTER,
-				VoteProposals::Demotion
+				VoteProposals::Demotion,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::TenantAssetNotLinked
 		);
@@ -442,7 +449,8 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			HUNTER,
-			VoteProposals::Election
+			VoteProposals::Election,
+			Ident::Judgement::Reasonable,
 		));
 
 		ref_index += 1;
@@ -490,7 +498,8 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			HUNTER,
-			VoteProposals::Demotion
+			VoteProposals::Demotion,
+			Ident::Judgement::Reasonable,
 		));
 
 		ref_index += 1;

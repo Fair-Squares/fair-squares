@@ -455,6 +455,7 @@ pub mod pallet {
 			asset_id: T::NftItemId,
 			tenant: T::AccountId,
 			proposal: VoteProposals,
+			judgement: Ident::Judgement<IdentBalanceOf<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
 
@@ -481,6 +482,10 @@ pub mod pallet {
 				VoteProposals::Election => {
 					// Ensure that the tenant is not linked to an asset
 					ensure!(tenant0.asset_account.is_none(), Error::<T>::AlreadyLinkedWithAsset);
+					//provide judgement
+					let index = rep.index;
+					let target = T::Lookup::unlookup(tenant.clone());
+					Ident::Pallet::<T>::provide_judgement(origin.clone(),index.into(),target,judgement.clone()).ok();
 				},
 				VoteProposals::Demotion => {
 					// Ensure that the tenant is linked to the asset
@@ -509,6 +514,7 @@ pub mod pallet {
 					tenant: tenant.clone(),
 					collection: collection_id,
 					item: asset_id,
+					judgement,
 				},
 				VoteProposals::Demotion => Call::<T>::unlink_tenant_to_asset {
 					tenant: tenant.clone(),
@@ -558,6 +564,7 @@ pub mod pallet {
 			tenant: T::AccountId,
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
+			_judgement: Ident::Judgement<IdentBalanceOf<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
 
