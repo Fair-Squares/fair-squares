@@ -16,6 +16,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
+quote = "1.0.23"
 scale-info = { version = "2.1.1", default-features = false, features = [
 	"derive",
 ] }
@@ -54,6 +55,11 @@ pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-preimage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-identity = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
+orml-benchmarking = { branch = "polkadot-v0.9.29", default-features = false, optional = true, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
+orml-currencies = { branch = "polkadot-v0.9.29", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
+orml-tokens = { branch = "polkadot-v0.9.29", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
+orml-payments = { git = 'https://github.com/open-web3-stack/open-runtime-module-library', default-features = false, branch = 'polkadot-v0.9.29' }
+orml-traits = { branch = "polkadot-v0.9.29", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
 
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
@@ -93,6 +99,10 @@ std = [
 	"pallet-aura/std",
 	"pallet-balances/std",
 	"pallet-grandpa/std",
+	"orml-benchmarking/std",
+    "orml-currencies/std",
+    "orml-tokens/std",
+    "orml-traits/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",
@@ -160,6 +170,8 @@ try-runtime = [
 	"frame-support/try-runtime",
 	"pallet-aura/try-runtime",
 	"pallet-balances/try-runtime",
+	"orml-currencies/try-runtime",
+    "orml-tokens/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-randomness-collective-flip/try-runtime",
 	"pallet-sudo/try-runtime",
