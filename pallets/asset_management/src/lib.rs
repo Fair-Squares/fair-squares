@@ -98,6 +98,12 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 
 		#[pallet::constant]
+		type Guaranty: Get<u32>;
+
+		#[pallet::constant]
+		type RoR: Get<u32>;
+
+		#[pallet::constant]
 		type MinimumDepositVote: Get<BalanceOf<Self>>;
 
 		#[pallet::constant]

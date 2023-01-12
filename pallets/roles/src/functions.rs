@@ -138,6 +138,10 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn u128_to_balance_option(input: u128) -> Option<BalanceOf<T>> {
+		input.try_into().ok()
+	}
+
 	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
 		let now = <frame_system::Pallet<T>>::block_number();
 		for account in representatives.into_iter() {

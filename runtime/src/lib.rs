@@ -63,6 +63,7 @@ pub use pallet_utility;
 pub use pallet_voting;
 pub use pallet_finalizer;
 pub use pallet_tenancy;
+pub use pallet_payment;
 // flag add pallet use
 
 /// An index to a block.
@@ -667,7 +668,9 @@ impl pallet_bidding::Config for Runtime {
 }
 
 parameter_types! {
-	pub const JudgementFee: u64= 50;
+	pub const JudgementFee: Balance= 50*DOLLARS;
+	pub const GuarantyCoefficient: u32 = 3;
+	pub const RoR:u32 = 3;
 }
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
@@ -679,6 +682,8 @@ impl pallet_asset_management::Config for Runtime {
 	type Currency = Balances;
 	type MinimumDepositVote = MinimumDeposit;
 	type RepFees = JudgementFee;
+	type Guaranty = GuarantyCoefficient;
+	type RoR = RoR;
 	type WeightInfo = ();
 }
 
@@ -690,6 +695,11 @@ impl pallet_finalizer::Config for Runtime {
 impl pallet_tenancy::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = pallet_tenancy::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_payment::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = pallet_payment::weights::SubstrateWeight<Runtime>;
 }
 
 // flag add pallet config
@@ -729,6 +739,7 @@ construct_runtime!(
 		AssetManagementModule: pallet_asset_management,
 		FinalizerModule: pallet_finalizer,
 		TenancyModule: pallet_tenancy,
+		PaymentModule: pallet_payment,
 		// flag add pallet runtime
 	}
 );
@@ -784,6 +795,7 @@ mod benches {
 		//[pallet_asset_management, AssetManagementModule]
 		// [pallet_finalizer, FinalizerModule]
 		[pallet_tenancy, TenancyModule]
+		[pallet_payment, PaymentModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -990,6 +1002,7 @@ impl_runtime_apis! {
 			//add_benchmark!(params, batches, pallet_asset_management, AssetManagementModule);
 			// add_benchmark!(params, batches, pallet_finalizer, FinalizerModule);
 			add_benchmark!(params, batches, pallet_tenancy, TenancyModule);
+			add_benchmark!(params, batches, pallet_payment, PaymentModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

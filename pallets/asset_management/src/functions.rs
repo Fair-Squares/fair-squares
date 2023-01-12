@@ -80,8 +80,16 @@ impl<T: Config> Pallet<T> {
 		asset_account: T::AccountId,
 	) -> DispatchResult {
 		// Update tenant info
+		let coeff = T::RoR::get() as u64;
 		Roles::TenantLog::<T>::mutate(&tenant, |val| {
 			let mut val0 = val.clone().unwrap();
+			// get asset price
+			let price0 = Onboarding::Pallet::<T>::houses(collection,item).unwrap().price.unwrap();
+			let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(price0).unwrap();
+			//update rent in tenant infos
+			let rent0:u128 = ((coeff*price1)/1200).into();
+			let rent = Roles::Pallet::<T>::u128_to_balance_option(rent0).unwrap();
+			val0.rent = rent.into();
 			val0.asset_account = Some(asset_account);
 			*val = Some(val0);
 		});

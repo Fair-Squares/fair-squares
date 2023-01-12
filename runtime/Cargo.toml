@@ -55,11 +55,6 @@ pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-preimage = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-identity = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-orml-benchmarking = { branch = "polkadot-v0.9.29", default-features = false, optional = true, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
-orml-currencies = { branch = "polkadot-v0.9.29", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
-orml-tokens = { branch = "polkadot-v0.9.29", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
-orml-payments = { git = 'https://github.com/open-web3-stack/open-runtime-module-library', default-features = false, branch = 'polkadot-v0.9.29' }
-orml-traits = { branch = "polkadot-v0.9.29", default-features = false, git = "https://github.com/open-web3-stack/open-runtime-module-library" }
 
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
@@ -81,6 +76,7 @@ pallet-bidding = { version = "4.0.0-dev", default-features = false, path = "../p
 pallet-asset_management = { version = "4.0.0-dev", default-features = false, path = "../pallets/asset_management" }
 pallet-finalizer = { version = "4.0.0-dev", default-features = false, path = "../pallets/finalizer" }
 pallet-tenancy = { version = "4.0.0-dev", default-features = false, path = "../pallets/tenancy" }
+pallet-payment = { version = "4.0.0-dev", default-features = false, path = "../pallets/payment" }
 ### add new pallet config
 
 [build-dependencies]
@@ -99,10 +95,6 @@ std = [
 	"pallet-aura/std",
 	"pallet-balances/std",
 	"pallet-grandpa/std",
-	"orml-benchmarking/std",
-    "orml-currencies/std",
-    "orml-tokens/std",
-    "orml-traits/std",
 	"pallet-randomness-collective-flip/std",
 	"pallet-sudo/std",
 	"pallet-timestamp/std",
@@ -137,6 +129,7 @@ std = [
 	"pallet-asset_management/std",
 	"pallet-finalizer/std",
 	"pallet-tenancy/std",
+	"pallet-payment/std",
 	### add new std
 ]
 runtime-benchmarks = [
@@ -161,6 +154,7 @@ runtime-benchmarks = [
 	"pallet-asset_management/runtime-benchmarks",
 	"pallet-finalizer/runtime-benchmarks",
 	"pallet-tenancy/runtime-benchmarks",
+	"pallet-payment/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -170,8 +164,6 @@ try-runtime = [
 	"frame-support/try-runtime",
 	"pallet-aura/try-runtime",
 	"pallet-balances/try-runtime",
-	"orml-currencies/try-runtime",
-    "orml-tokens/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-randomness-collective-flip/try-runtime",
 	"pallet-sudo/try-runtime",
@@ -189,5 +181,6 @@ try-runtime = [
 	"pallet-asset_management/try-runtime",
 	"pallet-finalizer/try-runtime",
 	"pallet-tenancy/try-runtime",
+	"pallet-payment/try-runtime",
 	### add new try-runtime
 ]
