@@ -13,6 +13,10 @@ pub use pallet::*;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+mod functions;
+mod types;
+pub use crate::types::*;
+pub use functions::*;
 
 pub mod weights;
 pub use weights::WeightInfo;
@@ -32,6 +36,26 @@ pub mod pallet {
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+		/// Dispute resolution account
+		type DisputeResolver: DisputeResolver<Self::AccountId>;
+		/// Fee handler trait
+		type FeeHandler: FeeHandler<Self>;
+		/// Incentive percentage - amount witheld from sender
+		#[pallet::constant]
+		type IncentivePercentage: Get<Percent>;
+		/// Maximum permitted size of `Remark`
+		#[pallet::constant]
+		type MaxRemarkLength: Get<u32>;
+		/// Buffer period - number of blocks to wait before user can claim
+		/// canceled payment
+		#[pallet::constant]
+		type CancelBufferBlockLength: Get<Self::BlockNumber>;
+		/// Buffer period - number of blocks to wait before user can claim
+		/// canceled payment
+		#[pallet::constant]
+		type MaxScheduledTaskListLength: Get<u32>;
+
 		type WeightInfo: WeightInfo;
 	}
 
