@@ -32,6 +32,15 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type HashOf<T> = <T as frame_system::Config>::Hash;
 pub type BoundedDataOf<T> = BoundedVec<u8, <T as Config>::MaxRemarkLength>;
 pub type ScheduledTaskOf<T> = ScheduledTask<<T as frame_system::Config>::BlockNumber>;
+/// list of ScheduledTasks, stored as a BoundedBTreeMap
+pub type ScheduledTaskList<T> = BoundedBTreeMap<
+(
+	<T as frame_system::Config>::AccountId,
+	<T as frame_system::Config>::AccountId,
+),
+ScheduledTaskOf<T>,
+<T as Config>::MaxRemarkLength,
+>;
 
 /// The PaymentDetail struct stores information about the payment/escrow
 /// A "payment" in virto network is similar to an escrow, it is used to
