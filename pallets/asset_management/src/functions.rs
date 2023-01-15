@@ -1,12 +1,10 @@
-//Helper functions that will be used in proposal's calls
-//helper 1) get shares/owners from asset_id
+
 pub use super::*;
 pub use frame_support::pallet_prelude::*;
 pub use scale_info::prelude::boxed::Box;
 pub use sp_core::H256;
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
-	DispatchError,
+	traits::{StaticLookup, Zero},
 };
 impl<T: Config> Pallet<T> {
 	pub fn approve_representative(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
@@ -86,7 +84,7 @@ impl<T: Config> Pallet<T> {
 			// get asset price
 			let price0 = Onboarding::Pallet::<T>::houses(collection,item).unwrap().price.unwrap();
 			let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(price0).unwrap();
-			//update rent in tenant infos
+			//update rent in tenant infos added
 			let rent0:u128 = ((coeff*price1)/1200).into();
 			let rent = Roles::Pallet::<T>::u128_to_balance_option(rent0).unwrap();
 			val0.rent = rent.into();

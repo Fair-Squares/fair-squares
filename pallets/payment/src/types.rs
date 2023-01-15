@@ -11,7 +11,8 @@ pub use frame_support::{
 	storage::{child,bounded_btree_map::BoundedBTreeMap},
 	traits::{
 		Contains, Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency,
-		UnfilteredDispatchable, WithdrawReasons,tokens::BalanceStatus,
+		UnfilteredDispatchable, WithdrawReasons,
+		tokens::{BalanceStatus,ExistenceRequirement::KeepAlive},
 	},
 	weights::GetDispatchInfo,
 	PalletId,
