@@ -4344,6 +4344,7 @@ dependencies = [
  "frame-system",
  "log",
  "pallet-assets",
+ "pallet-balances",
  "pallet-housing_fund",
  "pallet-identity",
  "pallet-nft",

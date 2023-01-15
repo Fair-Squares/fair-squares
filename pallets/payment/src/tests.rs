@@ -1,20 +1,13 @@
-use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok};
+use crate::{
+	mock::*, 
+	types::{PaymentDetail, PaymentState},
+	Payment as PaymentStore, PaymentHandler, ScheduledTask, ScheduledTasks, Task,
+};
+use frame_support::{assert_noop, assert_ok, storage::with_transaction};
+use sp_runtime::{Percent, TransactionOutcome};
+type Error = crate::Error<Test>;
 
-#[test]
-fn it_works_for_default_value() {
-	new_test_ext().execute_with(|| {
-		// Dispatch a signed extrinsic.
-		assert_ok!(PaymentModule::do_something(Origin::signed(1), 42));
-		// Read pallet storage and assert an expected result.
-		assert_eq!(PaymentModule::something(), Some(42));
-	});
+fn last_event() -> Event {
+	System::events().pop().expect("Event expected").event
 }
 
-#[test]
-fn correct_error_for_none_value() {
-	new_test_ext().execute_with(|| {
-		// Ensure the expected error is thrown when no value is present.
-		assert_noop!(PaymentModule::cause_error(Origin::signed(1)), Error::<Test>::NoneValue);
-	});
-}
