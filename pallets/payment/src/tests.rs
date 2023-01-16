@@ -90,3 +90,57 @@ fn test_pay_works() {
 		);
 	});
 }
+
+#[test]
+fn test_cancel_works() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 40;
+		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
+
+		// should be able to create a payment with available balance
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			payment_amount,
+			None
+		));
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::Created,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
+			})
+		);
+		// the payment amount should be reserved
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance - payment_amount - expected_incentive_amount
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+
+		// cancel should succeed when caller is the recipent
+		assert_ok!(PaymentModule::cancel(Origin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR));
+		assert_eq!(
+			last_event(),
+			crate::Event::<Test>::PaymentCancelled {
+				from: PAYMENT_CREATOR,
+				to: PAYMENT_RECIPENT
+			}
+			.into()
+		);
+		// the payment amount should be released back to creator
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+
+		// should be released from storage
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
+	});
+}
