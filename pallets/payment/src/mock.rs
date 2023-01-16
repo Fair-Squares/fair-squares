@@ -130,8 +130,10 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 		pallet_balances::GenesisConfig::<Test> {
 			balances: vec![
-				(PAYMENT_CREATOR, 200_000),
-				(PAYMENT_CREATOR_TWO, 200_000_000),
+				(PAYMENT_CREATOR, 100_000_000_000),
+				(PAYMENT_CREATOR_TWO, 100_000_000_000),
+				(PAYMENT_RECIPENT,1),
+				(FEE_RECIPIENT_ACCOUNT,1),
 			],
 		}
 		.assimilate_storage(&mut t)

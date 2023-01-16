@@ -12,7 +12,7 @@ pub use frame_support::{
 	traits::{
 		Contains, Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency,
 		UnfilteredDispatchable, WithdrawReasons,
-		tokens::{BalanceStatus,ExistenceRequirement::KeepAlive},
+		tokens::{BalanceStatus,ExistenceRequirement::{KeepAlive,AllowDeath}},
 	},
 	weights::GetDispatchInfo,
 	PalletId,

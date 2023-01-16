@@ -154,7 +154,6 @@ runtime-benchmarks = [
 	"pallet-asset_management/runtime-benchmarks",
 	"pallet-finalizer/runtime-benchmarks",
 	"pallet-tenancy/runtime-benchmarks",
-	"pallet-payment/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -181,6 +180,5 @@ try-runtime = [
 	"pallet-asset_management/try-runtime",
 	"pallet-finalizer/try-runtime",
 	"pallet-tenancy/try-runtime",
-	"pallet-payment/try-runtime",
 	### add new try-runtime
 ]
