@@ -1,4 +1,14 @@
 pub use super::*;
+
+impl<T: Config> Pallet<T>{
+	pub fn balance_to_u128_option(input: BalanceOf<T>) -> Option<u128> {
+		input.try_into().ok()
+	}
+	pub fn u128_to_balance_option(input: u128) -> Option<BalanceOf<T>> {
+		input.try_into().ok()
+	}
+}
+
 impl<T: Config> PaymentHandler<T> for Pallet<T> {
     /// The function will create a new payment. The fee and incentive
     /// amounts will be calculated and the `PaymentDetail` will be added to
@@ -112,6 +122,9 @@ impl<T: Config> PaymentHandler<T> for Pallet<T> {
 		fn get_payment_details(from: &T::AccountId, to: &T::AccountId) -> Option<PaymentDetail<T>> {
 			Payment::<T>::get(from, to)
 		}
+
+	
+	
 	}
 
 

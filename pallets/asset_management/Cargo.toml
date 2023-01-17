@@ -35,6 +35,7 @@ pallet-nft = { default-features = false, path = "../nft" }
 pallet-voting = { default-features = false, path = "../voting" }
 pallet-onboarding = { default-features = false, path = "../onboarding" }
 pallet-housing_fund = { default-features = false, path = "../housing_fund" }
+pallet-payment = { default-features = false, path = "../payment" }
 pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
 pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
 pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
@@ -71,6 +72,7 @@ std = [
 	"pallet-uniques/std",
 	"pallet-collective/std",
 	"pallet-assets/std",
+	"pallet-payment/std",
 
 ]
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]

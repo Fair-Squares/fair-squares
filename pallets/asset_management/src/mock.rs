@@ -31,6 +31,17 @@ pub type CollectionId = u32;
 pub type ItemId = u32;
 pub type NftColl = Nft::PossibleCollections;
 
+pub const PAYMENT_CREATOR: AccountId = AccountId::new([10u8; 32]);
+pub const PAYMENT_RECIPENT: AccountId = AccountId::new([11u8; 32]);
+pub const PAYMENT_CREATOR_TWO: AccountId = AccountId::new([30u8; 32]);
+pub const PAYMENT_RECIPENT_TWO: AccountId = AccountId::new([31u8; 32]);
+pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
+pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
+pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
+pub const INCENTIVE_PERCENTAGE: u8 = 10;
+pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
+pub const CANCEL_BLOCK_BUFFER: u64 = 600;
+
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
 	pub enum Test where
@@ -53,7 +64,8 @@ frame_support::construct_runtime!(
 		ShareDistributor: pallet_share_distributor::{Pallet, Call, Storage, Event<T>},
 		Assets: pallet_assets::{Pallet, Storage, Config<T>, Event<T>},
 		HousingFund: pallet_housing_fund::{Pallet, Call, Storage,Event<T>},
-		Ident: pallet_identity::{Pallet, Call, Storage, Event<T>}
+		Ident: pallet_identity::{Pallet, Call, Storage, Event<T>},
+		Payment: pallet_payment::{Pallet, Call, Storage, Event<T>}
 
 	}
 );
@@ -89,6 +101,50 @@ impl frame_system::Config for Test {
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
+
+
+pub struct MockDisputeResolver;
+impl pallet_payment::DisputeResolver<AccountId> for MockDisputeResolver {
+	fn get_resolver_account() -> AccountId {
+		RESOLVER_ACCOUNT
+	}
+}
+
+pub struct MockFeeHandler;
+impl pallet_payment::FeeHandler<Test> for MockFeeHandler {
+	fn apply_fees(
+		_from: &AccountId,
+		to: &AccountId,
+		_detail: &pallet_payment::PaymentDetail<Test>,
+		_remark: Option<&[u8]>,
+	) -> (AccountId, Percent) {
+		match to {
+			&PAYMENT_RECIPENT_FEE_CHARGED => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE)),
+			_ => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(0)),
+		}
+	}
+}
+
+parameter_types! {
+	pub const IncentivePercentage: Percent = Percent::from_percent(INCENTIVE_PERCENTAGE);
+	pub const MaxRemarkLength: u32 = 50;
+	pub const CancelBufferBlockLength: u64 = CANCEL_BLOCK_BUFFER;
+	pub const MaxScheduledTaskListLength : u32 = 5;
+}
+
+impl pallet_payment::Config for Test {
+	type Event = Event;
+	type Currency = Balances;
+	type DisputeResolver = MockDisputeResolver;
+	type IncentivePercentage = IncentivePercentage;
+	type FeeHandler = MockFeeHandler;
+	type MaxRemarkLength = MaxRemarkLength;
+	type CancelBufferBlockLength = CancelBufferBlockLength;
+	type MaxScheduledTaskListLength = MaxScheduledTaskListLength;
+	type WeightInfo = ();
+}
+
+
 
 parameter_types! {
 	pub const CollectionDeposit: Balance = 10_000 ; // 1 UNIT deposit to create asset class

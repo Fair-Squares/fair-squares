@@ -47,6 +47,7 @@ pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_roles as Roles;
 pub use pallet_share_distributor as Share;
+pub use pallet_payment as Payment;
 
 mod functions;
 mod types;
@@ -84,6 +85,7 @@ pub mod pallet {
 		+ Nft::Config
 		+ Assetss::Config
 		+ Ident::Config
+		+ Payment::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
