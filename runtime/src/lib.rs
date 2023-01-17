@@ -832,7 +832,6 @@ mod benches {
 		//[pallet_asset_management, AssetManagementModule]
 		// [pallet_finalizer, FinalizerModule]
 		[pallet_tenancy, TenancyModule]
-		[pallet_payment, PaymentModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -1039,7 +1038,6 @@ impl_runtime_apis! {
 			//add_benchmark!(params, batches, pallet_asset_management, AssetManagementModule);
 			// add_benchmark!(params, batches, pallet_finalizer, FinalizerModule);
 			add_benchmark!(params, batches, pallet_tenancy, TenancyModule);
-			add_benchmark!(params, batches, pallet_payment, PaymentModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

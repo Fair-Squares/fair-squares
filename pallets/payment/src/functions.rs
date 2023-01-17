@@ -97,7 +97,7 @@ impl<T: Config> PaymentHandler<T> for Pallet<T> {
 								from,           // fee is paid by payment creator
 								&fee_recipient, // account of fee recipient
 								fee_amount,     // amount of fee
-                                KeepAlive,
+                                AllowDeath,
 							)?;
 						}
 					}
@@ -112,7 +112,7 @@ impl<T: Config> PaymentHandler<T> for Pallet<T> {
 				let amount_to_recipient = recipient_share.mul_floor(payment.amount);
 				let amount_to_sender = payment.amount.saturating_sub(amount_to_recipient);
 				// send share to recipient
-				T::Currency::transfer(to, from, amount_to_sender,KeepAlive)?;
+				T::Currency::transfer(to, from, amount_to_sender,AllowDeath)?;
 
 				Ok(())
 			})?;
