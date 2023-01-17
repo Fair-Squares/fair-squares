@@ -403,20 +403,21 @@ fn share_distributor0() {
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
-		assert_eq!(true,GuarantyPayment::<Test>::contains_key(GERARD,virtual0.virtual_account));
+		assert_eq!(true,GuarantyPayment::<Test>::contains_key(GERARD,virtual0.virtual_account.clone()));
+		assert_ok!(AssetManagement::tenant_link_asset(GERARD,coll_id0,item_id0,virtual0.virtual_account.clone()));
 
 		
 
 		// Check the tenants of the house
-		//let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
-		//assert_eq!(house0.tenants, vec![GERARD]);
+		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+		assert_eq!(house0.tenants, vec![GERARD]);
 
 		// Check the asset_account of the tenant
-		//let tenant0 = RoleModule::tenants(GERARD).unwrap();
-		//assert_eq!(
-		//	tenant0.asset_account.unwrap(),
-		//	ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
-		//);
+		let tenant0 = RoleModule::tenants(GERARD).unwrap();
+		assert_eq!(
+			tenant0.asset_account.unwrap(),
+			ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
+		);
 
 		/***	END: Successful scenario of proposing a tenant    ** */
 
@@ -430,7 +431,7 @@ fn share_distributor0() {
 				VoteProposals::Election,
 				Ident::Judgement::Reasonable,
 			),
-			Error::<Test>::ExistingPaymentRequest
+			Error::<Test>::AlreadyLinkedWithAsset
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
 
@@ -484,17 +485,20 @@ fn share_distributor0() {
 
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
+		
+		//Connect tenant to asset
+		assert_ok!(AssetManagement::tenant_link_asset(HUNTER,coll_id0,item_id0,virtual0.virtual_account));
 
 		// Check the tenants of the house
-		//let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
-		//assert_eq!(house0.tenants, vec![GERARD, HUNTER]);
+		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+		assert_eq!(house0.tenants, vec![GERARD, HUNTER]);
 
 		// Check the asset_account of the tenant
-		//let tenant1 = RoleModule::tenants(HUNTER).unwrap();
-		//assert_eq!(
-		//	tenant1.asset_account.unwrap(),
-		//	ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
-		//);
+		let tenant1 = RoleModule::tenants(HUNTER).unwrap();
+		assert_eq!(
+			tenant1.asset_account.unwrap(),
+			ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
+		);
 
 		println!("\n\nlaunch_tenant_session - : MULTIPLE TENANTS FOR AN ASSET");
 
@@ -535,15 +539,15 @@ fn share_distributor0() {
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
 		// Check the tenants of the house
-		//let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
-		//assert_eq!(house0.tenants, vec![GERARD]);
+		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+		assert_eq!(house0.tenants, vec![GERARD]);
 
 		// Check the asset_account of the tenant
-		//assert!(RoleModule::tenants(HUNTER).unwrap().asset_account.is_none());
-		//assert_eq!(
-	//		RoleModule::tenants(GERARD).unwrap().asset_account.unwrap(),
-	//		ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
-	//	);
+		assert!(RoleModule::tenants(HUNTER).unwrap().asset_account.is_none());
+		assert_eq!(
+			RoleModule::tenants(GERARD).unwrap().asset_account.unwrap(),
+			ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap().virtual_account
+		);
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////								TEST demote_representative						//////

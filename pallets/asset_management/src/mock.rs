@@ -31,10 +31,7 @@ pub type CollectionId = u32;
 pub type ItemId = u32;
 pub type NftColl = Nft::PossibleCollections;
 
-pub const PAYMENT_CREATOR: AccountId = AccountId::new([10u8; 32]);
-pub const PAYMENT_RECIPENT: AccountId = AccountId::new([11u8; 32]);
-pub const PAYMENT_CREATOR_TWO: AccountId = AccountId::new([30u8; 32]);
-pub const PAYMENT_RECIPENT_TWO: AccountId = AccountId::new([31u8; 32]);
+
 pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
 pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
 pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
