@@ -26,4 +26,39 @@ impl<T: Config> Pallet<T> {
 
 		Ok(())
 	}
+
+	pub fn payment_helper(
+		from: OriginFor<T>, 
+		virtual_account: T::AccountId,
+		collection: T::NftCollectionId,
+		item: T::NftItemId,
+	) -> DispatchResult{
+		let tenant = ensure_signed(from.clone())?;
+		
+		//Accept and pay the guaranty
+		Payment::Pallet::<T>::accept_and_pay(from.clone(),virtual_account.clone()).ok();
+		let origin2 = frame_system::RawOrigin::Signed(virtual_account.clone());
+		
+		//Change payment state in Asset_Management storage
+		Assets::GuarantyPayment::<T>::mutate(tenant.clone(),virtual_account, |val|{
+			let mut infos = val.clone().unwrap();
+			infos.state = Payment::PaymentState::PaymentCompleted;
+			*val = Some(infos);
+		});
+
+		//Connect tenant with asset
+		Assets::Pallet::<T>::link_tenant_to_asset(origin2.into(),tenant,collection,item).ok();
+		
+		Ok(())
+	} 
+
+	pub fn balance_to_u128_option(input: BalanceOf<T>) -> Option<u128> {
+		input.try_into().ok()
+	}
+	pub fn u128_to_balance_option(input: u128) -> Option<BalanceOf<T>> {
+		input.try_into().ok()
+	}
+
+
+
 }

@@ -694,6 +694,7 @@ impl pallet_finalizer::Config for Runtime {
 
 impl pallet_tenancy::Config for Runtime {
 	type Event = Event;
+	type Currency = Balances;
 	type WeightInfo = pallet_tenancy::weights::SubstrateWeight<Runtime>;
 }
 

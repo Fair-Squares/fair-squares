@@ -23,6 +23,8 @@ pub use scale_info::{
 pub use serde::{Deserialize, Serialize};
 pub use Ident::IdentityInfo;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
+pub type BalanceOf<T> =
+	<<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]

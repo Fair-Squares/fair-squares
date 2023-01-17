@@ -16,6 +16,7 @@ pub use pallet_identity as Ident;
 pub use pallet_nft as Nft;
 pub use pallet_roles as Roles;
 pub use pallet_share_distributor as Share;
+pub use pallet_payment as Payment;
 
 mod functions;
 mod types;
@@ -31,8 +32,7 @@ pub use weights::WeightInfo;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
+
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -42,11 +42,12 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config:
-		frame_system::Config + Assets::Config + Ident::Config + Roles::Config + Nft::Config
+		frame_system::Config + Assets::Config + Ident::Config + Roles::Config + Nft::Config + Payment::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
+		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 	}
 
 	#[pallet::storage]
@@ -84,6 +85,8 @@ pub mod pallet {
 		NotARepresentative,
 		/// Asset is not linked to the representative
 		AssetNotLinked,
+		/// The payment request is non-existant
+		NotAValidPayment
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -130,5 +133,39 @@ pub mod pallet {
 		Ok(())
 
 		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+	pub fn pay_guaranty_deposit(
+		origin: OriginFor<T>,
+		asset_type: Nft::PossibleCollections,
+		asset_id: T::NftItemId,
+	) -> DispatchResult {
+		let caller = ensure_signed(origin.clone())?;
+		// Ensure that the caller has the tenancy role
+		ensure!(Roles::TenantLog::<T>::contains_key(&caller), Error::<T>::NotATenant);
+
+		// Ensure that the asset is valid
+		let collection_id: T::NftCollectionId = asset_type.value().into();
+		let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
+		ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
+		let virtual_account = ownership.unwrap().virtual_account;
+
+		//Ensure that payment request exists
+		ensure!(!Assets::GuarantyPayment::<T>::contains_key(&caller,&virtual_account),Error::<T>::NotAValidPayment);
+		let payment_infos = Assets::Pallet::<T>::guaranty(&caller,&virtual_account).unwrap();
+		let status = payment_infos.state;
+		ensure!(status == Payment::PaymentState::PaymentRequested,Error::<T>::NotAValidPayment);
+
+		Self::payment_helper(origin,virtual_account,collection_id,asset_id).ok();
+
+		
+		
+
+		Ok(())
 	}
+
+
+	}
+
+	
 }

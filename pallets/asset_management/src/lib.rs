@@ -123,6 +123,17 @@ pub mod pallet {
 		StorageMap<_, Blake2_128Concat, Dem::ReferendumIndex, ProposalRecord<T>, OptionQuery>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn guaranty)]
+	pub type GuarantyPayment<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId, // payment creator
+		Blake2_128Concat,
+		T::AccountId, // payment recipient
+		Payment::PaymentDetail<T>,
+		>;
+	
+	#[pallet::storage]
 	#[pallet::getter(fn indexes)]
 	pub type ProposalsIndexes<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, Dem::ReferendumIndex, OptionQuery>;
@@ -213,6 +224,8 @@ pub mod pallet {
 		ReferendumCompleted,
 		/// Not enough funds in the account
 		NotEnoughFunds,
+		/// Payment request already sent
+		ExistingPaymentRequest
 	}
 
 	#[pallet::hooks]
@@ -490,6 +503,8 @@ pub mod pallet {
 				VoteProposals::Election => {
 					// Ensure that the tenant is not linked to an asset
 					ensure!(tenant0.asset_account.is_none(), Error::<T>::AlreadyLinkedWithAsset);
+					//Ensure there is no existing payment request for this asset
+					ensure!(Self::guaranty(&tenant0.account_id,&asset_account).is_none(), Error::<T>::ExistingPaymentRequest);
 					//provide judgement
 					let index = rep.index;
 					let target = T::Lookup::unlookup(tenant.clone());
@@ -518,8 +533,8 @@ pub mod pallet {
 			.ok();
 
 			let call = match proposal {
-				VoteProposals::Election => Call::<T>::link_tenant_to_asset {
-					tenant: tenant.clone(),
+				VoteProposals::Election => Call::<T>::request_guaranty_payment {
+					from: tenant.clone(),
 					collection: collection_id,
 					item: asset_id,
 					judgement,
@@ -572,7 +587,6 @@ pub mod pallet {
 			tenant: T::AccountId,
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
-			_judgement: Ident::Judgement<IdentBalanceOf<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin)?;
 
@@ -591,6 +605,28 @@ pub mod pallet {
 			});
 
 			Ok(())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn request_guaranty_payment(
+			origin: OriginFor<T>,
+			from: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			_judgement: Ident::Judgement<IdentBalanceOf<T>>,
+		) -> DispatchResult {
+			let creator = ensure_signed(origin.clone())?;
+
+			// Ensure the caller is the virtual account of the asset
+			let asset_account =
+				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
+			ensure!(creator == asset_account, Error::<T>::NotAnAssetAccount);
+			
+			//Launch payment request
+			Self::guaranty_payment(origin,from,collection, item).ok();
+
+			Ok(())
+
 		}
 
 		/// Unlink a tenant with an asset

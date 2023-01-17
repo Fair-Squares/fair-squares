@@ -71,6 +71,40 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn guaranty_payment(
+		origin: OriginFor<T>,
+		from: T::AccountId,
+		collection: T::NftCollectionId,
+		item: T::NftItemId,
+	) -> DispatchResult {
+
+		let creator = ensure_signed(origin.clone())?;
+
+		//Calculate guaranty deposit using Return On Rent and guaranty coefficients found in runtime 
+		let coeff = T::Guaranty::get() as u128;
+		let ror = T::RoR::get() as u64;
+		let price0 = Onboarding::Pallet::<T>::houses(collection,item).unwrap().price.unwrap();
+		let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(price0).unwrap();
+		let rent:u128 = ((ror*price1)/1200).into();
+		let amount:u128 = coeff * rent;
+		//convert amount to payment_pallet compatible balance
+		let amount1 = Payment::Pallet::<T>::u128_to_balance_option(amount).unwrap();
+
+		//create payment_request
+		Payment::Pallet::<T>::request_payment(origin,from.clone(),amount1).ok();
+
+		//Store payment details
+		let details = Payment::Pallet::<T>::get_payment_details(&from,&creator).unwrap();
+		GuarantyPayment::<T>::insert(from.clone(),creator.clone(),details);
+
+		
+		
+		
+		
+
+		Ok(())
+	}
+
 	pub fn tenant_link_asset(
 		tenant: T::AccountId,
 		collection: T::NftCollectionId,

@@ -23,6 +23,7 @@ pub use sp_runtime::{
 	Perbill,
 };
 pub use sp_std::boxed::Box;
+pub use Payment::PaymentHandler;
 
 pub type BalanceOf<T> =
 	<<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;

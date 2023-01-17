@@ -84,6 +84,8 @@ pub enum PaymentState<T: pallet::Config> {
 	RefundRequested { cancel_block: T::BlockNumber },
 	/// The recipient of this transaction has created a request
 	PaymentRequested,
+	/// The payment has been completed
+	PaymentCompleted,
 }
 
 /// trait that defines how to create/release payments for users
