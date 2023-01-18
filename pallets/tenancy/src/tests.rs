@@ -1,20 +1,32 @@
-use crate::{mock::*, Error};
-use frame_support::{assert_noop, assert_ok};
+pub use super::*;
+pub use frame_support::{assert_err, assert_ok};
+use frame_system::pallet_prelude::OriginFor;
+use mock::*;
 
-#[test]
-fn it_works_for_default_value() {
-	new_test_ext().execute_with(|| {
-		// Dispatch a signed extrinsic.
-		assert_ok!(TenancyModule::do_something(Origin::signed(1), 42));
-		// Read pallet storage and assert an expected result.
-		assert_eq!(TenancyModule::something(), Some(42));
-	});
+pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
+
+pub fn prep_roles() {
+	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
+	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
+	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
+	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok(); //FERDIE approval will be tested
+	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::TENANT).ok();
+	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::TENANT).ok();
 }
 
-#[test]
-fn correct_error_for_none_value() {
-	new_test_ext().execute_with(|| {
-		// Ensure the expected error is thrown when no value is present.
-		assert_noop!(TenancyModule::cause_error(Origin::signed(1)), Error::<Test>::NoneValue);
-	});
+fn next_block() {
+	System::set_block_number(System::block_number() + 1);
+	Scheduler::on_initialize(System::block_number());
+	Democracy::on_initialize(System::block_number());
+	AssetManagement::begin_block(System::block_number());
 }
+
+fn fast_forward_to(n: u64) {
+	while System::block_number() < n {
+		next_block();
+	}
+}
+

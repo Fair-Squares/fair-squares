@@ -7,8 +7,10 @@ use frame_support::{
 	PalletId,
 };
 
+use frame_system as system;
 use crate::Nft::NftPermissions;
 use frame_system::{EnsureRoot, EnsureSigned};
+use pallet_collective::{Instance1, PrimeDefaultVote};
 use pallet_roles::GenesisBuild;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
@@ -17,6 +19,8 @@ use sp_runtime::{
 	Perbill,
 };
 
+
+type CouncilCollective = pallet_collective::Instance1;
 type AccountId = AccountId32;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -29,16 +33,6 @@ pub type CollectionId = u32;
 pub type ItemId = u32;
 pub type NftColl = Nft::PossibleCollections;
 
-pub const PAYMENT_CREATOR: AccountId = AccountId::new([10u8; 32]);
-pub const PAYMENT_RECIPENT: AccountId = AccountId::new([11u8; 32]);
-pub const PAYMENT_CREATOR_TWO: AccountId = AccountId::new([30u8; 32]);
-pub const PAYMENT_RECIPENT_TWO: AccountId = AccountId::new([31u8; 32]);
-pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
-pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
-pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
-pub const INCENTIVE_PERCENTAGE: u8 = 10;
-pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
-pub const CANCEL_BLOCK_BUFFER: u64 = 600;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -53,12 +47,27 @@ frame_support::construct_runtime!(
 		Ident: pallet_identity::{Pallet, Call, Storage, Event<T>},
 		ShareDistributor: pallet_share_distributor::{Pallet, Call, Storage, Event<T>},
 		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
+		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>},
 		NftModule: pallet_nft::{Pallet, Call, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
-		Payment: pallet_payment::{Pallet, Call, Storage, Event<T>}
+		Payment: pallet_payment::{Pallet, Call, Storage, Event<T>},
+		OnboardingModule: pallet_onboarding::{Pallet, Call, Storage, Event<T>},
+		VotingModule: pallet_voting::{Pallet, Call, Storage, Event<T>},
+		Assets: pallet_assets::{Pallet, Storage, Config<T>, Event<T>},
+		HousingFund: pallet_housing_fund::{Pallet, Call, Storage,Event<T>},
+		Collective: pallet_collective::<Instance1>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
+		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
+		
 	}
 );
+
+parameter_types! {
+	pub BlockWeights: frame_system::limits::BlockWeights =
+		frame_system::limits::BlockWeights::simple_max(Weight::from_ref_time(1024_u64));
+}
+
 
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -68,17 +77,17 @@ impl system::Config for Test {
 	type Origin = Origin;
 	type Call = Call;
 	type Index = u64;
-	type BlockNumber = u64;
+	type BlockNumber = BlockNumber;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
 	type Event = Event;
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = ();
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -167,6 +176,50 @@ impl pallet_uniques::Config for Test {
 }
 
 parameter_types! {
+	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) * BlockWeights::get().max_block;
+}
+impl pallet_scheduler::Config for Test {
+	type Event = Event;
+	type Origin = Origin;
+	type PalletsOrigin = OriginCaller;
+	type Call = Call;
+	type MaximumWeight = MaximumSchedulerWeight;
+	type ScheduleOrigin = EnsureRoot<AccountId>;
+	type MaxScheduledPerBlock = ();
+	type WeightInfo = ();
+	type OriginPrivilegeCmp = EqualPrivilegeOnly;
+	type PreimageProvider = ();
+	type NoPreimagePostponement = ();
+}
+
+parameter_types! {
+	pub const MaxProposal:MaxProposals = 7;
+}
+impl pallet_collective::Config<Instance1> for Test {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = ConstU64<3>;
+	type MaxProposals = MaxProposal;
+	type MaxMembers = MaxMembers;
+	type DefaultVote = PrimeDefaultVote;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const LaunchPeriod: BlockNumber = 5; //ok
+	pub const VotingPeriod: BlockNumber = 5; //ok
+	pub const FastTrackVotingPeriod: BlockNumber = 2; //ok
+	pub const InstantAllowed: bool = true; //ok
+	pub const MinimumDeposit: Balance = 100; //ok
+	pub const EnactmentPeriod: BlockNumber = 5; //ok
+	pub const CooloffPeriod: BlockNumber = 5; //ok
+	pub const PreimageByteDeposit: Balance = 1; //ok
+	pub const MaxVotes: u32 = 100;
+}
+
+
+parameter_types! {
 	pub const BasicDeposit: Balance = 10 ;       // 258 bytes on-chain
 	pub const FieldDeposit: Balance = 250 ;        // 66 bytes on-chain
 	pub const SubAccountDeposit: Balance = 2 ;   // 53 bytes on-chain
@@ -188,6 +241,38 @@ impl pallet_identity::Config for Test {
 	type Slashed = ();
 	type SubAccountDeposit = SubAccountDeposit;
 	type WeightInfo = ();
+}
+
+
+impl pallet_democracy::Config for Test {
+	type Proposal = Call;
+	type Event = Event;
+	type Currency = Balances;
+	type EnactmentPeriod = EnactmentPeriod; //ok
+	type LaunchPeriod = LaunchPeriod; //ok
+	type VotingPeriod = VotingPeriod; //ok
+	type VoteLockingPeriod = EnactmentPeriod; //ok
+	type MinimumDeposit = MinimumDeposit; //ok
+	type ExternalOrigin = EnsureRoot<Self::AccountId>;
+	type ExternalMajorityOrigin = EnsureRoot<Self::AccountId>;
+	type ExternalDefaultOrigin = EnsureRoot<Self::AccountId>;
+	type FastTrackOrigin = EnsureRoot<Self::AccountId>;
+	type InstantOrigin = EnsureRoot<Self::AccountId>;
+	type InstantAllowed = InstantAllowed; //ok
+	type FastTrackVotingPeriod = FastTrackVotingPeriod; //ok
+	type CancellationOrigin = EnsureRoot<Self::AccountId>;
+	type BlacklistOrigin = EnsureRoot<Self::AccountId>;
+	type CancelProposalOrigin = EnsureRoot<Self::AccountId>;
+	type VetoOrigin = EnsureSigned<Self::AccountId>;
+	type CooloffPeriod = CooloffPeriod; //ok
+	type PreimageByteDeposit = PreimageByteDeposit; //ok
+	type OperationalPreimageOrigin = EnsureSigned<Self::AccountId>;
+	type Slash = ();
+	type Scheduler = Scheduler;
+	type PalletsOrigin = OriginCaller;
+	type MaxVotes = MaxVotes; //ok
+	type WeightInfo = ();
+	type MaxProposals = MaxProposal;
 }
 
 //----implememting pallet_balances-----
@@ -216,6 +301,48 @@ impl pallet_nft::Config for Test {
 	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
 }
 
+
+parameter_types! {
+	pub const Delay: BlockNumber = 2;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber = 1;//3 * MINUTES;
+	pub const InvestorVoteAmount: u128 = 1;
+	pub const CheckPeriod: BlockNumber = 1;
+}
+
+impl pallet_voting::Config for Test {
+	type Event = Event;
+	type Call = Call;
+	type WeightInfo = ();
+	type Delay = Delay;
+	type InvestorVoteAmount = InvestorVoteAmount;
+	type LocalCurrency = Balances;
+	type CheckDelay = CheckDelay;
+	type HouseCouncilOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	type MinimumDepositVote = MinimumDeposit;
+	type CheckPeriod = CheckPeriod;
+}
+
+parameter_types! {
+	pub const ProposalFee:u64 = 5;
+	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
+}
+
+impl pallet_onboarding::Config for Test {
+	type Event = Event;
+	type Currency = Balances;
+	type Prop = Call;
+	type ProposalFee = ProposalFee;
+	type WeightInfo = ();
+	type FeesAccount = FeesAccount;
+}
+
+//---implementing pallet sudo---------
+impl pallet_sudo::Config for Test {
+	type Event = Event;
+	type Call = Call;
+}
+
 parameter_types! {
 	pub const MaxMembers:u32 =7;
 }
@@ -224,6 +351,33 @@ impl pallet_roles::Config for Test {
 	type Currency = Balances;
 	type WeightInfo = ();
 	type MaxMembers = MaxMembers;
+}
+
+
+parameter_types! {
+	pub const AssetDeposit: u64 = 100 ;
+	pub const ApprovalDeposit: u64 = 1 ;
+	pub const MetadataDepositPerByte: u64 = 1 ;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: u64 = 1000 ;
+	pub const AssetAccountDeposit: u64 = 1;
+}
+
+impl pallet_assets::Config for Test {
+	type Event = Event;
+	type Balance = u32;
+	type AssetId = u32;
+	type Currency = Balances;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = AssetDeposit;
+	type AssetAccountDeposit = AssetAccountDeposit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = StringLimit;
+	type Freezer = ();
+	type Extra = ();
+	type WeightInfo = ();
 }
 
 parameter_types! {
@@ -235,6 +389,27 @@ impl pallet_share_distributor::Config for Test {
 	type AssetId = u32;
 	type Fees = AssetsFees;
 }
+
+parameter_types! {
+	pub const MinContribution: u64 = 5;
+	pub const FundThreshold: u64 = 100;
+	pub const MaxFundContribution: u64 = 20;
+	pub const MaxInvestorPerHouse: u32 = 10;
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
+}
+
+/// Configure the pallet-housing_fund in pallets/housing_fund.
+impl pallet_housing_fund::Config for Test {
+	type Event = Event;
+	type LocalCurrency = Balances;
+	type MinContribution = MinContribution;
+	type FundThreshold = FundThreshold;
+	type MaxFundContribution = MaxFundContribution;
+	type WeightInfo = ();
+	type PalletId = HousingFundPalletId;
+	type MaxInvestorPerHouse = MaxInvestorPerHouse;
+}
+
 
 parameter_types! {
 	pub const JudgementFee: u64= 2;
@@ -257,7 +432,58 @@ impl pallet_asset_management::Config for Test {
 	type WeightInfo = ();
 }
 
+pub const PAYMENT_CREATOR: AccountId = AccountId::new([10u8; 32]);
+pub const PAYMENT_RECIPENT: AccountId = AccountId::new([11u8; 32]);
+pub const PAYMENT_CREATOR_TWO: AccountId = AccountId::new([30u8; 32]);
+pub const PAYMENT_RECIPENT_TWO: AccountId = AccountId::new([31u8; 32]);
+pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
+pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
+pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
+pub const INCENTIVE_PERCENTAGE: u8 = 10;
+pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
+pub const CANCEL_BLOCK_BUFFER: u64 = 600;
+pub const ALICE: AccountId = AccountId::new([1u8; 32]);
+pub const BOB: AccountId = AccountId::new([2u8; 32]);
+pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
+pub const DAVE: AccountId = AccountId::new([6u8; 32]);
+pub const EVE: AccountId = AccountId::new([5u8; 32]);
+//pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
+pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
+pub const GERARD: AccountId = AccountId::new([8u8; 32]);
+pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
+
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	system::GenesisConfig::default().build_storage::<Test>().unwrap().into()
+	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	
+		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+		pallet_balances::GenesisConfig::<Test> {
+			balances: vec![
+				(ALICE, 200_000),
+				(BOB, 200_000_000),
+				(CHARLIE, 200_000_000),
+				(DAVE, 150_000),
+				(EVE, 150_000),
+				(GERARD, 150_000),
+				(FERDIE, 150_000),
+			],
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
+			.assimilate_storage(&mut t)
+			.unwrap();
+
+		pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
+			members: vec![ALICE, BOB, CHARLIE, DAVE],
+			phantom: Default::default(),
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext	
 }

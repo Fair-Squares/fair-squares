@@ -5,11 +5,11 @@
 /// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
 
-//#[cfg(test)]
-//mod mock;
+#[cfg(test)]
+mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 pub use pallet_asset_management as Assets;
 pub use pallet_identity as Ident;
