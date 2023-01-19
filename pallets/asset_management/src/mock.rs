@@ -36,7 +36,7 @@ pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
 pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
 pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
 pub const INCENTIVE_PERCENTAGE: u8 = 10;
-pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
+pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 5;
 pub const CANCEL_BLOCK_BUFFER: u64 = 600;
 
 // Configure a mock runtime to test the pallet.

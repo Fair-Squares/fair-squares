@@ -93,7 +93,7 @@ impl<T: Config> Pallet<T> {
 
 		//Calculate guaranty deposit using Return On Rent and guaranty coefficients found in runtime 
 		let amount = Self::calculate_guaranty(collection,item);
-		
+
 		//convert amount to payment_pallet compatible balance
 		let amount1 = Payment::Pallet::<T>::u128_to_balance_option(amount).unwrap();
 
@@ -203,6 +203,10 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn u128_to_balance_option1(input: u128) -> Option<IdentBalanceOf<T>> {
+		input.try_into().ok()
+	}
+
+	pub fn u128_to_balance_option2(input: u128) -> Option<BalanceOf<T>> {
 		input.try_into().ok()
 	}
 
