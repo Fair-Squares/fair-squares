@@ -27,6 +27,31 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn rent_helper(
+		tenant_account: T::AccountId
+	) -> DispatchResult {
+		let tenant = Roles::Pallet::<T>::tenants(tenant_account.clone()).unwrap();
+		let total_rent = tenant.remaining_rent;
+		let rent0:u128 = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap();
+		let rent = Self::u128_to_balance_option(rent0).unwrap();
+		let asset_account = tenant.asset_account.unwrap();
+		<T as Config>::Currency::transfer(
+			&tenant_account,
+			&asset_account,
+			rent,
+			ExistenceRequirement::AllowDeath,
+		)
+		.ok();
+		
+		Roles::TenantLog::<T>::mutate(tenant_account,|val|{
+			let mut val0 = val.clone().unwrap();
+			val0.remaining_rent =  total_rent -tenant.rent;
+			*val = Some(val0);
+		});
+
+		Ok(())
+	}
+
 	pub fn payment_helper(
 		from: OriginFor<T>, 
 		virtual_account: T::AccountId,

@@ -138,6 +138,10 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn balance_to_u128_option(input: BalanceOf<T>) -> Option<u128> {
+		input.try_into().ok()
+	}
+
 	pub fn u128_to_balance_option(input: u128) -> Option<BalanceOf<T>> {
 		input.try_into().ok()
 	}

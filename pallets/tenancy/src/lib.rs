@@ -86,7 +86,9 @@ pub mod pallet {
 		/// Asset is not linked to the representative
 		AssetNotLinked,
 		/// The payment request is non-existant
-		NotAValidPayment
+		NotAValidPayment,
+		/// The yearly rent has already been paid in full
+		NoRentToPay
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -97,18 +99,11 @@ pub mod pallet {
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/main-docs/build/origins/
-			let who = ensure_signed(origin)?;
+		pub fn pay_rent(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResult {
+			let tenant_account = ensure_signed(origin.clone())?;
+			//Check that the Tenant is connected to the asset
+			//Check that the remaining rent-to-pay is greater than 1
 
-			// Update storage.
-			<Something<T>>::put(something);
-
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
-			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
 

@@ -127,7 +127,7 @@ pub struct Tenant<T: Config> {
 	pub age: BlockNumberOf<T>,
 	pub asset_account: Option<T::AccountId>,
 	pub contract_start: BlockNumberOf<T>,
-	pub paid_rent: BalanceOf<T>,
+	pub remaining_rent: BalanceOf<T>,
 }
 impl<T: Config> Tenant<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
@@ -139,7 +139,7 @@ impl<T: Config> Tenant<T> {
 			age: now.clone(),
 			asset_account: None,
 			contract_start: now,
-			paid_rent: Zero::zero(),
+			remaining_rent: Zero::zero(),
 		};
 		TenantLog::<T>::insert(caller, &tenant);
 		Ok(())

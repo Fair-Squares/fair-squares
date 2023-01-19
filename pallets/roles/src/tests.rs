@@ -38,7 +38,7 @@ fn test_struct_methods() {
 				age: System::block_number(),
 				asset_account: None,
 				contract_start: System::block_number(),
-				paid_rent: 0,
+				remaining_rent: 0,
 			})
 		);
 
