@@ -15,6 +15,7 @@ pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok(); //FERDIE approval will be tested
 	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::TENANT).ok();
 	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::TENANT).ok();
+	RoleModule::set_role(Origin::signed(PEGGY), PEGGY, Acc::TENANT).ok();
 }
 
 fn next_block() {
@@ -434,6 +435,21 @@ fn share_distributor0() {
 			Error::<Test>::AlreadyLinkedWithAsset
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
+
+		//Ferdie proposes PEGGY, but Peggy does not have enough funds
+		assert_err!(
+			AssetManagement::launch_tenant_session(
+				origin_ferdie.clone(),
+				NftColl::OFFICESTEST,
+				item_id0,
+				PEGGY,
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
+			),
+			Error::<Test>::NotEnoughTenantFunds
+		);
+		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
+
 
 		// demote a tenant
 		assert_err!(

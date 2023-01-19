@@ -435,6 +435,7 @@ pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
 pub const GERARD: AccountId = AccountId::new([8u8; 32]);
 pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
+pub const PEGGY: AccountId = AccountId::new([10u8; 32]);
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
@@ -456,6 +457,7 @@ impl ExtBuilder {
 				(EVE, 150_000),
 				(GERARD, 150_000),
 				(FERDIE, 150_000),
+				(HUNTER, 200_000_000)
 			],
 		}
 		.assimilate_storage(&mut t)

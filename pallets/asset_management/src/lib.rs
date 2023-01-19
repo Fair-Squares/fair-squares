@@ -225,7 +225,9 @@ pub mod pallet {
 		/// Not enough funds in the account
 		NotEnoughFunds,
 		/// Payment request already sent
-		ExistingPaymentRequest
+		ExistingPaymentRequest,
+		/// Not enough funds in the tenant account
+		NotEnoughTenantFunds,
 	}
 
 	#[pallet::hooks]
@@ -491,6 +493,14 @@ pub mod pallet {
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
+			//Compare guaranty payment amount+fees with tenant free_balance
+			let guaranty = Self::calculate_guaranty(collection_id,asset_id);
+			let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
+			let total_amount = guaranty + fee0+ ((guaranty*10)/100);
+			let tenant_bal0:BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
+			let tenant_bal = Self::balance_to_u128_option1(tenant_bal0).unwrap();
+
+			
 			let asset_account = ownership.unwrap().virtual_account;
 			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);
 
@@ -505,6 +515,8 @@ pub mod pallet {
 					ensure!(tenant0.asset_account.is_none(), Error::<T>::AlreadyLinkedWithAsset);
 					//Ensure there is no existing payment request for this asset
 					ensure!(Self::guaranty(&tenant0.account_id,&asset_account).is_none(), Error::<T>::ExistingPaymentRequest);
+					//ensure that tenant can pay Guaranty deposit
+					ensure!(tenant_bal>total_amount, Error::<T>::NotEnoughTenantFunds);
 					//provide judgement
 					let index = rep.index;
 					let target = T::Lookup::unlookup(tenant.clone());
