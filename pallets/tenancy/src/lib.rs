@@ -23,8 +23,8 @@ mod types;
 pub use functions::*;
 pub use types::*;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
+//#[cfg(feature = "runtime-benchmarks")]
+//mod benchmarking;
 
 pub mod weights;
 pub use weights::WeightInfo;
