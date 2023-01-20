@@ -88,7 +88,9 @@ pub mod pallet {
 		/// The payment request is non-existant
 		NotAValidPayment,
 		/// The yearly rent has already been paid in full
-		NoRentToPay
+		NoRentToPay,
+		/// The tenant is not linked to the asset
+		TenantAssetNotLinked,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -99,10 +101,16 @@ pub mod pallet {
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn pay_rent(origin: OriginFor<T>, amount: BalanceOf<T>) -> DispatchResult {
+		pub fn pay_rent(origin: OriginFor<T>) -> DispatchResult {
 			let tenant_account = ensure_signed(origin.clone())?;
+			let tenant = Roles::Pallet::<T>::tenants(tenant_account.clone()).unwrap();
+
 			//Check that the Tenant is connected to the asset
+			ensure!(!tenant.asset_account.is_none(),Error::<T>::TenantAssetNotLinked);
 			//Check that the remaining rent-to-pay is greater than 1
+			ensure!(tenant.remaining_rent>tenant.rent,Error::<T>::NoRentToPay);
+			//Pay the rent
+			Self::rent_helper(tenant_account).ok();
 
 			Ok(())
 		}
