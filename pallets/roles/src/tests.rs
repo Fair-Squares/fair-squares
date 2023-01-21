@@ -39,6 +39,7 @@ fn test_struct_methods() {
 				asset_account: None,
 				contract_start: System::block_number(),
 				remaining_rent: 0,
+				remaining_payments: 0,
 			})
 		);
 

@@ -108,7 +108,7 @@ pub mod pallet {
 			//Check that the Tenant is connected to the asset
 			ensure!(!tenant.asset_account.is_none(),Error::<T>::TenantAssetNotLinked);
 			//Check that the remaining rent-to-pay is greater than 1
-			ensure!(tenant.remaining_rent>tenant.rent,Error::<T>::NoRentToPay);
+			ensure!(tenant.remaining_payments > 0,Error::<T>::NoRentToPay);
 			//Pay the rent
 			Self::rent_helper(tenant_account).ok();
 

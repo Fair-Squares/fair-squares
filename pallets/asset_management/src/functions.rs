@@ -135,6 +135,7 @@ impl<T: Config> Pallet<T> {
 			val0.rent = rent.into();
 			val0.asset_account = Some(asset_account);
 			val0.remaining_rent = year_rent;
+			val0.remaining_payments = 12;
 			val0.contract_start = now;
 			*val = Some(val0);
 		});
@@ -216,6 +217,10 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 
+	pub fn blocknumber_to_u128(input: BlockNumberFor<T>) -> Option<u128> {
+		input.try_into().ok()
+	}
+
 	pub fn get_formatted_call(call: <T as Config>::Call) -> <T as Config>::Call {
 		call
 	}
@@ -247,5 +252,52 @@ impl<T: Config> Pallet<T> {
 			}
 		}
 		max_block_weight
+	}
+
+	pub fn finish_block(now: T::BlockNumber) -> Weight{
+
+		if (now%<T as Config>::CheckPeriod::get()).is_zero(){
+			//get list of tenants
+			let tenants = Roles::Pallet::<T>::tenant_list();
+			for i in tenants {
+				let tenant = Roles::Pallet::<T>::tenants(i).unwrap();				
+				if !tenant.asset_account.is_none(){
+					let remaining_p = tenant.remaining_payments;
+					let contract_begin = tenant.contract_start;
+					let rent = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap()*12;
+					//rent per block
+					let total_blocks = <T as Config>::Contr::get();
+					let mut cpb = Self::blocknumber_to_u128(total_blocks.clone()).unwrap();
+					cpb = rent.clone().saturating_div(cpb);
+					//number of blocks from the start of the contract
+					let blocks = Self::blocknumber_to_u128(now-contract_begin).unwrap();
+					let amount_due = blocks.saturating_mul(cpb);
+					
+
+					//check how many rents were payed
+					let payed = (12-remaining_p as u128)* rent.clone();
+
+					if payed < amount_due && (now%<T as Config>::RentCheck::get()).is_zero(){
+						//check if 4 month has passed. 4 rents should have been payed.
+					//if not, release guaranty deposit to owners and issue a warning 
+					let tenant_debt0 = amount_due-payed;
+					let debt = Self::u128_to_balance_option2(tenant_debt0).unwrap();
+					//Emmit event to inform the tenant of the amount of his debt
+					Self::deposit_event(Event::TenantDebt{tenant:tenant.account_id,debt:debt,when:now});
+
+					}
+					  
+					
+					
+
+
+
+
+				}
+			}
+			
+
+		}
+		Weight::zero()
 	}
 }

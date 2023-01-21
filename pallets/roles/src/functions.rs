@@ -146,6 +146,10 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 
+	pub fn tenant_list() -> Box<dyn Iterator<Item = T::AccountId>> {
+		Box::new(TenantLog::<T>::iter_keys())
+	}
+
 	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
 		let now = <frame_system::Pallet<T>>::block_number();
 		for account in representatives.into_iter() {

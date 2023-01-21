@@ -415,6 +415,8 @@ parameter_types! {
 	pub const JudgementFee: u64= 2;
 	pub const GuarantyCoefficient: u32 = 3;
 	pub const RoR:u32 = 3;
+	pub const RentCheckPeriod: BlockNumber = 1;
+	pub const ContractLength: BlockNumber = 365;
 }
 
 impl pallet_asset_management::Config for Test {
@@ -424,10 +426,12 @@ impl pallet_asset_management::Config for Test {
 	type CheckDelay = CheckDelay;
 	type InvestorVoteAmount = InvestorVoteAmount;
 	type CheckPeriod = CheckPeriod;
+	type RentCheck = RentCheckPeriod;
 	type MinimumDepositVote = MinimumDeposit;
 	type RepFees = JudgementFee;
 	type Currency = Balances;
 	type Guaranty = GuarantyCoefficient;
+	type Contr = ContractLength;
 	type RoR = RoR;
 	type WeightInfo = ();
 }

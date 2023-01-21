@@ -671,6 +671,8 @@ parameter_types! {
 	pub const JudgementFee: Balance= 50*DOLLARS;
 	pub const GuarantyCoefficient: u32 = 3;
 	pub const RoR:u32 = 3;
+	pub const RentCheckPeriod: BlockNumber = 15*DAYS;
+	pub const ContractLength: BlockNumber = 365*DAYS;
 }
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
@@ -679,10 +681,12 @@ impl pallet_asset_management::Config for Runtime {
 	type CheckDelay = CheckDelay;
 	type InvestorVoteAmount = InvestorVoteAmount;
 	type CheckPeriod = CheckPeriod;
+	type RentCheck = RentCheckPeriod;
 	type Currency = Balances;
 	type MinimumDepositVote = MinimumDeposit;
 	type RepFees = JudgementFee;
 	type Guaranty = GuarantyCoefficient;
+	type Contr = ContractLength;
 	type RoR = RoR;
 	type WeightInfo = ();
 }
@@ -691,6 +695,7 @@ impl pallet_finalizer::Config for Runtime {
 	type Event = Event;
 	type WeightInfo = pallet_finalizer::weights::SubstrateWeight<Runtime>;
 }
+
 
 impl pallet_tenancy::Config for Runtime {
 	type Event = Event;
@@ -832,7 +837,7 @@ mod benches {
 		[pallet_utility, Utility]
 		//[pallet_asset_management, AssetManagementModule]
 		// [pallet_finalizer, FinalizerModule]
-		[pallet_tenancy, TenancyModule]
+		//[pallet_tenancy, TenancyModule]
 		// flag add pallet bench_macro
 	);
 }
@@ -1038,7 +1043,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_share_distributor, ShareDistributor);
 			//add_benchmark!(params, batches, pallet_asset_management, AssetManagementModule);
 			// add_benchmark!(params, batches, pallet_finalizer, FinalizerModule);
-			add_benchmark!(params, batches, pallet_tenancy, TenancyModule);
+			//add_benchmark!(params, batches, pallet_tenancy, TenancyModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

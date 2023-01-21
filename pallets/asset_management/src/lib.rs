@@ -112,7 +112,15 @@ pub mod pallet {
 		type RepFees: Get<BalanceOf<Self>>;
 
 		#[pallet::constant]
+		type Contr: Get<Self::BlockNumber>;
+
+		#[pallet::constant]
 		type CheckPeriod: Get<Self::BlockNumber>;
+
+		#[pallet::constant]
+		type RentCheck: Get<Self::BlockNumber>;
+
+	
 	}
 
 	//Store the referendum_index and the struct containing the
@@ -187,6 +195,12 @@ pub mod pallet {
 			item: T::NftItemId,
 			asset_account: T::AccountId,
 		},
+		///The amount of the tenant debt
+		TenantDebt{
+			tenant: T::AccountId,
+			debt: BalanceOf<T>,
+			when: BlockNumberOf<T>,
+		}
 	}
 
 	// Errors inform users that something went wrong.
@@ -234,6 +248,10 @@ pub mod pallet {
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(n: T::BlockNumber) -> Weight {
 			Self::begin_block(n)
+		}
+
+		fn on_idle(n: T::BlockNumber,_max_weight: Weight) -> Weight{
+			Self::finish_block(n)
 		}
 	}
 

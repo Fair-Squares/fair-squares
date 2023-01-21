@@ -32,6 +32,7 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		let tenant = Roles::Pallet::<T>::tenants(tenant_account.clone()).unwrap();
 		let total_rent = tenant.remaining_rent;
+		let remaining_p = tenant.remaining_payments;
 		let rent0:u128 = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap();
 		let rent = Self::u128_to_balance_option(rent0).unwrap();
 		let asset_account = tenant.asset_account.unwrap();
@@ -45,7 +46,8 @@ impl<T: Config> Pallet<T> {
 		
 		Roles::TenantLog::<T>::mutate(tenant_account,|val|{
 			let mut val0 = val.clone().unwrap();
-			val0.remaining_rent =  total_rent -tenant.rent;
+			val0.remaining_rent =  total_rent.saturating_sub(tenant.rent);
+			val0.remaining_payments = remaining_p-1;
 			*val = Some(val0);
 		});
 
