@@ -68,6 +68,30 @@ pub mod pallet {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
 		SomethingStored(u32, T::AccountId),
+
+		///Guaranty deposit successfully payed
+		GuarantyDepositPayment{
+			tenant: T::AccountId,
+			when: BlockNumberOf<T>,
+			asset_account: T::AccountId,
+			amount: Payment::BalanceOf<T>,
+		},
+		///Asset Request successfully sent
+		AssetRequested{
+			tenant: T::AccountId,
+			when: BlockNumberOf<T>,
+			asset_account: T::AccountId,
+		},
+		///Rent payment successfully sent
+		RentPayment{
+			tenant: T::AccountId,
+			when: BlockNumberOf<T>,
+			asset_account: T::AccountId,
+			amount: Roles::BalanceOf<T>,
+			remaining: Roles::BalanceOf<T>,
+		},
+		
+		
 	}
 
 	// Errors inform users that something went wrong.
@@ -106,11 +130,21 @@ pub mod pallet {
 			let tenant = Roles::Pallet::<T>::tenants(tenant_account.clone()).unwrap();
 
 			//Check that the Tenant is connected to the asset
-			ensure!(!tenant.asset_account.is_none(),Error::<T>::TenantAssetNotLinked);
+			ensure!(!tenant.asset_account.clone().is_none(),Error::<T>::TenantAssetNotLinked);
 			//Check that the remaining rent-to-pay is greater than 1
-			ensure!(tenant.remaining_payments > 0,Error::<T>::NoRentToPay);
+			ensure!(tenant.remaining_payments.clone() > 0,Error::<T>::NoRentToPay);
 			//Pay the rent
-			Self::rent_helper(tenant_account).ok();
+			Self::rent_helper(tenant_account.clone()).ok();
+
+			let now = <frame_system::Pallet<T>>::block_number();
+
+			Self::deposit_event(Event::RentPayment{
+				tenant: tenant_account,
+				when: now,
+				asset_account: tenant.asset_account.unwrap(),
+				amount: tenant.rent,
+				remaining: tenant.remaining_rent,
+			});
 
 			Ok(())
 		}
@@ -125,14 +159,24 @@ pub mod pallet {
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
 		// Ensure that the caller has the tenancy role
-		ensure!(Roles::TenantLog::<T>::contains_key(caller), Error::<T>::NotATenant);
+		ensure!(Roles::TenantLog::<T>::contains_key(caller.clone()), Error::<T>::NotATenant);
 
 		// Ensure that the asset is valid
 		let collection_id: T::NftCollectionId = asset_type.value().into();
 		let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 		ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 		let virtual_account = ownership.unwrap().virtual_account;
-		Self::request_helper(origin.clone(),virtual_account,info).ok();
+		Self::request_helper(origin.clone(),virtual_account.clone(),info).ok();
+		let now = <frame_system::Pallet<T>>::block_number();
+
+		Self::deposit_event(Event::AssetRequested{
+			tenant: caller,
+			when: now,
+			asset_account: virtual_account,
+		});
+		
+
+
 		Ok(())
 
 		}
@@ -159,9 +203,15 @@ pub mod pallet {
 		let status = payment_infos.state;
 		ensure!(status == Payment::PaymentState::PaymentRequested,Error::<T>::NotAValidPayment);
 
-		Self::payment_helper(origin,virtual_account,collection_id,asset_id).ok();
+		Self::payment_helper(origin,virtual_account.clone(),collection_id,asset_id).ok();
+		let now = <frame_system::Pallet<T>>::block_number();
 
-		
+		Self::deposit_event(Event::GuarantyDepositPayment{
+			tenant: caller,
+			when: now,
+			asset_account: virtual_account,
+			amount: payment_infos.amount
+		});
 		
 
 		Ok(())
