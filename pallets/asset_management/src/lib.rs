@@ -135,7 +135,7 @@ pub mod pallet {
 	pub type GuarantyPayment<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
-		T::AccountId, // payment creator
+		T::AccountId, // payment issuer
 		Blake2_128Concat,
 		T::AccountId, // payment recipient
 		Payment::PaymentDetail<T>,
@@ -200,6 +200,14 @@ pub mod pallet {
 			tenant: T::AccountId,
 			debt: BalanceOf<T>,
 			when: BlockNumberOf<T>,
+		},
+
+		/// Guaranty payment request sent
+		GuarantyPaymentRequested{
+			tenant: T::AccountId,
+			asset_account: T::AccountId,
+			amount: Payment::BalanceOf<T>,
+			when: BlockNumberOf<T>,
 		}
 	}
 
@@ -242,6 +250,7 @@ pub mod pallet {
 		ExistingPaymentRequest,
 		/// Not enough funds in the tenant account
 		NotEnoughTenantFunds,
+		
 	}
 
 	#[pallet::hooks]
@@ -654,7 +663,16 @@ pub mod pallet {
 			ensure!(creator == asset_account, Error::<T>::NotAnAssetAccount);
 			
 			//Launch payment request
-			Self::guaranty_payment(origin,from,collection, item).ok();
+			Self::guaranty_payment(origin,from.clone(),collection, item).ok();
+			let payment = Self::guaranty(from.clone(),asset_account).unwrap();
+			let now = <frame_system::Pallet<T>>::block_number();
+
+			Self::deposit_event(Event::GuarantyPaymentRequested{
+				tenant: from,
+				asset_account: creator,
+				amount: payment.amount,
+				when: now,
+			});
 
 			Ok(())
 
