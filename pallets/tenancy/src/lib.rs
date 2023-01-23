@@ -1,8 +1,5 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-/// Edit this file to define custom logic or remove it if it is not needed.
-/// Learn more about FRAME and the core library of Substrate FRAME pallets:
-/// <https://docs.substrate.io/reference/frame-pallets/>
 pub use pallet::*;
 
 #[cfg(test)]
@@ -50,9 +47,6 @@ pub mod pallet {
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 	}
 
-	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	pub type Something<T> = StorageValue<_, u32>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn infos)]
@@ -117,13 +111,13 @@ pub mod pallet {
 		TenantAssetNotLinked,
 	}
 
-	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
-	// These functions materialize as "extrinsics", which are often compared to transactions.
-	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+	
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		/// The function below allows an active tenant to pay for his rent.
+		/// The origin must be the tenant accountId.
+		/// The amount payed is the monthly_rent, and can be payed at any moment.
+		/// The sum of all payments cannot exceed the yearly_rent  .
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn pay_rent(origin: OriginFor<T>) -> DispatchResult {
 			let tenant_account = ensure_signed(origin.clone())?;
@@ -149,7 +143,12 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// An example dispatchable that may throw a custom error.
+		/// Using the function below, a prospecting tenant can requestfor a particular asset
+		/// after providing personal information requested by the Representative.
+		/// The origin must be the tenant accountId.
+		/// - info: Tenant personnal information requested by the asset Representative
+		/// - asset_type: Asset class requested by the tenant.
+		/// - asset_id: ID of the Asset requested by the tenant.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_asset(
 			origin: OriginFor<T>,
@@ -181,8 +180,13 @@ pub mod pallet {
 
 		}
 
+		/// The function below allows the newly selected tenant to pay for a guaranty deposit request
+		/// and confirm the start of his contract.
+		/// The origin must be the tenant.
+		/// - asset_type: Asset class requested by the tenant.
+		/// - asset_id: ID of the Asset requested by the tenant.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-	pub fn pay_guaranty_deposit(
+		pub fn pay_guaranty_deposit(
 		origin: OriginFor<T>,
 		asset_type: Nft::PossibleCollections,
 		asset_id: T::NftItemId,

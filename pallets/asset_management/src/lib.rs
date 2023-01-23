@@ -35,6 +35,9 @@
 //!
 //! * `unlink_tenant_to_asset` - Call used as a proposal to remove the link between a tenant and an
 //!   asset.
+//!
+//! * `request_guaranty_payment` - Call used to send a guaranty deposit payment request to a tenant.
+
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -285,11 +288,12 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		/// An owner trigger a vote session with a proposal for an asset
+		/// Using the function below, an owner triggers a vote session with a proposal for an asset
 		/// The origin must be an owner of the asset
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - representative: an account with the representative role to be designed
+		/// - proposal contains the extrinsics to be executed depending on the vote result
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn launch_representative_session(
 			origin: OriginFor<T>,
@@ -377,9 +381,9 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		///The function below allows the owner to vote.
-		///The balance locked and used for vote conviction corresponds
-		///to the number of ownership tokens possessed by the voter.
+		/// The function below allows the owner to vote.
+		/// The balance locked and used for vote conviction corresponds
+		/// to the number of ownership tokens possessed by the voter.
 		/// The origin must be an owner of the asset
 		/// - referendum_index: index of the referendum the voter is taking part in
 		/// - vote: aye or nay
@@ -427,7 +431,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		///Approval of a Representative role request
+		/// The function below allows the approval of a Representative role request
 		/// The origin must be the virtual account connected to the asset
 		/// - rep_account: account Of the candidate to the representative account
 		/// - collection: collection number of the asset.
@@ -460,7 +464,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		///Demotion of a previously elected Representative
+		/// The function below allows the demotion of a previously elected Representative
 		/// The origin must be the virtual account connected to the asset
 		/// - rep_account: account Of the candidate to the representative account
 		/// - collection: collection_id of the asset.
@@ -493,7 +497,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// A representative triggers a vote session with a proposal for a tenant to be linked with
+		/// Using the function below, a representative triggers a vote session with a proposal for a tenant to be linked with
 		/// an asset The origin must be a representative
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
@@ -616,7 +620,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Link an accepted tenant with an existing asset
+		/// The function below links an accepted tenant with an existing asset
 		/// The origin must be the virtual account connected to the asset
 		/// - tenant: an account with the tenant role
 		/// - collection: collection_id of the asset
@@ -647,6 +651,13 @@ pub mod pallet {
 			Ok(())
 		}
 
+		/// The function below sends a guaranty deposiy payment request to a tenant. This extrinsic is executed
+		/// After a positive tenant_session. 
+		/// The origin must be the virtual account connected to the asset
+		/// - tenant: an account with the tenant role linked to the asset
+		/// - collection: collection_id of the asset
+		/// - item: item_id of the asset
+		/// - _judgement is provided by the representative while creating a tenant session  
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_guaranty_payment(
 			origin: OriginFor<T>,
@@ -678,7 +689,7 @@ pub mod pallet {
 
 		}
 
-		/// Unlink a tenant with an asset
+		/// The function below unlinks a tenant with an asset
 		/// The origin must be the virtual account connected to the asset
 		/// - tenant: an account with the tenant role linked to the asset
 		/// - collection: collection_id of the asset
