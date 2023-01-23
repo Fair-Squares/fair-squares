@@ -230,6 +230,8 @@ pub mod pallet {
 		SellerAccountCreationRejected(T::BlockNumber, T::AccountId),
 		/// Servicer role request rejected
 		ServicerAccountCreationRejected(T::BlockNumber, T::AccountId),
+		/// Notary role request rejected
+		NotaryAccountCreationRejected(T::BlockNumber, T::AccountId),
 		/// Role request added to the role approval waiting list
 		CreationRequestCreated(T::BlockNumber, T::AccountId),
 	}
@@ -255,6 +257,8 @@ pub mod pallet {
 		TotalMembersExceeded,
 		/// Action reserved to servicers
 		OnlyForServicers,
+		/// Cannot do the approval or rejection
+		UnAuthorized,
 	}
 
 	#[pallet::call]
@@ -273,6 +277,7 @@ pub mod pallet {
 			Self::check_account_role(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			let members = Self::total_members();
+			let requested = Self::get_requested_role(&account).is_none();
 			match account_type {
 				Accounts::INVESTOR => {
 					let investor = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
@@ -284,10 +289,7 @@ pub mod pallet {
 					Self::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER => {
-					ensure!(
-						Self::get_requested_role(&account).is_none(),
-						<Error<T>>::AlreadyWaiting
-					);
+					ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					let seller = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
@@ -304,10 +306,7 @@ pub mod pallet {
 					Self::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER => {
-					ensure!(
-						Self::get_requested_role(&account).is_none(),
-						<Error<T>>::AlreadyWaiting
-					);
+					ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					let servicer = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
@@ -315,10 +314,7 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::NOTARY => {
-					ensure!(
-						Self::get_requested_role(&account).is_none(),
-						<Error<T>>::AlreadyWaiting
-					);
+					ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					let notary = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
@@ -326,10 +322,7 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::REPRESENTATIVE => {
-					ensure!(
-						Self::get_requested_role(&account).is_none(),
-						<Error<T>>::AlreadyWaiting
-					);
+					ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					let representative = <T as frame_system::Config>::Origin::from(
 						RawOrigin::Signed(account.clone()),
 					);
@@ -360,6 +353,12 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
+
+			let role = Self::get_requested_role(&account);
+			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
+
+			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
+
 			let members = Self::total_members();
 			Self::approve_account(sender, account.clone())?;
 			TotalMembers::<T>::put(members + 1);
@@ -376,7 +375,16 @@ pub mod pallet {
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
+
+			let role = Self::get_requested_role(&sender);
+			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
+
+			// We can't reject a representive role request
+			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
 			Self::reject_account(account.clone())?;
+
+			RequestedRoles::<T>::remove(&account);
+
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationRejected(now, account));
 			Ok(())

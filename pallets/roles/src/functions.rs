@@ -69,10 +69,10 @@ impl<T: Config> Pallet<T> {
 
 	//Helper function for account creation approval by admin only
 	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
-		let exist = Self::approve_seller(sender.clone(), who.clone()) ||
+		let success = Self::approve_seller(sender.clone(), who.clone()) ||
 			Self::approve_servicer(sender.clone(), who.clone()) ||
 			Self::approve_notary(sender, who);
-		ensure!(exist, Error::<T>::NotInWaitingList);
+		ensure!(success, Error::<T>::NotInWaitingList);
 		Ok(())
 	}
 
@@ -86,35 +86,60 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	//Helper function for account creation rejection by admin only
-	pub fn reject_account(who: T::AccountId) -> DispatchResult {
+	pub fn reject_seller(who: T::AccountId) -> bool {
 		let sellers = Self::get_pending_house_sellers();
-		let servicers = Self::get_pending_servicers();
-		let mut exist: bool = false;
 		for (index, sell) in sellers.iter().enumerate() {
 			if sell.account_id == who.clone() {
-				exist = true;
 				SellerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerAccountCreationRejected(now, who.clone()));
-				break
+				return true
 			}
 		}
+		false
+	}
+
+	pub fn reject_servicer(who: T::AccountId) -> bool {
+		let servicers = Self::get_pending_servicers();
 
 		for (index, serv) in servicers.iter().enumerate() {
 			if serv.account_id == who.clone() {
-				exist = true;
 				ServicerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
-				break
+				return true
 			}
 		}
-		ensure!(exist, Error::<T>::NotInWaitingList);
+		false
+	}
+
+	pub fn reject_notary(who: T::AccountId) -> bool {
+		let notaries = Self::get_pending_notaries();
+
+		for (index, notary) in notaries.iter().enumerate() {
+			if notary.account_id == who.clone() {
+				NotaryApprovalList::<T>::mutate(|list| {
+					list.remove(index);
+				});
+				let now = <frame_system::Pallet<T>>::block_number();
+				Self::deposit_event(Event::NotaryAccountCreationRejected(now, who));
+				return true
+			}
+		}
+
+		false
+	}
+
+	// Helper function for account creation rejection by admin only
+	pub fn reject_account(who: T::AccountId) -> DispatchResult {
+		let success = Self::reject_seller(who.clone()) ||
+			Self::reject_servicer(who.clone()) ||
+			Self::reject_notary(who);
+		ensure!(success, Error::<T>::NotInWaitingList);
 		Ok(())
 	}
 
