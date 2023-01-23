@@ -134,6 +134,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 				(PAYMENT_CREATOR_TWO, 100_000_000_000),
 				(PAYMENT_RECIPENT,1),
 				(FEE_RECIPIENT_ACCOUNT,1),
+				(PAYMENT_RECIPENT_FEE_CHARGED,1),
 			],
 		}
 		.assimilate_storage(&mut t)
