@@ -170,6 +170,11 @@ pub mod pallet {
 	pub type AccountsRolesLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn get_requested_role)]
+	pub type RequestedRoles<T: Config> =
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
+
 	#[pallet::type_value]
 	///Initializing function for the total number of members
 	pub(super) fn InitTotalMembers<T: Config>() -> u32 {
@@ -276,15 +281,18 @@ pub mod pallet {
 					Investor::<T>::new(investor).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
 					TotalMembers::<T>::put(members + 1);
-					Self::deposit_event(Event::InvestorCreated(now, account));
+					Self::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER => {
-					Self::check_role_approval_list(account.clone())?;
+					ensure!(
+						Self::get_requested_role(&account).is_none(),
+						<Error<T>>::AlreadyWaiting
+					);
 					let seller = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					HouseSeller::<T>::new(seller).map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, account));
+					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::TENANT => {
 					let tenant = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
@@ -293,33 +301,52 @@ pub mod pallet {
 					Tenant::<T>::new(tenant).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					TotalMembers::<T>::put(members + 1);
-					Self::deposit_event(Event::TenantCreated(now, account));
+					Self::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER => {
-					Self::check_role_approval_list(account.clone())?;
+					ensure!(
+						Self::get_requested_role(&account).is_none(),
+						<Error<T>>::AlreadyWaiting
+					);
 					let servicer = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					Servicer::<T>::new(servicer).map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, account));
+					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::NOTARY => {
-					Self::check_role_approval_list(account.clone())?;
+					ensure!(
+						Self::get_requested_role(&account).is_none(),
+						<Error<T>>::AlreadyWaiting
+					);
 					let notary = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					Notary::<T>::new(notary).map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, account));
+					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::REPRESENTATIVE => {
-					Self::check_role_approval_list(account.clone())?;
+					ensure!(
+						Self::get_requested_role(&account).is_none(),
+						<Error<T>>::AlreadyWaiting
+					);
 					let representative = <T as frame_system::Config>::Origin::from(
 						RawOrigin::Signed(account.clone()),
 					);
 					Representative::<T>::new(representative)
 						.map_err(|_| <Error<T>>::InitializationError)?;
-					Self::deposit_event(Event::CreationRequestCreated(now, account));
+					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
+			}
+
+			let need_approval = match account_type {
+				Accounts::INVESTOR => false,
+				Accounts::TENANT => false,
+				_ => true,
+			};
+
+			if need_approval {
+				RequestedRoles::<T>::insert(&account, account_type);
 			}
 
 			Ok(())

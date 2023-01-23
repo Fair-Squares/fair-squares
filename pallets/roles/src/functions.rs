@@ -118,34 +118,6 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	pub fn check_role_approval_list(account: AccountIdOf<T>) -> DispatchResult {
-		let sellers = Self::get_pending_house_sellers();
-		if !sellers.is_empty() {
-			for seller in sellers.iter() {
-				let id = &seller.account_id;
-				ensure!(&account != id, Error::<T>::AlreadyWaiting);
-			}
-		}
-		let servicers = Self::get_pending_servicers();
-		if !servicers.is_empty() {
-			for servicer in servicers.iter() {
-				let id = &servicer.account_id;
-				ensure!(&account != id, Error::<T>::AlreadyWaiting);
-			}
-		}
-		let notaries = Self::get_pending_notaries();
-		if !notaries.is_empty() {
-			for notary in notaries.iter() {
-				let id = &notary.account_id;
-				ensure!(&account != id, Error::<T>::AlreadyWaiting);
-			}
-		}
-
-		ensure!(!RepApprovalList::<T>::contains_key(&account), Error::<T>::AlreadyWaiting);
-
-		Ok(())
-	}
-
 	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
 		let now = <frame_system::Pallet<T>>::block_number();
 		for account in representatives.into_iter() {
