@@ -4,6 +4,7 @@ impl<T: Config> Pallet<T> {
 	// Helper function for approving sellers.
 	pub fn approve_seller(sender: T::AccountId, who: T::AccountId) -> bool {
 		let sellers = Self::get_pending_house_sellers();
+		let mut exist = false;
 
 		for (index, sell) in sellers.iter().enumerate() {
 			if sell.account_id == who.clone() {
@@ -17,15 +18,17 @@ impl<T: Config> Pallet<T> {
 				AccountsRolesLog::<T>::insert(&who, Accounts::SELLER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerCreated(now, who));
-				return true
+				exist = true;
+				break
 			}
 		}
-		false
+		exist
 	}
 
 	// Helper function for approving servicers
 	pub fn approve_servicer(sender: T::AccountId, who: T::AccountId) -> bool {
 		let servicers = Self::get_pending_servicers();
+		let mut exist = false;
 
 		for (index, serv) in servicers.iter().enumerate() {
 			if serv.account_id == who.clone() {
@@ -39,15 +42,17 @@ impl<T: Config> Pallet<T> {
 				AccountsRolesLog::<T>::insert(&who, Accounts::SERVICER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerCreated(now, who));
-				return true
+				exist = true;
+				break
 			}
 		}
-		false
+		exist
 	}
 
 	// Helper function for approving notaries
 	pub fn approve_notary(sender: T::AccountId, who: T::AccountId) -> bool {
 		let notaries = Self::get_pending_notaries();
+		let mut exist = false;
 
 		for (index, notary) in notaries.iter().enumerate() {
 			if notary.account_id == who.clone() {
@@ -61,10 +66,11 @@ impl<T: Config> Pallet<T> {
 				AccountsRolesLog::<T>::insert(&who, Accounts::NOTARY);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryCreated(now, who));
-				return true
+				exist = true;
+				break
 			}
 		}
-		false
+		exist
 	}
 
 	//Helper function for account creation approval by admin only
@@ -88,21 +94,24 @@ impl<T: Config> Pallet<T> {
 
 	pub fn reject_seller(who: T::AccountId) -> bool {
 		let sellers = Self::get_pending_house_sellers();
+		let mut exist = false;
 		for (index, sell) in sellers.iter().enumerate() {
 			if sell.account_id == who.clone() {
 				SellerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
-				Self::deposit_event(Event::SellerAccountCreationRejected(now, who.clone()));
-				return true
+				Self::deposit_event(Event::SellerAccountCreationRejected(now, who));
+				exist = true;
+				break
 			}
 		}
-		false
+		exist
 	}
 
 	pub fn reject_servicer(who: T::AccountId) -> bool {
 		let servicers = Self::get_pending_servicers();
+		let mut exist = false;
 
 		for (index, serv) in servicers.iter().enumerate() {
 			if serv.account_id == who.clone() {
@@ -111,14 +120,16 @@ impl<T: Config> Pallet<T> {
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
-				return true
+				exist = true;
+				break
 			}
 		}
-		false
+		exist
 	}
 
 	pub fn reject_notary(who: T::AccountId) -> bool {
 		let notaries = Self::get_pending_notaries();
+		let mut exist = false;
 
 		for (index, notary) in notaries.iter().enumerate() {
 			if notary.account_id == who.clone() {
@@ -127,11 +138,12 @@ impl<T: Config> Pallet<T> {
 				});
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryAccountCreationRejected(now, who));
-				return true
+				exist = true;
+				break
 			}
 		}
 
-		false
+		exist
 	}
 
 	// Helper function for account creation rejection by admin only

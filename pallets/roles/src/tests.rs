@@ -78,10 +78,10 @@ fn test_account_approval_rejection() {
 		assert_eq!(serv0.len(), 0);
 		assert_eq!(sell0.len(), 0);
 
-		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
-		assert_ok!(HouseSeller::<Test>::new(Origin::signed(3)));
-		assert_ok!(Servicer::<Test>::new(Origin::signed(5)));
-		assert_ok!(HouseSeller::<Test>::new(Origin::signed(6)));
+		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, Accounts::SERVICER));
+		assert_ok!(RoleModule::set_role(Origin::signed(3), 3, Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(Origin::signed(5), 5, Accounts::SERVICER));
+		assert_ok!(RoleModule::set_role(Origin::signed(6), 6, Accounts::SELLER));
 
 		let serv1 = RoleModule::get_pending_servicers();
 		let sell1 = RoleModule::get_pending_house_sellers();

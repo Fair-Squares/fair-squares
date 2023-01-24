@@ -376,7 +376,7 @@ pub mod pallet {
 				"only the current sudo key can sudo"
 			);
 
-			let role = Self::get_requested_role(&sender);
+			let role = Self::get_requested_role(&account);
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 
 			// We can't reject a representive role request
