@@ -277,7 +277,7 @@ pub mod pallet {
 			Self::check_account_role(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			let members = Self::total_members();
-			let requested = Self::get_requested_role(&account).is_none();
+			let requested = Self::get_requested_role(&account).is_some();
 			match account_type {
 				Accounts::INVESTOR => {
 					let investor = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
