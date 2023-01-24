@@ -12,16 +12,183 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
 	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok(); //FERDIE approval will be tested
-	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::TENANT).ok();
-	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::TENANT).ok();
+	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(FRED), FRED, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(SALIM), SALIM, Acc::INVESTOR).ok();
+
+
+	
+}
+
+pub fn prep_test(
+	price1: u64,
+	price2: u64,
+	metadata0: Bvec<Test>,
+	metadata1: Bvec<Test>,
+	metadata2: Bvec<Test>,
+) {
+	prep_roles();
+
+	//Dave and EVE contribute to the fund
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(DAVE), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(EVE), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(GERARD), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FERDIE), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(HUNTER), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FRED), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(SALIM), 50_000));
+
+	//Charlie creates a collection
+	assert_ok!(NftModule::create_collection(
+		Origin::signed(CHARLIE),
+		NftColl::OFFICESTEST,
+		metadata0.clone()
+	));
+	//Charlie creates a second collection
+	assert_ok!(NftModule::create_collection(
+		Origin::signed(CHARLIE),
+		NftColl::APPARTMENTSTEST,
+		metadata0
+	));
+	// Bob creates and submit a proposal
+
+	assert_ok!(OnboardingModule::create_and_submit_proposal(
+		Origin::signed(BOB),
+		NftColl::OFFICESTEST,
+		Some(price1),
+		metadata1,
+		true
+	));
+
+	//Get the proposal hash
+	let mut hashes = pallet_voting::CollectiveProposals::<Test>::iter();
+	let hash = hashes.next().unwrap().0;
+	let mut voting_proposal = VotingModule::voting_proposals(hash).unwrap();
+	assert_eq!(voting_proposal.account_id, BOB);
+
+	let coll_id0 = NftColl::OFFICESTEST.value();
+	let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
+	let mut house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	assert_eq!(house.status,pallet_onboarding::AssetStatus::REVIEWING);
+
+	//Council vote
+	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash, true,));
+	assert_ok!(VotingModule::council_vote(Origin::signed(CHARLIE), hash, true,));
+	assert_ok!(VotingModule::council_vote(Origin::signed(BOB), hash, true,));
+	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash,));
+	
+	let initial_block_number = System::block_number();
+
+	let end_block_number = initial_block_number
+		.saturating_add(<Test as pallet_voting::Config>::Delay::get()*4);
+	
+	voting_proposal = VotingModule::voting_proposals(hash).unwrap();
+	
+	assert!(voting_proposal.collective_closed);	
+	assert!(voting_proposal.collective_step);
+	fast_forward_to(System::block_number()+2);
+
+	//assert_eq!(house.status,pallet_onboarding::AssetStatus::VOTING);
+
+	//Democracy vote
+
+	// Simulate the regular block check to have the update storage computation
+	while house.status == pallet_onboarding::AssetStatus::REVIEWING{
+		next_block();
+		house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	}
+
+	
+
+	assert_ok!(
+		VotingModule::investor_vote(
+			Origin::signed(DAVE),
+			hash,
+			true,
+		)
+	);
+
+
+	let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+		// check that the event has been raised
+		assert_eq!(
+			event,
+			crate::mock::Event::VotingModule(pallet_voting::Event::InvestorVoted(DAVE, hash, System::block_number())),
+		);
+
+
+	assert_ok!(
+		VotingModule::investor_vote(
+			Origin::signed(EVE),
+			hash,
+			true,
+		)
+	);
+	assert_ok!(
+		VotingModule::investor_vote(
+			Origin::signed(GERARD),
+			hash,
+			true,
+		)
+	);
+	assert_ok!(
+		VotingModule::investor_vote(
+			Origin::signed(FERDIE),
+			hash,
+			true,
+		)
+	);
+	assert_ok!(
+		VotingModule::investor_vote(
+			Origin::signed(HUNTER),
+			hash,
+			true,
+		)
+	);
+	assert_ok!(
+		VotingModule::investor_vote(
+			Origin::signed(FRED),
+			hash,
+			true,
+		)
+	);
+	assert_ok!(
+		VotingModule::investor_vote(
+			Origin::signed(SALIM),
+			hash,
+			true,
+		)
+	);
+
+	let end_democracy_vote = end_block_number
+	.saturating_add(<Test as pallet_voting::Config>::Delay::get())
+	.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+	Democracy::on_initialize(end_democracy_vote + 1);
+	VotingModule::on_initialize(end_democracy_vote + 2);
+
+	Bidding::on_initialize(end_block_number + 2);
+
+	//Asset Status should be `ONBOARDED`
+	
+	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	//assert_eq!(house.status,pallet_onboarding::AssetStatus::ONBOARDED);
+
 }
 
 fn next_block() {
 	System::set_block_number(System::block_number() + 1);
 	Scheduler::on_initialize(System::block_number());
 	Democracy::on_initialize(System::block_number());
-	AssetManagement::begin_block(System::block_number());
+	VotingModule::on_initialize(System::block_number());
+	Bidding::on_initialize(System::block_number());
+	AssetManagement::on_initialize(System::block_number());
 }
 
 fn fast_forward_to(n: u64) {
@@ -30,3 +197,25 @@ fn fast_forward_to(n: u64) {
 	}
 }
 
+#[test]
+fn test_00() {
+	new_test_ext().execute_with(|| {
+		let metadata0 = b"metadata0".to_vec().try_into().unwrap();
+		let metadata1 = b"metadata1".to_vec().try_into().unwrap();
+		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
+		//put some funds in FairSquare SlashFees account
+		let fees_account = OnboardingModule::account_id();
+		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account, 150_000u32.into());
+
+		let price1 = 40_000;
+		let price2 = 30_000;
+		prep_test(price1, price2, metadata0, metadata1, metadata2);
+		let coll_id0 = NftColl::OFFICESTEST.value();
+		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
+		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
+		let origin2 = Origin::signed(BOB);
+
+
+
+	})
+}

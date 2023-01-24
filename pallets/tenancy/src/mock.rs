@@ -59,6 +59,7 @@ frame_support::construct_runtime!(
 		Collective: pallet_collective::<Instance1>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
+		Bidding: pallet_bidding::{Pallet, Call, Storage, Event<T>},
 		
 	}
 );
@@ -218,6 +219,26 @@ parameter_types! {
 	pub const MaxVotes: u32 = 100;
 }
 
+parameter_types! {
+	pub const SimultaneousAssetBidder: u64 = 1;
+	pub const MaxTriesBid: u64 = 3;
+	pub const MaxTriesAseemblingInvestor: u64 = 3;
+	pub const MaximumSharePerInvestor: u64 = 20;
+	pub const MinimumSharePerInvestor: u64 = 10;
+	pub const NewAssetScanPeriod: u64 = 20;
+}
+
+impl pallet_bidding::Config for Test {
+	type Event = Event;
+	type WeightInfo = ();
+	type Currency = Balances;
+	type SimultaneousAssetBidder = SimultaneousAssetBidder;
+	type MaxTriesBid = MaxTriesBid;
+	type MaxTriesAseemblingInvestor = MaxTriesAseemblingInvestor;
+	type MaximumSharePerInvestor = MaximumSharePerInvestor;
+	type MinimumSharePerInvestor = MinimumSharePerInvestor;
+	type NewAssetScanPeriod = NewAssetScanPeriod;
+}
 
 parameter_types! {
 	pub const BasicDeposit: Balance = 10 ;       // 258 bytes on-chain
@@ -344,7 +365,7 @@ impl pallet_sudo::Config for Test {
 }
 
 parameter_types! {
-	pub const MaxMembers:u32 =7;
+	pub const MaxMembers:u32 =15;
 }
 impl pallet_roles::Config for Test {
 	type Event = Event;
@@ -436,10 +457,10 @@ impl pallet_asset_management::Config for Test {
 	type WeightInfo = ();
 }
 
-pub const PAYMENT_CREATOR: AccountId = AccountId::new([10u8; 32]);
-pub const PAYMENT_RECIPENT: AccountId = AccountId::new([11u8; 32]);
+pub const REPRESENTATIVE: AccountId = AccountId::new([10u8; 32]);
+pub const FRED: AccountId = AccountId::new([11u8; 32]);
 pub const PAYMENT_CREATOR_TWO: AccountId = AccountId::new([30u8; 32]);
-pub const PAYMENT_RECIPENT_TWO: AccountId = AccountId::new([31u8; 32]);
+pub const SALIM: AccountId = AccountId::new([31u8; 32]);
 pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
 pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
 pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
@@ -458,19 +479,22 @@ pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 	
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
 		pallet_balances::GenesisConfig::<Test> {
 			balances: vec![
-				(ALICE, 200_000),
+				(ALICE, 200_000_000),
 				(BOB, 200_000_000),
 				(CHARLIE, 200_000_000),
-				(DAVE, 150_000),
-				(EVE, 150_000),
-				(GERARD, 150_000),
-				(FERDIE, 150_000),
+				(REPRESENTATIVE,200_000_000),
+				(DAVE, 200_000_000),
+				(EVE, 200_000_000),
+				(GERARD, 200_000_000),
+				(FERDIE, 200_000_000),
+				(HUNTER, 200_000_000),
+				(FRED,200_000_000),
+				(SALIM,200_000_000),
 			],
 		}
 		.assimilate_storage(&mut t)

@@ -4499,6 +4499,7 @@ dependencies = [
  "pallet-asset_management",
  "pallet-assets",
  "pallet-balances",
+ "pallet-bidding",
  "pallet-collective",
  "pallet-democracy",
  "pallet-housing_fund",
