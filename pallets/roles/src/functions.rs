@@ -133,6 +133,14 @@ impl<T: Config> Pallet<T> {
 				ensure!(&account != id, Error::<T>::AlreadyWaiting);
 			}
 		}
+		let notaries = Self::get_pending_notaries();
+		if !notaries.is_empty() {
+			for notary in notaries.iter() {
+				let id = &notary.account_id;
+				ensure!(&account != id, Error::<T>::AlreadyWaiting);
+			}
+		}
+
 		ensure!(!RepApprovalList::<T>::contains_key(&account), Error::<T>::AlreadyWaiting);
 
 		Ok(())
