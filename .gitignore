@@ -15,6 +15,9 @@
 # direnv cache
 .direnv
 
+# chain state
+chain-state
+
 **/.idea/
 
 .vscode
