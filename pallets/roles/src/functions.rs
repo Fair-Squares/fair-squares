@@ -75,9 +75,15 @@ impl<T: Config> Pallet<T> {
 
 	//Helper function for account creation approval by admin only
 	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
-		let success = Self::approve_seller(sender.clone(), who.clone()) ||
-			Self::approve_servicer(sender.clone(), who.clone()) ||
-			Self::approve_notary(sender, who);
+		let role = Self::get_requested_role(who.clone());
+		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
+		let role = role.unwrap();
+		let success = match role {
+			Accounts::SELLER => Self::approve_seller(sender.clone(), who.clone()),
+			Accounts::SERVICER => Self::approve_servicer(sender.clone(), who.clone()),
+			Accounts::NOTARY => Self::approve_notary(sender, who),
+			_ => false,
+		};
 		ensure!(success, Error::<T>::NotInWaitingList);
 		Ok(())
 	}
@@ -148,9 +154,15 @@ impl<T: Config> Pallet<T> {
 
 	// Helper function for account creation rejection by admin only
 	pub fn reject_account(who: T::AccountId) -> DispatchResult {
-		let success = Self::reject_seller(who.clone()) ||
-			Self::reject_servicer(who.clone()) ||
-			Self::reject_notary(who);
+		let role = Self::get_requested_role(who.clone());
+		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
+		let role = role.unwrap();
+		let success = match role {
+			Accounts::SELLER => Self::reject_seller(who.clone()),
+			Accounts::SERVICER => Self::reject_servicer(who.clone()),
+			Accounts::NOTARY => Self::reject_notary(who),
+			_ => false,
+		};
 		ensure!(success, Error::<T>::NotInWaitingList);
 		Ok(())
 	}
