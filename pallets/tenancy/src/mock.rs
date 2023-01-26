@@ -195,12 +195,13 @@ impl pallet_scheduler::Config for Test {
 
 parameter_types! {
 	pub const MaxProposal:MaxProposals = 7;
+	pub const MotionDuration: BlockNumber = 3;
 }
 impl pallet_collective::Config<Instance1> for Test {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
-	type MotionDuration = ConstU64<3>;
+	type MotionDuration = MotionDuration;
 	type MaxProposals = MaxProposal;
 	type MaxMembers = MaxMembers;
 	type DefaultVote = PrimeDefaultVote;
@@ -209,7 +210,7 @@ impl pallet_collective::Config<Instance1> for Test {
 
 parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 5; //ok
-	pub const VotingPeriod: BlockNumber = 5; //ok
+	pub const VotingPeriod: BlockNumber = 3; //ok
 	pub const FastTrackVotingPeriod: BlockNumber = 2; //ok
 	pub const InstantAllowed: bool = true; //ok
 	pub const MinimumDeposit: Balance = 100; //ok

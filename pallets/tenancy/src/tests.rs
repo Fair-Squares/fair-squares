@@ -63,10 +63,8 @@ pub fn prep_test(
 	));
 
 	//Get the proposal hash
-	let mut hashes = pallet_voting::CollectiveProposals::<Test>::iter();
-	let hash = hashes.next().unwrap().0;
-	let mut voting_proposal = VotingModule::voting_proposals(hash).unwrap();
-	assert_eq!(voting_proposal.account_id, BOB);
+	let mut proposal = pallet_voting::VotingProposals::<Test>::iter();
+	let hash0 = proposal.next().unwrap().0;	
 
 	let coll_id0 = NftColl::OFFICESTEST.value();
 	let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
@@ -74,38 +72,48 @@ pub fn prep_test(
 	assert_eq!(house.status,pallet_onboarding::AssetStatus::REVIEWING);
 
 	//Council vote
-	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash, true,));
-	assert_ok!(VotingModule::council_vote(Origin::signed(CHARLIE), hash, true,));
-	assert_ok!(VotingModule::council_vote(Origin::signed(BOB), hash, true,));
-	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash,));
-	
-	let initial_block_number = System::block_number();
+	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash0, true,));
+	assert_ok!(VotingModule::council_vote(Origin::signed(CHARLIE), hash0, true,));
+	assert_ok!(VotingModule::council_vote(Origin::signed(BOB), hash0, true,));
 
+	let initial_block_number = System::block_number();
 	let end_block_number = initial_block_number
-		.saturating_add(<Test as pallet_voting::Config>::Delay::get()*4);
+			.saturating_add(<Test as pallet_voting::Config>::Delay::get())
+			.saturating_add(<Test as pallet_collective::Config<pallet_collective::Instance1>>::MotionDuration::get());
+	fast_forward_to(end_block_number);
+
+	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash0,));
 	
-	voting_proposal = VotingModule::voting_proposals(hash).unwrap();
+	
+	let voting_proposal = VotingModule::voting_proposals(hash0).unwrap();
 	
 	assert!(voting_proposal.collective_closed);	
 	assert!(voting_proposal.collective_step);
-	fast_forward_to(System::block_number()+2);
 
-	//assert_eq!(house.status,pallet_onboarding::AssetStatus::VOTING);
+	fast_forward_to(end_block_number+1);
+
+	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	assert_eq!(house.status,pallet_onboarding::AssetStatus::VOTING);
 
 	//Democracy vote
 
-	// Simulate the regular block check to have the update storage computation
-	while house.status == pallet_onboarding::AssetStatus::REVIEWING{
-		next_block();
-		house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
-	}
+	let voting_proposal = VotingModule::voting_proposals(hash0).unwrap();
+	assert_eq!(voting_proposal.account_id, BOB);
+
+	let ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		
+		
+		let hash1 = match ref_infos {
+			pallet_democracy::ReferendumInfo::Ongoing(r) => r.proposal_hash,
+			_ => hash0,
+		};
 
 	
 
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(DAVE),
-			hash,
+			hash0,
 			true,
 		)
 	);
@@ -119,66 +127,88 @@ pub fn prep_test(
 		// check that the event has been raised
 		assert_eq!(
 			event,
-			crate::mock::Event::VotingModule(pallet_voting::Event::InvestorVoted(DAVE, hash, System::block_number())),
+			crate::mock::Event::VotingModule(pallet_voting::Event::InvestorVoted(DAVE, hash0, System::block_number())),
 		);
 
 
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(EVE),
-			hash,
+			hash0,
 			true,
 		)
 	);
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(GERARD),
-			hash,
+			hash0,
 			true,
 		)
 	);
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(FERDIE),
-			hash,
+			hash0,
 			true,
 		)
 	);
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(HUNTER),
-			hash,
+			hash0,
 			true,
 		)
 	);
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(FRED),
-			hash,
+			hash0,
 			true,
 		)
 	);
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(SALIM),
-			hash,
+			hash0,
 			true,
 		)
 	);
+	println!("\n\nThe voting eventis:{:?}",event);
 
 	let end_democracy_vote = end_block_number
-	.saturating_add(<Test as pallet_voting::Config>::Delay::get())
-	.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+			.saturating_add(<Test as pallet_voting::Config>::Delay::get())
+			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
 
-	Democracy::on_initialize(end_democracy_vote + 1);
-	VotingModule::on_initialize(end_democracy_vote + 2);
 
-	Bidding::on_initialize(end_block_number + 2);
+		
+
+		fast_forward_to(end_democracy_vote+2);
+		
+		let ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		
+		
+		let b = match ref_infos {
+			pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => approved,
+			_ => false,
+		};
+		println!("\n\nproposal hash is: {:?}\n\n",hash0);
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+		println!("\n\nvote result is:{:?}", b);
+
+		
+
+	//assert_eq!(house.status,pallet_onboarding::AssetStatus::ONBOARDED);
+	
+
+	
 
 	//Asset Status should be `ONBOARDED`
 	
-	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
-	//assert_eq!(house.status,pallet_onboarding::AssetStatus::ONBOARDED);
+	
 
 }
 
@@ -207,8 +237,8 @@ fn test_00() {
 		let fees_account = OnboardingModule::account_id();
 		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account, 150_000u32.into());
 
-		let price1 = 40_000;
-		let price2 = 30_000;
+		let price1 = 4000;
+		let price2 = 3000;
 		prep_test(price1, price2, metadata0, metadata1, metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
@@ -219,3 +249,4 @@ fn test_00() {
 
 	})
 }
+
