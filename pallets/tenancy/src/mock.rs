@@ -60,6 +60,7 @@ frame_support::construct_runtime!(
 		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
 		Bidding: pallet_bidding::{Pallet, Call, Storage, Event<T>},
+		Finalise: pallet_finalizer::{Pallet, Call, Storage, Event<T>},
 		
 	}
 );
@@ -141,6 +142,11 @@ impl pallet_payment::Config for Test {
 	type MaxRemarkLength = MaxRemarkLength;
 	type CancelBufferBlockLength = CancelBufferBlockLength;
 	type MaxScheduledTaskListLength = MaxScheduledTaskListLength;
+	type WeightInfo = ();
+}
+
+impl pallet_finalizer::Config for Test {
+	type Event = Event;
 	type WeightInfo = ();
 }
 
@@ -460,7 +466,7 @@ impl pallet_asset_management::Config for Test {
 
 pub const REPRESENTATIVE: AccountId = AccountId::new([10u8; 32]);
 pub const FRED: AccountId = AccountId::new([11u8; 32]);
-pub const PAYMENT_CREATOR_TWO: AccountId = AccountId::new([30u8; 32]);
+pub const NOTARY: AccountId = AccountId::new([30u8; 32]);
 pub const SALIM: AccountId = AccountId::new([31u8; 32]);
 pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
 pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
@@ -496,6 +502,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 				(HUNTER, 200_000_000),
 				(FRED,200_000_000),
 				(SALIM,200_000_000),
+				(NOTARY, 100_000_000),
 			],
 		}
 		.assimilate_storage(&mut t)

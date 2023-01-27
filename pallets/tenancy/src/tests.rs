@@ -10,6 +10,8 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
 	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
+	assert_ok!(RoleModule::set_role(Origin::signed(NOTARY), NOTARY, Acc::NOTARY));
+	assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), NOTARY));
 	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::INVESTOR).ok();
@@ -250,10 +252,40 @@ pub fn prep_test(
 		System::block_number()
 	);
 
-	//Asset Status should be `ONBOARDED`
-
+	//Asset Status should now be `ONBOARDED`
 	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
 	assert_eq!(house.status,pallet_onboarding::AssetStatus::ONBOARDED);
+
+	//Move to next block until asset status is changed by pallet_bidding
+	while house.status == pallet_onboarding::AssetStatus::ONBOARDED{
+		next_block();
+		house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	}
+
+	//Asset status should now be `FINALISING`
+	assert_eq!(house.status,pallet_onboarding::AssetStatus::FINALISING);
+	println!("\n\nAsset status is:{:?}\n\n",house.status);
+
+	//The Notary will now Finalize the asset
+	assert_ok!(Finalise::validate_transaction_asset(
+		Origin::signed(NOTARY),
+		coll_id0,
+		item_id0,
+	));
+	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+
+	//Asset status should now be `FINALISED`
+	assert_eq!(house.status,pallet_onboarding::AssetStatus::FINALISED);
+
+	//Move to next block until asset status is changed by pallet_bidding
+	while house.status == pallet_onboarding::AssetStatus::FINALISED{
+		next_block();
+		house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	}
+
+	//Asset status should now be `PURCHASED`
+	assert_eq!(house.status,pallet_onboarding::AssetStatus::PURCHASED);
+	println!("\n\nAsset status is:{:?}\n\n",house.status);
 	
 
 	
@@ -289,8 +321,8 @@ fn test_00() {
 		let fees_account = OnboardingModule::account_id();
 		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account, 150_000u32.into());
 
-		let price1 = 4000;
-		let price2 = 3000;
+		let price1 = 40_000;
+		let price2 = 30_000;
 		prep_test(price1, price2, metadata0, metadata1, metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
