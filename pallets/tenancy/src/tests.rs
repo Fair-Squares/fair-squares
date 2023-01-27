@@ -105,13 +105,15 @@ pub fn prep_test(
 	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
 	assert_eq!(house.status,pallet_onboarding::AssetStatus::VOTING);
 
-	//Democracy vote
-
+	//Investors Democracy vote
+	
+	//Check proposal content
 	let voting_proposal = VotingModule::voting_proposals(hash0).unwrap();
 	assert_eq!(voting_proposal.account_id, BOB);
 
 
-
+	// Start vote, and check events emitted after first voter. 
+	// Also output referendum status after each vote.
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(DAVE),
@@ -237,17 +239,18 @@ pub fn prep_test(
 
 
 	assert_eq!(Some(end_democracy_vote),VotingModule::democracy_proposals(hash0));
+	
+	fast_forward_to(end_democracy_vote+2);
+	
+	
+	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+	println!(
+		"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+		&ref_infos,
+		System::block_number()
+	);
 
-		fast_forward_to(end_democracy_vote+2);
-		
-		ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
-		println!(
-			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
-			&ref_infos,
-			System::block_number()
-		);
-		
-		
+	//Asset Status should be `ONBOARDED`
 
 	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
 	assert_eq!(house.status,pallet_onboarding::AssetStatus::ONBOARDED);
@@ -255,7 +258,7 @@ pub fn prep_test(
 
 	
 
-	//Asset Status should be `ONBOARDED`
+	
 	
 	
 
