@@ -12,6 +12,7 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
 	assert_ok!(RoleModule::set_role(Origin::signed(NOTARY), NOTARY, Acc::NOTARY));
 	assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), NOTARY));
+	assert_ok!(RoleModule::set_role(Origin::signed(REPRESENTATIVE), REPRESENTATIVE, Acc::REPRESENTATIVE));
 	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::INVESTOR).ok();
@@ -41,6 +42,8 @@ pub fn prep_test(
 	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(HUNTER), 50_000));
 	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FRED), 50_000));
 	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(SALIM), 50_000));
+
+	//---ASSET PURCHASE STEP---
 
 	//Charlie creates a collection
 	assert_ok!(NftModule::create_collection(
@@ -286,7 +289,100 @@ pub fn prep_test(
 	//Asset status should now be `PURCHASED`
 	assert_eq!(house.status,pallet_onboarding::AssetStatus::PURCHASED);
 	println!("\n\nAsset status is:{:?}\n\n",house.status);
+
+	//---ASSET MANAGEMENT STEP---
 	
+	//Let's get the asset virtual Account
+	let asset_ownersip = ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap();
+	let asset_account = asset_ownersip.virtual_account;
+
+	// The new owners need a Representative for their asset. Salim starts
+	// a referendum for the representative candidate.
+
+	assert_ok!(AssetManagement::launch_representative_session(
+		Origin::signed(SALIM),
+		NftColl::OFFICESTEST,
+		item_id0,
+		REPRESENTATIVE,
+		pallet_asset_management::VoteProposals::Election,
+	));
+	
+	//Get the referendum infos
+	let mut ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
+	let ref1 = ref0.next().unwrap();
+	//Let's make sure that we have the right referendum
+	let proposal_rec = ref1.1;
+	assert_eq!(proposal_rec.caller_account,SALIM);
+	assert_eq!(proposal_rec.candidate_account,REPRESENTATIVE);
+	assert_eq!(proposal_rec.virtual_account,asset_account);
+	//Get the referendum index and start voting
+	let ref_index = ref1.0;
+
+	assert_ok!(AssetManagement::owners_vote(
+		Origin::signed(SALIM),
+		ref_index,
+		true
+	));
+
+	assert_ok!(AssetManagement::owners_vote(
+		Origin::signed(DAVE),
+		ref_index,
+		true
+	));
+
+	assert_ok!(AssetManagement::owners_vote(
+		Origin::signed(EVE),
+		ref_index,
+		true
+	));
+
+	assert_ok!(AssetManagement::owners_vote(
+		Origin::signed(GERARD),
+		ref_index,
+		true
+	));
+
+	assert_ok!(AssetManagement::owners_vote(
+		Origin::signed(FERDIE),
+		ref_index,
+		true
+	));
+
+	assert_ok!(AssetManagement::owners_vote(
+		Origin::signed(HUNTER),
+		ref_index,
+		true
+	));
+
+	assert_ok!(AssetManagement::owners_vote(
+		Origin::signed(FRED),
+		ref_index,
+		true
+	));
+
+	//End REPRESENTATIVE referendum
+	let initial_block_number = System::block_number();
+		let end_block_number = initial_block_number
+			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+		fast_forward_to(end_block_number);
+		ref_infos = Democracy::referendum_info(0).unwrap();
+
+		println!(
+			"\n\nREPRESENTATIVE Referendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
+	//Enact Proposal
+	fast_forward_to(end_block_number.saturating_add(<Test as pallet_asset_management::Config>::Delay::get()));
+	
+	//Check the results of the enacted proposal
+	assert!(Roles::RepresentativeLog::<Test>::contains_key(REPRESENTATIVE));
+	assert!(Roles::AccountsRolesLog::<Test>::contains_key(REPRESENTATIVE));
+
+
+
 
 	
 
