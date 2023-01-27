@@ -209,14 +209,14 @@ impl pallet_collective::Config<Instance1> for Test {
 }
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 5; //ok
-	pub const VotingPeriod: BlockNumber = 3; //ok
-	pub const FastTrackVotingPeriod: BlockNumber = 2; //ok
+	pub const LaunchPeriod: BlockNumber = 1; //ok
+	pub const VotingPeriod: BlockNumber = 5; //ok
+	pub const FastTrackVotingPeriod: BlockNumber = 20; //ok
 	pub const InstantAllowed: bool = true; //ok
-	pub const MinimumDeposit: Balance = 100; //ok
-	pub const EnactmentPeriod: BlockNumber = 5; //ok
-	pub const CooloffPeriod: BlockNumber = 5; //ok
-	pub const PreimageByteDeposit: Balance = 1; //ok
+	pub const MinimumDeposit: Balance = 1; //ok
+	pub const EnactmentPeriod: BlockNumber = 50; //ok
+	pub const CooloffPeriod: BlockNumber = 50; //ok
+	pub const PreimageByteDeposit: Balance = 10; //ok
 	pub const MaxVotes: u32 = 100;
 }
 
@@ -325,9 +325,9 @@ impl pallet_nft::Config for Test {
 
 
 parameter_types! {
-	pub const Delay: BlockNumber = 2;//3 * MINUTES;
+	pub const Delay: BlockNumber = 0;//3 * MINUTES;
 	pub const CheckDelay: BlockNumber = 1;//3 * MINUTES;
-	pub const InvestorVoteAmount: u128 = 1;
+	pub const InvestorVoteAmount: u128 = 100;
 	pub const CheckPeriod: BlockNumber = 1;
 }
 

@@ -64,7 +64,11 @@ pub fn prep_test(
 
 	//Get the proposal hash
 	let mut proposal = pallet_voting::VotingProposals::<Test>::iter();
-	let hash0 = proposal.next().unwrap().0;	
+	let prop = proposal.next().unwrap();
+	let hash0 = prop.0;
+	let infos = prop.1;
+	assert_eq!(infos.proposal_hash,hash0);
+	
 
 	let coll_id0 = NftColl::OFFICESTEST.value();
 	let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
@@ -80,6 +84,11 @@ pub fn prep_test(
 	let end_block_number = initial_block_number
 			.saturating_add(<Test as pallet_voting::Config>::Delay::get())
 			.saturating_add(<Test as pallet_collective::Config<pallet_collective::Instance1>>::MotionDuration::get());
+
+			assert_eq!(
+				VotingModule::collective_proposals(hash0),
+				Some(end_block_number)
+			);
 	fast_forward_to(end_block_number);
 
 	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash0,));
@@ -90,7 +99,8 @@ pub fn prep_test(
 	assert!(voting_proposal.collective_closed);	
 	assert!(voting_proposal.collective_step);
 
-	fast_forward_to(end_block_number+1);
+	//fast_forward_to(end_block_number+1);
+	next_block();
 
 	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
 	assert_eq!(house.status,pallet_onboarding::AssetStatus::VOTING);
@@ -100,15 +110,7 @@ pub fn prep_test(
 	let voting_proposal = VotingModule::voting_proposals(hash0).unwrap();
 	assert_eq!(voting_proposal.account_id, BOB);
 
-	let ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
-		
-		
-		let hash1 = match ref_infos {
-			pallet_democracy::ReferendumInfo::Ongoing(r) => r.proposal_hash,
-			_ => hash0,
-		};
 
-	
 
 	assert_ok!(
 		VotingModule::investor_vote(
@@ -117,6 +119,13 @@ pub fn prep_test(
 			true,
 		)
 	);
+
+	let mut ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
 
 
 	let event = <frame_system::Pallet<Test>>::events()
@@ -135,16 +144,31 @@ pub fn prep_test(
 		VotingModule::investor_vote(
 			Origin::signed(EVE),
 			hash0,
-			true,
+			false,
 		)
 	);
+	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(GERARD),
 			hash0,
-			true,
+			false,
 		)
 	);
+	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
+
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(FERDIE),
@@ -152,6 +176,14 @@ pub fn prep_test(
 			true,
 		)
 	);
+	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
+
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(HUNTER),
@@ -159,6 +191,14 @@ pub fn prep_test(
 			true,
 		)
 	);
+	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
+
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(FRED),
@@ -166,6 +206,14 @@ pub fn prep_test(
 			true,
 		)
 	);
+	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
+
 	assert_ok!(
 		VotingModule::investor_vote(
 			Origin::signed(SALIM),
@@ -173,35 +221,36 @@ pub fn prep_test(
 			true,
 		)
 	);
-	println!("\n\nThe voting eventis:{:?}",event);
+	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
+		println!(
+			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
+
+
 
 	let end_democracy_vote = end_block_number
 			.saturating_add(<Test as pallet_voting::Config>::Delay::get())
 			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
 
 
-		
+	assert_eq!(Some(end_democracy_vote),VotingModule::democracy_proposals(hash0));
 
 		fast_forward_to(end_democracy_vote+2);
 		
-		let ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
-		
-		
-		let b = match ref_infos {
-			pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => approved,
-			_ => false,
-		};
-		println!("\n\nproposal hash is: {:?}\n\n",hash0);
+		ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 		println!(
 			"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
 			&ref_infos,
 			System::block_number()
 		);
-		println!("\n\nvote result is:{:?}", b);
-
+		
 		
 
-	//assert_eq!(house.status,pallet_onboarding::AssetStatus::ONBOARDED);
+	house = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	assert_eq!(house.status,pallet_onboarding::AssetStatus::ONBOARDED);
 	
 
 	
