@@ -202,7 +202,7 @@ pub mod pallet {
 		let virtual_account = ownership.unwrap().virtual_account;
 
 		//Ensure that payment request exists
-		ensure!(!Assets::GuarantyPayment::<T>::contains_key(&caller,&virtual_account),Error::<T>::NotAValidPayment);
+		ensure!(Assets::GuarantyPayment::<T>::contains_key(&caller,&virtual_account),Error::<T>::NotAValidPayment);
 		let payment_infos = Assets::Pallet::<T>::guaranty(&caller,&virtual_account).unwrap();
 		let status = payment_infos.state;
 		ensure!(status == Payment::PaymentState::PaymentRequested,Error::<T>::NotAValidPayment);

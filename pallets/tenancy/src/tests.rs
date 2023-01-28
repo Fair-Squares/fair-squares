@@ -315,7 +315,7 @@ pub fn prep_test(
 	let proposal_rec = ref1.1;
 	assert_eq!(proposal_rec.caller_account,SALIM);
 	assert_eq!(proposal_rec.candidate_account,REPRESENTATIVE);
-	assert_eq!(proposal_rec.virtual_account,asset_account);
+	assert_eq!(proposal_rec.virtual_account,asset_account.clone());
 	//Get the referendum index and start voting
 	let ref_index = ref1.0;
 
@@ -398,7 +398,81 @@ pub fn prep_test(
 
 	//Check that the identity was correctly created
 	assert_eq!(pallet_identity::Pallet::<Test>::identity(TENANT0).unwrap().info,ten());
+
+	//Representative gives a positive Judgement and start a referendum for the tenant
+	assert_ok!(AssetManagement::launch_tenant_session(
+		Origin::signed(REPRESENTATIVE),
+		NftColl::OFFICESTEST,
+		item_id0,
+		TENANT0,
+		pallet_asset_management::VoteProposals::Election,
+		Ident::Judgement::Reasonable,
+	));
 	
+	//Get the referendum infos
+	let ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
+	
+
+	for i in ref0 {
+		let ref_index = match i.1.caller_account {
+			REPRESENTATIVE =>i.0,
+			_ =>5,
+		};
+		if ref_index != 5{
+			//get vector of owners
+			let house = ShareDistributor::virtual_acc(coll_id0,item_id0).unwrap();
+			let owners = house.owners;
+			for owner in owners {
+				//each owner vote
+				assert_ok!(AssetManagement::owners_vote(
+					Origin::signed(owner),
+					ref_index,
+					true
+				));
+
+			}			
+		}
+	};
+
+	//End Tenant referendum
+	let initial_block_number = System::block_number();
+		let end_block_number = initial_block_number
+			.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+		fast_forward_to(end_block_number);
+		ref_infos = Democracy::referendum_info(0).unwrap();
+
+		println!(
+			"\n\nTenant Referendum status after vote is: {:?}\n present block is: {:?}\n\n",
+			&ref_infos,
+			System::block_number()
+		);
+
+	//Enact Proposal
+	fast_forward_to(end_block_number.saturating_add(<Test as pallet_asset_management::Config>::Delay::get()));
+	
+	//Check that a guaranty_payment request was sent to the tenant
+	let payment_info = AssetManagement::guaranty(TENANT0,asset_account.clone()).unwrap();
+	assert_eq!(payment_info.state,pallet_payment::PaymentState::PaymentRequested);
+
+	//Tenant pays the Guaranty Deposit
+	let tenant_init_balance = Balances::free_balance(TENANT0);
+	assert_ok!(crate::Pallet::<Test>::pay_guaranty_deposit(
+		Origin::signed(TENANT0),
+		NftColl::OFFICESTEST,
+		item_id0,
+	));
+	let payed_amount = tenant_init_balance.saturating_sub(Balances::free_balance(TENANT0));
+	println!("Payed amount is {:?}",payed_amount);
+
+	//Check that the Tenant is connected to the asset
+	 let asset = OnboardingModule::houses(coll_id0,item_id0).unwrap();
+	 let tenant_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
+	 
+	 assert_eq!(asset.tenants[0],TENANT0);
+	 assert_eq!(asset_account,tenant_inf.asset_account.unwrap());
+
+
 
 }
 
