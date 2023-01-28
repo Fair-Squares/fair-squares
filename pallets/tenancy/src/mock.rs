@@ -479,7 +479,7 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const DAVE: AccountId = AccountId::new([6u8; 32]);
 pub const EVE: AccountId = AccountId::new([5u8; 32]);
-//pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
+pub const TENANT0: AccountId = AccountId::new([4u8; 32]);
 pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
 pub const GERARD: AccountId = AccountId::new([8u8; 32]);
 pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
@@ -503,6 +503,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 				(FRED,200_000_000),
 				(SALIM,200_000_000),
 				(NOTARY, 100_000_000),
+				(TENANT0, 50_000_000),
 			],
 		}
 		.assimilate_storage(&mut t)

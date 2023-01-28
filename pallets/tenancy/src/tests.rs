@@ -20,6 +20,7 @@ pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(FRED), FRED, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(SALIM), SALIM, Acc::INVESTOR).ok();
+	RoleModule::set_role(Origin::signed(TENANT0), TENANT0, Acc::TENANT).ok();
 
 
 	
@@ -381,13 +382,22 @@ pub fn prep_test(
 	assert!(Roles::RepresentativeLog::<Test>::contains_key(REPRESENTATIVE));
 	assert!(Roles::AccountsRolesLog::<Test>::contains_key(REPRESENTATIVE));
 
+	//Now that we have a Tenant/Representative/Asset. Let the Tenant ask for an asset
+	let tenant_bal_init = Balances::free_balance(TENANT0);
+	assert_ok!(crate::Pallet::<Test>::request_asset(
+		Origin::signed(TENANT0),
+		Box::new(ten()),
+		NftColl::OFFICESTEST,
+		item_id0,
+	));
 
+	let tenant_bal = Balances::free_balance(TENANT0);
 
+	let paid_fees = tenant_bal_init.saturating_sub(tenant_bal);
+	println!("\n\nThe tenant paid {:?}units for asset request\n\n",paid_fees);
 
-	
-
-	
-	
+	//Check that the identity was correctly created
+	assert_eq!(pallet_identity::Pallet::<Test>::identity(TENANT0).unwrap().info,ten());
 	
 
 }
@@ -407,6 +417,22 @@ fn fast_forward_to(n: u64) {
 	}
 }
 
+//Helper for tenant infos
+fn ten() -> Ident::IdentityInfo<MaxAdditionalFields> {
+	IdentityInfo {
+		additional : Default::default(),
+		display: Ident::Data::Raw(b"ten".to_vec().try_into().unwrap()),
+		legal: Ident::Data::Raw(b"The Right Ordinal Ten, Esq.".to_vec().try_into().unwrap()),
+		web : Ident::Data::Raw(b"www.mystery.com".to_vec().try_into().unwrap()),
+		riot : Default::default(),
+		email : Default::default(),
+		pgp_fingerprint : Default::default(),
+		image : Default::default(),
+		twitter : Default::default(),
+		
+	}
+}
+
 #[test]
 fn test_00() {
 	new_test_ext().execute_with(|| {
@@ -423,7 +449,7 @@ fn test_00() {
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
-		let origin2 = Origin::signed(BOB);
+		
 
 
 
