@@ -443,7 +443,7 @@ parameter_types! {
 	pub const JudgementFee: u64= 2;
 	pub const GuarantyCoefficient: u32 = 3;
 	pub const RoR:u32 = 3;
-	pub const RentCheckPeriod: BlockNumber = 1;
+	pub const RentCheckPeriod: BlockNumber = 10;
 	pub const ContractLength: BlockNumber = 365;
 }
 

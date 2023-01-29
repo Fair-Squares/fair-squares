@@ -265,21 +265,21 @@ impl<T: Config> Pallet<T> {
 					let remaining_p = tenant.remaining_payments;
 					let contract_begin = tenant.contract_start;
 					let rent = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap()*12;
-					//rent per block
+					
+					//Calculate rent per block
 					let total_blocks = <T as Config>::Contr::get();
 					let mut cpb = Self::blocknumber_to_u128(total_blocks.clone()).unwrap();
 					cpb = rent.clone().saturating_div(cpb);
+					
 					//number of blocks from the start of the contract
 					let blocks = Self::blocknumber_to_u128(now-contract_begin).unwrap();
 					let amount_due = blocks.saturating_mul(cpb);
 					
-
 					//check how many rents were payed
 					let payed = (12-remaining_p as u128)* rent.clone();
 
 					if payed < amount_due && (now%<T as Config>::RentCheck::get()).is_zero(){
-						//check if 4 month has passed. 4 rents should have been payed.
-					//if not, release guaranty deposit to owners and issue a warning 
+						
 					let tenant_debt0 = amount_due-payed;
 					let debt = Self::u128_to_balance_option2(tenant_debt0).unwrap();
 					//Emmit event to inform the tenant of the amount of his debt

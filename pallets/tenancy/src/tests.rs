@@ -36,13 +36,13 @@ pub fn prep_test(
 	prep_roles();
 
 	//Dave and EVE contribute to the fund
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(DAVE), 50_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(EVE), 50_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(GERARD), 50_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FERDIE), 50_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(HUNTER), 50_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FRED), 50_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(SALIM), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(DAVE), 1_000_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(EVE), 800_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(GERARD), 400_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FERDIE), 300_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(HUNTER), 100_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FRED), 1_500_000));
+	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(SALIM), 2_000_000));
 
 	//---ASSET PURCHASE STEP---
 
@@ -471,6 +471,7 @@ pub fn prep_test(
 	 
 	 assert_eq!(asset.tenants[0],TENANT0);
 	 assert_eq!(asset_account,tenant_inf.asset_account.unwrap());
+	 println!("the beginning of the contract is at block: {:?}",tenant_inf.contract_start)
 
 
 
@@ -483,6 +484,7 @@ fn next_block() {
 	VotingModule::on_initialize(System::block_number());
 	Bidding::on_initialize(System::block_number());
 	AssetManagement::on_initialize(System::block_number());
+	AssetManagement::on_idle(System::block_number(),Weight::MAX);
 }
 
 fn fast_forward_to(n: u64) {
@@ -513,17 +515,45 @@ fn test_00() {
 		let metadata0 = b"metadata0".to_vec().try_into().unwrap();
 		let metadata1 = b"metadata1".to_vec().try_into().unwrap();
 		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
+
 		//put some funds in FairSquare SlashFees account
 		let fees_account = OnboardingModule::account_id();
 		<Test as pallet::Config>::Currency::make_free_balance_be(&fees_account, 150_000u32.into());
-
-		let price1 = 40_000;
-		let price2 = 30_000;
+		
+		//Execute workflow up to TENANT0 connection to an asset
+		let price1 = 450_000;
+		let price2 = 350_000;
 		prep_test(price1, price2, metadata0, metadata1, metadata2);
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
+		let tenant_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
+
+		//TENANT0 is now connected to an asset. let's check rent payment status
+		let end_block = tenant_inf.contract_start.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
+		fast_forward_to(end_block);
+		println!("tenant_rent is: {:?}",tenant_inf.rent);
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
 		
+		println!("\n\nrecent events:\n{:?}",event);
+		next_block();
+
+		//TENANT0 pays the first rent
+		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+		
+		println!("\n\nrecent events:\n{:?}",event);
+
+		
+
+
+
 
 
 
