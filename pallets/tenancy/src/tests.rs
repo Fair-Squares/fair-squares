@@ -1,6 +1,5 @@
 pub use super::*;
 pub use frame_support::{assert_err, assert_ok};
-use frame_system::pallet_prelude::OriginFor;
 use mock::*;
 
 pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
@@ -28,10 +27,8 @@ pub fn prep_roles() {
 
 pub fn prep_test(
 	price1: u64,
-	price2: u64,
 	metadata0: Bvec<Test>,
 	metadata1: Bvec<Test>,
-	metadata2: Bvec<Test>,
 ) {
 	prep_roles();
 
@@ -514,7 +511,6 @@ fn test_00() {
 	new_test_ext().execute_with(|| {
 		let metadata0 = b"metadata0".to_vec().try_into().unwrap();
 		let metadata1 = b"metadata1".to_vec().try_into().unwrap();
-		let metadata2 = b"metadata2".to_vec().try_into().unwrap();
 
 		//put some funds in FairSquare SlashFees account
 		let fees_account = OnboardingModule::account_id();
@@ -522,11 +518,7 @@ fn test_00() {
 		
 		//Execute workflow up to TENANT0 connection to an asset
 		let price1 = 450_000;
-		let price2 = 350_000;
-		prep_test(price1, price2, metadata0, metadata1, metadata2);
-		let coll_id0 = NftColl::OFFICESTEST.value();
-		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
-		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
+		prep_test(price1,metadata0, metadata1);
 		let tenant_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 
 		//TENANT0 is now connected to an asset. let's check rent payment status
