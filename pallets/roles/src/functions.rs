@@ -79,8 +79,8 @@ impl<T: Config> Pallet<T> {
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
 		let success = match role {
-			Accounts::SELLER => Self::approve_seller(sender.clone(), who.clone()),
-			Accounts::SERVICER => Self::approve_servicer(sender.clone(), who.clone()),
+			Accounts::SELLER => Self::approve_seller(sender, who),
+			Accounts::SERVICER => Self::approve_servicer(sender, who),
 			Accounts::NOTARY => Self::approve_notary(sender, who),
 			_ => false,
 		};
@@ -158,8 +158,8 @@ impl<T: Config> Pallet<T> {
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
 		let success = match role {
-			Accounts::SELLER => Self::reject_seller(who.clone()),
-			Accounts::SERVICER => Self::reject_servicer(who.clone()),
+			Accounts::SELLER => Self::reject_seller(who),
+			Accounts::SERVICER => Self::reject_servicer(who),
 			Accounts::NOTARY => Self::reject_notary(who),
 			_ => false,
 		};

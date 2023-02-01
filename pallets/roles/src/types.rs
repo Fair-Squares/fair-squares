@@ -137,7 +137,7 @@ impl<T: Config> Tenant<T> {
 		let tenant = Tenant {
 			account_id: caller.clone(),
 			rent: Zero::zero(),
-			age: now.clone(),
+			age: now,
 			asset_account: None,
 			contract_start: now,
 			remaining_rent: Zero::zero(),
