@@ -670,7 +670,7 @@ impl pallet_bidding::Config for Runtime {
 parameter_types! {
 	pub const JudgementFee: Balance= 50*DOLLARS;
 	pub const GuarantyCoefficient: u32 = 3;
-	pub const RoR:u32 = 3;
+	pub const RoR:Percent = Percent::from_percent(3);
 	pub const RentCheckPeriod: BlockNumber = 15*DAYS;
 	pub const ContractLength: BlockNumber = 365*DAYS;
 }

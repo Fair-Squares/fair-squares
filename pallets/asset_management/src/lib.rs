@@ -106,7 +106,7 @@ pub mod pallet {
 		type Guaranty: Get<u32>;
 
 		#[pallet::constant]
-		type RoR: Get<u32>;
+		type RoR: Get<Percent>;
 
 		#[pallet::constant]
 		type MinimumDepositVote: Get<BalanceOf<Self>>;

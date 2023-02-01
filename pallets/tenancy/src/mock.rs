@@ -33,6 +33,7 @@ pub type CollectionId = u32;
 pub type ItemId = u32;
 pub type NftColl = Nft::PossibleCollections;
 
+pub const RETURN_ON_RENT: u8 = 3;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -442,7 +443,7 @@ impl pallet_housing_fund::Config for Test {
 parameter_types! {
 	pub const JudgementFee: u64= 2;
 	pub const GuarantyCoefficient: u32 = 3;
-	pub const RoR:u32 = 3;
+	pub const RoR:Percent = Percent::from_percent(RETURN_ON_RENT);
 	pub const RentCheckPeriod: BlockNumber = 25;
 	pub const ContractLength: BlockNumber = 365;
 }

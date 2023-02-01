@@ -38,6 +38,7 @@ pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
 pub const INCENTIVE_PERCENTAGE: u8 = 10;
 pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 5;
 pub const CANCEL_BLOCK_BUFFER: u64 = 600;
+pub const RETURN_ON_RENT: u8 = 3;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -71,6 +72,8 @@ parameter_types! {
 	pub BlockWeights: frame_system::limits::BlockWeights =
 		frame_system::limits::BlockWeights::simple_max(Weight::from_ref_time(1024_u64));
 }
+
+
 
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -408,7 +411,7 @@ impl pallet_housing_fund::Config for Test {
 parameter_types! {
 	pub const JudgementFee: u64= 2;
 	pub const GuarantyCoefficient: u32 = 3;
-	pub const RoR:u32 = 3;
+	pub const RoR:Percent = Percent::from_percent(RETURN_ON_RENT);
 	pub const RentCheckPeriod: BlockNumber = 1;
 	pub const ContractLength: BlockNumber = 365;
 }

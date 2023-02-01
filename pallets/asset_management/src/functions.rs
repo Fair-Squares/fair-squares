@@ -75,11 +75,11 @@ impl<T: Config> Pallet<T> {
 	pub fn calculate_guaranty(collection: T::NftCollectionId,item: T::NftItemId) -> u128 {
 
 		let coeff = T::Guaranty::get() as u128;
-		let ror = T::RoR::get() as u64;
+		let ror = T::RoR::get();
 		let price0 = Onboarding::Pallet::<T>::houses(collection,item).unwrap().price.unwrap();
-		let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(price0).unwrap();
-		let rent:u128 = ((ror*price1)/1200).into();
-		let amount:u128 = coeff * rent;
+		let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
+		let rent = ((price1 as f64)/12.0).round();
+		let amount:u128 = coeff * (rent as u128);
 		amount
 	}
 
@@ -121,19 +121,19 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		// Update tenant info
 		//We first get the Return on Rent coeffient
-		let coeff = T::RoR::get() as u64;
+		let ror = T::RoR::get();
 		Roles::TenantLog::<T>::mutate(&tenant, |val| {
 			let mut val0 = val.clone().unwrap();
 			// get asset price
 			let price0 = Onboarding::Pallet::<T>::houses(collection,item).unwrap().price.unwrap();
-			let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(price0).unwrap();
-			//Update rent in tenant infos added. We must not forget that the ROR is a percentage:
-			//we thereforre need to use (RoR/100) when doing calculations.
-			let rent0:u128 = ((coeff*price1)/1200).into();
-			let rent1 = rent0.clone()*12;
+			let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
+
+			//Update rent in tenant infos added.
+			let rent0 = ((price1 as f64)/12.0).round();
+			let rent1 = (rent0 as u128)*12;
 			let now = <frame_system::Pallet<T>>::block_number();
 
-			let rent = Roles::Pallet::<T>::u128_to_balance_option(rent0).unwrap();
+			let rent = Roles::Pallet::<T>::u128_to_balance_option(rent0 as u128).unwrap();
 			let year_rent = Roles::Pallet::<T>::u128_to_balance_option(rent1).unwrap();
 			val0.rent = rent.into();
 			val0.asset_account = Some(asset_account);
