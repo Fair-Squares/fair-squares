@@ -36,7 +36,10 @@ fn test_struct_methods() {
 				account_id: 1,
 				rent: 0,
 				age: System::block_number(),
-				asset_account: None
+				asset_account: None,
+				contract_start: System::block_number(),
+				remaining_rent: 0,
+				remaining_payments: 0,
 			})
 		);
 
@@ -63,6 +66,7 @@ fn test_struct_methods() {
 				age: System::block_number(),
 				activated: false,
 				assets_accounts: vec![],
+				index: 0,
 			}
 		)
 	});

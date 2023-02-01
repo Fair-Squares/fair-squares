@@ -1,5 +1,5 @@
 use super::*;
-pub use crate as pallet_asset_management;
+pub use crate as pallet_tenancy;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU16, ConstU32, ConstU64, EqualPrivilegeOnly},
@@ -8,6 +8,7 @@ use frame_support::{
 };
 
 use crate::Nft::NftPermissions;
+use frame_system as system;
 use frame_system::{EnsureRoot, EnsureSigned};
 use pallet_collective::{Instance1, PrimeDefaultVote};
 use pallet_roles::GenesisBuild;
@@ -31,12 +32,6 @@ pub type CollectionId = u32;
 pub type ItemId = u32;
 pub type NftColl = Nft::PossibleCollections;
 
-pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
-pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
-pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
-pub const INCENTIVE_PERCENTAGE: u8 = 10;
-pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 5;
-pub const CANCEL_BLOCK_BUFFER: u64 = 600;
 pub const RETURN_ON_RENT: u8 = 3;
 
 // Configure a mock runtime to test the pallet.
@@ -47,22 +42,25 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Storage, Event<T>},
+		TenancyModule: pallet_tenancy::{Pallet, Call, Storage, Event<T>},
 		AssetManagement: pallet_asset_management::{Pallet, Call, Storage, Event<T>},
-		OnboardingModule: pallet_onboarding::{Pallet, Call, Storage, Event<T>},
-		VotingModule: pallet_voting::{Pallet, Call, Storage, Event<T>},
+		Ident: pallet_identity::{Pallet, Call, Storage, Event<T>},
+		ShareDistributor: pallet_share_distributor::{Pallet, Call, Storage, Event<T>},
 		RoleModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
 		Sudo: pallet_sudo::{Pallet, Call, Storage, Event<T>},
 		NftModule: pallet_nft::{Pallet, Call, Storage, Event<T>},
-		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
-		Collective: pallet_collective::<Instance1>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
-		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
-		ShareDistributor: pallet_share_distributor::{Pallet, Call, Storage, Event<T>},
+		Payment: pallet_payment::{Pallet, Call, Storage, Event<T>},
+		OnboardingModule: pallet_onboarding::{Pallet, Call, Storage, Event<T>},
+		VotingModule: pallet_voting::{Pallet, Call, Storage, Event<T>},
 		Assets: pallet_assets::{Pallet, Storage, Config<T>, Event<T>},
 		HousingFund: pallet_housing_fund::{Pallet, Call, Storage,Event<T>},
-		Ident: pallet_identity::{Pallet, Call, Storage, Event<T>},
-		Payment: pallet_payment::{Pallet, Call, Storage, Event<T>}
+		Collective: pallet_collective::<Instance1>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
+		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
+		Bidding: pallet_bidding::{Pallet, Call, Storage, Event<T>},
+		Finalise: pallet_finalizer::{Pallet, Call, Storage, Event<T>},
 
 	}
 );
@@ -72,7 +70,7 @@ parameter_types! {
 		frame_system::limits::BlockWeights::simple_max(Weight::from_ref_time(1024_u64));
 }
 
-impl frame_system::Config for Test {
+impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
 	type BlockLength = ();
@@ -97,6 +95,12 @@ impl frame_system::Config for Test {
 	type SS58Prefix = ConstU16<42>;
 	type OnSetCode = ();
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
+}
+
+impl pallet_tenancy::Config for Test {
+	type Event = Event;
+	type Currency = Balances;
+	type WeightInfo = ();
 }
 
 pub struct MockDisputeResolver;
@@ -139,6 +143,11 @@ impl pallet_payment::Config for Test {
 	type MaxRemarkLength = MaxRemarkLength;
 	type CancelBufferBlockLength = CancelBufferBlockLength;
 	type MaxScheduledTaskListLength = MaxScheduledTaskListLength;
+	type WeightInfo = ();
+}
+
+impl pallet_finalizer::Config for Test {
+	type Event = Event;
 	type WeightInfo = ();
 }
 
@@ -192,12 +201,13 @@ impl pallet_scheduler::Config for Test {
 
 parameter_types! {
 	pub const MaxProposal:MaxProposals = 7;
+	pub const MotionDuration: BlockNumber = 3;
 }
 impl pallet_collective::Config<Instance1> for Test {
 	type Origin = Origin;
 	type Proposal = Call;
 	type Event = Event;
-	type MotionDuration = ConstU64<3>;
+	type MotionDuration = MotionDuration;
 	type MaxProposals = MaxProposal;
 	type MaxMembers = MaxMembers;
 	type DefaultVote = PrimeDefaultVote;
@@ -205,15 +215,36 @@ impl pallet_collective::Config<Instance1> for Test {
 }
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 5; //ok
+	pub const LaunchPeriod: BlockNumber = 1; //ok
 	pub const VotingPeriod: BlockNumber = 5; //ok
-	pub const FastTrackVotingPeriod: BlockNumber = 2; //ok
+	pub const FastTrackVotingPeriod: BlockNumber = 20; //ok
 	pub const InstantAllowed: bool = true; //ok
-	pub const MinimumDeposit: Balance = 100; //ok
-	pub const EnactmentPeriod: BlockNumber = 5; //ok
-	pub const CooloffPeriod: BlockNumber = 5; //ok
-	pub const PreimageByteDeposit: Balance = 1; //ok
+	pub const MinimumDeposit: Balance = 1; //ok
+	pub const EnactmentPeriod: BlockNumber = 50; //ok
+	pub const CooloffPeriod: BlockNumber = 50; //ok
+	pub const PreimageByteDeposit: Balance = 10; //ok
 	pub const MaxVotes: u32 = 100;
+}
+
+parameter_types! {
+	pub const SimultaneousAssetBidder: u64 = 1;
+	pub const MaxTriesBid: u64 = 3;
+	pub const MaxTriesAseemblingInvestor: u64 = 3;
+	pub const MaximumSharePerInvestor: u64 = 20;
+	pub const MinimumSharePerInvestor: u64 = 10;
+	pub const NewAssetScanPeriod: u64 = 20;
+}
+
+impl pallet_bidding::Config for Test {
+	type Event = Event;
+	type WeightInfo = ();
+	type Currency = Balances;
+	type SimultaneousAssetBidder = SimultaneousAssetBidder;
+	type MaxTriesBid = MaxTriesBid;
+	type MaxTriesAseemblingInvestor = MaxTriesAseemblingInvestor;
+	type MaximumSharePerInvestor = MaximumSharePerInvestor;
+	type MinimumSharePerInvestor = MinimumSharePerInvestor;
+	type NewAssetScanPeriod = NewAssetScanPeriod;
 }
 
 parameter_types! {
@@ -298,9 +329,9 @@ impl pallet_nft::Config for Test {
 }
 
 parameter_types! {
-	pub const Delay: BlockNumber = 2;//3 * MINUTES;
+	pub const Delay: BlockNumber = 0;//3 * MINUTES;
 	pub const CheckDelay: BlockNumber = 1;//3 * MINUTES;
-	pub const InvestorVoteAmount: u128 = 1;
+	pub const InvestorVoteAmount: u128 = 100;
 	pub const CheckPeriod: BlockNumber = 1;
 }
 
@@ -339,7 +370,7 @@ impl pallet_sudo::Config for Test {
 }
 
 parameter_types! {
-	pub const MaxMembers:u32 =7;
+	pub const MaxMembers:u32 =15;
 }
 impl pallet_roles::Config for Test {
 	type Event = Event;
@@ -408,7 +439,7 @@ parameter_types! {
 	pub const JudgementFee: u64= 2;
 	pub const GuarantyCoefficient: u32 = 3;
 	pub const RoR:Percent = Percent::from_percent(RETURN_ON_RENT);
-	pub const RentCheckPeriod: BlockNumber = 1;
+	pub const RentCheckPeriod: BlockNumber = 25;
 	pub const ContractLength: BlockNumber = 365;
 }
 
@@ -429,60 +460,62 @@ impl pallet_asset_management::Config for Test {
 	type WeightInfo = ();
 }
 
+pub const REPRESENTATIVE: AccountId = AccountId::new([10u8; 32]);
+pub const FRED: AccountId = AccountId::new([11u8; 32]);
+pub const NOTARY: AccountId = AccountId::new([30u8; 32]);
+pub const SALIM: AccountId = AccountId::new([31u8; 32]);
+pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
+pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
+pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
+pub const INCENTIVE_PERCENTAGE: u8 = 10;
+pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
+pub const CANCEL_BLOCK_BUFFER: u64 = 600;
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const DAVE: AccountId = AccountId::new([6u8; 32]);
 pub const EVE: AccountId = AccountId::new([5u8; 32]);
-//pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
+pub const TENANT0: AccountId = AccountId::new([4u8; 32]);
 pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
 pub const GERARD: AccountId = AccountId::new([8u8; 32]);
 pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
-pub const PEGGY: AccountId = AccountId::new([10u8; 32]);
 
-pub struct ExtBuilder;
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		ExtBuilder
+// Build genesis storage according to the mock runtime.
+pub fn new_test_ext() -> sp_io::TestExternalities {
+	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![
+			(ALICE, 200_000_000),
+			(BOB, 200_000_000),
+			(CHARLIE, 200_000_000),
+			(REPRESENTATIVE, 200_000_000),
+			(DAVE, 200_000_000),
+			(EVE, 200_000_000),
+			(GERARD, 200_000_000),
+			(FERDIE, 200_000_000),
+			(HUNTER, 200_000_000),
+			(FRED, 200_000_000),
+			(SALIM, 200_000_000),
+			(NOTARY, 100_000_000),
+			(TENANT0, 50_000_000),
+		],
 	}
-}
+	.assimilate_storage(&mut t)
+	.unwrap();
 
-impl ExtBuilder {
-	pub fn build(self) -> sp_io::TestExternalities {
-		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
-
-		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![
-				(ALICE, 200_000),
-				(BOB, 200_000_000),
-				(CHARLIE, 200_000_000),
-				(DAVE, 150_000),
-				(EVE, 150_000),
-				(GERARD, 150_000),
-				(FERDIE, 150_000),
-				(HUNTER, 200_000_000),
-			],
-		}
+	pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
-			.assimilate_storage(&mut t)
-			.unwrap();
-
-		pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
-			members: vec![ALICE, BOB, CHARLIE, DAVE],
-			phantom: Default::default(),
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-
-		let mut ext = sp_io::TestExternalities::new(t);
-		ext.execute_with(|| System::set_block_number(1));
-		ext
+	pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
+		members: vec![ALICE, BOB, CHARLIE, DAVE],
+		phantom: Default::default(),
 	}
-}
+	.assimilate_storage(&mut t)
+	.unwrap();
 
-pub fn expect_events(e: Vec<Event>) {
-	e.into_iter().for_each(frame_system::Pallet::<Test>::assert_has_event);
+	let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| System::set_block_number(1));
+	ext
 }

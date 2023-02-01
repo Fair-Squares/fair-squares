@@ -118,7 +118,7 @@ pub mod pallet {
 		NoHousesFinalisedFound(BlockNumberOf<T>),
 		/// A finalised house has been distributed among investors
 		SellAssetToInvestorsSuccessful(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
-		
+
 		/// A finalised house failed to be distributed among investors
 		SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
 
@@ -250,10 +250,10 @@ impl<T: Config> Pallet<T> {
 				continue
 			}
 
-			// Retrives the ivestors list and their contributions
+			// Retrieves the investors list and their contributions
 			let investor_shares = Self::create_investor_list(amount);
 
-			// Checki that the investor list creation was successful
+			// Check that the investor list creation was successful
 			if investor_shares.is_empty() {
 				Self::deposit_event(Event::FailedToAssembleInvestors(
 					collection_id,

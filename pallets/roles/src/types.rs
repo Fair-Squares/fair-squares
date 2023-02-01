@@ -126,6 +126,9 @@ pub struct Tenant<T: Config> {
 	pub rent: BalanceOf<T>,
 	pub age: BlockNumberOf<T>,
 	pub asset_account: Option<T::AccountId>,
+	pub contract_start: BlockNumberOf<T>,
+	pub remaining_rent: BalanceOf<T>,
+	pub remaining_payments:u8,
 }
 impl<T: Config> Tenant<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
@@ -136,6 +139,9 @@ impl<T: Config> Tenant<T> {
 			rent: Zero::zero(),
 			age: now,
 			asset_account: None,
+			contract_start: now,
+			remaining_rent: Zero::zero(),
+			remaining_payments: 0,
 		};
 		TenantLog::<T>::insert(caller, &tenant);
 		Ok(())
@@ -182,6 +188,7 @@ pub struct Representative<T: Config> {
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
 	pub assets_accounts: Vec<T::AccountId>,
+	pub index: u32
 }
 impl<T: Config> Representative<T>
 where
@@ -199,6 +206,7 @@ where
 			age: now,
 			activated: false,
 			assets_accounts: Vec::new(),
+			index: Default::default(),
 		};
 
 		RepApprovalList::<T>::mutate(caller, |val| {

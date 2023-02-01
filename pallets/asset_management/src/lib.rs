@@ -35,6 +35,8 @@
 //!
 //! * `unlink_tenant_to_asset` - Call used as a proposal to remove the link between a tenant and an
 //!   asset.
+//!
+//! * `request_guaranty_payment` - Call used to send a guaranty deposit payment request to a tenant.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -42,8 +44,10 @@ pub use pallet::*;
 pub use pallet_assets as Assetss;
 pub use pallet_democracy as Dem;
 pub use pallet_housing_fund as HFund;
+pub use pallet_identity as Ident;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
+pub use pallet_payment as Payment;
 pub use pallet_roles as Roles;
 pub use pallet_share_distributor as Share;
 
@@ -82,6 +86,8 @@ pub mod pallet {
 		+ Share::Config
 		+ Nft::Config
 		+ Assetss::Config
+		+ Ident::Config
+		+ Payment::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
@@ -96,10 +102,25 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 
 		#[pallet::constant]
+		type Guaranty: Get<u32>;
+
+		#[pallet::constant]
+		type RoR: Get<Percent>;
+
+		#[pallet::constant]
 		type MinimumDepositVote: Get<BalanceOf<Self>>;
 
 		#[pallet::constant]
+		type RepFees: Get<BalanceOf<Self>>;
+
+		#[pallet::constant]
+		type ContractLength: Get<Self::BlockNumber>;
+
+		#[pallet::constant]
 		type CheckPeriod: Get<Self::BlockNumber>;
+
+		#[pallet::constant]
+		type RentCheck: Get<Self::BlockNumber>;
 	}
 
 	//Store the referendum_index and the struct containing the
@@ -108,6 +129,17 @@ pub mod pallet {
 	#[pallet::getter(fn proposals)]
 	pub type ProposalsLog<T: Config> =
 		StorageMap<_, Blake2_128Concat, Dem::ReferendumIndex, ProposalRecord<T>, OptionQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn guaranty)]
+	pub type GuarantyPayment<T: Config> = StorageDoubleMap<
+		_,
+		Blake2_128Concat,
+		T::AccountId, // payment issuer
+		Blake2_128Concat,
+		T::AccountId, // payment recipient
+		Payment::PaymentDetail<T>,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn indexes)]
@@ -163,6 +195,16 @@ pub mod pallet {
 			item: T::NftItemId,
 			asset_account: T::AccountId,
 		},
+		///The amount of the tenant debt
+		TenantDebt { tenant: T::AccountId, debt: BalanceOf<T>, when: BlockNumberOf<T> },
+
+		/// Guaranty payment request sent
+		GuarantyPaymentRequested {
+			tenant: T::AccountId,
+			asset_account: T::AccountId,
+			amount: Payment::BalanceOf<T>,
+			when: BlockNumberOf<T>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -200,12 +242,20 @@ pub mod pallet {
 		ReferendumCompleted,
 		/// Not enough funds in the account
 		NotEnoughFunds,
+		/// Payment request already sent
+		ExistingPaymentRequest,
+		/// Not enough funds in the tenant account
+		NotEnoughTenantFunds,
 	}
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
 		fn on_initialize(n: T::BlockNumber) -> Weight {
 			Self::begin_block(n)
+		}
+
+		fn on_idle(n: T::BlockNumber, _max_weight: Weight) -> Weight {
+			Self::finish_block(n)
 		}
 	}
 
@@ -230,11 +280,12 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		/// An owner trigger a vote session with a proposal for an asset
+		/// Using the function below, an owner triggers a vote session with a proposal for an asset
 		/// The origin must be an owner of the asset
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - representative: an account with the representative role to be designed
+		/// - proposal contains the extrinsics to be executed depending on the vote result
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn launch_representative_session(
 			origin: OriginFor<T>,
@@ -322,9 +373,9 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		///The function below allows the owner to vote.
-		///The balance locked and used for vote conviction corresponds
-		///to the number of ownership tokens possessed by the voter.
+		/// The function below allows the owner to vote.
+		/// The balance locked and used for vote conviction corresponds
+		/// to the number of ownership tokens possessed by the voter.
 		/// The origin must be an owner of the asset
 		/// - referendum_index: index of the referendum the voter is taking part in
 		/// - vote: aye or nay
@@ -372,7 +423,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		///Approval of a Representative role request
+		/// The function below allows the approval of a Representative role request
 		/// The origin must be the virtual account connected to the asset
 		/// - rep_account: account Of the candidate to the representative account
 		/// - collection: collection number of the asset.
@@ -384,17 +435,17 @@ pub mod pallet {
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
 		) -> DispatchResult {
-			let caller = ensure_signed(origin)?;
+			let caller = ensure_signed(origin.clone())?;
 
 			//Check that the caller is a stored virtual account
 			ensure!(
-				caller ==
-					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				caller
+					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
 
 			//Approve role request
-			Self::approve_representative(caller.clone(), rep_account.clone()).ok();
+			Self::approve_representative(origin, rep_account.clone()).ok();
 
 			Self::deposit_event(Event::RepresentativeCandidateApproved {
 				candidate: rep_account,
@@ -405,7 +456,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		///Demotion of a previously elected Representative
+		/// The function below allows the demotion of a previously elected Representative
 		/// The origin must be the virtual account connected to the asset
 		/// - rep_account: account Of the candidate to the representative account
 		/// - collection: collection_id of the asset.
@@ -421,8 +472,8 @@ pub mod pallet {
 
 			//Check that the caller is a stored virtual account
 			ensure!(
-				caller ==
-					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				caller
+					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
 
@@ -438,7 +489,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// A representative triggers a vote session with a proposal for a tenant to be linked with
+		/// Using the function below, a representative triggers a vote session with a proposal for a tenant to be linked with
 		/// an asset The origin must be a representative
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
@@ -450,6 +501,7 @@ pub mod pallet {
 			asset_id: T::NftItemId,
 			tenant: T::AccountId,
 			proposal: VoteProposals,
+			judgement: Ident::Judgement<IdentBalanceOf<T>>,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
 
@@ -464,6 +516,15 @@ pub mod pallet {
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
+			//Compare guaranty payment amount+fees with tenant free_balance
+			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
+			let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
+			let fee1 = T::IncentivePercentage::get()
+				* Self::u128_to_balance_option2(guaranty.clone()).unwrap();
+			let total_amount = guaranty + fee0 + Self::balance_to_u128_option1(fee1).unwrap();
+			let tenant_bal0: BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
+			let tenant_bal = Self::balance_to_u128_option1(tenant_bal0).unwrap();
+
 			let asset_account = ownership.unwrap().virtual_account;
 			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);
 
@@ -476,6 +537,23 @@ pub mod pallet {
 				VoteProposals::Election => {
 					// Ensure that the tenant is not linked to an asset
 					ensure!(tenant0.asset_account.is_none(), Error::<T>::AlreadyLinkedWithAsset);
+					//Ensure there is no existing payment request for this asset
+					ensure!(
+						Self::guaranty(&tenant0.account_id, &asset_account).is_none(),
+						Error::<T>::ExistingPaymentRequest
+					);
+					//ensure that tenant can pay Guaranty deposit
+					ensure!(tenant_bal > total_amount, Error::<T>::NotEnoughTenantFunds);
+					//provide judgement
+					let index = rep.index;
+					let target = T::Lookup::unlookup(tenant.clone());
+					Ident::Pallet::<T>::provide_judgement(
+						origin.clone(),
+						index.into(),
+						target,
+						judgement.clone(),
+					)
+					.ok();
 				},
 				VoteProposals::Demotion => {
 					// Ensure that the tenant is linked to the asset
@@ -500,10 +578,11 @@ pub mod pallet {
 			.ok();
 
 			let call = match proposal {
-				VoteProposals::Election => Call::<T>::link_tenant_to_asset {
-					tenant: tenant.clone(),
+				VoteProposals::Election => Call::<T>::request_guaranty_payment {
+					from: tenant.clone(),
 					collection: collection_id,
 					item: asset_id,
+					judgement,
 				},
 				VoteProposals::Demotion => Call::<T>::unlink_tenant_to_asset {
 					tenant: tenant.clone(),
@@ -542,7 +621,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Link an accepted tenant with an existing asset
+		/// The function below links an accepted tenant with an existing asset
 		/// The origin must be the virtual account connected to the asset
 		/// - tenant: an account with the tenant role
 		/// - collection: collection_id of the asset
@@ -573,7 +652,44 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Unlink a tenant with an asset
+		/// The function below sends a guaranty deposiy payment request to a tenant. This extrinsic is executed
+		/// After a positive tenant_session.
+		/// The origin must be the virtual account connected to the asset
+		/// - tenant: an account with the tenant role linked to the asset
+		/// - collection: collection_id of the asset
+		/// - item: item_id of the asset
+		/// - _judgement is provided by the representative while creating a tenant session  
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn request_guaranty_payment(
+			origin: OriginFor<T>,
+			from: T::AccountId,
+			collection: T::NftCollectionId,
+			item: T::NftItemId,
+			_judgement: Ident::Judgement<IdentBalanceOf<T>>,
+		) -> DispatchResult {
+			let creator = ensure_signed(origin.clone())?;
+
+			// Ensure the caller is the virtual account of the asset
+			let asset_account =
+				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
+			ensure!(creator == asset_account, Error::<T>::NotAnAssetAccount);
+
+			//Launch payment request
+			Self::guaranty_payment(origin, from.clone(), collection, item).ok();
+			let payment = Self::guaranty(from.clone(), asset_account).unwrap();
+			let now = <frame_system::Pallet<T>>::block_number();
+
+			Self::deposit_event(Event::GuarantyPaymentRequested {
+				tenant: from,
+				asset_account: creator,
+				amount: payment.amount,
+				when: now,
+			});
+
+			Ok(())
+		}
+
+		/// The function below unlinks a tenant with an asset
 		/// The origin must be the virtual account connected to the asset
 		/// - tenant: an account with the tenant role linked to the asset
 		/// - collection: collection_id of the asset

@@ -15,6 +15,7 @@ pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok(); //FERDIE approval will be tested
 	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::TENANT).ok();
 	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::TENANT).ok();
+	RoleModule::set_role(Origin::signed(PEGGY), PEGGY, Acc::TENANT).ok();
 }
 
 fn next_block() {
@@ -195,7 +196,7 @@ fn share_distributor0() {
 		assert_eq!(new_owner1, virtual1.virtual_account);
 		Balances::set_balance(
 			frame_system::RawOrigin::Root.into(),
-			virtual0.virtual_account,
+			virtual0.virtual_account.clone(),
 			5_000_000_000,
 			1_000_000_000,
 		)
@@ -293,7 +294,8 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::NotARepresentative
 		);
@@ -308,7 +310,8 @@ fn share_distributor0() {
 				NftColl::OFFICES,
 				10,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::NotAnAsset
 		);
@@ -325,7 +328,8 @@ fn share_distributor0() {
 				NftColl::APPARTMENTSTEST,
 				item_id1,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::AssetOutOfControl
 		);
@@ -338,7 +342,8 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				BOB,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::NotATenant
 		);
@@ -364,7 +369,8 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			GERARD,
-			VoteProposals::Election
+			VoteProposals::Election,
+			Ident::Judgement::Reasonable,
 		));
 
 		println!("\n\nlaunch_tenant_session - : A SUCCESSFUL SCENARIO");
@@ -397,6 +403,17 @@ fn share_distributor0() {
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
+		assert_eq!(
+			true,
+			GuarantyPayment::<Test>::contains_key(GERARD, virtual0.virtual_account.clone())
+		);
+		assert_ok!(AssetManagement::tenant_link_asset(
+			GERARD,
+			coll_id0,
+			item_id0,
+			virtual0.virtual_account.clone()
+		));
+
 		// Check the tenants of the house
 		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
 		assert_eq!(house0.tenants, vec![GERARD]);
@@ -417,9 +434,24 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				GERARD,
-				VoteProposals::Election
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::AlreadyLinkedWithAsset
+		);
+		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
+
+		//Ferdie proposes PEGGY, but Peggy does not have enough funds
+		assert_err!(
+			AssetManagement::launch_tenant_session(
+				origin_ferdie.clone(),
+				NftColl::OFFICESTEST,
+				item_id0,
+				PEGGY,
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
+			),
+			Error::<Test>::NotEnoughTenantFunds
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
 
@@ -430,7 +462,8 @@ fn share_distributor0() {
 				NftColl::OFFICESTEST,
 				item_id0,
 				HUNTER,
-				VoteProposals::Demotion
+				VoteProposals::Demotion,
+				Ident::Judgement::Reasonable,
 			),
 			Error::<Test>::TenantAssetNotLinked
 		);
@@ -442,7 +475,8 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			HUNTER,
-			VoteProposals::Election
+			VoteProposals::Election,
+			Ident::Judgement::Reasonable,
 		));
 
 		ref_index += 1;
@@ -472,6 +506,14 @@ fn share_distributor0() {
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
+		//Connect tenant to asset
+		assert_ok!(AssetManagement::tenant_link_asset(
+			HUNTER,
+			coll_id0,
+			item_id0,
+			virtual0.virtual_account
+		));
+
 		// Check the tenants of the house
 		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
 		assert_eq!(house0.tenants, vec![GERARD, HUNTER]);
@@ -490,7 +532,8 @@ fn share_distributor0() {
 			NftColl::OFFICESTEST,
 			item_id0,
 			HUNTER,
-			VoteProposals::Demotion
+			VoteProposals::Demotion,
+			Ident::Judgement::Reasonable,
 		));
 
 		ref_index += 1;

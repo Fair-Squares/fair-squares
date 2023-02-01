@@ -371,7 +371,7 @@ fn council_close_vote_proposal_pass_should_succeed() {
 }
 
 #[test]
-fn investor_vote_without_having_invetsor_role_should_fail() {
+fn investor_vote_without_having_investor_role_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(Origin::signed(EVE), EVE, crate::ROLES::Accounts::SELLER));

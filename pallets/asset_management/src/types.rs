@@ -23,6 +23,7 @@ pub use sp_runtime::{
 	Perbill,
 };
 pub use sp_std::boxed::Box;
+pub use Payment::PaymentHandler;
 
 pub type BalanceOf<T> =
 	<<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -32,6 +33,9 @@ pub type HashOf<T> = <T as frame_system::Config>::Hash;
 
 pub type DemoBalanceOf<T> =
 	<<T as Dem::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
+pub type IdentBalanceOf<T> =
+	<<T as Ident::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 pub type RefInfos<T> =
 	pallet_democracy::ReferendumInfo<BlockNumberOf<T>, HashOf<T>, DemoBalanceOf<T>>;

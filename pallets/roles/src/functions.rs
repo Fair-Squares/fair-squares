@@ -79,8 +79,8 @@ impl<T: Config> Pallet<T> {
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
 		let success = match role {
-			Accounts::SELLER => Self::approve_seller(sender.clone(), who.clone()),
-			Accounts::SERVICER => Self::approve_servicer(sender.clone(), who.clone()),
+			Accounts::SELLER => Self::approve_seller(sender, who),
+			Accounts::SERVICER => Self::approve_servicer(sender, who),
 			Accounts::NOTARY => Self::approve_notary(sender, who),
 			_ => false,
 		};
@@ -158,13 +158,25 @@ impl<T: Config> Pallet<T> {
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
 		let success = match role {
-			Accounts::SELLER => Self::reject_seller(who.clone()),
-			Accounts::SERVICER => Self::reject_servicer(who.clone()),
+			Accounts::SELLER => Self::reject_seller(who),
+			Accounts::SERVICER => Self::reject_servicer(who),
 			Accounts::NOTARY => Self::reject_notary(who),
 			_ => false,
 		};
 		ensure!(success, Error::<T>::NotInWaitingList);
 		Ok(())
+	}
+
+	pub fn balance_to_u128_option(input: BalanceOf<T>) -> Option<u128> {
+		input.try_into().ok()
+	}
+
+	pub fn u128_to_balance_option(input: u128) -> Option<BalanceOf<T>> {
+		input.try_into().ok()
+	}
+
+	pub fn tenant_list() -> Box<dyn Iterator<Item = T::AccountId>> {
+		Box::new(TenantLog::<T>::iter_keys())
 	}
 
 	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
@@ -176,8 +188,9 @@ impl<T: Config> Pallet<T> {
 				Representative::<T> {
 					account_id: account.clone(),
 					age: now,
-					activated: true,
+					activated: false,
 					assets_accounts: vec![],
+					index: 0
 				},
 			);
 		}
