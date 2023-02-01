@@ -2,6 +2,7 @@
 pub use super::*;
 pub use frame_support::pallet_prelude::*;
 pub use scale_info::prelude::boxed::Box;
+use num_traits::float::FloatCore;
 pub use sp_core::H256;
 use sp_runtime::{
 	traits::{StaticLookup, Zero},
@@ -119,13 +120,15 @@ impl<T: Config> Pallet<T> {
 		asset_account: T::AccountId,
 	) -> DispatchResult {
 		// Update tenant info
+		//We first get the Return on Rent coeffient
 		let coeff = T::RoR::get() as u64;
 		Roles::TenantLog::<T>::mutate(&tenant, |val| {
 			let mut val0 = val.clone().unwrap();
 			// get asset price
 			let price0 = Onboarding::Pallet::<T>::houses(collection,item).unwrap().price.unwrap();
 			let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(price0).unwrap();
-			//update rent in tenant infos added
+			//Update rent in tenant infos added. We must not forget that the ROR is a percentage:
+			//we thereforre need to use (RoR/100) when doing calculations.
 			let rent0:u128 = ((coeff*price1)/1200).into();
 			let rent1 = rent0.clone()*12;
 			let now = <frame_system::Pallet<T>>::block_number();
@@ -225,6 +228,8 @@ impl<T: Config> Pallet<T> {
 		call
 	}
 
+	///The function below is monitoring ongoing referendums
+	///in order to update the status of corresponding Proposal Logs
 	pub fn begin_block(now: T::BlockNumber) -> Weight {
 		let max_block_weight = Weight::from_ref_time(1000_u64);
 		if (now % <T as Config>::CheckPeriod::get()).is_zero() {
@@ -254,6 +259,13 @@ impl<T: Config> Pallet<T> {
 		max_block_weight
 	}
 
+	///The function below regularly checks (every 15 days) for active Tenants on the blockchain
+	///when a tenant is fund, his specific Rent-per-block is first calculated.
+	///Next, based on the number of blocks ellapsed since the day of its activation,
+	///the amount that should have been paid up to this point is calculated, and compared 
+	///with the amount that has been actually paid.
+	///If the balance of the Tenant is negative, an event is emitted to notify him of his debt,
+	///If not, nothing happens.
 	pub fn finish_block(now: T::BlockNumber) -> Weight{
 
 		if (now%<T as Config>::CheckPeriod::get()).is_zero(){
@@ -265,23 +277,25 @@ impl<T: Config> Pallet<T> {
 					let remaining_p = tenant.remaining_payments;
 					let contract_begin = tenant.contract_start;
 					let rent = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap()*12;
+					let rent_float = rent as f64;
 					
 					//Calculate rent per block
 					let total_blocks = <T as Config>::Contr::get();
-					let mut cpb = Self::blocknumber_to_u128(total_blocks.clone()).unwrap();
-					cpb = rent.clone().saturating_div(cpb);
-					
+					let mut rpb = Self::blocknumber_to_u128(total_blocks.clone()).unwrap();
+					let mut rpb_float = rpb as f64;
+					rpb_float = (rent_float/rpb_float).round();
+					rpb = rpb_float as u128;
+
 					//number of blocks from the start of the contract
 					let blocks = Self::blocknumber_to_u128(now-contract_begin).unwrap();
-					let amount_due = blocks.saturating_mul(cpb);
+					let amount_due = blocks.saturating_mul(rpb);
 					
 					//check how many rents were payed
 					let payed = (12-remaining_p as u128)* rent.clone();
-
-					if payed < amount_due && (now%<T as Config>::RentCheck::get()).is_zero(){
-						
+					if payed < amount_due && (now%<T as Config>::RentCheck::get()).is_zero(){						
 					let tenant_debt0 = amount_due-payed;
 					let debt = Self::u128_to_balance_option2(tenant_debt0).unwrap();
+					
 					//Emmit event to inform the tenant of the amount of his debt
 					Self::deposit_event(Event::TenantDebt{tenant:tenant.account_id,debt:debt,when:now});
 
