@@ -372,7 +372,6 @@ fn share_distributor0() {
 			VoteProposals::Election,
 			Ident::Judgement::Reasonable,
 		));
-		
 
 		println!("\n\nlaunch_tenant_session - : A SUCCESSFUL SCENARIO");
 
@@ -404,10 +403,16 @@ fn share_distributor0() {
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
-		assert_eq!(true,GuarantyPayment::<Test>::contains_key(GERARD,virtual0.virtual_account.clone()));
-		assert_ok!(AssetManagement::tenant_link_asset(GERARD,coll_id0,item_id0,virtual0.virtual_account.clone()));
-
-		
+		assert_eq!(
+			true,
+			GuarantyPayment::<Test>::contains_key(GERARD, virtual0.virtual_account.clone())
+		);
+		assert_ok!(AssetManagement::tenant_link_asset(
+			GERARD,
+			coll_id0,
+			item_id0,
+			virtual0.virtual_account.clone()
+		));
 
 		// Check the tenants of the house
 		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
@@ -449,7 +454,6 @@ fn share_distributor0() {
 			Error::<Test>::NotEnoughTenantFunds
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
-
 
 		// demote a tenant
 		assert_err!(
@@ -501,9 +505,14 @@ fn share_distributor0() {
 
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
-		
+
 		//Connect tenant to asset
-		assert_ok!(AssetManagement::tenant_link_asset(HUNTER,coll_id0,item_id0,virtual0.virtual_account));
+		assert_ok!(AssetManagement::tenant_link_asset(
+			HUNTER,
+			coll_id0,
+			item_id0,
+			virtual0.virtual_account
+		));
 
 		// Check the tenants of the house
 		let house0 = OnboardingModule::houses(coll_id0, item_id0).unwrap();

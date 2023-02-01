@@ -31,7 +31,6 @@ pub type CollectionId = u32;
 pub type ItemId = u32;
 pub type NftColl = Nft::PossibleCollections;
 
-
 pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
 pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
 pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
@@ -73,8 +72,6 @@ parameter_types! {
 		frame_system::limits::BlockWeights::simple_max(Weight::from_ref_time(1024_u64));
 }
 
-
-
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -102,7 +99,6 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-
 pub struct MockDisputeResolver;
 impl pallet_payment::DisputeResolver<AccountId> for MockDisputeResolver {
 	fn get_resolver_account() -> AccountId {
@@ -119,7 +115,9 @@ impl pallet_payment::FeeHandler<Test> for MockFeeHandler {
 		_remark: Option<&[u8]>,
 	) -> (AccountId, Percent) {
 		match to {
-			&PAYMENT_RECIPENT_FEE_CHARGED => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE)),
+			&PAYMENT_RECIPENT_FEE_CHARGED => {
+				(FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE))
+			},
 			_ => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(0)),
 		}
 	}
@@ -143,8 +141,6 @@ impl pallet_payment::Config for Test {
 	type MaxScheduledTaskListLength = MaxScheduledTaskListLength;
 	type WeightInfo = ();
 }
-
-
 
 parameter_types! {
 	pub const CollectionDeposit: Balance = 10_000 ; // 1 UNIT deposit to create asset class
@@ -464,7 +460,7 @@ impl ExtBuilder {
 				(EVE, 150_000),
 				(GERARD, 150_000),
 				(FERDIE, 150_000),
-				(HUNTER, 200_000_000)
+				(HUNTER, 200_000_000),
 			],
 		}
 		.assimilate_storage(&mut t)

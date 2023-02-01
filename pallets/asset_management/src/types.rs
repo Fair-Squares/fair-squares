@@ -37,7 +37,6 @@ pub type DemoBalanceOf<T> =
 pub type IdentBalanceOf<T> =
 	<<T as Ident::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-
 pub type RefInfos<T> =
 	pallet_democracy::ReferendumInfo<BlockNumberOf<T>, HashOf<T>, DemoBalanceOf<T>>;
 

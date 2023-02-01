@@ -38,7 +38,6 @@
 //!
 //! * `request_guaranty_payment` - Call used to send a guaranty deposit payment request to a tenant.
 
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
@@ -48,9 +47,9 @@ pub use pallet_housing_fund as HFund;
 pub use pallet_identity as Ident;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
+pub use pallet_payment as Payment;
 pub use pallet_roles as Roles;
 pub use pallet_share_distributor as Share;
-pub use pallet_payment as Payment;
 
 mod functions;
 mod types;
@@ -122,8 +121,6 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type RentCheck: Get<Self::BlockNumber>;
-
-	
 	}
 
 	//Store the referendum_index and the struct containing the
@@ -142,8 +139,8 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::AccountId, // payment recipient
 		Payment::PaymentDetail<T>,
-		>;
-	
+	>;
+
 	#[pallet::storage]
 	#[pallet::getter(fn indexes)]
 	pub type ProposalsIndexes<T: Config> =
@@ -199,19 +196,15 @@ pub mod pallet {
 			asset_account: T::AccountId,
 		},
 		///The amount of the tenant debt
-		TenantDebt{
-			tenant: T::AccountId,
-			debt: BalanceOf<T>,
-			when: BlockNumberOf<T>,
-		},
+		TenantDebt { tenant: T::AccountId, debt: BalanceOf<T>, when: BlockNumberOf<T> },
 
 		/// Guaranty payment request sent
-		GuarantyPaymentRequested{
+		GuarantyPaymentRequested {
 			tenant: T::AccountId,
 			asset_account: T::AccountId,
 			amount: Payment::BalanceOf<T>,
 			when: BlockNumberOf<T>,
-		}
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -253,7 +246,6 @@ pub mod pallet {
 		ExistingPaymentRequest,
 		/// Not enough funds in the tenant account
 		NotEnoughTenantFunds,
-		
 	}
 
 	#[pallet::hooks]
@@ -262,7 +254,7 @@ pub mod pallet {
 			Self::begin_block(n)
 		}
 
-		fn on_idle(n: T::BlockNumber,_max_weight: Weight) -> Weight{
+		fn on_idle(n: T::BlockNumber, _max_weight: Weight) -> Weight {
 			Self::finish_block(n)
 		}
 	}
@@ -447,8 +439,8 @@ pub mod pallet {
 
 			//Check that the caller is a stored virtual account
 			ensure!(
-				caller ==
-					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				caller
+					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
 
@@ -480,8 +472,8 @@ pub mod pallet {
 
 			//Check that the caller is a stored virtual account
 			ensure!(
-				caller ==
-					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				caller
+					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
 
@@ -525,14 +517,14 @@ pub mod pallet {
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
 			//Compare guaranty payment amount+fees with tenant free_balance
-			let guaranty = Self::calculate_guaranty(collection_id,asset_id);
+			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
-			let fee1 = T::IncentivePercentage::get() * Self::u128_to_balance_option2(guaranty.clone()).unwrap();
-			let total_amount = guaranty + fee0+ Self::balance_to_u128_option1(fee1).unwrap();
-			let tenant_bal0:BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
+			let fee1 = T::IncentivePercentage::get()
+				* Self::u128_to_balance_option2(guaranty.clone()).unwrap();
+			let total_amount = guaranty + fee0 + Self::balance_to_u128_option1(fee1).unwrap();
+			let tenant_bal0: BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
 			let tenant_bal = Self::balance_to_u128_option1(tenant_bal0).unwrap();
 
-			
 			let asset_account = ownership.unwrap().virtual_account;
 			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);
 
@@ -546,13 +538,22 @@ pub mod pallet {
 					// Ensure that the tenant is not linked to an asset
 					ensure!(tenant0.asset_account.is_none(), Error::<T>::AlreadyLinkedWithAsset);
 					//Ensure there is no existing payment request for this asset
-					ensure!(Self::guaranty(&tenant0.account_id,&asset_account).is_none(), Error::<T>::ExistingPaymentRequest);
+					ensure!(
+						Self::guaranty(&tenant0.account_id, &asset_account).is_none(),
+						Error::<T>::ExistingPaymentRequest
+					);
 					//ensure that tenant can pay Guaranty deposit
-					ensure!(tenant_bal>total_amount, Error::<T>::NotEnoughTenantFunds);
+					ensure!(tenant_bal > total_amount, Error::<T>::NotEnoughTenantFunds);
 					//provide judgement
 					let index = rep.index;
 					let target = T::Lookup::unlookup(tenant.clone());
-					Ident::Pallet::<T>::provide_judgement(origin.clone(),index.into(),target,judgement.clone()).ok();
+					Ident::Pallet::<T>::provide_judgement(
+						origin.clone(),
+						index.into(),
+						target,
+						judgement.clone(),
+					)
+					.ok();
 				},
 				VoteProposals::Demotion => {
 					// Ensure that the tenant is linked to the asset
@@ -652,7 +653,7 @@ pub mod pallet {
 		}
 
 		/// The function below sends a guaranty deposiy payment request to a tenant. This extrinsic is executed
-		/// After a positive tenant_session. 
+		/// After a positive tenant_session.
 		/// The origin must be the virtual account connected to the asset
 		/// - tenant: an account with the tenant role linked to the asset
 		/// - collection: collection_id of the asset
@@ -672,13 +673,13 @@ pub mod pallet {
 			let asset_account =
 				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 			ensure!(creator == asset_account, Error::<T>::NotAnAssetAccount);
-			
+
 			//Launch payment request
-			Self::guaranty_payment(origin,from.clone(),collection, item).ok();
-			let payment = Self::guaranty(from.clone(),asset_account).unwrap();
+			Self::guaranty_payment(origin, from.clone(), collection, item).ok();
+			let payment = Self::guaranty(from.clone(), asset_account).unwrap();
 			let now = <frame_system::Pallet<T>>::block_number();
 
-			Self::deposit_event(Event::GuarantyPaymentRequested{
+			Self::deposit_event(Event::GuarantyPaymentRequested {
 				tenant: from,
 				asset_account: creator,
 				amount: payment.amount,
@@ -686,7 +687,6 @@ pub mod pallet {
 			});
 
 			Ok(())
-
 		}
 
 		/// The function below unlinks a tenant with an asset

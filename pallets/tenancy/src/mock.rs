@@ -7,8 +7,8 @@ use frame_support::{
 	PalletId,
 };
 
-use frame_system as system;
 use crate::Nft::NftPermissions;
+use frame_system as system;
 use frame_system::{EnsureRoot, EnsureSigned};
 use pallet_collective::{Instance1, PrimeDefaultVote};
 use pallet_roles::GenesisBuild;
@@ -18,7 +18,6 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
-
 
 type CouncilCollective = pallet_collective::Instance1;
 type AccountId = AccountId32;
@@ -62,7 +61,7 @@ frame_support::construct_runtime!(
 		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
 		Bidding: pallet_bidding::{Pallet, Call, Storage, Event<T>},
 		Finalise: pallet_finalizer::{Pallet, Call, Storage, Event<T>},
-		
+
 	}
 );
 
@@ -70,7 +69,6 @@ parameter_types! {
 	pub BlockWeights: frame_system::limits::BlockWeights =
 		frame_system::limits::BlockWeights::simple_max(Weight::from_ref_time(1024_u64));
 }
-
 
 impl system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -121,7 +119,9 @@ impl pallet_payment::FeeHandler<Test> for MockFeeHandler {
 		_remark: Option<&[u8]>,
 	) -> (AccountId, Percent) {
 		match to {
-			&PAYMENT_RECIPENT_FEE_CHARGED => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE)),
+			&PAYMENT_RECIPENT_FEE_CHARGED => {
+				(FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE))
+			},
 			_ => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(0)),
 		}
 	}
@@ -150,7 +150,6 @@ impl pallet_finalizer::Config for Test {
 	type Event = Event;
 	type WeightInfo = ();
 }
-
 
 parameter_types! {
 	pub const CollectionDeposit: Balance = 10_000 ; // 1 UNIT deposit to create asset class
@@ -272,7 +271,6 @@ impl pallet_identity::Config for Test {
 	type WeightInfo = ();
 }
 
-
 impl pallet_democracy::Config for Test {
 	type Proposal = Call;
 	type Event = Event;
@@ -330,7 +328,6 @@ impl pallet_nft::Config for Test {
 	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
 }
 
-
 parameter_types! {
 	pub const Delay: BlockNumber = 0;//3 * MINUTES;
 	pub const CheckDelay: BlockNumber = 1;//3 * MINUTES;
@@ -381,7 +378,6 @@ impl pallet_roles::Config for Test {
 	type WeightInfo = ();
 	type MaxMembers = MaxMembers;
 }
-
 
 parameter_types! {
 	pub const AssetDeposit: u64 = 100 ;
@@ -439,7 +435,6 @@ impl pallet_housing_fund::Config for Test {
 	type MaxInvestorPerHouse = MaxInvestorPerHouse;
 }
 
-
 parameter_types! {
 	pub const JudgementFee: u64= 2;
 	pub const GuarantyCoefficient: u32 = 3;
@@ -487,41 +482,40 @@ pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	
-		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
-		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![
-				(ALICE, 200_000_000),
-				(BOB, 200_000_000),
-				(CHARLIE, 200_000_000),
-				(REPRESENTATIVE,200_000_000),
-				(DAVE, 200_000_000),
-				(EVE, 200_000_000),
-				(GERARD, 200_000_000),
-				(FERDIE, 200_000_000),
-				(HUNTER, 200_000_000),
-				(FRED,200_000_000),
-				(SALIM,200_000_000),
-				(NOTARY, 100_000_000),
-				(TENANT0, 50_000_000),
-			],
-		}
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![
+			(ALICE, 200_000_000),
+			(BOB, 200_000_000),
+			(CHARLIE, 200_000_000),
+			(REPRESENTATIVE, 200_000_000),
+			(DAVE, 200_000_000),
+			(EVE, 200_000_000),
+			(GERARD, 200_000_000),
+			(FERDIE, 200_000_000),
+			(HUNTER, 200_000_000),
+			(FRED, 200_000_000),
+			(SALIM, 200_000_000),
+			(NOTARY, 100_000_000),
+			(TENANT0, 50_000_000),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
 		.assimilate_storage(&mut t)
 		.unwrap();
 
-		pallet_sudo::GenesisConfig::<Test> { key: Some(ALICE) }
-			.assimilate_storage(&mut t)
-			.unwrap();
+	pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
+		members: vec![ALICE, BOB, CHARLIE, DAVE],
+		phantom: Default::default(),
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
 
-		pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
-			members: vec![ALICE, BOB, CHARLIE, DAVE],
-			phantom: Default::default(),
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-
-		let mut ext = sp_io::TestExternalities::new(t);
-		ext.execute_with(|| System::set_block_number(1));
-		ext	
+	let mut ext = sp_io::TestExternalities::new(t);
+	ext.execute_with(|| System::set_block_number(1));
+	ext
 }
