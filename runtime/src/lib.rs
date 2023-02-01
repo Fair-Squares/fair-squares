@@ -686,7 +686,7 @@ impl pallet_asset_management::Config for Runtime {
 	type MinimumDepositVote = MinimumDeposit;
 	type RepFees = JudgementFee;
 	type Guaranty = GuarantyCoefficient;
-	type Contr = ContractLength;
+	type ContractLength = ContractLength;
 	type RoR = RoR;
 	type WeightInfo = ();
 }

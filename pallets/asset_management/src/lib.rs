@@ -115,7 +115,7 @@ pub mod pallet {
 		type RepFees: Get<BalanceOf<Self>>;
 
 		#[pallet::constant]
-		type Contr: Get<Self::BlockNumber>;
+		type ContractLength: Get<Self::BlockNumber>;
 
 		#[pallet::constant]
 		type CheckPeriod: Get<Self::BlockNumber>;

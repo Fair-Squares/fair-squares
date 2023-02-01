@@ -459,7 +459,7 @@ impl pallet_asset_management::Config for Test {
 	type RepFees = JudgementFee;
 	type Currency = Balances;
 	type Guaranty = GuarantyCoefficient;
-	type Contr = ContractLength;
+	type ContractLength = ContractLength;
 	type RoR = RoR;
 	type WeightInfo = ();
 }

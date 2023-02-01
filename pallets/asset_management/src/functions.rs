@@ -280,7 +280,7 @@ impl<T: Config> Pallet<T> {
 					let rent_float = rent as f64;
 					
 					//Calculate rent per block
-					let total_blocks = <T as Config>::Contr::get();
+					let total_blocks = <T as Config>::ContractLength::get();
 					let mut rpb = Self::blocknumber_to_u128(total_blocks.clone()).unwrap();
 					let mut rpb_float = rpb as f64;
 					rpb_float = (rent_float/rpb_float).round();
