@@ -2,6 +2,7 @@
 pub use super::*;
 pub use frame_support::pallet_prelude::*;
 pub use scale_info::prelude::boxed::Box;
+#[allow(unused_imports)]
 use num_traits::float::FloatCore;
 pub use sp_core::H256;
 use sp_runtime::{
