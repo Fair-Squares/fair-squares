@@ -474,3 +474,320 @@ fn test_pay_with_remark_works() {
 		);
 	});
 }
+
+
+#[test]
+fn test_do_not_overwrite_logic_works() {
+	new_test_ext().execute_with(|| {
+		let payment_amount = 40;
+		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
+
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			payment_amount,
+			None
+		));
+
+		assert_noop!(
+			PaymentModule::pay(
+				Origin::signed(PAYMENT_CREATOR),
+				PAYMENT_RECIPENT,
+				payment_amount,
+				None
+			),
+			crate::Error::<Test>::PaymentAlreadyInProcess
+		);
+
+		// set payment state to NeedsReview
+		PaymentStore::<Test>::insert(
+			PAYMENT_CREATOR,
+			PAYMENT_RECIPENT,
+			PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::NeedsReview,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
+			},
+		);
+
+		// the payment should not be overwritten
+		assert_noop!(
+			PaymentModule::pay(
+				Origin::signed(PAYMENT_CREATOR),
+				PAYMENT_RECIPENT,
+				payment_amount,
+				None
+			),
+			crate::Error::<Test>::PaymentAlreadyInProcess
+		);
+	});
+}
+
+#[test]
+fn test_request_refund() {
+	new_test_ext().execute_with(|| {
+		let payment_amount = 20;
+		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
+		let expected_cancel_block = CANCEL_BLOCK_BUFFER + 1;
+
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			payment_amount,
+			None
+		));
+
+		assert_ok!(PaymentModule::request_refund(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT
+		));
+
+		// do not overwrite payment
+		assert_noop!(
+			PaymentModule::pay(
+				Origin::signed(PAYMENT_CREATOR),
+				PAYMENT_RECIPENT,
+				payment_amount,
+				None
+			),
+			crate::Error::<Test>::PaymentAlreadyInProcess
+		);
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::RefundRequested {
+					cancel_block: expected_cancel_block
+				},
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
+			})
+		);
+
+		assert_eq!(
+			last_event(),
+			crate::Event::<Test>::PaymentCreatorRequestedRefund {
+				from: PAYMENT_CREATOR,
+				to: PAYMENT_RECIPENT,
+				expiry: expected_cancel_block
+			}
+			.into()
+		);
+	});
+}
+
+#[test]
+fn test_dispute_refund() {
+	new_test_ext().execute_with(|| {
+		let payment_amount = 20;
+		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
+		let expected_cancel_block = CANCEL_BLOCK_BUFFER + 1;
+
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			payment_amount,
+			None
+		));
+
+		// cannot dispute if refund is not requested
+		assert_noop!(
+			PaymentModule::dispute_refund(Origin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR),
+			Error::InvalidAction
+		);
+		// creator requests a refund
+		assert_ok!(PaymentModule::request_refund(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT
+		));
+		// ensure the request is added to the refund queue
+		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
+		assert_eq!(
+			scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)).unwrap(),
+			&ScheduledTask {
+				task: Task::Cancel,
+				when: expected_cancel_block
+			}
+		);
+
+		// recipient disputes the refund request
+		assert_ok!(PaymentModule::dispute_refund(
+			Origin::signed(PAYMENT_RECIPENT),
+			PAYMENT_CREATOR
+		));
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::NeedsReview,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
+			})
+		);
+
+		assert_eq!(
+			last_event(),
+			crate::Event::<Test>::PaymentRefundDisputed {
+				from: PAYMENT_CREATOR,
+				to: PAYMENT_RECIPENT,
+			}
+			.into()
+		);
+
+		// ensure the request is removed from the refund queue
+		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
+		assert_eq!(scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)), None);
+	});
+}
+
+
+#[test]
+fn test_request_payment() {
+	new_test_ext().execute_with(|| {
+		let payment_amount = 20;
+		let expected_incentive_amount = 0;
+
+		assert_ok!(PaymentModule::request_payment(
+			Origin::signed(PAYMENT_RECIPENT),
+			PAYMENT_CREATOR,
+			payment_amount,
+		));
+
+		assert_noop!(
+			PaymentModule::request_refund(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT),
+			crate::Error::<Test>::InvalidAction
+		);
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::PaymentRequested,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
+			})
+		);
+
+		assert_eq!(
+			last_event(),
+			crate::Event::<Test>::PaymentRequestCreated {
+				from: PAYMENT_CREATOR,
+				to: PAYMENT_RECIPENT,
+			}
+			.into()
+		);
+	});
+}
+
+#[test]
+fn test_requested_payment_cannot_be_released() {
+	new_test_ext().execute_with(|| {
+		let payment_amount = 20;
+
+		assert_ok!(PaymentModule::request_payment(
+			Origin::signed(PAYMENT_RECIPENT),
+			PAYMENT_CREATOR,
+			payment_amount,
+		));
+
+		// requested payment cannot be released
+		assert_noop!(
+			PaymentModule::release(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT),
+			Error::InvalidAction
+		);
+	});
+}
+
+#[test]
+fn test_requested_payment_can_be_cancelled_by_requestor() {
+	new_test_ext().execute_with(|| {
+		let payment_amount = 20;
+
+		assert_ok!(PaymentModule::request_payment(
+			Origin::signed(PAYMENT_RECIPENT),
+			PAYMENT_CREATOR,
+			payment_amount,
+		));
+
+		assert_ok!(PaymentModule::cancel(Origin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR));
+
+		// the request should be removed from storage
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
+	});
+}
+
+#[test]
+fn test_accept_and_pay() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 20;
+		let expected_incentive_amount = 0;
+		let recipient_initial_balance = 1;
+
+		assert_ok!(PaymentModule::request_payment(
+			Origin::signed(PAYMENT_RECIPENT),
+			PAYMENT_CREATOR,
+			payment_amount,
+		));
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::PaymentRequested,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
+			})
+		);
+
+		assert_ok!(PaymentModule::accept_and_pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+		));
+
+		// the payment amount should be transferred
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance - payment_amount
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), payment_amount.saturating_add(recipient_initial_balance));
+
+		// should be deleted from storage
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
+
+		assert_eq!(
+			last_event(),
+			crate::Event::<Test>::PaymentRequestCompleted {
+				from: PAYMENT_CREATOR,
+				to: PAYMENT_RECIPENT,
+			}
+			.into()
+		);
+	});
+}
+
+#[test]
+fn test_accept_and_pay_should_fail_for_non_payment_requested() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			20,
+			None
+		));
+
+		assert_noop!(
+			PaymentModule::accept_and_pay(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT,),
+			Error::InvalidAction
+		);
+	});
+}
+
