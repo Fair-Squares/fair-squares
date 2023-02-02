@@ -791,3 +791,217 @@ fn test_accept_and_pay_should_fail_for_non_payment_requested() {
 	});
 }
 
+#[test]
+fn test_accept_and_pay_should_charge_fee_correctly() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let recipient_initial_balance = 1;
+		let payment_amount = 20;
+		let expected_incentive_amount = 0;
+		let expected_fee_amount = payment_amount / MARKETPLACE_FEE_PERCENTAGE as u64;
+
+		assert_ok!(PaymentModule::request_payment(
+			Origin::signed(PAYMENT_RECIPENT_FEE_CHARGED),
+			PAYMENT_CREATOR,
+			payment_amount,
+		));
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::PaymentRequested,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, expected_fee_amount)),
+			})
+		);
+
+		assert_ok!(PaymentModule::accept_and_pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT_FEE_CHARGED,
+		));
+
+		// the payment amount should be transferred
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance - payment_amount - expected_fee_amount
+		);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
+			payment_amount.saturating_add(recipient_initial_balance)
+		);
+		assert_eq!(
+			Balances::free_balance(&FEE_RECIPIENT_ACCOUNT),
+			expected_fee_amount.saturating_add(recipient_initial_balance)
+		);
+
+		// should be deleted from storage
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED),
+			None
+		);
+
+		assert_eq!(
+			last_event(),
+			crate::Event::<Test>::PaymentRequestCompleted {
+				from: PAYMENT_CREATOR,
+				to: PAYMENT_RECIPENT_FEE_CHARGED,
+			}
+			.into()
+		);
+	});
+}
+
+#[test]
+fn test_create_payment_works() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 20;
+		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
+		let expected_fee_amount = 0;
+
+		// the payment amount should not be reserved
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+
+		// should be able to create a payment with available balance within a
+		// transaction
+		assert_ok!(with_transaction(|| TransactionOutcome::Commit({
+			<PaymentModule as PaymentHandler<Test>>::create_payment(
+				&PAYMENT_CREATOR,
+				&PAYMENT_RECIPENT,
+				payment_amount,
+				PaymentState::Created,
+				Percent::from_percent(INCENTIVE_PERCENTAGE),
+				Some(&[1u8; 10]),
+			)
+		})));
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::Created,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, expected_fee_amount)),
+			})
+		);
+
+		// the payment should not be overwritten
+		assert_noop!(
+			with_transaction(|| TransactionOutcome::Commit({
+				<PaymentModule as PaymentHandler<Test>>::create_payment(
+					&PAYMENT_CREATOR,
+					&PAYMENT_RECIPENT,
+					payment_amount,
+					PaymentState::Created,
+					Percent::from_percent(INCENTIVE_PERCENTAGE),
+					Some(&[1u8; 10]),
+				)
+			})),
+			Error::PaymentAlreadyInProcess
+		);
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::Created,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, expected_fee_amount)),
+			})
+		);
+	});
+}
+
+#[test]
+fn test_reserve_payment_amount_works() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 20;
+		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
+		let expected_fee_amount = 0;
+
+		// the payment amount should not be reserved
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), 100_000_000_000);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+
+		// should be able to create a payment with available balance within a
+		// transaction
+		assert_ok!(with_transaction(|| TransactionOutcome::Commit({
+			<PaymentModule as PaymentHandler<Test>>::create_payment(
+				&PAYMENT_CREATOR,
+				&PAYMENT_RECIPENT,
+				payment_amount,
+				PaymentState::Created,
+				Percent::from_percent(INCENTIVE_PERCENTAGE),
+				Some(&[1u8; 10]),
+			)
+		})));
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::Created,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, expected_fee_amount)),
+			})
+		);
+
+		assert_ok!(with_transaction(|| TransactionOutcome::Commit({
+			<PaymentModule as PaymentHandler<Test>>::reserve_payment_amount(
+				&PAYMENT_CREATOR,
+				&PAYMENT_RECIPENT,
+				PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT).unwrap(),
+			)
+		})));
+		// the payment amount should be reserved correctly
+		// the amount + incentive should be removed from the sender account
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance - payment_amount - expected_incentive_amount
+		);
+		// the incentive amount should be reserved in the sender account
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR).saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
+			creator_initial_balance - payment_amount
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+		// the transferred amount should be reserved in the recipent account
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT).saturating_add(Balances::reserved_balance(&PAYMENT_RECIPENT)), payment_amount.saturating_add(Balances::free_balance(&PAYMENT_RECIPENT)));
+
+		// the payment should not be overwritten
+		assert_noop!(
+			with_transaction(|| TransactionOutcome::Commit({
+				<PaymentModule as PaymentHandler<Test>>::create_payment(
+					&PAYMENT_CREATOR,
+					&PAYMENT_RECIPENT,
+					payment_amount,
+					PaymentState::Created,
+					Percent::from_percent(INCENTIVE_PERCENTAGE),
+					Some(&[1u8; 10]),
+				)
+			})),
+			Error::PaymentAlreadyInProcess
+		);
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::Created,
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, expected_fee_amount)),
+			})
+		);
+	});
+}
