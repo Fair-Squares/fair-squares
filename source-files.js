@@ -7,8 +7,10 @@ var sourcesIndex = JSON.parse('{\
 "pallet_housing_fund":["",[],["functions.rs","lib.rs","structs.rs","weights.rs"]],\
 "pallet_nft":["",[],["functions.rs","lib.rs","types.rs","weights.rs"]],\
 "pallet_onboarding":["",[],["functions.rs","lib.rs","types.rs"]],\
+"pallet_payment":["",[],["functions.rs","lib.rs","types.rs","weights.rs"]],\
 "pallet_roles":["",[],["functions.rs","lib.rs","types.rs","weights.rs"]],\
 "pallet_share_distributor":["",[],["functions.rs","lib.rs","types.rs"]],\
+"pallet_tenancy":["",[],["functions.rs","lib.rs","types.rs","weights.rs"]],\
 "pallet_voting":["",[],["lib.rs","structs.rs"]]\
 }');
 createSourceSidebar();

@@ -4,7 +4,9 @@
 "pallet_housing_fund":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_housing_fund/pallet/enum.Error.html\" title=\"enum pallet_housing_fund::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_nft":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_nft/pallet/enum.Error.html\" title=\"enum pallet_nft::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_onboarding":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_onboarding/pallet/enum.Error.html\" title=\"enum pallet_onboarding::pallet::Error\">Error</a>&lt;T&gt;"]],
+"pallet_payment":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_payment/pallet/enum.Error.html\" title=\"enum pallet_payment::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_roles":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_roles/pallet/enum.Error.html\" title=\"enum pallet_roles::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_share_distributor":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_share_distributor/pallet/enum.Error.html\" title=\"enum pallet_share_distributor::pallet::Error\">Error</a>&lt;T&gt;"]],
+"pallet_tenancy":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_tenancy/pallet/enum.Error.html\" title=\"enum pallet_tenancy::pallet::Error\">Error</a>&lt;T&gt;"]],
 "pallet_voting":[["impl&lt;T&gt; PalletError for <a class=\"enum\" href=\"pallet_voting/pallet/enum.Error.html\" title=\"enum pallet_voting::pallet::Error\">Error</a>&lt;T&gt;"]]
 };if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

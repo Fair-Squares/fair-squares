@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"fs_node_runtime":[["impl <a class=\"trait\" href=\"pallet_payment/types/trait.DisputeResolver.html\" title=\"trait pallet_payment::types::DisputeResolver\">DisputeResolver</a>&lt;&lt;&lt;MultiSignature as Verify&gt;::Signer as IdentifyAccount&gt;::AccountId&gt; for <a class=\"struct\" href=\"fs_node_runtime/struct.PaymentsDisputeResolver.html\" title=\"struct fs_node_runtime::PaymentsDisputeResolver\">PaymentsDisputeResolver</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,3 @@
+(function() {var implementors = {
+"fs_node_runtime":[["impl <a class=\"trait\" href=\"pallet_payment/types/trait.FeeHandler.html\" title=\"trait pallet_payment::types::FeeHandler\">FeeHandler</a>&lt;<a class=\"struct\" href=\"fs_node_runtime/struct.Runtime.html\" title=\"struct fs_node_runtime::Runtime\">Runtime</a>&gt; for <a class=\"struct\" href=\"fs_node_runtime/struct.PaymentsFeeHandler.html\" title=\"struct fs_node_runtime::PaymentsFeeHandler\">PaymentsFeeHandler</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
