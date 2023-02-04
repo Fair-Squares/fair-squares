@@ -1005,3 +1005,348 @@ fn test_reserve_payment_amount_works() {
 		);
 	});
 }
+
+
+#[test]
+fn test_settle_payment_works_for_cancel() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 20;
+		let recipient_initial_balance = 1;
+
+		// the payment amount should not be reserved
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+
+		// should be able to create a payment with available balance within a
+		// transaction
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			payment_amount,
+			None
+		));
+
+		assert_ok!(with_transaction(|| TransactionOutcome::Commit({
+			<PaymentModule as PaymentHandler<Test>>::settle_payment(
+				&PAYMENT_CREATOR,
+				&PAYMENT_RECIPENT,
+				Percent::from_percent(0),
+			)
+		})));
+
+		// the payment amount should be released back to creator
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), recipient_initial_balance);
+
+		// should be released from storage
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
+	});
+}
+
+#[test]
+fn test_settle_payment_works_for_release() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 20;
+		let recipient_initial_balance = 1;
+
+		// the payment amount should not be reserved
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+
+		// should be able to create a payment with available balance within a
+		// transaction
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			payment_amount,
+			None
+		));
+
+		assert_ok!(with_transaction(|| TransactionOutcome::Commit({
+			<PaymentModule as PaymentHandler<Test>>::settle_payment(
+				&PAYMENT_CREATOR,
+				&PAYMENT_RECIPENT,
+				Percent::from_percent(100),
+			)
+		})));
+
+		// the payment amount should be transferred
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance - payment_amount
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), payment_amount.saturating_add(recipient_initial_balance));
+
+		// should be deleted from storage
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
+	});
+}
+
+#[test]
+fn test_settle_payment_works_for_70_30() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 10;
+		let expected_fee_amount = payment_amount / MARKETPLACE_FEE_PERCENTAGE as u64;
+		let recipient_initial_balance = 1;
+
+		// the payment amount should not be reserved
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED), 1);
+
+		// should be able to create a payment with available balance within a
+		// transaction
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT_FEE_CHARGED,
+			payment_amount,
+			None
+		));
+
+		assert_ok!(with_transaction(|| TransactionOutcome::Commit({
+			<PaymentModule as PaymentHandler<Test>>::settle_payment(
+				&PAYMENT_CREATOR,
+				&PAYMENT_RECIPENT_FEE_CHARGED,
+				Percent::from_percent(70),
+			)
+		})));
+
+		let expected_amount_for_creator = creator_initial_balance - payment_amount - expected_fee_amount
+			+ (Percent::from_percent(30) * payment_amount);
+		let expected_amount_for_recipient = Percent::from_percent(70) * payment_amount;
+
+		// the payment amount should be transferred
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			expected_amount_for_creator
+		);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
+			expected_amount_for_recipient.saturating_add(recipient_initial_balance)
+		);
+		assert_eq!(
+			Balances::free_balance(&FEE_RECIPIENT_ACCOUNT),
+			expected_fee_amount.saturating_add(recipient_initial_balance)
+		);
+
+		// should be deleted from storage
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED),
+			None
+		);
+	});
+}
+
+#[test]
+fn test_settle_payment_works_for_50_50() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let recipient_initial_balance = 1;
+		let payment_amount = 10;
+		let expected_fee_amount = payment_amount / MARKETPLACE_FEE_PERCENTAGE as u64;
+
+		// the payment amount should not be reserved
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), 100_000_000_000);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED), 1);
+
+		// should be able to create a payment with available balance within a
+		// transaction
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT_FEE_CHARGED,
+			payment_amount,
+			None
+		));
+
+		assert_ok!(with_transaction(|| TransactionOutcome::Commit({
+			<PaymentModule as PaymentHandler<Test>>::settle_payment(
+				&PAYMENT_CREATOR,
+				&PAYMENT_RECIPENT_FEE_CHARGED,
+				Percent::from_percent(50),
+			)
+		})));
+
+		let expected_amount_for_creator = creator_initial_balance - payment_amount - expected_fee_amount
+			+ (Percent::from_percent(50) * payment_amount);
+		let expected_amount_for_recipient = Percent::from_percent(50) * payment_amount;
+
+		// the payment amount should be transferred
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			expected_amount_for_creator
+		);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
+			expected_amount_for_recipient.saturating_add(recipient_initial_balance)
+		);
+		assert_eq!(
+			Balances::free_balance(&FEE_RECIPIENT_ACCOUNT),
+			expected_fee_amount.saturating_add(recipient_initial_balance)
+		);
+
+		// should be deleted from storage
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED),
+			None
+		);
+	});
+}
+
+#[test]
+fn test_automatic_refund_works() {
+	new_test_ext().execute_with(|| {
+		let creator_initial_balance = 100_000_000_000;
+		let payment_amount = 20;
+		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
+		const CANCEL_PERIOD: u64 = 600;
+		const CANCEL_BLOCK: u64 = CANCEL_PERIOD + 1;
+
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			payment_amount,
+			None
+		));
+
+		assert_ok!(PaymentModule::request_refund(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT
+		));
+
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT),
+			Some(PaymentDetail {
+				amount: payment_amount,
+				incentive_amount: expected_incentive_amount,
+				state: PaymentState::RefundRequested {
+					cancel_block: CANCEL_BLOCK
+				},
+				resolver_account: RESOLVER_ACCOUNT,
+				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
+			})
+		);
+
+		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
+		assert_eq!(
+			scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)).unwrap(),
+			&ScheduledTask {
+				task: Task::Cancel,
+				when: CANCEL_BLOCK
+			}
+		);
+
+		// run to one block before cancel and make sure data is same
+		assert_eq!(run_n_blocks(CANCEL_PERIOD - 1), 600);
+		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
+		assert_eq!(
+			scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)).unwrap(),
+			&ScheduledTask {
+				task: Task::Cancel,
+				when: CANCEL_BLOCK
+			}
+		);
+
+		// run to after cancel block but odd blocks are busy
+		assert_eq!(run_n_blocks(1), 601);
+		// the payment is still not processed since the block was busy
+		assert!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT).is_some());
+
+		// next block has spare weight to process the payment
+		assert_eq!(run_n_blocks(1), 602);
+		// the payment should be removed from storage
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
+
+		// the scheduled storage should be cleared
+		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
+		assert_eq!(scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)), None);
+
+		// test that the refund happened correctly
+		assert_eq!(
+			last_event(),
+			crate::Event::<Test>::PaymentCancelled {
+				from: PAYMENT_CREATOR,
+				to: PAYMENT_RECIPENT
+			}
+			.into()
+		);
+		// the payment amount should be released back to creator
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_CREATOR),
+			creator_initial_balance
+		);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+	});
+}
+
+#[test]
+fn test_automatic_refund_works_for_multiple_payments() {
+	new_test_ext().execute_with(|| {
+		const CANCEL_PERIOD: u64 = 600;
+
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT,
+			20,
+			None
+		));
+
+		assert_ok!(PaymentModule::pay(
+			Origin::signed(PAYMENT_CREATOR_TWO),
+			PAYMENT_RECIPENT_TWO,
+			20,
+			None
+		));
+
+		assert_ok!(PaymentModule::request_refund(
+			Origin::signed(PAYMENT_CREATOR),
+			PAYMENT_RECIPENT
+		));
+		run_n_blocks(1);
+		assert_ok!(PaymentModule::request_refund(
+			Origin::signed(PAYMENT_CREATOR_TWO),
+			PAYMENT_RECIPENT_TWO
+		));
+
+		assert_eq!(run_n_blocks(CANCEL_PERIOD - 1), 601);
+
+		// Odd block 601 was busy so we still haven't processed the first payment
+		assert_ok!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT).ok_or(()));
+
+		// Even block 602 has enough room to process both pending payments
+		assert_eq!(run_n_blocks(1), 602);
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
+		assert_eq!(
+			PaymentStore::<Test>::get(PAYMENT_CREATOR_TWO, PAYMENT_RECIPENT_TWO),
+			None
+		);
+
+		// the scheduled storage should be cleared
+		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
+		assert_eq!(scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)), None);
+		assert_eq!(
+			scheduled_tasks_list.get(&(PAYMENT_CREATOR_TWO, PAYMENT_RECIPENT_TWO)),
+			None
+		);
+
+		// test that the refund happened correctly
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), 100_000_000_000);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
+
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR_TWO), 100_000_000_000);
+		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT_TWO), 1);
+	});
+}

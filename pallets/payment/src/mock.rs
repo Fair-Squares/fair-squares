@@ -3,7 +3,7 @@ use crate::PaymentDetail;
 use frame_support::{
 	weights::DispatchClass,
 	parameter_types,
-	traits::{ConstU16, ConstU64,ConstU32, Contains, Everything, GenesisBuild, Hooks, OnFinalize}
+	traits::{ConstU16, ConstU64,ConstU32, Hooks, OnFinalize}
 };
 use frame_system as system;
 use sp_core::{crypto::AccountId32, H256};
@@ -133,6 +133,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 				(PAYMENT_CREATOR, 100_000_000_000),
 				(PAYMENT_CREATOR_TWO, 100_000_000_000),
 				(PAYMENT_RECIPENT,1),
+				(PAYMENT_RECIPENT_TWO,1),
 				(FEE_RECIPIENT_ACCOUNT,1),
 				(PAYMENT_RECIPENT_FEE_CHARGED,1),
 			],
