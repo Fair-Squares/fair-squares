@@ -1,3 +1,25 @@
+//!# Tenancy Pallet
+//!
+//!The Tenancy pallet is used by aspiring and active tenants to execute payments 
+//!and make requests depending on their status.
+//!
+//!## Overview
+//!Using this pallet, a user with the Tenant role can do the following:
+//!- Request a lease for a purchased asset
+//!- Pay a guaranty_deposit to confirm the lease start
+//!- Pay his rent
+//!
+//!### Dispatchable Functions
+//!
+//!* `request_asset` - A prospecting tenant can requestfor a particular asset 
+//!  after providing personal information requested by the Representative.
+//!  
+//!* `pay_guaranty_deposit` - A newly selected tenant pays for a guaranty deposit
+//!  requested by the asset's owners, and confirms the start of his contract/lease.
+//!  
+//!* `pay_rent` - The Tenant can pay the monthly rent anytime. 
+//!  He cannot pay more than 12 months, which is the length of the lease/contract.
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
@@ -51,6 +73,7 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
+		
 	}
 
 	#[pallet::storage]
@@ -59,15 +82,10 @@ pub mod pallet {
 	pub type Tenants<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, RegisteredTenant<T>, OptionQuery>;
 
-	// Pallets use events to inform users when important changes are made.
-	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
-
+		
 		///Guaranty deposit successfully payed
 		GuarantyDepositPayment {
 			tenant: T::AccountId,
@@ -176,7 +194,7 @@ pub mod pallet {
 		}
 
 		/// The function below allows the newly selected tenant to pay for a guaranty deposit request
-		/// and confirm the start of his contract.
+		/// and confirms the start of his contract.
 		/// The origin must be the tenant.
 		/// - asset_type: Asset class requested by the tenant.
 		/// - asset_id: ID of the Asset requested by the tenant.

@@ -97,6 +97,7 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+
 impl pallet_tenancy::Config for Test {
 	type Event = Event;
 	type Currency = Balances;
@@ -441,6 +442,7 @@ parameter_types! {
 	pub const RoR:Percent = Percent::from_percent(RETURN_ON_RENT);
 	pub const RentCheckPeriod: BlockNumber = 25;
 	pub const ContractLength: BlockNumber = 365;
+	pub const Lease: u32 = 12;
 }
 
 impl pallet_asset_management::Config for Test {
@@ -457,6 +459,7 @@ impl pallet_asset_management::Config for Test {
 	type Guaranty = GuarantyCoefficient;
 	type ContractLength = ContractLength;
 	type RoR = RoR;
+	type Lease = Lease;
 	type WeightInfo = ();
 }
 
