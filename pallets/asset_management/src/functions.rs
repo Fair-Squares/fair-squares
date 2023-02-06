@@ -72,7 +72,8 @@ impl<T: Config> Pallet<T> {
 		let ror = T::RoR::get();
 		let price0 = Onboarding::Pallet::<T>::houses(collection, item).unwrap().price.unwrap();
 		let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
-		let rent = ((price1 as f64) / 12.0).round();
+		let time = <T as Config>::Lease::get();
+		let rent = ((price1 as f64) / time as f64).round();
 		let amount: u128 = coeff * (rent as u128);
 		amount
 	}
@@ -118,8 +119,9 @@ impl<T: Config> Pallet<T> {
 				Onboarding::Pallet::<T>::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
 
 			//Update rent in tenant infos added.
-			let rent0 = ((price1 as f64) / 12.0).round();
-			let rent1 = (rent0 as u128) * 12;
+			let time = <T as Config>::Lease::get();
+			let rent0 = ((price1 as f64) / time as f64).round();
+			let rent1 = (rent0 as u128) * time as u128;
 			let now = <frame_system::Pallet<T>>::block_number();
 
 			let rent = Roles::Pallet::<T>::u128_to_balance_option(rent0 as u128).unwrap();
@@ -127,7 +129,7 @@ impl<T: Config> Pallet<T> {
 			val0.rent = rent.into();
 			val0.asset_account = Some(asset_account);
 			val0.remaining_rent = year_rent;
-			val0.remaining_payments = 12;
+			val0.remaining_payments = time as u8;
 			val0.contract_start = now;
 			*val = Some(val0);
 		});
@@ -263,10 +265,11 @@ impl<T: Config> Pallet<T> {
 			for i in tenants {
 				let tenant = Roles::Pallet::<T>::tenants(i).unwrap();
 				if !tenant.asset_account.is_none() {
+					let time = <T as Config>::Lease::get();
 					let remaining_p = tenant.remaining_payments;
 					let contract_begin = tenant.contract_start;
 					let rent =
-						Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap() * 12;
+						Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap() * time as u128;
 					let rent_float = rent as f64;
 
 					//Calculate rent per block
@@ -281,7 +284,7 @@ impl<T: Config> Pallet<T> {
 					let amount_due = blocks.saturating_mul(rpb);
 
 					//check how many rents were payed
-					let payed = (12 - remaining_p as u128) * rent.clone();
+					let payed = (time as u128 - remaining_p as u128) * rent.clone();
 					if payed < amount_due && (now % <T as Config>::RentCheck::get()).is_zero() {
 						let tenant_debt0 = amount_due - payed;
 						let debt = Self::u128_to_balance_option2(tenant_debt0).unwrap();

@@ -668,11 +668,18 @@ impl pallet_bidding::Config for Runtime {
 }
 
 parameter_types! {
+	//Fees payed to the Representative by the tenant, to provide a judgement
 	pub const JudgementFee: Balance= 50*DOLLARS;
+	//Number of months for the guaranty deposit 
 	pub const GuarantyCoefficient: u32 = 3;
+	//Return on Rent
 	pub const RoR:Percent = Percent::from_percent(3);
+	//Period between check of rent payment status for active tenants
 	pub const RentCheckPeriod: BlockNumber = 15*DAYS;
+	//Lease period in number of blocks
 	pub const ContractLength: BlockNumber = 365*DAYS;
+	//Lease period in number of months
+	pub const Lease: u32 = 12;
 }
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
@@ -688,6 +695,7 @@ impl pallet_asset_management::Config for Runtime {
 	type Guaranty = GuarantyCoefficient;
 	type ContractLength = ContractLength;
 	type RoR = RoR;
+	type Lease = Lease;
 	type WeightInfo = ();
 }
 
