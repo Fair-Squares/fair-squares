@@ -102,6 +102,20 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn owners_infos(asset_account: T::AccountId) -> Option<Share::Ownership<T>> {
+		//Find the asset in Share Distributor using asset account
+		let assets = Share::Virtual::<T>::iter_keys();
+		let mut infos = None;
+		for (i,j) in assets {
+			let ownership = Share::Pallet::<T>::virtual_acc(i,j).unwrap();
+			if asset_account.clone()==ownership.virtual_account {
+				//Get the owners
+				infos = Some(ownership);
+			}			 
+		}
+		infos
+	}
+
 	pub fn tenant_link_asset(
 		tenant: T::AccountId,
 		collection: T::NftCollectionId,
@@ -285,6 +299,36 @@ impl<T: Config> Pallet<T> {
 
 					//check how many rents were payed
 					let payed = (time as u128 - remaining_p as u128) * rent.clone();
+					let asset_account = tenant.asset_account.unwrap();
+					let asset_account_free_balance = <T as Config>::Currency::free_balance(&asset_account);
+					
+					let rent1 = Self::u128_to_balance_option2(rent.clone()).unwrap();
+					//Distribute rent to owners if number of executed payment is a multiple of 3, 
+					//and free_balance(virtual_account) >= 3*rent
+					if rent1 >Zero::zero() && asset_account_free_balance>= rent1 {
+						//Get owners list
+						let infos = Self::owners_infos(asset_account).unwrap();
+						let owners = infos.owners;
+						let token_id = infos.token_id;
+
+						//Remove maintenance fees and convert to f64
+						let distribute = rent1.saturating_sub(T::Maintenance::get()*rent1.clone());
+						let distribute_float = Self::balance_to_u128_option1(distribute).unwrap() as f64; 
+						
+						for i in owners {
+							//Get owner's share: Total issuance is 1000 tokens, so we divide
+							//the 
+							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(),i);
+							let share_float = Self::balance_to_u128_option(share).unwrap() as f64/1000.0;
+							let amount_float = share_float*distribute_float.clone();
+							
+							
+						} 
+
+					}
+
+					
+					//Calculate the debt if negative balance
 					if payed < amount_due && (now % <T as Config>::RentCheck::get()).is_zero() {
 						let tenant_debt0 = amount_due - payed;
 						let debt = Self::u128_to_balance_option2(tenant_debt0).unwrap();

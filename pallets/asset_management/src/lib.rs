@@ -137,6 +137,10 @@ pub mod pallet {
 		/// Lease period in number of months
 		#[pallet::constant]
 		type Lease: Get<u32>;
+
+		/// Maintenance fees percentage taken on monthly rent
+		#[pallet::constant]
+		type Maintenance: Get<Percent>;
 	}
 
 	//Store the referendum_index and the struct containing the
