@@ -3,14 +3,14 @@
 # Fair Squares (FS) &middot; [![Twitter URL](https://img.shields.io/twitter/follow/fairsquares?style=social)](https://twitter.com/fairsquares) [![License](https://img.shields.io/github/license/fair-Squares/fair-squares)](https://github.com/Fair-Squares/fair-squares/blob/main/LICENSE) [![Discord](https://img.shields.io/badge/Discord-gray?logo=discord)](https://discord.gg/5u3dxE49V5)
 
 <div align=center>
-    <img align=top src="https://fair-squares.nl/assets/fs_light.png" width=30%/>
+    <img align=top src="assets/img/FS.png" width=30%/>
     <img align=top src="assets/img/web3_foundation_grants_badge_white.svg" width=40%/>
 </div>
 </br>
 
 **Fair Squares** connects supply and demand of house-owners & renters and houses & investors. Our motive is that we want to create an more affordable housing market. Investors of the house get a social return while renters can have cheaper housing. We want to remove the financial barrier of investing in real estate for investors that don't have the means to fully invest in a house themselves for a social return. In between the end-users, there is coordination taking place between different stakeholders to achieve the desired outcome. This is where the runtime and the logic of all pallets come together, orchestrating while adhering to strict rules set for an equitable system. The orchestration towards an equitable housing market is configurable and governable by the stakeholders that are concerend with it and are willing to work for it. 
 
-We are zooming much more on the problem definition, stakeholders and the solution in our paper on our [website](https://fair-squares.nl/). To learn more and get in touch with us, please join our [discord channel FS](https://discord.gg/5u3dxE49V5)
+We are zooming much more on the problem definition, stakeholders and the solution in our paper on our [website](https://www.fair-squares.nl/). To learn more and get in touch with us, please join our [discord channel FS](https://discord.gg/5u3dxE49V5)
 
 Our current development is funded by [Web3 Foundation Grants Program](https://github.com/w3f/Grants-Program)
 
@@ -30,7 +30,7 @@ cargo build --release
 The binary will be present in create the binary in `./target/release/fs-node` if not other argument is passed. 
 
 ### Docker build & run
-We added a [Dockerfile](https://github.com/Fair-Squares/fair-squares/blob/main/Dockerfile) in the repo, you can build an image yourself with the following commmand `docker build .`
+We added a [Dockerfile](https://github.com/Fair-Squares/fair-squares/blob/main/Dockerfile) in the repo, you can build an image yourself with the following command `docker build .`
 
 ### Docker images
 
