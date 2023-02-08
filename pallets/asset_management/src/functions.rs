@@ -318,8 +318,15 @@ impl<T: Config> Pallet<T> {
 						let total_issuance_float = Self::balance_to_u128_option(total_issuance).unwrap() as f64;
 
 						//Remove maintenance fees from rent and convert it to f64
-						let distribute = rent1.saturating_sub(T::Maintenance::get()*rent1.clone());
-						let distribute_float = Self::balance_to_u128_option1(distribute.clone()).unwrap() as f64; 
+						let maintenance = T::Maintenance::get()*rent1.clone();
+						let distribute = rent1.saturating_sub(maintenance.clone());
+						let distribute_float = Self::balance_to_u128_option1(distribute.clone()).unwrap() as f64;						
+
+						//Reserve maintenance fees						
+						<T as Config>::Currency::reserve(
+							&asset_account,
+							maintenance
+						).ok();
 						
 						//Now distribute rent between owners according to their share
 						for i in owners.clone() {
