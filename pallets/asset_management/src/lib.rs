@@ -216,7 +216,18 @@ pub mod pallet {
 			asset_account: T::AccountId,
 		},
 		///The amount of the tenant debt
-		TenantDebt { tenant: T::AccountId, debt: BalanceOf<T>, when: BlockNumberOf<T> },
+		TenantDebt { 
+			tenant: T::AccountId, 
+			debt: BalanceOf<T>, 
+			when: BlockNumberOf<T> 
+		},
+
+		///Rent distributed to owners
+		RentDistributed{
+			owners: Vec<T::AccountId>,
+			amount: BalanceOf<T>,
+			when: BlockNumberOf<T>
+		},
 
 		/// Guaranty payment request sent
 		GuarantyPaymentRequested {

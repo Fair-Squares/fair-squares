@@ -319,10 +319,10 @@ impl<T: Config> Pallet<T> {
 
 						//Remove maintenance fees from rent and convert it to f64
 						let distribute = rent1.saturating_sub(T::Maintenance::get()*rent1.clone());
-						let distribute_float = Self::balance_to_u128_option1(distribute).unwrap() as f64; 
+						let distribute_float = Self::balance_to_u128_option1(distribute.clone()).unwrap() as f64; 
 						
 						//Now distribute rent between owners according to their share
-						for i in owners {
+						for i in owners.clone() {
 							//Get owner's share: we divide
 							//the owner's tokens by the total token issuance, and multiply the result by 
 							//the total amount to be distributed. 
@@ -339,6 +339,13 @@ impl<T: Config> Pallet<T> {
 							
 							
 						} 
+
+						//Emmit rent distribution event
+						Self::deposit_event(Event::RentDistributed {
+							owners: owners,
+							amount: distribute,
+							when: now,
+						});
 
 					}
 
