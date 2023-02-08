@@ -272,6 +272,7 @@ impl<T: Config> Pallet<T> {
 	///with the amount that has been actually paid.
 	///If the balance of the Tenant is negative, an event is emitted to notify him of his debt,
 	///If not, nothing happens.
+	///It will also distribute payed rent to the owners, according to their share.
 	pub fn finish_block(now: T::BlockNumber) -> Weight {
 		if (now % <T as Config>::CheckPeriod::get()).is_zero() {
 			//get list of tenants
@@ -310,9 +311,11 @@ impl<T: Config> Pallet<T> {
 						//Get owners list
 						let infos = Self::owners_infos(asset_account.clone()).unwrap();
 						let owners = infos.owners;
+
+						//Get Asset_tokens infos
 						let token_id = infos.token_id;
-						let total_inssuance = Assetss::Pallet::<T>::total_supply(token_id.clone().into());
-						let total_inssuance_float = Self::balance_to_u128_option(total_inssuance).unwrap() as f64;
+						let total_issuance = Assetss::Pallet::<T>::total_supply(token_id.clone().into());
+						let total_issuance_float = Self::balance_to_u128_option(total_issuance).unwrap() as f64;
 
 						//Remove maintenance fees from rent and convert it to f64
 						let distribute = rent1.saturating_sub(T::Maintenance::get()*rent1.clone());
@@ -321,9 +324,10 @@ impl<T: Config> Pallet<T> {
 						//Now distribute rent between owners according to their share
 						for i in owners {
 							//Get owner's share: we divide
-							//the 
+							//the owner's tokens by the total token issuance, and multiply the result by 
+							//the total amount to be distributed. 
 							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(),&i);
-							let share_float = Self::balance_to_u128_option(share).unwrap() as f64/total_inssuance_float;
+							let share_float = Self::balance_to_u128_option(share).unwrap() as f64/total_issuance_float;
 							let amount_float = share_float*distribute_float.clone();
 							let amount = Self::u128_to_balance_option2(amount_float as u128).unwrap();
 							<T as Config>::Currency::transfer(
