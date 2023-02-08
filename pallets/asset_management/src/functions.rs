@@ -300,27 +300,38 @@ impl<T: Config> Pallet<T> {
 					//check how many rents were payed
 					let payed = (time as u128 - remaining_p as u128) * rent.clone();
 					let asset_account = tenant.asset_account.unwrap();
-					let asset_account_free_balance = <T as Config>::Currency::free_balance(&asset_account);
-					
+					let asset_account_free_balance = <T as Config>::Currency::free_balance(&asset_account);					
 					let rent1 = Self::u128_to_balance_option2(rent.clone()).unwrap();
+
 					//Distribute rent to owners if number of executed payment is a multiple of 3, 
 					//and free_balance(virtual_account) >= 3*rent
 					if rent1 >Zero::zero() && asset_account_free_balance>= rent1 {
+
 						//Get owners list
-						let infos = Self::owners_infos(asset_account).unwrap();
+						let infos = Self::owners_infos(asset_account.clone()).unwrap();
 						let owners = infos.owners;
 						let token_id = infos.token_id;
+						let total_inssuance = Assetss::Pallet::<T>::total_supply(token_id.clone().into());
+						let total_inssuance_float = Self::balance_to_u128_option(total_inssuance).unwrap() as f64;
 
-						//Remove maintenance fees and convert to f64
+						//Remove maintenance fees from rent and convert it to f64
 						let distribute = rent1.saturating_sub(T::Maintenance::get()*rent1.clone());
 						let distribute_float = Self::balance_to_u128_option1(distribute).unwrap() as f64; 
 						
+						//Now distribute rent between owners according to their share
 						for i in owners {
-							//Get owner's share: Total issuance is 1000 tokens, so we divide
+							//Get owner's share: we divide
 							//the 
-							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(),i);
-							let share_float = Self::balance_to_u128_option(share).unwrap() as f64/1000.0;
+							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(),&i);
+							let share_float = Self::balance_to_u128_option(share).unwrap() as f64/total_inssuance_float;
 							let amount_float = share_float*distribute_float.clone();
+							let amount = Self::u128_to_balance_option2(amount_float as u128).unwrap();
+							<T as Config>::Currency::transfer(
+								&asset_account,
+								&i,
+								amount,
+								ExistenceRequirement::AllowDeath,
+							).ok();
 							
 							
 						} 
