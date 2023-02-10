@@ -233,8 +233,8 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	//---ASSET MANAGEMENT STEP---
 
 	//Let's get the asset virtual Account
-	let asset_ownersip = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
-	let asset_account = asset_ownersip.virtual_account;
+	let asset_ownership = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
+	let asset_account = asset_ownership.virtual_account;
 
 	// The new owners need a Representative for their asset. Salim starts
 	// a referendum for the representative candidate.
@@ -430,7 +430,7 @@ fn test_00() {
 		let tenant_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 
 		//TENANT0 is now connected to an asset. let's check rent payment status
-		let end_block = tenant_inf
+		let end_block = tenant_inf.clone()
 			.contract_start
 			.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
 		fast_forward_to(end_block);
@@ -443,6 +443,9 @@ fn test_00() {
 		println!("\n\nrecent events:\n{:?}", event);
 		next_block();
 
+		let asset = tenant_inf.asset_account.clone();
+		let virtual_initial_balance = Balances::free_balance(asset.unwrap());
+
 		//TENANT0 pays the first rent
 		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));
 		let event = <frame_system::Pallet<Test>>::events()
@@ -451,5 +454,36 @@ fn test_00() {
 			.event;
 
 		println!("\n\nrecent events:\n{:?}", event);
+
+		let virtual_balance = Balances::free_balance(&tenant_inf.asset_account.unwrap());
+		let coll_id0 = NftColl::OFFICESTEST.value();
+		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
+		let asset_ownership = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
+		let owners = asset_ownership.owners;
+		let owner0 = &owners[0];
+		let owner0_initial_balance = Balances::free_balance(owner0);
+		
+		assert_ne!(virtual_initial_balance,virtual_balance);
+		assert_eq!(virtual_balance,virtual_initial_balance.saturating_add(tenant_inf.rent));
+		
+		let initial_block_number = System::block_number();
+		let end_block = initial_block_number
+		.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
+
+		let mut owner0_balance = Balances::free_balance(owner0);
+
+		while owner0_initial_balance == owner0_balance {
+			next_block();
+			owner0_balance = Balances::free_balance(owner0);
+		}
+		
+
+
+
+		//assert_ne!(owner0_initial_balance,owner0_balance);
+
+
+
+
 	})
 }
