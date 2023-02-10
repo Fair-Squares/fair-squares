@@ -64,6 +64,8 @@ pub struct Ownership<T: Config> {
 	pub created: BlockNumberOf<T>,
 	///TokenId
 	pub token_id: <T as pallet::Config>::AssetId,
+	///Number of rents awaiting distribution
+	pub rent_nbr: u32,
 }
 
 impl<T: Config> Ownership<T> {
@@ -75,7 +77,8 @@ impl<T: Config> Ownership<T> {
 		let owners = Vec::new();
 		let created = <frame_system::Pallet<T>>::block_number();
 		let token_id: <T as pallet::Config>::AssetId = TokenId::<T>::get().into();
-		let ownership = Ownership::<T> { virtual_account, owners, created, token_id };
+		let rent_nbr = 0;
+		let ownership = Ownership::<T> { virtual_account, owners, created, token_id, rent_nbr };
 
 		Virtual::<T>::insert(collection, item, ownership);
 

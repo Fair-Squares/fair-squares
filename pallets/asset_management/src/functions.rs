@@ -106,12 +106,12 @@ impl<T: Config> Pallet<T> {
 		//Find the asset in Share Distributor using asset account
 		let assets = Share::Virtual::<T>::iter_keys();
 		let mut infos = None;
-		for (i,j) in assets {
-			let ownership = Share::Pallet::<T>::virtual_acc(i,j).unwrap();
-			if asset_account.clone()==ownership.virtual_account {
+		for (i, j) in assets {
+			let ownership = Share::Pallet::<T>::virtual_acc(i, j).unwrap();
+			if asset_account.clone() == ownership.virtual_account {
 				//Get the owners
 				infos = Some(ownership);
-			}			 
+			}
 		}
 		infos
 	}
@@ -283,9 +283,11 @@ impl<T: Config> Pallet<T> {
 					let time = <T as Config>::Lease::get();
 					let remaining_p = tenant.remaining_payments;
 					let contract_begin = tenant.contract_start;
-					let rent =
-						Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap() * time as u128;
+					let rent = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap()
+						* time as u128;
 					let rent_float = rent as f64;
+					let rent0 =
+						Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap() as u128;
 
 					//Calculate rent per block
 					let total_blocks = <T as Config>::ContractLength::get();
@@ -301,68 +303,91 @@ impl<T: Config> Pallet<T> {
 					//check how many rents were payed
 					let payed = (time as u128 - remaining_p as u128) * rent.clone();
 					let asset_account = tenant.asset_account.unwrap();
-					let asset_account_free_balance = <T as Config>::Currency::free_balance(&asset_account);					
-					let rent1 = Self::u128_to_balance_option2(rent.clone()).unwrap();
+					let asset_account_free_balance =
+						<T as Config>::Currency::free_balance(&asset_account);
 
-					//Distribute rent to owners if number of executed payment is a multiple of 3, 
-					//and free_balance(virtual_account) >= 3*rent
-					if rent1 >Zero::zero() && asset_account_free_balance>= rent1 {
+					let infos = Self::owners_infos(asset_account.clone()).unwrap();
 
+					//Distribute rent to owners if number of rents
+					//awaiting for distribution is greater than 0
+					if infos.rent_nbr > 0 {
 						//Get owners list
-						let infos = Self::owners_infos(asset_account.clone()).unwrap();
+
 						let owners = infos.owners;
+						let rent1 = Self::u128_to_balance_option2(rent0.clone()).unwrap();
 
 						//Get Asset_tokens infos
 						let token_id = infos.token_id;
-						let total_issuance = Assetss::Pallet::<T>::total_supply(token_id.clone().into());
-						let total_issuance_float = Self::balance_to_u128_option(total_issuance).unwrap() as f64;
+						let total_issuance =
+							Assetss::Pallet::<T>::total_supply(token_id.clone().into());
+						let total_issuance_float =
+							Self::balance_to_u128_option(total_issuance).unwrap() as f64;
 
 						//Remove maintenance fees from rent and convert it to f64
-						let maintenance = T::Maintenance::get()*rent1.clone();
+						let maintenance = T::Maintenance::get() * rent1.clone();
 						let distribute = rent1.saturating_sub(maintenance.clone());
-						let distribute_float = Self::balance_to_u128_option1(distribute.clone()).unwrap() as f64;						
 
-						//Reserve maintenance fees						
-						<T as Config>::Currency::reserve(
-							&asset_account,
-							maintenance
-						).ok();
-						
+						//Get the total amount to distribute
+						let distribute_float = (Self::balance_to_u128_option1(distribute.clone())
+							.unwrap() * infos.rent_nbr as u128) as f64;
+
+						debug_assert!(distribute.clone() > Zero::zero());
+						debug_assert!(distribute.clone() < rent1.clone());
+						debug_assert!(maintenance.clone() < asset_account_free_balance);
+
+						//Reserve maintenance fees
+						let reservation =
+							<T as Config>::Currency::reserve(&asset_account, maintenance.into());
+
+						debug_assert!(reservation.is_ok());
+
 						//Now distribute rent between owners according to their share
 						for i in owners.clone() {
 							//Get owner's share: we divide
-							//the owner's tokens by the total token issuance, and multiply the result by 
-							//the total amount to be distributed. 
-							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(),&i);
-							let share_float = Self::balance_to_u128_option(share).unwrap() as f64/total_issuance_float;
-							let amount_float = share_float*distribute_float.clone();
-							let amount = Self::u128_to_balance_option2(amount_float as u128).unwrap();
+							//the owner's tokens by the total token issuance, and multiply the result by
+							//the total amount to be distributed.
+							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(), &i);
+							let share_float = Self::balance_to_u128_option(share).unwrap() as f64
+								/ total_issuance_float;
+							let amount_float = share_float * distribute_float.clone();
+							let amount =
+								Self::u128_to_balance_option2(amount_float as u128).unwrap();
 							<T as Config>::Currency::transfer(
 								&asset_account,
 								&i,
 								amount,
 								ExistenceRequirement::AllowDeath,
-							).ok();
-							
-							
-						} 
+							)
+							.ok();
+						}
 
 						//Emmit rent distribution event
 						Self::deposit_event(Event::RentDistributed {
-							owners: owners,
+							owners,
 							amount: distribute,
 							when: now,
 						});
 
+						//Now return the awaiting payment number to 0
+						let ownership_infos = Share::Virtual::<T>::iter_keys();
+						for (i, j) in ownership_infos {
+							let infos = Share::Pallet::<T>::virtual_acc(&i, &j).unwrap();
+							if infos.virtual_account == asset_account {
+								Share::Virtual::<T>::mutate(i.clone(), j.clone(), |val| {
+									let mut val0 = val.clone().unwrap();
+									val0.rent_nbr = 0;
+									*val = Some(val0);
+								});
+							}
+						}
 					}
 
-					
 					//Calculate the debt if negative balance
 					if payed < amount_due && (now % <T as Config>::RentCheck::get()).is_zero() {
 						let tenant_debt0 = amount_due - payed;
 						let debt = Self::u128_to_balance_option2(tenant_debt0).unwrap();
 
-						//Emmit event to inform the tenant of the amount of his debt
+						//Event to inform the tenant of the amount of his debt
 						Self::deposit_event(Event::TenantDebt {
 							tenant: tenant.account_id,
 							debt,

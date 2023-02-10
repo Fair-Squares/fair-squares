@@ -366,13 +366,17 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 
 	//Tenant pays the Guaranty Deposit
 	let tenant_init_balance = Balances::free_balance(TENANT0);
+	let asset_initial = Balances::free_balance(asset_account.clone());
+
 	assert_ok!(crate::Pallet::<Test>::pay_guaranty_deposit(
 		Origin::signed(TENANT0),
 		NftColl::OFFICESTEST,
 		item_id0,
 	));
 	let payed_amount = tenant_init_balance.saturating_sub(Balances::free_balance(TENANT0));
+	let payed_amount1 = Balances::free_balance(asset_account.clone()).saturating_sub(asset_initial);
 	println!("Payed amount is {:?}", payed_amount);
+	println!("Received amount is {:?}", payed_amount1);
 
 	//Check that the Tenant is connected to the asset
 	let asset = OnboardingModule::houses(coll_id0, item_id0).unwrap();
@@ -430,7 +434,8 @@ fn test_00() {
 		let tenant_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 
 		//TENANT0 is now connected to an asset. let's check rent payment status
-		let end_block = tenant_inf.clone()
+		let end_block = tenant_inf
+			.clone()
 			.contract_start
 			.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
 		fast_forward_to(end_block);
@@ -455,6 +460,7 @@ fn test_00() {
 
 		println!("\n\nrecent events:\n{:?}", event);
 
+		//Let's check that rent transfer toward virtual account occured
 		let virtual_balance = Balances::free_balance(&tenant_inf.asset_account.unwrap());
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
@@ -462,28 +468,23 @@ fn test_00() {
 		let owners = asset_ownership.owners;
 		let owner0 = &owners[0];
 		let owner0_initial_balance = Balances::free_balance(owner0);
-		
-		assert_ne!(virtual_initial_balance,virtual_balance);
-		assert_eq!(virtual_balance,virtual_initial_balance.saturating_add(tenant_inf.rent));
-		
+
+		assert_ne!(virtual_initial_balance, virtual_balance);
+		assert_eq!(virtual_balance, virtual_initial_balance.saturating_add(tenant_inf.rent));
+
+		//Let's check that owner0 got a transfer from the rent after block change
 		let initial_block_number = System::block_number();
 		let end_block = initial_block_number
-		.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
+			.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
 
-		let mut owner0_balance = Balances::free_balance(owner0);
+		fast_forward_to(end_block);
+		let owner0_balance = Balances::free_balance(owner0);
 
-		while owner0_initial_balance == owner0_balance {
-			next_block();
-			owner0_balance = Balances::free_balance(owner0);
-		}
-		
-
-
-
-		//assert_ne!(owner0_initial_balance,owner0_balance);
-
-
-
-
+		assert_ne!(owner0_initial_balance, owner0_balance);
+		println!(
+			"\n\nOwner0 received:{:?}\nThe rent is:{:?}",
+			owner0_balance.saturating_sub(owner0_initial_balance),
+			tenant_inf.rent
+		);
 	})
 }

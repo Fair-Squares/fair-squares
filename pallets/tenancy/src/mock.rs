@@ -97,7 +97,6 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-
 impl pallet_tenancy::Config for Test {
 	type Event = Event;
 	type Currency = Balances;

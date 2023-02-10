@@ -1,6 +1,6 @@
 //!# Tenancy Pallet
 //!
-//!The Tenancy pallet is used by aspiring and active tenants to execute payments 
+//!The Tenancy pallet is used by aspiring and active tenants to execute payments
 //!and make requests depending on their status.
 //!
 //!## Overview
@@ -11,13 +11,13 @@
 //!
 //!### Dispatchable Functions
 //!
-//!* `request_asset` - A prospecting tenant can requestfor a particular asset 
+//!* `request_asset` - A prospecting tenant can requestfor a particular asset
 //!  after providing personal information requested by the Representative.
 //!  
 //!* `pay_guaranty_deposit` - A newly selected tenant pays for a guaranty deposit
 //!  requested by the asset's owners, and confirms the start of his contract/lease.
 //!  
-//!* `pay_rent` - The Tenant can pay the monthly rent anytime. 
+//!* `pay_rent` - The Tenant can pay the monthly rent anytime.
 //!  He cannot pay more than 12 months, which is the length of the lease/contract.
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -73,7 +73,6 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type WeightInfo: WeightInfo;
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
-		
 	}
 
 	#[pallet::storage]
@@ -85,7 +84,6 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		
 		///Guaranty deposit successfully payed
 		GuarantyDepositPayment {
 			tenant: T::AccountId,

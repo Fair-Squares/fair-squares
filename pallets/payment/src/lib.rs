@@ -408,7 +408,7 @@ pub mod pallet {
 			<Self as PaymentHandler<T>>::reserve_payment_amount(&from, &to, payment)?;
 
 			// release the payment and delete the payment from storage
-			<Self as PaymentHandler<T>>::settle_payment(&from, &to, Percent::from_percent(100))?;
+			//<Self as PaymentHandler<T>>::settle_payment(&from, &to, Percent::from_percent(100))?;
 
 			Self::deposit_event(Event::PaymentRequestCompleted { from, to });
 

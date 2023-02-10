@@ -29,7 +29,7 @@
 //!   proposals:
 //!   - Admit a Tenant for a given asset.
 //!   - Evict  a Tenant from a given asset.
-//!	  The Representative has to submit a judgement about the tenant profile. This judgement 
+//!	  The Representative has to submit a judgement about the tenant profile. This judgement
 //!	  will be considered by the owners before voting.
 //!	  Representatives receive a judgement fee from the aspiring tenant.
 //!	  A positive result of the referendum will send a guaranty_deposit payment request to the tenant.
@@ -216,18 +216,10 @@ pub mod pallet {
 			asset_account: T::AccountId,
 		},
 		///The amount of the tenant debt
-		TenantDebt { 
-			tenant: T::AccountId, 
-			debt: BalanceOf<T>, 
-			when: BlockNumberOf<T> 
-		},
+		TenantDebt { tenant: T::AccountId, debt: BalanceOf<T>, when: BlockNumberOf<T> },
 
 		///Rent distributed to owners
-		RentDistributed{
-			owners: Vec<T::AccountId>,
-			amount: BalanceOf<T>,
-			when: BlockNumberOf<T>
-		},
+		RentDistributed { owners: Vec<T::AccountId>, amount: BalanceOf<T>, when: BlockNumberOf<T> },
 
 		/// Guaranty payment request sent
 		GuarantyPaymentRequested {
