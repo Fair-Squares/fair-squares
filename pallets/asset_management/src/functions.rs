@@ -45,7 +45,8 @@ impl<T: Config> Pallet<T> {
 
 			//Set registrar fees
 			let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
-			let fees = Self::u128_to_balance_option1(fee0).unwrap();
+			let bals0 = BalanceType::<T>::new_bal(fee0);
+			let fees = bals0.ident_bal;
 			Ident::Pallet::<T>::set_fee(origin2, index, fees).ok();
 
 			//Update Rep number
