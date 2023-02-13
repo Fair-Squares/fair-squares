@@ -411,6 +411,7 @@ parameter_types! {
 	pub const RentCheckPeriod: BlockNumber = 1;
 	pub const ContractLength: BlockNumber = 365;
 	pub const Lease: u32 = 12;
+	pub const Maintenance:Percent = Percent::from_percent(3);
 }
 
 impl pallet_asset_management::Config for Test {
@@ -428,6 +429,7 @@ impl pallet_asset_management::Config for Test {
 	type ContractLength = ContractLength;
 	type RoR = RoR;
 	type Lease = Lease;
+	type Maintenance = Maintenance;
 	type WeightInfo = ();
 }
 

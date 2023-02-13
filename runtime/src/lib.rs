@@ -680,6 +680,8 @@ parameter_types! {
 	pub const ContractLength: BlockNumber = 365*DAYS;
 	//Lease period in number of months
 	pub const Lease: u32 = 12;
+	//Maintenance fees taken on monthly rent
+	pub const Maintenance:Percent = Percent::from_percent(3);
 }
 impl pallet_asset_management::Config for Runtime {
 	type Event = Event;
@@ -696,6 +698,7 @@ impl pallet_asset_management::Config for Runtime {
 	type ContractLength = ContractLength;
 	type RoR = RoR;
 	type Lease = Lease;
+	type Maintenance = Maintenance;
 	type WeightInfo = ();
 }
 
