@@ -424,8 +424,9 @@ pub mod pallet {
 			ensure!(Self::caller_can_vote(&voter, ownership.clone()), Error::<T>::NotAnOwner);
 			//Get number of FS tokens own by caller
 			let tokens = Assetss::Pallet::<T>::balance(ownership.token_id.into(), &voter);
-			let token0 = Self::balance_to_u128_option(tokens).unwrap();
-			let token1 = Self::u128_to_balance_option(token0).unwrap();
+			let token0 = Self::assets_bal_to_u128(tokens).unwrap();
+			let bals0 = BalanceType::<T>::convert_to_balance(token0);
+			let token1 = bals0.dem_bal;
 
 			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
 
@@ -541,12 +542,12 @@ pub mod pallet {
 
 			//Compare guaranty payment amount+fees with tenant free_balance
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
-			let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
-			let fee1 = T::IncentivePercentage::get()
-				* Self::u128_to_balance_option2(guaranty.clone()).unwrap();
-			let total_amount = guaranty + fee0 + Self::balance_to_u128_option1(fee1).unwrap();
+			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
+			let bals0 = BalanceType::<T>::convert_to_balance(guaranty.clone());
+			let fee1 = T::IncentivePercentage::get()*bals0.manage_bal;
+			let total_amount = guaranty + fee0 + Self::manage_bal_to_u128(fee1).unwrap();
 			let tenant_bal0: BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
-			let tenant_bal = Self::balance_to_u128_option1(tenant_bal0).unwrap();
+			let tenant_bal = Self::manage_bal_to_u128(tenant_bal0).unwrap();
 
 			let asset_account = ownership.unwrap().virtual_account;
 			ensure!(rep.assets_accounts.contains(&asset_account), Error::<T>::AssetOutOfControl);

@@ -53,6 +53,21 @@ pub enum VoteResult {
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
 #[cfg_attr(feature = "std", derive(Debug))]
+pub enum BalanceTypes{
+	Assets,
+	Dem,
+	HFund,
+	Ident,
+	Nft,
+	Onboarding,
+	Payment,
+	Roles,
+	Share,
+	Manage,
+}
+
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub enum VoteProposals {
 	Election,
 	Demotion,
@@ -121,7 +136,7 @@ pub struct BalanceType<T:Config>{
 
 impl<T: Config> BalanceType<T>{
 	
-	pub fn new_bal (number:u128) -> Self{
+	pub fn convert_to_balance(number:u128) -> Self{
 
 		let roles_bal = Zero::zero();
 		let hfund_bal = Zero::zero();
@@ -156,4 +171,7 @@ impl<T: Config> BalanceType<T>{
 		new
 		
 	}
+
 }
+
+

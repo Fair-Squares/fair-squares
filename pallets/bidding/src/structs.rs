@@ -2,7 +2,7 @@ pub use super::*;
 
 pub use frame_support::{
 	inherent::Vec,
-	sp_runtime::traits::Zero,
+	sp_runtime::{traits::Zero,Percent},
 	traits::{Currency, ReservableCurrency},
 };
 

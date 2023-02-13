@@ -28,7 +28,7 @@ impl<T: Config> Pallet<T> {
 		let tenant = Roles::Pallet::<T>::tenants(tenant_account.clone()).unwrap();
 		let total_rent = tenant.remaining_rent;
 		let remaining_p = tenant.remaining_payments;
-		let rent0: u128 = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap();
+		let rent0: u128 = Self::roles_bal_to_u128(tenant.rent).unwrap();
 		let rent = Self::u128_to_balance_option(rent0).unwrap();
 		let asset_account = tenant.asset_account.unwrap();
 		<T as Config>::Currency::transfer(
@@ -92,6 +92,9 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 	pub fn u128_to_balance_option(input: u128) -> Option<BalanceOf<T>> {
+		input.try_into().ok()
+	}
+	pub fn roles_bal_to_u128(input: Roles::BalanceOf<T>) -> Option<u128> {
 		input.try_into().ok()
 	}
 }
