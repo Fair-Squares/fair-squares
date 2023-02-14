@@ -24,6 +24,7 @@ pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(FRED), FRED, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(SALIM), SALIM, Acc::INVESTOR).ok();
 	RoleModule::set_role(Origin::signed(TENANT0), TENANT0, Acc::TENANT).ok();
+	RoleModule::set_role(Origin::signed(TENANT1), TENANT1, Acc::TENANT).ok();
 }
 
 pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
@@ -295,11 +296,18 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	assert!(Roles::RepresentativeLog::<Test>::contains_key(REPRESENTATIVE));
 	assert!(Roles::AccountsRolesLog::<Test>::contains_key(REPRESENTATIVE));
 
-	//Now that we have a Tenant/Representative/Asset. Let the Tenant ask for an asset
+	//Now that we have a Tenant/Representative/Asset. Let the Tenant0 & Tenant1 ask for the same asset
 	let tenant_bal_init = Balances::free_balance(TENANT0);
 	assert_ok!(crate::Pallet::<Test>::request_asset(
 		Origin::signed(TENANT0),
-		Box::new(ten()),
+		Box::new(ten0()),
+		NftColl::OFFICESTEST,
+		item_id0,
+	));
+
+	assert_ok!(crate::Pallet::<Test>::request_asset(
+		Origin::signed(TENANT1),
+		Box::new(ten1()),
 		NftColl::OFFICESTEST,
 		item_id0,
 	));
@@ -310,14 +318,24 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	println!("\n\nThe tenant paid {:?}units for asset request\n\n", paid_fees);
 
 	//Check that the identity was correctly created
-	assert_eq!(pallet_identity::Pallet::<Test>::identity(TENANT0).unwrap().info, ten());
+	assert_eq!(pallet_identity::Pallet::<Test>::identity(TENANT0).unwrap().info, ten0());
 
-	//Representative gives a positive Judgement and start a referendum for the tenant
+	//Representative gives a positive Judgement and start a referendum for the tenant0
 	assert_ok!(AssetManagement::launch_tenant_session(
 		Origin::signed(REPRESENTATIVE),
 		NftColl::OFFICESTEST,
 		item_id0,
 		TENANT0,
+		pallet_asset_management::VoteProposals::Election,
+		Ident::Judgement::Reasonable,
+	));
+
+	//Representative gives a positive Judgement and start a referendum for the tenant1
+	assert_ok!(AssetManagement::launch_tenant_session(
+		Origin::signed(REPRESENTATIVE),
+		NftColl::OFFICESTEST,
+		item_id0,
+		TENANT1,
 		pallet_asset_management::VoteProposals::Election,
 		Ident::Judgement::Reasonable,
 	));
@@ -341,7 +359,7 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		}
 	}
 
-	//End Tenant referendum
+	//End Tenants referendum
 	let initial_block_number = System::block_number();
 	let end_block_number = initial_block_number
 		.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
@@ -355,21 +373,30 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		System::block_number()
 	);
 
-	//Enact Proposal
+	//Enact Proposals
 	fast_forward_to(
 		end_block_number.saturating_add(<Test as pallet_asset_management::Config>::Delay::get()),
 	);
 
 	//Check that a guaranty_payment request was sent to the tenant
-	let payment_info = AssetManagement::guaranty(TENANT0, asset_account.clone()).unwrap();
-	assert_eq!(payment_info.state, pallet_payment::PaymentState::PaymentRequested);
+	let payment_info0 = AssetManagement::guaranty(TENANT0, asset_account.clone()).unwrap();
+	assert_eq!(payment_info0.state, pallet_payment::PaymentState::PaymentRequested);
 
-	//Tenant pays the Guaranty Deposit
+	let payment_info1 = AssetManagement::guaranty(TENANT1, asset_account.clone()).unwrap();
+	assert_eq!(payment_info1.state, pallet_payment::PaymentState::PaymentRequested);
+
+	//Tenants pay the Guaranty Deposit
 	let tenant_init_balance = Balances::free_balance(TENANT0);
 	let asset_initial = Balances::free_balance(asset_account.clone());
 
 	assert_ok!(crate::Pallet::<Test>::pay_guaranty_deposit(
 		Origin::signed(TENANT0),
+		NftColl::OFFICESTEST,
+		item_id0,
+	));
+
+	assert_ok!(crate::Pallet::<Test>::pay_guaranty_deposit(
+		Origin::signed(TENANT1),
 		NftColl::OFFICESTEST,
 		item_id0,
 	));
@@ -380,11 +407,14 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 
 	//Check that the Tenant is connected to the asset
 	let asset = OnboardingModule::houses(coll_id0, item_id0).unwrap();
-	let tenant_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
+	let tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
+	let tenant1_inf = pallet_roles::Pallet::<Test>::tenants(TENANT1).unwrap();
 
 	assert_eq!(asset.tenants[0], TENANT0);
-	assert_eq!(asset_account, tenant_inf.asset_account.unwrap());
-	println!("the beginning of the contract is at block: {:?}", tenant_inf.contract_start)
+	assert_eq!(asset.tenants[1], TENANT1);
+	assert_eq!(asset_account, tenant0_inf.asset_account.unwrap());
+	assert_eq!(asset_account, tenant1_inf.asset_account.unwrap());
+	println!("the beginning of the contract is at block: {:?}", tenant0_inf.contract_start)
 }
 
 fn next_block() {
@@ -403,13 +433,50 @@ fn fast_forward_to(n: u64) {
 	}
 }
 
-//Helper for tenant infos
-fn ten() -> Ident::IdentityInfo<MaxAdditionalFields> {
+//Helper for tenant0 infos
+fn ten0() -> Ident::IdentityInfo<MaxAdditionalFields> {
 	IdentityInfo {
-		additional: Default::default(),
-		display: Ident::Data::Raw(b"ten".to_vec().try_into().unwrap()),
-		legal: Ident::Data::Raw(b"The Right Ordinal Ten, Esq.".to_vec().try_into().unwrap()),
-		web: Ident::Data::Raw(b"www.mystery.com".to_vec().try_into().unwrap()),
+		additional: vec![
+			(
+				Ident::Data::Raw(b"Present Address".to_vec().try_into().unwrap()),
+				Ident::Data::Raw(b"Japan/Yokohama".to_vec().try_into().unwrap())
+			),
+			(
+				Ident::Data::Raw(b"Monthly Salary".to_vec().try_into().unwrap()),
+				Ident::Data::Raw(b"250,000 yen".to_vec().try_into().unwrap())
+			),
+		]
+		.try_into()
+		.unwrap(),
+		display: Ident::Data::Raw(b"ten0".to_vec().try_into().unwrap()),
+		legal: Ident::Data::Raw(b"Legal infos about tenant_0".to_vec().try_into().unwrap()),
+		web: Ident::Data::Raw(b"www.mystery0.com".to_vec().try_into().unwrap()),
+		riot: Default::default(),
+		email: Default::default(),
+		pgp_fingerprint: Default::default(),
+		image: Default::default(),
+		twitter: Default::default(),
+	}
+}
+
+//Helper for tenant1 infos
+fn ten1() -> Ident::IdentityInfo<MaxAdditionalFields> {
+	IdentityInfo {
+		additional: vec![
+			(
+				Ident::Data::Raw(b"Present Address".to_vec().try_into().unwrap()),
+				Ident::Data::Raw(b"England/Liverpool".to_vec().try_into().unwrap())
+			),
+			(
+				Ident::Data::Raw(b"Monthly Salary".to_vec().try_into().unwrap()),
+				Ident::Data::Raw(b"1550 pounds".to_vec().try_into().unwrap())
+			),
+		]
+		.try_into()
+		.unwrap(),
+		display: Ident::Data::Raw(b"ten1".to_vec().try_into().unwrap()),
+		legal: Ident::Data::Raw(b"Legal info about tenant_1".to_vec().try_into().unwrap()),
+		web: Ident::Data::Raw(b"www.mystery1.com".to_vec().try_into().unwrap()),
 		riot: Default::default(),
 		email: Default::default(),
 		pgp_fingerprint: Default::default(),
@@ -431,37 +498,40 @@ fn test_00() {
 		//Execute workflow up to TENANT0 connection to an asset
 		let price1 = 450_000;
 		prep_test(price1, metadata0, metadata1);
-		let tenant_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
+
+		let mut tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 
 		//TENANT0 is now connected to an asset. let's check rent payment status
-		let end_block = tenant_inf
+		let end_block = tenant0_inf
 			.clone()
 			.contract_start
 			.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
-		fast_forward_to(end_block);
-		println!("tenant_rent is: {:?}", tenant_inf.rent);
-		let event = <frame_system::Pallet<Test>>::events()
-			.pop()
-			.expect("Expected at least one EventRecord to be found")
-			.event;
 
-		println!("\n\nrecent events:\n{:?}", event);
+		fast_forward_to(end_block);
+		println!("\n\ntenant_rent is: {:?}\n", tenant0_inf.rent);
+
+		expect_events(vec![
+			mock::Event::AssetManagement(pallet_asset_management::Event::TenantDebt{
+				tenant: TENANT0,
+				debt: 925,
+				when: System::block_number(),
+				
+			})
+		]);
+
+		tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 		next_block();
 
-		let asset = tenant_inf.asset_account.clone();
-		let virtual_initial_balance = Balances::free_balance(asset.unwrap());
+		let asset = tenant0_inf.asset_account.clone().unwrap();
+		let virtual_initial_balance = Balances::free_balance(asset.clone());
+	
 
 		//TENANT0 pays the first rent
-		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));
-		let event = <frame_system::Pallet<Test>>::events()
-			.pop()
-			.expect("Expected at least one EventRecord to be found")
-			.event;
-
-		println!("\n\nrecent events:\n{:?}", event);
-
+		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));		
+		
+	
 		//Let's check that rent transfer toward virtual account occured
-		let virtual_balance = Balances::free_balance(&tenant_inf.asset_account.unwrap());
+		let virtual_balance = Balances::free_balance(&tenant0_inf.asset_account.unwrap());
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let asset_ownership = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
@@ -470,7 +540,9 @@ fn test_00() {
 		let owner0_initial_balance = Balances::free_balance(owner0);
 
 		assert_ne!(virtual_initial_balance, virtual_balance);
-		assert_eq!(virtual_balance, virtual_initial_balance.saturating_add(tenant_inf.rent));
+		assert_eq!(virtual_balance, virtual_initial_balance.saturating_add(tenant0_inf.rent));
+
+
 
 		//Let's check that owner0 got a transfer from the rent after block change
 		let initial_block_number = System::block_number();
@@ -484,7 +556,18 @@ fn test_00() {
 		println!(
 			"\n\nOwner0 received:{:?}\nThe rent is:{:?}",
 			owner0_balance.saturating_sub(owner0_initial_balance),
-			tenant_inf.rent
+			tenant0_inf.rent
 		);
+
+		//TENANT1 pays the first rent
+		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT1)));	
+
+		let event = <frame_system::Pallet<Test>>::events()
+			.pop()
+			.expect("Expected at least one EventRecord to be found")
+			.event;
+
+
+		println!("\n\nrecent events2:\n{:?}", event);
 	})
 }
