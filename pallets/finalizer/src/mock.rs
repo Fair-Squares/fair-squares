@@ -15,7 +15,7 @@ use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
-	Perbill,Percent
+	Perbill, Percent,
 };
 
 type AccountId = u64;

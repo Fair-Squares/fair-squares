@@ -19,7 +19,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerCreated(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -43,7 +43,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerCreated(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -67,7 +67,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryCreated(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -109,7 +109,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerAccountCreationRejected(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -127,7 +127,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -145,7 +145,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryAccountCreationRejected(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 
@@ -182,7 +182,7 @@ impl<T: Config> Pallet<T> {
 					age: now,
 					activated: false,
 					assets_accounts: vec![],
-					index: 0
+					index: 0,
 				},
 			);
 		}

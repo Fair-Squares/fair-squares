@@ -131,7 +131,7 @@ impl<T: Config> Pallet<T> {
 			let mut val0 = val.clone().unwrap();
 			// get asset price
 			let price0 = Onboarding::Pallet::<T>::houses(collection, item).unwrap().price.unwrap();
-			let price1 =Self::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
+			let price1 = Self::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
 
 			//Update rent in tenant infos added.
 			let time = <T as Config>::Lease::get();
@@ -283,10 +283,9 @@ impl<T: Config> Pallet<T> {
 					let remaining_p = tenant.remaining_payments;
 					let contract_begin = tenant.contract_start;
 
-					let rent = Self::roles_bal_to_u128(tenant.rent).unwrap()
-						* time as u128;
+					let rent = Self::roles_bal_to_u128(tenant.rent).unwrap() * time as u128;
 					let rent_float = rent as f64;
-					let rent0 =	Self::roles_bal_to_u128(tenant.rent).unwrap();
+					let rent0 = Self::roles_bal_to_u128(tenant.rent).unwrap();
 
 					//Calculate rent per block
 					let total_blocks = <T as Config>::ContractLength::get();

@@ -16,7 +16,7 @@ pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 
 pub use sp_runtime::{
 	traits::{AccountIdConversion, AtLeast32BitUnsigned, Saturating, StaticLookup, Zero},
-	DispatchError,Percent
+	DispatchError, Percent,
 };
 pub use sp_std::boxed::Box;
 

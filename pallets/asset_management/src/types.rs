@@ -53,7 +53,7 @@ pub enum VoteResult {
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub enum BalanceTypes{
+pub enum BalanceTypes {
 	Assets,
 	Dem,
 	HFund,
@@ -122,22 +122,20 @@ impl<T: Config> ProposalRecord<T> {
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
-pub struct BalanceType<T:Config>{
-	pub hfund_bal:HFund::BalanceOf<T>,
+pub struct BalanceType<T: Config> {
+	pub hfund_bal: HFund::BalanceOf<T>,
 	pub roles_bal: Roles::BalanceOf<T>,
 	pub onboarding_bal: Onboarding::BalanceOf<T>,
 	pub share_bal: Share::BalanceOf<T>,
-	pub dem_bal: DemoBalanceOf<T>,	
+	pub dem_bal: DemoBalanceOf<T>,
 	pub assets_bal: AssetsBalanceOf<T>,
 	pub ident_bal: IdentBalanceOf<T>,
 	pub payment_bal: Payment::BalanceOf<T>,
 	pub manage_bal: BalanceOf<T>,
 }
 
-impl<T: Config> BalanceType<T>{
-	
-	pub fn convert_to_balance(number:u128) -> Self{
-
+impl<T: Config> BalanceType<T> {
+	pub fn convert_to_balance(number: u128) -> Self {
 		let roles_bal = Zero::zero();
 		let hfund_bal = Zero::zero();
 		let onboarding_bal = Zero::zero();
@@ -145,15 +143,15 @@ impl<T: Config> BalanceType<T>{
 		let dem_bal = Zero::zero();
 		let assets_bal = Zero::zero();
 		let ident_bal = Zero::zero();
-		let payment_bal =Zero::zero();
+		let payment_bal = Zero::zero();
 		let manage_bal = Zero::zero();
-		let mut new = BalanceType::<T>{
+		let mut new = BalanceType::<T> {
 			roles_bal,
 			hfund_bal,
 			onboarding_bal,
 			share_bal,
 			dem_bal,
-			assets_bal, 
+			assets_bal,
 			ident_bal,
 			payment_bal,
 			manage_bal,
@@ -169,9 +167,5 @@ impl<T: Config> BalanceType<T>{
 		new.manage_bal = number.try_into().ok().unwrap();
 
 		new
-		
 	}
-
 }
-
-

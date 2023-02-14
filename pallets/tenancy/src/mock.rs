@@ -483,11 +483,9 @@ pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
 pub const NOTARY: AccountId = AccountId::new([30u8; 32]);
 pub const SALIM: AccountId = AccountId::new([31u8; 32]);
 
-
 pub const INCENTIVE_PERCENTAGE: u8 = 10;
 pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
 pub const CANCEL_BLOCK_BUFFER: u64 = 600;
-
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {

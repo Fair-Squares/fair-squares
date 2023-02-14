@@ -439,11 +439,11 @@ fn ten0() -> Ident::IdentityInfo<MaxAdditionalFields> {
 		additional: vec![
 			(
 				Ident::Data::Raw(b"Present Address".to_vec().try_into().unwrap()),
-				Ident::Data::Raw(b"Japan/Yokohama".to_vec().try_into().unwrap())
+				Ident::Data::Raw(b"Japan/Yokohama".to_vec().try_into().unwrap()),
 			),
 			(
 				Ident::Data::Raw(b"Monthly Salary".to_vec().try_into().unwrap()),
-				Ident::Data::Raw(b"250,000 yen".to_vec().try_into().unwrap())
+				Ident::Data::Raw(b"250,000 yen".to_vec().try_into().unwrap()),
 			),
 		]
 		.try_into()
@@ -465,11 +465,11 @@ fn ten1() -> Ident::IdentityInfo<MaxAdditionalFields> {
 		additional: vec![
 			(
 				Ident::Data::Raw(b"Present Address".to_vec().try_into().unwrap()),
-				Ident::Data::Raw(b"England/Liverpool".to_vec().try_into().unwrap())
+				Ident::Data::Raw(b"England/Liverpool".to_vec().try_into().unwrap()),
 			),
 			(
 				Ident::Data::Raw(b"Monthly Salary".to_vec().try_into().unwrap()),
-				Ident::Data::Raw(b"1550 pounds".to_vec().try_into().unwrap())
+				Ident::Data::Raw(b"1550 pounds".to_vec().try_into().unwrap()),
 			),
 		]
 		.try_into()
@@ -510,26 +510,23 @@ fn test_00() {
 		fast_forward_to(end_block);
 		println!("\n\ntenant_rent is: {:?}\n", tenant0_inf.rent);
 
-		expect_events(vec![
-			mock::Event::AssetManagement(pallet_asset_management::Event::TenantDebt{
+		expect_events(vec![mock::Event::AssetManagement(
+			pallet_asset_management::Event::TenantDebt {
 				tenant: TENANT0,
 				debt: 925,
 				when: System::block_number(),
-				
-			})
-		]);
+			},
+		)]);
 
 		tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 		next_block();
 
 		let asset = tenant0_inf.asset_account.clone().unwrap();
 		let virtual_initial_balance = Balances::free_balance(asset.clone());
-	
 
 		//TENANT0 pays the first rent
-		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));		
-		
-	
+		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));
+
 		//Let's check that rent transfer toward virtual account occured
 		let virtual_balance = Balances::free_balance(&tenant0_inf.asset_account.unwrap());
 		let coll_id0 = NftColl::OFFICESTEST.value();
@@ -541,8 +538,6 @@ fn test_00() {
 
 		assert_ne!(virtual_initial_balance, virtual_balance);
 		assert_eq!(virtual_balance, virtual_initial_balance.saturating_add(tenant0_inf.rent));
-
-
 
 		//Let's check that owner0 got a transfer from the rent after block change
 		let initial_block_number = System::block_number();
@@ -560,13 +555,12 @@ fn test_00() {
 		);
 
 		//TENANT1 pays the first rent
-		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT1)));	
+		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT1)));
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()
 			.expect("Expected at least one EventRecord to be found")
 			.event;
-
 
 		println!("\n\nrecent events2:\n{:?}", event);
 	})

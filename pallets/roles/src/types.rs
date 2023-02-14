@@ -128,7 +128,7 @@ pub struct Tenant<T: Config> {
 	pub asset_account: Option<T::AccountId>,
 	pub contract_start: BlockNumberOf<T>,
 	pub remaining_rent: BalanceOf<T>,
-	pub remaining_payments:u8,
+	pub remaining_payments: u8,
 }
 impl<T: Config> Tenant<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
@@ -188,7 +188,7 @@ pub struct Representative<T: Config> {
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
 	pub assets_accounts: Vec<T::AccountId>,
-	pub index: u32
+	pub index: u32,
 }
 impl<T: Config> Representative<T>
 where

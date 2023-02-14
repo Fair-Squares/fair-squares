@@ -544,7 +544,7 @@ pub mod pallet {
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
 			let bals0 = BalanceType::<T>::convert_to_balance(guaranty.clone());
-			let fee1 = T::IncentivePercentage::get()*bals0.manage_bal;
+			let fee1 = T::IncentivePercentage::get() * bals0.manage_bal;
 			let total_amount = guaranty + fee0 + Self::manage_bal_to_u128(fee1).unwrap();
 			let tenant_bal0: BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
 			let tenant_bal = Self::manage_bal_to_u128(tenant_bal0).unwrap();

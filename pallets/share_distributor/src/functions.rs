@@ -227,7 +227,6 @@ impl<T: Config> Pallet<T> {
 		input.try_into().ok()
 	}
 
-
 	// Conversion of BalanceOf<T> to f64
 	pub fn balance_to_f64_option0(input: HousingFund::BalanceOf<T>) -> Option<f64> {
 		let integer: u64 = input.try_into().ok().unwrap();

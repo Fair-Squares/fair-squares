@@ -458,7 +458,7 @@ pub mod pallet {
 
 			//Create asset
 			let balance1 = <T as Config>::Currency::free_balance(&caller);
-			let balance0 = T::ProposalFee::get().mul_floor(price.unwrap());			
+			let balance0 = T::ProposalFee::get().mul_floor(price.unwrap());
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
 
 			<T as Config>::Currency::reserve(&caller, balance0).ok();
