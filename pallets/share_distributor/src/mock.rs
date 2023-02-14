@@ -241,7 +241,8 @@ impl pallet_voting::Config for Test {
 }
 
 parameter_types! {
-	pub const ProposalFee:u64 = 5;
+	pub const ProposalFee:Percent = Percent::from_percent(5);
+	pub const SlashedFee: Percent = Percent::from_percent(10);
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
@@ -250,6 +251,7 @@ impl pallet_onboarding::Config for Test {
 	type Currency = Balances;
 	type Prop = Call;
 	type ProposalFee = ProposalFee;
+	type Slash = SlashedFee;
 	type WeightInfo = ();
 	type FeesAccount = FeesAccount;
 }

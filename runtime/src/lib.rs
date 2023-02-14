@@ -599,7 +599,8 @@ impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 }
 
 parameter_types! {
-	pub const ProposalFee: u64= 15;
+	pub const ProposalFee: Percent= Percent::from_percent(15);
+	pub const SlashedFee: Percent = Percent::from_percent(10);
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
@@ -608,6 +609,7 @@ impl pallet_onboarding::Config for Runtime {
 	type Currency = Balances;
 	type Prop = Call;
 	type ProposalFee = ProposalFee;
+	type Slash = SlashedFee;
 	type WeightInfo = ();
 	type FeesAccount = FeesAccount;
 }
