@@ -525,35 +525,7 @@ pub mod pallet {
 			});
 
 			if submit {
-				//Change asset status to REVIEWING
-				Self::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING)
-					.ok();
-				//Send Proposal struct to voting pallet
-				//get the needed call and convert them to pallet_voting format
-				let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
-
-				let w_status0 = Box::new(
-					Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap(),
-				);
-				let w_status1 = Box::new(
-					Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap(),
-				);
-
-				let w_r_destroy = Box::new(
-					Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap(),
-				);
-				let w_r_edit = Box::new(
-					Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap(),
-				);
-				//Send Calls struct to voting pallet
-				Votes::Pallet::<T>::submit_proposal(
-					origin,
-					w_status1,
-					w_status0,
-					w_r_destroy,
-					w_r_edit,
-				)
-				.ok();
+				Self::do_submit_proposal(origin, collection, item_id);
 
 				Self::deposit_event(Event::ProposalSubmitted {
 					who: caller,
@@ -609,31 +581,7 @@ pub mod pallet {
 				Self::set_price(origin.clone(), collection, item_id, Some(b)).ok();
 			}
 
-			//Change asset status to REVIEWING
-			Self::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING).ok();
-
-			//get the needed call and convert them to pallet_voting format
-			let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
-			let w_status1 = Box::new(
-				Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap(),
-			);
-			let w_status0 = Box::new(
-				Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap(),
-			);
-			let w_r_destroy = Box::new(
-				Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap(),
-			);
-			let w_r_edit =
-				Box::new(Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap());
-			//Send Calls struct to voting pallet
-			Votes::Pallet::<T>::submit_proposal(
-				origin,
-				w_status1,
-				w_status0,
-				w_r_destroy,
-				w_r_edit,
-			)
-			.ok();
+			Self::do_submit_proposal(origin, collection, item_id);
 
 			Self::deposit_event(Event::ProposalSubmitted {
 				who: caller,

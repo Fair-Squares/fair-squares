@@ -38,6 +38,8 @@ pub struct Asset<T: Config> {
 	pub price: Option<BalanceOf<T>>,
 	/// Tenants
 	pub tenants: Vec<T::AccountId>,
+	/// Proposal hash
+	pub proposal_hash: T::Hash,
 }
 
 impl<T: Config> Asset<T> {
@@ -49,7 +51,7 @@ impl<T: Config> Asset<T> {
 	) -> DispatchResult {
 		let status = AssetStatus::EDITING;
 		let created = <frame_system::Pallet<T>>::block_number();
-		let house = Asset::<T> { status, created, infos, price, tenants: Default::default() };
+		let house = Asset::<T> { status, created, infos, price, tenants: Default::default(), proposal_hash: Default::default() };
 		Houses::<T>::insert(collection, item, house);
 
 		Ok(())
