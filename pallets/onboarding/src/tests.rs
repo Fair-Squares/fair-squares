@@ -255,10 +255,10 @@ fn proposal_rejections() {
 
 		// Bob reserved funds are 100% slashed
 		let diff = initial_balance - balance0;
-		let res0 = OnboardingModule::balance_to_u64_option(price1).unwrap();
+		//let res0 = OnboardingModule::balance_to_u64_option(price1).unwrap();
 		let perc = 5;
-		let res1 = perc * res0 / 100;
-		let reserved = OnboardingModule::u64_to_balance_option(res1).unwrap();
+		let reserved = perc * price1 / 100;
+		//let reserved = OnboardingModule::u64_to_balance_option(res1).unwrap();
 		assert_eq!(diff, reserved);
 		let fees_balance2 = <Test as pallet_uniques::Config>::Currency::total_balance(
 			&OnboardingModule::account_id(),

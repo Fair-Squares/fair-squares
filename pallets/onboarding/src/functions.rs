@@ -16,7 +16,7 @@ pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 
 pub use sp_runtime::{
 	traits::{AccountIdConversion, AtLeast32BitUnsigned, Saturating, StaticLookup, Zero},
-	DispatchError,
+	DispatchError, Percent,
 };
 pub use sp_std::boxed::Box;
 
@@ -143,16 +143,6 @@ impl<T: Config> Pallet<T> {
 		} else {
 			None
 		}
-	}
-
-	// Conversion of u64 to BalanxceOf<T>
-	pub fn u64_to_balance_option(input: u64) -> Option<BalanceOf<T>> {
-		input.try_into().ok()
-	}
-
-	// Conversion of BalanceOf<T> to u32
-	pub fn balance_to_u64_option(input: BalanceOf<T>) -> Option<u64> {
-		input.try_into().ok()
 	}
 
 	pub fn account_id() -> T::AccountId {

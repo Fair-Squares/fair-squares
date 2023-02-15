@@ -83,8 +83,8 @@ impl<T: Config> Pallet<T> {
 
 		let mut vec = Vec::new();
 		for i in vec0.iter() {
-			let price0 = Self::balance_to_u128_option0(price).unwrap();
-			let contribution0 = Self::balance_to_u128_option0(i.1).unwrap();
+			let price0 = Self::hfund_bal_to_u128(price).unwrap();
+			let contribution0 = Self::hfund_bal_to_u128(i.1).unwrap();
 
 			let price1 = Self::balance_to_f64_option0(price).unwrap();
 			let contribution1 = Self::balance_to_f64_option0(i.1).unwrap();
@@ -223,11 +223,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	// Conversion of BalanceOf<T> to u128
-	pub fn balance_to_u128_option0(input: HousingFund::BalanceOf<T>) -> Option<u128> {
-		input.try_into().ok()
-	}
-	// Conversion of BalanceOf<T> to u128
-	pub fn balance_to_u128_option(input: <T as Assets::Config>::Balance) -> Option<u128> {
+	pub fn hfund_bal_to_u128(input: HousingFund::BalanceOf<T>) -> Option<u128> {
 		input.try_into().ok()
 	}
 

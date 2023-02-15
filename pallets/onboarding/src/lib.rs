@@ -103,11 +103,14 @@ pub mod pallet {
 			+ Dispatchable<Origin = <Self as frame_system::Config>::Origin>
 			+ From<Call<Self>>;
 		#[pallet::constant]
-		type ProposalFee: Get<u64>;
+		type ProposalFee: Get<Percent>;
 		type WeightInfo: WeightInfo;
 
 		#[pallet::constant]
 		type FeesAccount: Get<PalletId>;
+
+		#[pallet::constant]
+		type Slash: Get<Percent>;
 	}
 
 	#[pallet::pallet]
@@ -366,13 +369,8 @@ pub mod pallet {
 
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
-
-			let wrap_balance = Self::balance_to_u64_option(balance).unwrap();
-			let slash = wrap_balance * 10 / 100;
-			let wrap_remain = wrap_balance - slash;
-			let fees = Self::u64_to_balance_option(slash).unwrap();
-			let remain = Self::u64_to_balance_option(wrap_remain).unwrap();
-
+			let fees = <T as Config>::Slash::get().mul_floor(balance);
+			let remain = balance.saturating_sub(fees);
 			<T as pallet::Config>::Currency::unreserve(&owner, fees);
 			let res = <T as pallet::Config>::Currency::transfer(
 				&owner,
@@ -459,13 +457,8 @@ pub mod pallet {
 			let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
 
 			//Create asset
-
 			let balance1 = <T as Config>::Currency::free_balance(&caller);
-
-			let res0 = Self::balance_to_u64_option(price.unwrap()).unwrap();
-			let perc = T::ProposalFee::get();
-			let res1 = perc * res0 / 100;
-			let balance0 = Self::u64_to_balance_option(res1).unwrap();
+			let balance0 = T::ProposalFee::get().mul_floor(price.unwrap());
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
 
 			<T as Config>::Currency::reserve(&caller, balance0).ok();

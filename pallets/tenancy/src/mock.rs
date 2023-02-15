@@ -350,7 +350,8 @@ impl pallet_voting::Config for Test {
 }
 
 parameter_types! {
-	pub const ProposalFee:u64 = 5;
+	pub const ProposalFee:Percent = Percent::from_percent(5);
+	pub const SlashedFee: Percent = Percent::from_percent(10);
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
@@ -359,6 +360,7 @@ impl pallet_onboarding::Config for Test {
 	type Currency = Balances;
 	type Prop = Call;
 	type ProposalFee = ProposalFee;
+	type Slash = SlashedFee;
 	type WeightInfo = ();
 	type FeesAccount = FeesAccount;
 }
@@ -463,26 +465,27 @@ impl pallet_asset_management::Config for Test {
 	type Maintenance = Maintenance;
 	type WeightInfo = ();
 }
-
-pub const REPRESENTATIVE: AccountId = AccountId::new([10u8; 32]);
-pub const FRED: AccountId = AccountId::new([11u8; 32]);
-pub const NOTARY: AccountId = AccountId::new([30u8; 32]);
-pub const SALIM: AccountId = AccountId::new([31u8; 32]);
-pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
-pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
-pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
-pub const INCENTIVE_PERCENTAGE: u8 = 10;
-pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
-pub const CANCEL_BLOCK_BUFFER: u64 = 600;
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
-pub const DAVE: AccountId = AccountId::new([6u8; 32]);
-pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const TENANT0: AccountId = AccountId::new([4u8; 32]);
+pub const EVE: AccountId = AccountId::new([5u8; 32]);
+pub const DAVE: AccountId = AccountId::new([6u8; 32]);
 pub const FERDIE: AccountId = AccountId::new([7u8; 32]);
 pub const GERARD: AccountId = AccountId::new([8u8; 32]);
 pub const HUNTER: AccountId = AccountId::new([9u8; 32]);
+pub const REPRESENTATIVE: AccountId = AccountId::new([10u8; 32]);
+pub const FRED: AccountId = AccountId::new([11u8; 32]);
+pub const RESOLVER_ACCOUNT: AccountId = AccountId::new([12u8; 32]);
+pub const TENANT1: AccountId = AccountId::new([13u8; 32]);
+pub const FEE_RECIPIENT_ACCOUNT: AccountId = AccountId::new([20u8; 32]);
+pub const PAYMENT_RECIPENT_FEE_CHARGED: AccountId = AccountId::new([21u8; 32]);
+pub const NOTARY: AccountId = AccountId::new([30u8; 32]);
+pub const SALIM: AccountId = AccountId::new([31u8; 32]);
+
+pub const INCENTIVE_PERCENTAGE: u8 = 10;
+pub const MARKETPLACE_FEE_PERCENTAGE: u8 = 10;
+pub const CANCEL_BLOCK_BUFFER: u64 = 600;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
@@ -503,6 +506,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 			(SALIM, 200_000_000),
 			(NOTARY, 100_000_000),
 			(TENANT0, 50_000_000),
+			(TENANT1, 50_000_000),
 		],
 	}
 	.assimilate_storage(&mut t)
@@ -522,4 +526,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| System::set_block_number(1));
 	ext
+}
+
+pub fn expect_events(e: Vec<Event>) {
+	e.into_iter().for_each(frame_system::Pallet::<Test>::assert_has_event);
 }

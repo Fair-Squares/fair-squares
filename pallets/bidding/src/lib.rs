@@ -180,7 +180,7 @@ impl<T: Config> Pallet<T> {
 			// If no houses are found, an event is raised
 			let block = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::NoHousesFinalisedFound(block));
-			return Ok(().into())
+			return Ok(().into());
 		}
 
 		let houses_iter = houses.iter();
@@ -222,18 +222,18 @@ impl<T: Config> Pallet<T> {
 
 		if houses.is_empty() {
 			Self::deposit_event(Event::NoHousesOnboardedFound(block_number));
-			return Ok(().into())
+			return Ok(().into());
 		}
 
 		for (collection_id, item_id, house) in houses.into_iter() {
 			// Checks on price format
 			if house.price.is_none() {
-				continue
+				continue;
 			}
 
 			let amount_wrap = Self::convert_balance(house.price.unwrap());
 			if amount_wrap.is_none() {
-				continue
+				continue;
 			}
 
 			let amount = amount_wrap.unwrap();
@@ -247,7 +247,7 @@ impl<T: Config> Pallet<T> {
 					amount,
 					block_number,
 				));
-				continue
+				continue;
 			}
 
 			// Retrieves the investors list and their contributions
@@ -261,7 +261,7 @@ impl<T: Config> Pallet<T> {
 					amount,
 					block_number,
 				));
-				continue
+				continue;
 			}
 
 			Self::deposit_event(Event::InvestorListCreationSuccessful(
@@ -293,7 +293,7 @@ impl<T: Config> Pallet<T> {
 						let value: T::NftCollectionId = item.value().into();
 						if value == collection_id {
 							possible_collection = *item;
-							break
+							break;
 						}
 					}
 
@@ -316,7 +316,7 @@ impl<T: Config> Pallet<T> {
 						block_number,
 						investor_shares,
 					));
-					continue
+					continue;
 				},
 			}
 
@@ -346,17 +346,17 @@ impl<T: Config> Pallet<T> {
 
 		// We check that the total amount of the contributions allow to buy the asset
 		// And that the minimum number of investors is ok
-		if contributions.0 < amount ||
-			contributions_length <
-				(percent /
-					Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
+		if contributions.0 < amount
+			|| contributions_length
+				< (percent
+					/ Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
 		{
-			return result
+			return result;
 		}
 
 		// We have at least more than the maximum possible investors
-		if contributions_length >=
-			(percent / Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap())
+		if contributions_length
+			>= (percent / Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap())
 		{
 			result = Self::get_common_investor_distribution(
 				amount,
@@ -365,8 +365,8 @@ impl<T: Config> Pallet<T> {
 			);
 		}
 		// We have the minimum of investors
-		else if contributions_length ==
-			(percent / Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
+		else if contributions_length
+			== (percent / Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap())
 		{
 			result = Self::get_common_investor_distribution(
 				amount,
@@ -434,23 +434,23 @@ impl<T: Config> Pallet<T> {
 			} else if item.1 >= actual_percentage {
 				// The current account is given a median share as its maximum available share will
 				// break the distribution rule
-				item_share = actual_percentage /
-					Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
+				item_share = actual_percentage
+					/ Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
 			} else {
 				// We calculate what is the share if a median rule is applied on the actual
 				// contribution and the remaining ones
-				let share_median_diff = (actual_percentage - item.1) /
-					Self::u64_to_balance_option(contributions_length - count).unwrap();
+				let share_median_diff = (actual_percentage - item.1)
+					/ Self::u64_to_balance_option(contributions_length - count).unwrap();
 
 				// We check that the distribution between accounts will respect rules if the maximum
 				// available share is given to the current account
-				if share_median_diff <
-					Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap()
+				if share_median_diff
+					< Self::u64_to_balance_option(T::MinimumSharePerInvestor::get()).unwrap()
 				{
 					// The current account is given a median share as its maximum available share
 					// will break the distribution rule
-					item_share = actual_percentage /
-						Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
+					item_share = actual_percentage
+						/ Self::u64_to_balance_option(contributions_length - count + 1).unwrap();
 				} else {
 					// The account is given its maximum available share as the remaining
 					// contributions will follow the min-max rule
@@ -465,7 +465,7 @@ impl<T: Config> Pallet<T> {
 			count += 1;
 
 			if actual_percentage == zero_percent {
-				break
+				break;
 			}
 		}
 
@@ -556,16 +556,16 @@ impl<T: Config> Pallet<T> {
 		let mut value: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
 		// If the available amount is greater than the maximum amount, then the maximum amount is
 		// returned
-		if contribution.available_balance >=
-			Self::get_amount_percentage(amount, T::MaximumSharePerInvestor::get())
+		if contribution.available_balance
+			>= Self::get_amount_percentage(amount, T::MaximumSharePerInvestor::get())
 		{
 			share = Self::u64_to_balance_option(T::MaximumSharePerInvestor::get()).unwrap();
 			value = Self::get_amount_percentage(amount, T::MaximumSharePerInvestor::get());
 		}
 		// If the avalable amount is greater than the minimum but less than the maximum amount then
 		// the share is calculated as a percentage
-		else if contribution.available_balance >=
-			Self::get_amount_percentage(amount, T::MinimumSharePerInvestor::get())
+		else if contribution.available_balance
+			>= Self::get_amount_percentage(amount, T::MinimumSharePerInvestor::get())
 		{
 			share =
 				contribution.available_balance * Self::u64_to_balance_option(100).unwrap() / amount;
@@ -579,8 +579,8 @@ impl<T: Config> Pallet<T> {
 		amount: Housing_Fund::BalanceOf<T>,
 		percentage: u64,
 	) -> Housing_Fund::BalanceOf<T> {
-		amount * Self::u64_to_balance_option(percentage).unwrap() /
-			Self::u64_to_balance_option(100).unwrap()
+		amount * Self::u64_to_balance_option(percentage).unwrap()
+			/ Self::u64_to_balance_option(100).unwrap()
 	}
 
 	fn convert_balance(amount: Onboarding::BalanceOf<T>) -> Option<Housing_Fund::BalanceOf<T>> {

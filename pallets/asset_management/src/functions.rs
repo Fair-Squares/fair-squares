@@ -44,8 +44,9 @@ impl<T: Config> Pallet<T> {
 			Ident::Pallet::<T>::set_fields(origin2.clone(), index, Default::default()).ok();
 
 			//Set registrar fees
-			let fee0 = Self::balance_to_u128_option1(T::RepFees::get()).unwrap();
-			let fees = Self::u128_to_balance_option1(fee0).unwrap();
+			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
+			let bals0 = BalanceType::<T>::convert_to_balance(fee0);
+			let fees = bals0.ident_bal;
 			Ident::Pallet::<T>::set_fee(origin2, index, fees).ok();
 
 			//Update Rep number
@@ -71,7 +72,7 @@ impl<T: Config> Pallet<T> {
 		let coeff = T::Guaranty::get() as u128;
 		let ror = T::RoR::get();
 		let price0 = Onboarding::Pallet::<T>::houses(collection, item).unwrap().price.unwrap();
-		let price1 = Onboarding::Pallet::<T>::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
+		let price1 = Self::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
 		let time = <T as Config>::Lease::get();
 		let rent = ((price1 as f64) / time as f64).round();
 		let amount: u128 = coeff * (rent as u128);
@@ -90,7 +91,8 @@ impl<T: Config> Pallet<T> {
 		let amount = Self::calculate_guaranty(collection, item);
 
 		//convert amount to payment_pallet compatible balance
-		let amount1 = Payment::Pallet::<T>::u128_to_balance_option(amount).unwrap();
+		let bals0 = BalanceType::<T>::convert_to_balance(amount);
+		let amount1 = bals0.payment_bal;
 
 		//create payment_request
 		Payment::Pallet::<T>::request_payment(origin, from.clone(), amount1).ok();
@@ -129,17 +131,17 @@ impl<T: Config> Pallet<T> {
 			let mut val0 = val.clone().unwrap();
 			// get asset price
 			let price0 = Onboarding::Pallet::<T>::houses(collection, item).unwrap().price.unwrap();
-			let price1 =
-				Onboarding::Pallet::<T>::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
+			let price1 = Self::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
 
 			//Update rent in tenant infos added.
 			let time = <T as Config>::Lease::get();
 			let rent0 = ((price1 as f64) / time as f64).round();
 			let rent1 = (rent0 as u128) * time as u128;
 			let now = <frame_system::Pallet<T>>::block_number();
-
-			let rent = Roles::Pallet::<T>::u128_to_balance_option(rent0 as u128).unwrap();
-			let year_rent = Roles::Pallet::<T>::u128_to_balance_option(rent1).unwrap();
+			let mut bals = BalanceType::<T>::convert_to_balance(rent0 as u128);
+			let rent = bals.roles_bal;
+			bals = BalanceType::<T>::convert_to_balance(rent1);
+			let year_rent = bals.roles_bal;
 			val0.rent = rent.into();
 			val0.asset_account = Some(asset_account);
 			val0.remaining_rent = year_rent;
@@ -206,28 +208,25 @@ impl<T: Config> Pallet<T> {
 		owners.contains(caller)
 	}
 
-	pub fn balance_to_u128_option(input: <T as Assetss::Config>::Balance) -> Option<u128> {
+	pub fn manage_bal_to_u128(input: BalanceOf<T>) -> Option<u128> {
 		input.try_into().ok()
 	}
-	pub fn u128_to_balance_option(input: u128) -> Option<DemoBalanceOf<T>> {
+	pub fn assets_bal_to_u128(input: <T as Assetss::Config>::Balance) -> Option<u128> {
+		input.try_into().ok()
+	}
+	pub fn roles_bal_to_u128(input: Roles::BalanceOf<T>) -> Option<u128> {
+		input.try_into().ok()
+	}
+	pub fn onboarding_bal_to_u128(input: Onboarding::BalanceOf<T>) -> Option<u128> {
 		input.try_into().ok()
 	}
 
-	pub fn balance_to_u128_option1(input: BalanceOf<T>) -> Option<u128> {
-		input.try_into().ok()
-	}
-
-	pub fn u128_to_balance_option1(input: u128) -> Option<IdentBalanceOf<T>> {
-		input.try_into().ok()
-	}
-
-	pub fn u128_to_balance_option2(input: u128) -> Option<BalanceOf<T>> {
-		input.try_into().ok()
-	}
+	// to be deleted//
 
 	pub fn blocknumber_to_u128(input: BlockNumberFor<T>) -> Option<u128> {
 		input.try_into().ok()
 	}
+	// to be deleted//
 
 	pub fn get_formatted_call(call: <T as Config>::Call) -> <T as Config>::Call {
 		call
@@ -283,11 +282,10 @@ impl<T: Config> Pallet<T> {
 					let time = <T as Config>::Lease::get();
 					let remaining_p = tenant.remaining_payments;
 					let contract_begin = tenant.contract_start;
-					let rent = Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap()
-						* time as u128;
+
+					let rent = Self::roles_bal_to_u128(tenant.rent).unwrap() * time as u128;
 					let rent_float = rent as f64;
-					let rent0 =
-						Roles::Pallet::<T>::balance_to_u128_option(tenant.rent).unwrap() as u128;
+					let rent0 = Self::roles_bal_to_u128(tenant.rent).unwrap();
 
 					//Calculate rent per block
 					let total_blocks = <T as Config>::ContractLength::get();
@@ -314,21 +312,22 @@ impl<T: Config> Pallet<T> {
 						//Get owners list
 
 						let owners = infos.owners;
-						let rent1 = Self::u128_to_balance_option2(rent0.clone()).unwrap();
+						let bals0 = BalanceType::<T>::convert_to_balance(rent0);
+						let rent1 = bals0.manage_bal;
 
 						//Get Asset_tokens infos
 						let token_id = infos.token_id;
 						let total_issuance =
 							Assetss::Pallet::<T>::total_supply(token_id.clone().into());
 						let total_issuance_float =
-							Self::balance_to_u128_option(total_issuance).unwrap() as f64;
+							Self::assets_bal_to_u128(total_issuance).unwrap() as f64;
 
 						//Remove maintenance fees from rent and convert it to f64
 						let maintenance = T::Maintenance::get() * rent1.clone();
 						let distribute = rent1.saturating_sub(maintenance.clone());
 
 						//Get the total amount to distribute
-						let distribute_float = (Self::balance_to_u128_option1(distribute.clone())
+						let distribute_float = (Self::manage_bal_to_u128(distribute.clone())
 							.unwrap() * infos.rent_nbr as u128) as f64;
 
 						debug_assert!(distribute.clone() > Zero::zero());
@@ -347,11 +346,11 @@ impl<T: Config> Pallet<T> {
 							//the owner's tokens by the total token issuance, and multiply the result by
 							//the total amount to be distributed.
 							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(), &i);
-							let share_float = Self::balance_to_u128_option(share).unwrap() as f64
+							let share_float = Self::assets_bal_to_u128(share).unwrap() as f64
 								/ total_issuance_float;
 							let amount_float = share_float * distribute_float.clone();
-							let amount =
-								Self::u128_to_balance_option2(amount_float as u128).unwrap();
+							let bals0 = BalanceType::<T>::convert_to_balance(amount_float as u128);
+							let amount = bals0.manage_bal;
 							<T as Config>::Currency::transfer(
 								&asset_account,
 								&i,
@@ -385,7 +384,8 @@ impl<T: Config> Pallet<T> {
 					//Calculate the debt if negative balance
 					if payed < amount_due && (now % <T as Config>::RentCheck::get()).is_zero() {
 						let tenant_debt0 = amount_due - payed;
-						let debt = Self::u128_to_balance_option2(tenant_debt0).unwrap();
+						let bals0 = BalanceType::<T>::convert_to_balance(tenant_debt0);
+						let debt = bals0.manage_bal;
 
 						//Event to inform the tenant of the amount of his debt
 						Self::deposit_event(Event::TenantDebt {
