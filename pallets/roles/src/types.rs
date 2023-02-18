@@ -101,12 +101,13 @@ where
 		let now = <frame_system::Pallet<T>>::block_number();
 		ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
 
-		let hw = HouseSeller { account_id: caller.clone(), age: now, activated: false, verifier: admin };
+		let hw =
+			HouseSeller { account_id: caller.clone(), age: now, activated: false, verifier: admin };
 
 		SellerApprovalList::<T>::mutate(|list| {
 			list.push(hw);
 		});
-		RequestedRoles::<T>::insert(caller,Accounts::SELLER);
+		RequestedRoles::<T>::insert(caller, Accounts::SELLER);
 
 		Ok(())
 	}
@@ -169,12 +170,13 @@ impl<T: Config> Servicer<T> {
 		let caller = ensure_signed(acc)?;
 		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
-		let sv = Servicer { account_id: caller.clone(), age: now, activated: false, verifier: admin };
+		let sv =
+			Servicer { account_id: caller.clone(), age: now, activated: false, verifier: admin };
 
 		ServicerApprovalList::<T>::mutate(|list| {
 			list.push(sv);
 		});
-		RequestedRoles::<T>::insert(caller,Accounts::SERVICER);
+		RequestedRoles::<T>::insert(caller, Accounts::SERVICER);
 		Ok(())
 	}
 }
@@ -250,11 +252,12 @@ where
 		ensure!(!NotaryLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
 
 		let admin = SUDO::Pallet::<T>::key().unwrap();
-		let notary = Notary { account_id: caller.clone(), age: now, activated: false, verifier: admin };
+		let notary =
+			Notary { account_id: caller.clone(), age: now, activated: false, verifier: admin };
 		NotaryApprovalList::<T>::mutate(|list| {
 			list.push(notary);
 		});
-		RequestedRoles::<T>::insert(caller,Accounts::NOTARY);
+		RequestedRoles::<T>::insert(caller, Accounts::NOTARY);
 
 		Ok(())
 	}

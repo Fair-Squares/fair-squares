@@ -118,14 +118,14 @@ impl<T: Config> Pallet<T> {
 		infos
 	}
 
-	pub fn vote_helper(share: u128, vote:bool) -> Option<Dem::Vote>{
-
-		match share{
-			50..=100  => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x }),
+	pub fn vote_helper(share: u128, vote: bool) -> Option<Dem::Vote> {
+		match share {
+			50..=100 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x }),
 			101..=150 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked2x }),
 			151..=300 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked3x }),
 			301..=350 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked4x }),
-			351..=400 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked4x }),
+			351..=400 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked5x }),
+			401.. => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked6x }),
 			_ => None,
 		}
 	}
@@ -349,14 +349,13 @@ impl<T: Config> Pallet<T> {
 						//Reserve maintenance fees
 						let reservation =
 							<T as Config>::Currency::reserve(&asset_account, maintenance.into());
-						
-							//Emmit maintenance fee payment event
+
+						//Emmit maintenance fee payment event
 						Self::deposit_event(Event::MaintenanceFeesPayment {
 							tenant: tenant.account_id.clone(),
 							when: now,
 							asset_account: tenant.asset_account.unwrap(),
 							amount: maintenance.clone(),
-							
 						});
 
 						debug_assert!(reservation.is_ok());

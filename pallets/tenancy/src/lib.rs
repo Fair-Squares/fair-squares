@@ -173,7 +173,7 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 			// Ensure that the caller has the tenancy role
 			ensure!(Roles::TenantLog::<T>::contains_key(caller.clone()), Error::<T>::NotATenant);
-			RegisteredTenant::<T>::new(caller.clone(),info.clone()).ok();
+			RegisteredTenant::<T>::new(caller.clone(), info.clone()).ok();
 
 			// Ensure that the asset is valid
 			let collection_id: T::NftCollectionId = asset_type.value().into();

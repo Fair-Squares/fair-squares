@@ -362,18 +362,18 @@ fn share_distributor0() {
 		let tenant0 = RoleModule::tenants(GERARD).unwrap();
 		assert!(tenant0.asset_account.is_none());
 
-
 		// Gerard is not a registered tenant
-		assert_err!(AssetManagement::launch_tenant_session(
-			origin_ferdie.clone(),
-			NftColl::OFFICESTEST,
-			item_id0,
-			GERARD,
-			VoteProposals::Election,
-			Ident::Judgement::Reasonable,
-		),
-		Error::<Test>::NotARegisteredTenant);
-
+		assert_err!(
+			AssetManagement::launch_tenant_session(
+				origin_ferdie.clone(),
+				NftColl::OFFICESTEST,
+				item_id0,
+				GERARD,
+				VoteProposals::Election,
+				Ident::Judgement::Reasonable,
+			),
+			Error::<Test>::NotARegisteredTenant
+		);
 
 		//change Gerard to a RegisteredTenant
 		Roles::TenantLog::<Test>::mutate(GERARD, |val| {

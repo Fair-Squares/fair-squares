@@ -229,14 +229,13 @@ pub mod pallet {
 			when: BlockNumberOf<T>,
 		},
 
-			//Asset maintenance fees, have been taken from the rent received, and reserved 
-			MaintenanceFeesPayment
-			{
-				tenant: T::AccountId,
-				when: BlockNumberOf<T>,
-				asset_account: T::AccountId,
-				amount: BalanceOf<T>,
-			},
+		//Asset maintenance fees, have been taken from the rent received, and reserved
+		MaintenanceFeesPayment {
+			tenant: T::AccountId,
+			when: BlockNumberOf<T>,
+			asset_account: T::AccountId,
+			amount: BalanceOf<T>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -440,7 +439,7 @@ pub mod pallet {
 			let token1 = bals0.dem_bal;
 
 			//let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
-			let v = Self::vote_helper(token0,vote).unwrap();
+			let v = Self::vote_helper(token0, vote).unwrap();
 			Dem::Pallet::<T>::vote(
 				origin.clone(),
 				referendum_index,
@@ -551,7 +550,6 @@ pub mod pallet {
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
-			
 			//Compare guaranty payment amount+fees with tenant free_balance
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
