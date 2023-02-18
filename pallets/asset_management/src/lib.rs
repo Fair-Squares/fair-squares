@@ -228,6 +228,14 @@ pub mod pallet {
 			amount: Payment::BalanceOf<T>,
 			when: BlockNumberOf<T>,
 		},
+
+		//Asset maintenance fees, have been taken from the rent received, and reserved
+		MaintenanceFeesPayment {
+			tenant: T::AccountId,
+			when: BlockNumberOf<T>,
+			asset_account: T::AccountId,
+			amount: BalanceOf<T>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -269,6 +277,8 @@ pub mod pallet {
 		ExistingPaymentRequest,
 		/// Not enough funds in the tenant account
 		NotEnoughTenantFunds,
+		/// The Tenant did not provide detailed information
+		NotARegisteredTenant,
 	}
 
 	#[pallet::hooks]
@@ -428,8 +438,8 @@ pub mod pallet {
 			let bals0 = BalanceType::<T>::convert_to_balance(token0);
 			let token1 = bals0.dem_bal;
 
-			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
-
+			//let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
+			let v = Self::vote_helper(token0, vote).unwrap();
 			Dem::Pallet::<T>::vote(
 				origin.clone(),
 				referendum_index,
@@ -555,6 +565,9 @@ pub mod pallet {
 			// Ensure that provided account is a valid tenant
 			let tenant0 = Roles::Pallet::<T>::tenants(tenant.clone());
 			ensure!(tenant0.is_some(), Error::<T>::NotATenant);
+			// Ensure that the tenant is registered
+			let tenant_infos = Roles::Pallet::<T>::tenants(tenant.clone()).unwrap();
+			ensure!(tenant_infos.registered == true, Error::<T>::NotARegisteredTenant);
 
 			let tenant0 = tenant0.unwrap();
 			match proposal {

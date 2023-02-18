@@ -357,7 +357,7 @@ pub mod pallet {
 		}
 
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(5))]
-		///Approval function for Sellers and Servicers. Only for admin level.
+		///Approval function for Sellers, Servicers, and Notary. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 			ensure!(

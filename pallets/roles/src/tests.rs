@@ -40,6 +40,7 @@ fn test_struct_methods() {
 				contract_start: System::block_number(),
 				remaining_rent: 0,
 				remaining_payments: 0,
+				registered: false,
 			})
 		);
 

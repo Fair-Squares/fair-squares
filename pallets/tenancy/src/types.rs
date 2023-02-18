@@ -43,7 +43,12 @@ impl<T: Config> RegisteredTenant<T> {
 	) -> DispatchResult {
 		let registered_at_block = <frame_system::Pallet<T>>::block_number();
 		let tenant = RegisteredTenant::<T> { infos, registered_at_block };
-		Tenants::<T>::insert(tenant_id, tenant);
+		Tenants::<T>::insert(tenant_id.clone(), tenant);
+		Roles::TenantLog::<T>::mutate(tenant_id, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.registered = true;
+			*val = Some(val0);
+		});
 		Ok(())
 	}
 }
