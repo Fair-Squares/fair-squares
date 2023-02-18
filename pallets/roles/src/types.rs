@@ -130,6 +130,7 @@ pub struct Tenant<T: Config> {
 	pub contract_start: BlockNumberOf<T>,
 	pub remaining_rent: BalanceOf<T>,
 	pub remaining_payments: u8,
+	pub registered: bool,
 }
 impl<T: Config> Tenant<T> {
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
@@ -143,6 +144,7 @@ impl<T: Config> Tenant<T> {
 			contract_start: now,
 			remaining_rent: Zero::zero(),
 			remaining_payments: 0,
+			registered: false,
 		};
 		TenantLog::<T>::insert(caller, &tenant);
 		Ok(())

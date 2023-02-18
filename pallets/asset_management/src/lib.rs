@@ -269,6 +269,8 @@ pub mod pallet {
 		ExistingPaymentRequest,
 		/// Not enough funds in the tenant account
 		NotEnoughTenantFunds,
+		/// The Tenant did not provide detailed information
+		NotARegisteredTenant,
 	}
 
 	#[pallet::hooks]
@@ -534,6 +536,10 @@ pub mod pallet {
 			ensure!(rep.is_some(), Error::<T>::NotARepresentative);
 			let rep = rep.unwrap();
 			ensure!(rep.activated, Error::<T>::NotAnActiveRepresentative);
+
+			// Ensure that the tenant is registered
+			let tenant_infos = Roles::Pallet::<T>::tenants(tenant.clone()).unwrap();
+			ensure!(tenant_infos.registered == true, Error::<T>::NotARegisteredTenant);
 
 			// Get the asset virtual account if exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
