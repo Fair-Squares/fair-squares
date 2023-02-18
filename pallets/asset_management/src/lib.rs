@@ -537,15 +537,12 @@ pub mod pallet {
 			let rep = rep.unwrap();
 			ensure!(rep.activated, Error::<T>::NotAnActiveRepresentative);
 
-			// Ensure that the tenant is registered
-			let tenant_infos = Roles::Pallet::<T>::tenants(tenant.clone()).unwrap();
-			ensure!(tenant_infos.registered == true, Error::<T>::NotARegisteredTenant);
-
 			// Get the asset virtual account if exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 
+			
 			//Compare guaranty payment amount+fees with tenant free_balance
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
@@ -561,6 +558,9 @@ pub mod pallet {
 			// Ensure that provided account is a valid tenant
 			let tenant0 = Roles::Pallet::<T>::tenants(tenant.clone());
 			ensure!(tenant0.is_some(), Error::<T>::NotATenant);
+			// Ensure that the tenant is registered
+			let tenant_infos = Roles::Pallet::<T>::tenants(tenant.clone()).unwrap();
+			ensure!(tenant_infos.registered == true, Error::<T>::NotARegisteredTenant);
 
 			let tenant0 = tenant0.unwrap();
 			match proposal {

@@ -362,6 +362,26 @@ fn share_distributor0() {
 		let tenant0 = RoleModule::tenants(GERARD).unwrap();
 		assert!(tenant0.asset_account.is_none());
 
+
+		// Gerard is not a registered tenant
+		assert_err!(AssetManagement::launch_tenant_session(
+			origin_ferdie.clone(),
+			NftColl::OFFICESTEST,
+			item_id0,
+			GERARD,
+			VoteProposals::Election,
+			Ident::Judgement::Reasonable,
+		),
+		Error::<Test>::NotARegisteredTenant);
+
+
+		//change Gerard to a RegisteredTenant
+		Roles::TenantLog::<Test>::mutate(GERARD, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.registered = true;
+			*val = Some(val0);
+		});
+
 		/***	START: Successful scenario of proposing a tenant    ** */
 		// Create a voting session, aka referendum to propose GERARD as a tenant for the first house
 		assert_ok!(AssetManagement::launch_tenant_session(
@@ -441,6 +461,12 @@ fn share_distributor0() {
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
 
+		//change PEGGY to a RegisteredTenant
+		Roles::TenantLog::<Test>::mutate(PEGGY, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.registered = true;
+			*val = Some(val0);
+		});
 		//Ferdie proposes PEGGY, but Peggy does not have enough funds
 		assert_err!(
 			AssetManagement::launch_tenant_session(
@@ -454,6 +480,13 @@ fn share_distributor0() {
 			Error::<Test>::NotEnoughTenantFunds
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
+
+		//change HUNTER to a RegisteredTenant
+		Roles::TenantLog::<Test>::mutate(HUNTER, |val| {
+			let mut val0 = val.clone().unwrap();
+			val0.registered = true;
+			*val = Some(val0);
+		});
 
 		// demote a tenant
 		assert_err!(
