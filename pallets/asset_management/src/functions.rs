@@ -300,7 +300,7 @@ impl<T: Config> Pallet<T> {
 
 					//check how many rents were payed
 					let payed = (time as u128 - remaining_p as u128) * rent.clone();
-					let asset_account = tenant.asset_account.unwrap();
+					let asset_account = tenant.asset_account.clone().unwrap();
 					let asset_account_free_balance =
 						<T as Config>::Currency::free_balance(&asset_account);
 
@@ -337,6 +337,15 @@ impl<T: Config> Pallet<T> {
 						//Reserve maintenance fees
 						let reservation =
 							<T as Config>::Currency::reserve(&asset_account, maintenance.into());
+						
+							//Emmit maintenance fee payment event
+						Self::deposit_event(Event::MaintenanceFeesPayment {
+							tenant: tenant.account_id.clone(),
+							when: now,
+							asset_account: tenant.asset_account.unwrap(),
+							amount: maintenance.clone(),
+							
+						});
 
 						debug_assert!(reservation.is_ok());
 

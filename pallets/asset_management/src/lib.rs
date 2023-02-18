@@ -228,6 +228,15 @@ pub mod pallet {
 			amount: Payment::BalanceOf<T>,
 			when: BlockNumberOf<T>,
 		},
+
+			//Asset maintenance fees, have been taken from the rent received, and reserved 
+			MaintenanceFeesPayment
+			{
+				tenant: T::AccountId,
+				when: BlockNumberOf<T>,
+				asset_account: T::AccountId,
+				amount: BalanceOf<T>,
+			},
 	}
 
 	// Errors inform users that something went wrong.
