@@ -118,6 +118,18 @@ impl<T: Config> Pallet<T> {
 		infos
 	}
 
+	pub fn vote_helper(share: u128, vote:bool) -> Option<Dem::Vote>{
+
+		match share{
+			50..=100  => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x }),
+			101..=150 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked2x }),
+			151..=300 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked3x }),
+			301..=350 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked4x }),
+			351..=400 => Some(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked4x }),
+			_ => None,
+		}
+	}
+
 	pub fn tenant_link_asset(
 		tenant: T::AccountId,
 		collection: T::NftCollectionId,

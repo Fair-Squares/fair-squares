@@ -439,8 +439,8 @@ pub mod pallet {
 			let bals0 = BalanceType::<T>::convert_to_balance(token0);
 			let token1 = bals0.dem_bal;
 
-			let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
-
+			//let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
+			let v = Self::vote_helper(token0,vote).unwrap();
 			Dem::Pallet::<T>::vote(
 				origin.clone(),
 				referendum_index,
