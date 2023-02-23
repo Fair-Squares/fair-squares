@@ -8,19 +8,35 @@ use sp_runtime::traits::{StaticLookup, Zero};
 impl<T: Config> Pallet<T> {
 	pub fn approve_representative(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 		let caller = ensure_signed(origin.clone())?;
+
 		let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();
-		representative.activated = true;
-		representative.assets_accounts.clear();
-		representative.assets_accounts.push(caller);
+		Roles::RepApprovalList::<T>::remove(&who);		
+		let who2 = T::Lookup::unlookup(who.clone());
 		//get Rep number
 		let mut index = Roles::Pallet::<T>::rep_num();
-		//Update Rep index
-		representative.index = index;
 
-		Roles::RepresentativeLog::<T>::insert(&who, representative);
-		Roles::RepApprovalList::<T>::remove(&who);
-		Roles::AccountsRolesLog::<T>::insert(&who, Roles::Accounts::REPRESENTATIVE);
-		let who2 = T::Lookup::unlookup(who.clone());
+		//Check if we're dealing with an already registered representative
+		let registered = Roles::RepresentativeLog::<T>::contains_key(&who);
+
+		if registered == false{
+			representative.activated = true;
+			representative.assets_accounts.clear();
+			representative.assets_accounts.push(caller);
+			
+			//Update Rep index
+			representative.index = index;
+
+			Roles::RepresentativeLog::<T>::insert(&who, representative);
+			Roles::AccountsRolesLog::<T>::insert(&who, Roles::Accounts::REPRESENTATIVE);
+			
+		} else{
+			//Add the new asset_account to the representative struct 
+			representative.assets_accounts.push(caller);
+			Roles::RepresentativeLog::<T>::mutate(&who,|val|{
+				*val = Some(representative);
+			})
+		}
+		
 
 		//Check that the Representative is not already a Registrar
 		//If a Representative is revoked from a given asset, and approved
@@ -49,9 +65,11 @@ impl<T: Config> Pallet<T> {
 			let fees = bals0.ident_bal;
 			Ident::Pallet::<T>::set_fee(origin2, index, fees).ok();
 
-			//Update Rep number
+			if registered==false{
+			//Update Rep number if not yet a registered Representative
 			index += 1;
 			Roles::RepNumber::<T>::put(index);
+			}
 		}
 
 		Ok(())

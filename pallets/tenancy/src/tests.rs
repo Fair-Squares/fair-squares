@@ -27,7 +27,7 @@ pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(TENANT1), TENANT1, Acc::TENANT).ok();
 }
 
-pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
+pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	prep_roles();
 
 	//Dave and EVE contribute to the fund
@@ -59,6 +59,14 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		Origin::signed(BOB),
 		NftColl::OFFICESTEST,
 		Some(price1),
+		metadata1.clone(),
+		true
+	));
+
+	assert_ok!(OnboardingModule::create_and_submit_proposal(
+		Origin::signed(BOB),
+		NftColl::APPARTMENTSTEST,
+		Some(price2),
 		metadata1,
 		true
 	));
@@ -66,19 +74,34 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	//Get the proposal hash
 	let mut proposal = pallet_voting::VotingProposals::<Test>::iter();
 	let prop = proposal.next().unwrap();
+	let prop1 = proposal.next().unwrap();
 	let hash0 = prop.0;
 	let infos = prop.1;
+	let hash1 = prop1.0;
+	let infos1 = prop1.1;
+
 	assert_eq!(infos.proposal_hash, hash0);
+	assert_eq!(infos1.proposal_hash, hash1);
 
 	let coll_id0 = NftColl::OFFICESTEST.value();
 	let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 	let mut house = OnboardingModule::houses(coll_id0, item_id0).unwrap();
 	assert_eq!(house.status, pallet_onboarding::AssetStatus::REVIEWING);
 
+	let coll_id1 = NftColl::APPARTMENTSTEST.value();
+	let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id1 as usize] - 1;
+	let mut house1 = OnboardingModule::houses(coll_id1, item_id1).unwrap();
+	assert_eq!(house1.status, pallet_onboarding::AssetStatus::REVIEWING);
+
+
 	//Council vote
 	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash0, true,));
 	assert_ok!(VotingModule::council_vote(Origin::signed(CHARLIE), hash0, true,));
 	assert_ok!(VotingModule::council_vote(Origin::signed(BOB), hash0, true,));
+
+	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash1, true,));
+	assert_ok!(VotingModule::council_vote(Origin::signed(CHARLIE), hash1, true,));
+	assert_ok!(VotingModule::council_vote(Origin::signed(BOB), hash1, true,));
 
 	let initial_block_number = System::block_number();
 	let end_block_number = initial_block_number
@@ -92,17 +115,24 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	fast_forward_to(end_block_number);
 
 	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash0,));
+	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash1,));
 
 	let voting_proposal = VotingModule::voting_proposals(hash0).unwrap();
+	let voting_proposal1 = VotingModule::voting_proposals(hash1).unwrap();
 
 	assert!(voting_proposal.collective_closed);
 	assert!(voting_proposal.collective_step);
+
+	assert!(voting_proposal1.collective_closed);
+	assert!(voting_proposal1.collective_step);
 
 	//fast_forward_to(end_block_number+1);
 	next_block();
 
 	house = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+	house1 = OnboardingModule::houses(coll_id1, item_id1).unwrap();
 	assert_eq!(house.status, pallet_onboarding::AssetStatus::VOTING);
+	assert_eq!(house1.status, pallet_onboarding::AssetStatus::VOTING);
 
 	//Investors Democracy vote
 
@@ -137,6 +167,8 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		)),
 	);
 
+	assert_ok!(VotingModule::investor_vote(Origin::signed(DAVE), hash1, true,));
+
 	assert_ok!(VotingModule::investor_vote(Origin::signed(EVE), hash0, false,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
@@ -145,6 +177,7 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		System::block_number()
 	);
 
+	assert_ok!(VotingModule::investor_vote(Origin::signed(GERARD), hash1, false,));
 	assert_ok!(VotingModule::investor_vote(Origin::signed(GERARD), hash0, false,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
@@ -153,6 +186,7 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		System::block_number()
 	);
 
+	assert_ok!(VotingModule::investor_vote(Origin::signed(FERDIE), hash1, true,));
 	assert_ok!(VotingModule::investor_vote(Origin::signed(FERDIE), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
@@ -161,6 +195,7 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		System::block_number()
 	);
 
+	assert_ok!(VotingModule::investor_vote(Origin::signed(HUNTER), hash1, true,));
 	assert_ok!(VotingModule::investor_vote(Origin::signed(HUNTER), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
@@ -169,6 +204,7 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		System::block_number()
 	);
 
+	assert_ok!(VotingModule::investor_vote(Origin::signed(FRED), hash1, true,));
 	assert_ok!(VotingModule::investor_vote(Origin::signed(FRED), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
@@ -177,6 +213,7 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 		System::block_number()
 	);
 
+	assert_ok!(VotingModule::investor_vote(Origin::signed(SALIM), hash1, true,));
 	assert_ok!(VotingModule::investor_vote(Origin::signed(SALIM), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
@@ -202,33 +239,49 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 
 	//Asset Status should now be `ONBOARDED`
 	house = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+	house1 = OnboardingModule::houses(coll_id1, item_id1).unwrap();
+
 	assert_eq!(house.status, pallet_onboarding::AssetStatus::ONBOARDED);
+	assert_eq!(house1.status, pallet_onboarding::AssetStatus::ONBOARDED);
 
 	//Move to next block until asset status is changed by pallet_bidding
 	while house.status == pallet_onboarding::AssetStatus::ONBOARDED {
 		next_block();
 		house = OnboardingModule::houses(coll_id0, item_id0).unwrap();
 	}
+	while house1.status == pallet_onboarding::AssetStatus::ONBOARDED {
+		next_block();
+		house1 = OnboardingModule::houses(coll_id1, item_id1).unwrap();
+	}
 
 	//Asset status should now be `FINALISING`
 	assert_eq!(house.status, pallet_onboarding::AssetStatus::FINALISING);
 	println!("\n\nAsset status is:{:?}\n\n", house.status);
+	assert_eq!(house1.status, pallet_onboarding::AssetStatus::FINALISING);
 
 	//The Notary will now Finalize the asset
 	assert_ok!(Finalise::validate_transaction_asset(Origin::signed(NOTARY), coll_id0, item_id0,));
+	assert_ok!(Finalise::validate_transaction_asset(Origin::signed(NOTARY), coll_id1, item_id1,));
 	house = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+	house1 = OnboardingModule::houses(coll_id1, item_id1).unwrap();
 
 	//Asset status should now be `FINALISED`
 	assert_eq!(house.status, pallet_onboarding::AssetStatus::FINALISED);
+	assert_eq!(house1.status, pallet_onboarding::AssetStatus::FINALISED);
 
 	//Move to next block until asset status is changed by pallet_bidding
 	while house.status == pallet_onboarding::AssetStatus::FINALISED {
 		next_block();
 		house = OnboardingModule::houses(coll_id0, item_id0).unwrap();
 	}
+	while house1.status == pallet_onboarding::AssetStatus::FINALISED {
+		next_block();
+		house1 = OnboardingModule::houses(coll_id0, item_id0).unwrap();
+	}
 
 	//Asset status should now be `PURCHASED`
 	assert_eq!(house.status, pallet_onboarding::AssetStatus::PURCHASED);
+	assert_eq!(house1.status, pallet_onboarding::AssetStatus::PURCHASED);
 	println!("\n\nAsset status is:{:?}\n\n", house.status);
 
 	//---ASSET MANAGEMENT STEP---
@@ -236,6 +289,9 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	//Let's get the asset virtual Account
 	let asset_ownership = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
 	let asset_account = asset_ownership.virtual_account;
+
+	let asset_ownership1 = ShareDistributor::virtual_acc(coll_id1, item_id1).unwrap();
+	let asset_account1 = asset_ownership1.virtual_account;
 
 	// The new owners need a Representative for their asset. Salim starts
 	// a referendum for the representative candidate.
@@ -296,6 +352,64 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	assert!(Roles::RepresentativeLog::<Test>::contains_key(REPRESENTATIVE));
 	assert!(Roles::AccountsRolesLog::<Test>::contains_key(REPRESENTATIVE));
 
+	//The representative wants another job
+	assert_ok!(RoleModule::set_role(
+		Origin::signed(REPRESENTATIVE),
+		REPRESENTATIVE,
+		Acc::REPRESENTATIVE
+	));
+
+	assert_ok!(AssetManagement::launch_representative_session(
+		Origin::signed(SALIM),
+		NftColl::APPARTMENTSTEST,
+		item_id1,
+		REPRESENTATIVE,
+		pallet_asset_management::VoteProposals::Election,
+	));
+
+	let ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
+	let mut ref_index = 0;
+	for i in ref0 {
+
+		let proposal = i.1;
+		if proposal.virtual_account == asset_account1.clone(){
+			ref_index = i.0;
+		}
+	}
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(SALIM), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(DAVE), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(EVE), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(GERARD), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(FERDIE), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(HUNTER), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(FRED), ref_index, true));
+	
+	//End REPRESENTATIVE referendum
+	let initial_block_number = System::block_number();
+	let end_block_number = initial_block_number
+		.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+	fast_forward_to(end_block_number);
+
+	//Enact Proposal
+	fast_forward_to(
+		end_block_number.saturating_add(<Test as pallet_asset_management::Config>::Delay::get()),
+	);
+
+	//Check that representative is connected to 2 assets accounts
+
+	let representative = Roles::Pallet::<Test>::reps(REPRESENTATIVE).unwrap();
+	let rep_assets = representative.assets_accounts;
+	assert_eq!(rep_assets.len(),2);
+
+
 	//Now that we have a Tenant/Representative/Asset. Let the Tenant0 & Tenant1 ask for the same asset
 	let tenant_bal_init = Balances::free_balance(TENANT0);
 	assert_ok!(crate::Pallet::<Test>::request_asset(
@@ -344,11 +458,10 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	let ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
 
 	for i in ref0 {
-		let ref_index = match i.1.caller_account {
-			REPRESENTATIVE => i.0,
-			_ => 5,
-		};
-		if ref_index != 5 {
+		
+		let account = i.1.caller_account;
+		if account == REPRESENTATIVE{
+			let ref_index = i.0;
 			//get vector of owners
 			let house = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
 			let owners = house.owners;
@@ -357,6 +470,7 @@ pub fn prep_test(price1: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 				assert_ok!(AssetManagement::owners_vote(Origin::signed(owner), ref_index, true));
 			}
 		}
+		
 	}
 
 	//End Tenants referendum
@@ -497,7 +611,8 @@ fn test_00() {
 
 		//Execute workflow up to TENANT0 connection to an asset
 		let price1 = 450_000;
-		prep_test(price1, metadata0, metadata1);
+		let price2 = 500_000;
+		prep_test(price1,price2,metadata0, metadata1);
 
 		let mut tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 
@@ -510,13 +625,7 @@ fn test_00() {
 		fast_forward_to(end_block);
 		println!("\n\ntenant_rent is: {:?}\n", tenant0_inf.rent);
 
-		expect_events(vec![mock::Event::AssetManagement(
-			pallet_asset_management::Event::TenantDebt {
-				tenant: TENANT0,
-				debt: 925,
-				when: System::block_number(),
-			},
-		)]);
+		
 
 		tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 		next_block();

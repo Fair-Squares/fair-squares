@@ -253,7 +253,7 @@ pub mod pallet {
 		AssetOutOfControl,
 		/// The candidate is not a tenant
 		NotATenant,
-		/// An asset is already linked to the provided tenant
+		/// An asset is already linked to the provided account
 		AlreadyLinkedWithAsset,
 		/// The tenant is not linked to the asset
 		TenantAssetNotLinked,
@@ -470,13 +470,21 @@ pub mod pallet {
 			item: T::NftItemId,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
+			let asset_account = Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 
 			//Check that the caller is a stored virtual account
 			ensure!(
 				caller
-					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+					== asset_account.clone(),
 				Error::<T>::NotAnAssetAccount
 			);
+
+			//Ensure that the Representative is not already connected to this asset
+			let representative = Roles::Pallet::<T>::get_pending_representatives(&rep_account).unwrap();
+			let rep_assets = representative.assets_accounts;
+			for i in rep_assets{
+				ensure!(i != asset_account,Error::<T>::AlreadyLinkedWithAsset);
+			}
 
 			//Approve role request
 			Self::approve_representative(origin, rep_account.clone()).ok();

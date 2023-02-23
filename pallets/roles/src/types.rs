@@ -205,20 +205,31 @@ where
 	pub fn new(acc: OriginFor<T>) -> DispatchResult {
 		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
-		ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
 
-		let rep = Representative {
-			account_id: caller.clone(),
-			age: now,
-			activated: false,
-			assets_accounts: Vec::new(),
-			index: Default::default(),
-		};
+		if !RepresentativeLog::<T>::contains_key(&caller){
 
-		RepApprovalList::<T>::mutate(caller, |val| {
-			//val.push(rep);
-			*val = Some(rep);
-		});
+			let rep = Representative::<T> {
+				account_id: caller.clone(),
+				age: now,
+				activated: false,
+				assets_accounts: Vec::new(),
+				index: Default::default(),
+			};
+			RepApprovalList::<T>::mutate(caller, |val| {
+				//val.push(rep);
+				*val = Some(rep);
+			});
+		} else {
+			let rep = RepresentativeLog::<T>::get(&caller);
+			RepApprovalList::<T>::mutate(caller, |val| {
+				//val.push(rep);
+				*val = rep;
+			});
+		}
+
+		
+
+		
 
 		Ok(())
 	}
