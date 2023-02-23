@@ -211,12 +211,17 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
 		fn build(&self) {
-			let servicer0 = self.new_admin.clone().unwrap(); // AccountId
-			let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
-			let source = T::Lookup::unlookup(servicer0); //Source
-			crate::Pallet::<T>::set_manager(origin, source).ok();
+			if self.new_admin.is_some() {
+				let servicer0 = self.new_admin.clone().unwrap(); // AccountId
+				let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
+				let source = T::Lookup::unlookup(servicer0); //Source
+				crate::Pallet::<T>::set_manager(origin, source).ok();
+			}
 
-			crate::Pallet::<T>::init_representatives(self.representatives.clone());
+			if !self.representatives.is_empty() {
+				crate::Pallet::<T>::init_representatives(self.representatives.clone());
+			}
+
 		}
 	}
 
