@@ -333,7 +333,7 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::REPRESENTATIVE => {
-					ensure!(!requested, <Error<T>>::AlreadyWaiting);
+					//ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					let representative = <T as frame_system::Config>::Origin::from(
 						RawOrigin::Signed(account.clone()),
 					);
@@ -346,6 +346,7 @@ pub mod pallet {
 			let need_approval = match account_type {
 				Accounts::INVESTOR => false,
 				Accounts::TENANT => false,
+				Accounts::REPRESENTATIVE => false,
 				_ => true,
 			};
 
