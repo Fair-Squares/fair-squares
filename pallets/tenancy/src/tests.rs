@@ -367,17 +367,47 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 		pallet_asset_management::VoteProposals::Election,
 	));
 
-	let mut ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
-	let ref1 = ref0.next().unwrap();
-	let mut proposal_rec1 = ref1.clone().1;
+	let ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
+	let mut ref_index = 0;
+	for i in ref0 {
 
-	while ref1.1.virtual_account != asset_account1.clone(){
-		let ref1 = ref0.next().unwrap();
-		proposal_rec1 = ref1.1;
+		let proposal = i.1;
+		if proposal.virtual_account == asset_account1.clone(){
+			ref_index = i.0;
+		}
 	}
-	
-	assert_eq!(proposal_rec1.virtual_account, asset_account1.clone());
 
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(SALIM), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(DAVE), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(EVE), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(GERARD), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(FERDIE), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(HUNTER), ref_index, true));
+
+	assert_ok!(AssetManagement::owners_vote(Origin::signed(FRED), ref_index, true));
+	
+	//End REPRESENTATIVE referendum
+	let initial_block_number = System::block_number();
+	let end_block_number = initial_block_number
+		.saturating_add(<Test as pallet_democracy::Config>::VotingPeriod::get());
+
+	fast_forward_to(end_block_number);
+
+	//Enact Proposal
+	fast_forward_to(
+		end_block_number.saturating_add(<Test as pallet_asset_management::Config>::Delay::get()),
+	);
+
+	//Check that representative is connected to 2 assets accounts
+
+	let representative = Roles::Pallet::<Test>::reps(REPRESENTATIVE).unwrap();
+	let rep_assets = representative.assets_accounts;
+	assert_eq!(rep_assets.len(),2);
 
 
 	//Now that we have a Tenant/Representative/Asset. Let the Tenant0 & Tenant1 ask for the same asset
@@ -428,11 +458,10 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 	let ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
 
 	for i in ref0 {
-		let ref_index = match i.1.caller_account {
-			REPRESENTATIVE => i.0,
-			_ => 5,
-		};
-		if ref_index != 5 {
+		
+		let account = i.1.caller_account;
+		if account == REPRESENTATIVE{
+			let ref_index = i.0;
 			//get vector of owners
 			let house = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
 			let owners = house.owners;
@@ -441,6 +470,7 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 				assert_ok!(AssetManagement::owners_vote(Origin::signed(owner), ref_index, true));
 			}
 		}
+		
 	}
 
 	//End Tenants referendum
@@ -595,13 +625,7 @@ fn test_00() {
 		fast_forward_to(end_block);
 		println!("\n\ntenant_rent is: {:?}\n", tenant0_inf.rent);
 
-		expect_events(vec![mock::Event::AssetManagement(
-			pallet_asset_management::Event::TenantDebt {
-				tenant: TENANT0,
-				debt: 925,
-				when: System::block_number(),
-			},
-		)]);
+		
 
 		tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 		next_block();

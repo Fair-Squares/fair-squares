@@ -16,7 +16,7 @@ impl<T: Config> Pallet<T> {
 		let mut index = Roles::Pallet::<T>::rep_num();
 
 		//Check if we're dealing with an already registered representative
-		let registered = Roles::Pallet::<T>::reps(&who).is_some();
+		let registered = Roles::RepresentativeLog::<T>::contains_key(&who);
 
 		if registered == false{
 			representative.activated = true;
@@ -32,6 +32,9 @@ impl<T: Config> Pallet<T> {
 		} else{
 			//Add the new asset_account to the representative struct 
 			representative.assets_accounts.push(caller);
+			Roles::RepresentativeLog::<T>::mutate(&who,|val|{
+				*val = Some(representative);
+			})
 		}
 		
 
