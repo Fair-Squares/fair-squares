@@ -174,7 +174,7 @@ impl<T: Config> Pallet<T> {
 	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
 		let now = <frame_system::Pallet<T>>::block_number();
 		let rep_count = representatives.len() as u32;
-		for account in representatives.into_iter() {
+		for (index, account) in representatives.iter().enumerate() {
 			AccountsRolesLog::<T>::insert(&account, Accounts::REPRESENTATIVE);
 			RepresentativeLog::<T>::insert(
 				&account,
@@ -183,7 +183,7 @@ impl<T: Config> Pallet<T> {
 					age: now,
 					activated: false,
 					assets_accounts: vec![],
-					index: 0,
+					index: index as u32,
 				},
 			);
 		}

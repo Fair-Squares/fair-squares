@@ -257,7 +257,9 @@ fn test_genesis_config() {
 	new_test_ext_with_genesis(4).execute_with(|| {
 		assert_eq!(RoleModule::total_members(), 2);
 		assert_eq!(RoleModule::rep_num(), 2);
-		assert!(RoleModule::reps(HENRY).is_some());
 		assert!(RoleModule::reps(GABRIEL).is_some());
+		assert_eq!(RoleModule::reps(GABRIEL).unwrap().index, 0);
+		assert!(RoleModule::reps(HENRY).is_some());
+		assert_eq!(RoleModule::reps(HENRY).unwrap().index, 1);
 	})
 }
