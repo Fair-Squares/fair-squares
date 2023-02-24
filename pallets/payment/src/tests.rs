@@ -1,5 +1,5 @@
 use crate::{
-	mock::*, 
+	mock::*,
 	types::{PaymentDetail, PaymentState},
 	Payment as PaymentStore, PaymentHandler, ScheduledTask, ScheduledTasks, Task,
 };
@@ -19,10 +19,7 @@ fn test_pay_works() {
 		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
 
 		// the payment amount should not be reserved
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// should be able to create a payment with available balance
@@ -55,17 +52,22 @@ fn test_pay_works() {
 		// the payment amount should be reserved correctly
 		// the amount + incentive should be removed from the sender account
 		assert_eq!(
-			Balances::free_balance( &PAYMENT_CREATOR),
+			Balances::free_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - payment_amount - expected_incentive_amount
 		);
 		// the incentive amount should be reserved in the sender account
 		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR).saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
+			Balances::free_balance(&PAYMENT_CREATOR)
+				.saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
 			creator_initial_balance - payment_amount
 		);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 		// the transferred amount should be reserved in the recipent account
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT).saturating_add(Balances::reserved_balance(&PAYMENT_RECIPENT)), payment_amount.saturating_add(Balances::free_balance(&PAYMENT_RECIPENT)));
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT)
+				.saturating_add(Balances::reserved_balance(&PAYMENT_RECIPENT)),
+			payment_amount.saturating_add(Balances::free_balance(&PAYMENT_RECIPENT))
+		);
 
 		// the payment should not be overwritten
 		assert_noop!(
@@ -127,17 +129,11 @@ fn test_cancel_works() {
 		assert_ok!(PaymentModule::cancel(Origin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR));
 		assert_eq!(
 			last_event(),
-			crate::Event::<Test>::PaymentCancelled {
-				from: PAYMENT_CREATOR,
-				to: PAYMENT_RECIPENT
-			}
-			.into()
+			crate::Event::<Test>::PaymentCancelled { from: PAYMENT_CREATOR, to: PAYMENT_RECIPENT }
+				.into()
 		);
 		// the payment amount should be released back to creator
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// should be released from storage
@@ -178,24 +174,21 @@ fn test_release_works() {
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// should succeed for valid payment
-		assert_ok!(PaymentModule::release(
-			Origin::signed(PAYMENT_CREATOR),
-			PAYMENT_RECIPENT
-		));
+		assert_ok!(PaymentModule::release(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT));
 		assert_eq!(
 			last_event(),
-			crate::Event::<Test>::PaymentReleased {
-				from: PAYMENT_CREATOR,
-				to: PAYMENT_RECIPENT
-			}
-			.into()
+			crate::Event::<Test>::PaymentReleased { from: PAYMENT_CREATOR, to: PAYMENT_RECIPENT }
+				.into()
 		);
 		// the payment amount should be transferred
 		assert_eq!(
 			Balances::free_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - payment_amount
 		);
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), payment_amount+initial_recipient_balance);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT),
+			payment_amount + initial_recipient_balance
+		);
 
 		// should be deleted from storage
 		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
@@ -212,7 +205,10 @@ fn test_release_works() {
 			Balances::free_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - (payment_amount * 2) - expected_incentive_amount
 		);
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), payment_amount+initial_recipient_balance);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT),
+			payment_amount + initial_recipient_balance
+		);
 	});
 }
 
@@ -264,7 +260,10 @@ fn test_resolve_payment_works() {
 			Balances::free_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - payment_amount
 		);
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), payment_amount+initial_recipient_balance);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT),
+			payment_amount + initial_recipient_balance
+		);
 
 		// should be removed from storage
 		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
@@ -298,7 +297,10 @@ fn test_resolve_payment_works() {
 			Balances::free_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - payment_amount
 		);
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), payment_amount+initial_recipient_balance);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT),
+			payment_amount + initial_recipient_balance
+		);
 
 		// should be released from storage
 		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
@@ -335,9 +337,14 @@ fn test_charging_fee_payment_works() {
 		// the payment amount should be reserved
 		assert_eq!(
 			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance - payment_amount - expected_fee_amount - expected_incentive_amount
+			creator_initial_balance -
+				payment_amount - expected_fee_amount -
+				expected_incentive_amount
 		);
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED), initial_recipient_fee_charged);
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
+			initial_recipient_fee_charged
+		);
 
 		// should succeed for valid payment
 		assert_ok!(PaymentModule::release(
@@ -350,16 +357,16 @@ fn test_charging_fee_payment_works() {
 			creator_initial_balance - payment_amount - expected_fee_amount
 		);
 		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR)+Balances::reserved_balance(&PAYMENT_CREATOR),
+			Balances::free_balance(&PAYMENT_CREATOR) + Balances::reserved_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - payment_amount - expected_fee_amount
 		);
 		assert_eq!(
 			Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
-			payment_amount+initial_recipient_fee_charged
+			payment_amount + initial_recipient_fee_charged
 		);
 		assert_eq!(
 			Balances::free_balance(&FEE_RECIPIENT_ACCOUNT),
-			expected_fee_amount+initial_fee_recipient_balance
+			expected_fee_amount + initial_fee_recipient_balance
 		);
 	});
 }
@@ -392,7 +399,9 @@ fn test_charging_fee_payment_works_when_canceled() {
 		// the payment amount should be reserved
 		assert_eq!(
 			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance - payment_amount - expected_fee_amount - expected_incentive_amount
+			creator_initial_balance -
+				payment_amount - expected_fee_amount -
+				expected_incentive_amount
 		);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED), 1);
 
@@ -402,16 +411,16 @@ fn test_charging_fee_payment_works_when_canceled() {
 			PAYMENT_CREATOR
 		));
 		// the payment amount should be transferred
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
+			Balances::free_balance(&PAYMENT_CREATOR)
+				.saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
+			100_000_000_000
 		);
-		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR).saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)), 100_000_000_000);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED), 1);
 		assert_eq!(Balances::free_balance(&FEE_RECIPIENT_ACCOUNT), 1);
 	});
 }
-
 
 #[test]
 fn test_pay_with_remark_works() {
@@ -445,12 +454,17 @@ fn test_pay_with_remark_works() {
 		);
 		// the incentive amount should be reserved in the sender account
 		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR).saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
+			Balances::free_balance(&PAYMENT_CREATOR)
+				.saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
 			creator_initial_balance - payment_amount
 		);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 		// the transferred amount should be reserved in the recipent account
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT).saturating_add(Balances::reserved_balance(&PAYMENT_RECIPENT)), Balances::free_balance(&PAYMENT_RECIPENT).saturating_add(payment_amount));
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT)
+				.saturating_add(Balances::reserved_balance(&PAYMENT_RECIPENT)),
+			Balances::free_balance(&PAYMENT_RECIPENT).saturating_add(payment_amount)
+		);
 
 		// the payment should not be overwritten
 		assert_noop!(
@@ -474,7 +488,6 @@ fn test_pay_with_remark_works() {
 		);
 	});
 }
-
 
 #[test]
 fn test_do_not_overwrite_logic_works() {
@@ -560,9 +573,7 @@ fn test_request_refund() {
 			Some(PaymentDetail {
 				amount: payment_amount,
 				incentive_amount: expected_incentive_amount,
-				state: PaymentState::RefundRequested {
-					cancel_block: expected_cancel_block
-				},
+				state: PaymentState::RefundRequested { cancel_block: expected_cancel_block },
 				resolver_account: RESOLVER_ACCOUNT,
 				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
 			})
@@ -608,10 +619,7 @@ fn test_dispute_refund() {
 		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
 		assert_eq!(
 			scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)).unwrap(),
-			&ScheduledTask {
-				task: Task::Cancel,
-				when: expected_cancel_block
-			}
+			&ScheduledTask { task: Task::Cancel, when: expected_cancel_block }
 		);
 
 		// recipient disputes the refund request
@@ -645,7 +653,6 @@ fn test_dispute_refund() {
 		assert_eq!(scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)), None);
 	});
 }
-
 
 #[test]
 fn test_request_payment() {
@@ -777,12 +784,7 @@ fn test_accept_and_pay() {
 #[test]
 fn test_accept_and_pay_should_fail_for_non_payment_requested() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
-			PAYMENT_RECIPENT,
-			20,
-			None
-		));
+		assert_ok!(PaymentModule::pay(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT, 20, None));
 
 		assert_noop!(
 			PaymentModule::accept_and_pay(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT,),
@@ -827,10 +829,7 @@ fn test_accept_and_pay_should_charge_fee_correctly() {
 			Balances::free_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - payment_amount - expected_fee_amount
 		);
-		assert_eq!(
-			Balances::reserved_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
-			payment_amount
-		);
+		assert_eq!(Balances::reserved_balance(&PAYMENT_RECIPENT_FEE_CHARGED), payment_amount);
 		/*assert_eq!(
 			Balances::free_balance(&FEE_RECIPIENT_ACCOUNT),
 			expected_fee_amount.saturating_add(recipient_initial_balance)
@@ -862,10 +861,7 @@ fn test_create_payment_works() {
 		let expected_fee_amount = 0;
 
 		// the payment amount should not be reserved
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// should be able to create a payment with available balance within a
@@ -971,12 +967,17 @@ fn test_reserve_payment_amount_works() {
 		);
 		// the incentive amount should be reserved in the sender account
 		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR).saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
+			Balances::free_balance(&PAYMENT_CREATOR)
+				.saturating_add(Balances::reserved_balance(&PAYMENT_CREATOR)),
 			creator_initial_balance - payment_amount
 		);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 		// the transferred amount should be reserved in the recipent account
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT).saturating_add(Balances::reserved_balance(&PAYMENT_RECIPENT)), payment_amount.saturating_add(Balances::free_balance(&PAYMENT_RECIPENT)));
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT)
+				.saturating_add(Balances::reserved_balance(&PAYMENT_RECIPENT)),
+			payment_amount.saturating_add(Balances::free_balance(&PAYMENT_RECIPENT))
+		);
 
 		// the payment should not be overwritten
 		assert_noop!(
@@ -1006,7 +1007,6 @@ fn test_reserve_payment_amount_works() {
 	});
 }
 
-
 #[test]
 fn test_settle_payment_works_for_cancel() {
 	new_test_ext().execute_with(|| {
@@ -1015,10 +1015,7 @@ fn test_settle_payment_works_for_cancel() {
 		let recipient_initial_balance = 1;
 
 		// the payment amount should not be reserved
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// should be able to create a payment with available balance within a
@@ -1039,10 +1036,7 @@ fn test_settle_payment_works_for_cancel() {
 		})));
 
 		// the payment amount should be released back to creator
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), recipient_initial_balance);
 
 		// should be released from storage
@@ -1058,10 +1052,7 @@ fn test_settle_payment_works_for_release() {
 		let recipient_initial_balance = 1;
 
 		// the payment amount should not be reserved
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// should be able to create a payment with available balance within a
@@ -1086,7 +1077,10 @@ fn test_settle_payment_works_for_release() {
 			Balances::free_balance(&PAYMENT_CREATOR),
 			creator_initial_balance - payment_amount
 		);
-		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), payment_amount.saturating_add(recipient_initial_balance));
+		assert_eq!(
+			Balances::free_balance(&PAYMENT_RECIPENT),
+			payment_amount.saturating_add(recipient_initial_balance)
+		);
 
 		// should be deleted from storage
 		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
@@ -1102,10 +1096,7 @@ fn test_settle_payment_works_for_70_30() {
 		let recipient_initial_balance = 1;
 
 		// the payment amount should not be reserved
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED), 1);
 
 		// should be able to create a payment with available balance within a
@@ -1125,15 +1116,13 @@ fn test_settle_payment_works_for_70_30() {
 			)
 		})));
 
-		let expected_amount_for_creator = creator_initial_balance - payment_amount - expected_fee_amount
-			+ (Percent::from_percent(30) * payment_amount);
+		let expected_amount_for_creator =
+			creator_initial_balance - payment_amount - expected_fee_amount +
+				(Percent::from_percent(30) * payment_amount);
 		let expected_amount_for_recipient = Percent::from_percent(70) * payment_amount;
 
 		// the payment amount should be transferred
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			expected_amount_for_creator
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), expected_amount_for_creator);
 		assert_eq!(
 			Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
 			expected_amount_for_recipient.saturating_add(recipient_initial_balance)
@@ -1144,10 +1133,7 @@ fn test_settle_payment_works_for_70_30() {
 		);
 
 		// should be deleted from storage
-		assert_eq!(
-			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED),
-			None
-		);
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED), None);
 	});
 }
 
@@ -1180,15 +1166,13 @@ fn test_settle_payment_works_for_50_50() {
 			)
 		})));
 
-		let expected_amount_for_creator = creator_initial_balance - payment_amount - expected_fee_amount
-			+ (Percent::from_percent(50) * payment_amount);
+		let expected_amount_for_creator =
+			creator_initial_balance - payment_amount - expected_fee_amount +
+				(Percent::from_percent(50) * payment_amount);
 		let expected_amount_for_recipient = Percent::from_percent(50) * payment_amount;
 
 		// the payment amount should be transferred
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			expected_amount_for_creator
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), expected_amount_for_creator);
 		assert_eq!(
 			Balances::free_balance(&PAYMENT_RECIPENT_FEE_CHARGED),
 			expected_amount_for_recipient.saturating_add(recipient_initial_balance)
@@ -1199,10 +1183,7 @@ fn test_settle_payment_works_for_50_50() {
 		);
 
 		// should be deleted from storage
-		assert_eq!(
-			PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED),
-			None
-		);
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT_FEE_CHARGED), None);
 	});
 }
 
@@ -1232,9 +1213,7 @@ fn test_automatic_refund_works() {
 			Some(PaymentDetail {
 				amount: payment_amount,
 				incentive_amount: expected_incentive_amount,
-				state: PaymentState::RefundRequested {
-					cancel_block: CANCEL_BLOCK
-				},
+				state: PaymentState::RefundRequested { cancel_block: CANCEL_BLOCK },
 				resolver_account: RESOLVER_ACCOUNT,
 				fee_detail: Some((FEE_RECIPIENT_ACCOUNT, 0)),
 			})
@@ -1243,10 +1222,7 @@ fn test_automatic_refund_works() {
 		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
 		assert_eq!(
 			scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)).unwrap(),
-			&ScheduledTask {
-				task: Task::Cancel,
-				when: CANCEL_BLOCK
-			}
+			&ScheduledTask { task: Task::Cancel, when: CANCEL_BLOCK }
 		);
 
 		// run to one block before cancel and make sure data is same
@@ -1254,10 +1230,7 @@ fn test_automatic_refund_works() {
 		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
 		assert_eq!(
 			scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)).unwrap(),
-			&ScheduledTask {
-				task: Task::Cancel,
-				when: CANCEL_BLOCK
-			}
+			&ScheduledTask { task: Task::Cancel, when: CANCEL_BLOCK }
 		);
 
 		// run to after cancel block but odd blocks are busy
@@ -1277,17 +1250,11 @@ fn test_automatic_refund_works() {
 		// test that the refund happened correctly
 		assert_eq!(
 			last_event(),
-			crate::Event::<Test>::PaymentCancelled {
-				from: PAYMENT_CREATOR,
-				to: PAYMENT_RECIPENT
-			}
-			.into()
+			crate::Event::<Test>::PaymentCancelled { from: PAYMENT_CREATOR, to: PAYMENT_RECIPENT }
+				.into()
 		);
 		// the payment amount should be released back to creator
-		assert_eq!(
-			Balances::free_balance(&PAYMENT_CREATOR),
-			creator_initial_balance
-		);
+		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), creator_initial_balance);
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 	});
 }
@@ -1297,12 +1264,7 @@ fn test_automatic_refund_works_for_multiple_payments() {
 	new_test_ext().execute_with(|| {
 		const CANCEL_PERIOD: u64 = 600;
 
-		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
-			PAYMENT_RECIPENT,
-			20,
-			None
-		));
+		assert_ok!(PaymentModule::pay(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT, 20, None));
 
 		assert_ok!(PaymentModule::pay(
 			Origin::signed(PAYMENT_CREATOR_TWO),
@@ -1329,18 +1291,12 @@ fn test_automatic_refund_works_for_multiple_payments() {
 		// Even block 602 has enough room to process both pending payments
 		assert_eq!(run_n_blocks(1), 602);
 		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
-		assert_eq!(
-			PaymentStore::<Test>::get(PAYMENT_CREATOR_TWO, PAYMENT_RECIPENT_TWO),
-			None
-		);
+		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR_TWO, PAYMENT_RECIPENT_TWO), None);
 
 		// the scheduled storage should be cleared
 		let scheduled_tasks_list = ScheduledTasks::<Test>::get();
 		assert_eq!(scheduled_tasks_list.get(&(PAYMENT_CREATOR, PAYMENT_RECIPENT)), None);
-		assert_eq!(
-			scheduled_tasks_list.get(&(PAYMENT_CREATOR_TWO, PAYMENT_RECIPENT_TWO)),
-			None
-		);
+		assert_eq!(scheduled_tasks_list.get(&(PAYMENT_CREATOR_TWO, PAYMENT_RECIPENT_TWO)), None);
 
 		// test that the refund happened correctly
 		assert_eq!(Balances::free_balance(&PAYMENT_CREATOR), 100_000_000_000);

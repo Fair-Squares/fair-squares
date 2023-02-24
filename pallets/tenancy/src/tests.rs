@@ -27,7 +27,7 @@ pub fn prep_roles() {
 	RoleModule::set_role(Origin::signed(TENANT1), TENANT1, Acc::TENANT).ok();
 }
 
-pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
+pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	prep_roles();
 
 	//Dave and EVE contribute to the fund
@@ -92,7 +92,6 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 	let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id1 as usize] - 1;
 	let mut house1 = OnboardingModule::houses(coll_id1, item_id1).unwrap();
 	assert_eq!(house1.status, pallet_onboarding::AssetStatus::REVIEWING);
-
 
 	//Council vote
 	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash0, true,));
@@ -370,9 +369,8 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 	let ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
 	let mut ref_index = 0;
 	for i in ref0 {
-
 		let proposal = i.1;
-		if proposal.virtual_account == asset_account1.clone(){
+		if proposal.virtual_account == asset_account1.clone() {
 			ref_index = i.0;
 		}
 	}
@@ -390,7 +388,7 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 	assert_ok!(AssetManagement::owners_vote(Origin::signed(HUNTER), ref_index, true));
 
 	assert_ok!(AssetManagement::owners_vote(Origin::signed(FRED), ref_index, true));
-	
+
 	//End REPRESENTATIVE referendum
 	let initial_block_number = System::block_number();
 	let end_block_number = initial_block_number
@@ -407,10 +405,10 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 
 	let representative = Roles::Pallet::<Test>::reps(REPRESENTATIVE).unwrap();
 	let rep_assets = representative.assets_accounts;
-	assert_eq!(rep_assets.len(),2);
+	assert_eq!(rep_assets.len(), 2);
 
-
-	//Now that we have a Tenant/Representative/Asset. Let the Tenant0 & Tenant1 ask for the same asset
+	//Now that we have a Tenant/Representative/Asset. Let the Tenant0 & Tenant1 ask for the same
+	// asset
 	let tenant_bal_init = Balances::free_balance(TENANT0);
 	assert_ok!(crate::Pallet::<Test>::request_asset(
 		Origin::signed(TENANT0),
@@ -458,9 +456,8 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 	let ref0 = pallet_asset_management::ProposalsLog::<Test>::iter();
 
 	for i in ref0 {
-		
 		let account = i.1.caller_account;
-		if account == REPRESENTATIVE{
+		if account == REPRESENTATIVE {
 			let ref_index = i.0;
 			//get vector of owners
 			let house = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
@@ -470,7 +467,6 @@ pub fn prep_test(price1: u64, price2: u64,metadata0: Bvec<Test>, metadata1: Bvec
 				assert_ok!(AssetManagement::owners_vote(Origin::signed(owner), ref_index, true));
 			}
 		}
-		
 	}
 
 	//End Tenants referendum
@@ -612,7 +608,7 @@ fn test_00() {
 		//Execute workflow up to TENANT0 connection to an asset
 		let price1 = 450_000;
 		let price2 = 500_000;
-		prep_test(price1,price2,metadata0, metadata1);
+		prep_test(price1, price2, metadata0, metadata1);
 
 		let mut tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 
@@ -624,8 +620,6 @@ fn test_00() {
 
 		fast_forward_to(end_block);
 		println!("\n\ntenant_rent is: {:?}\n", tenant0_inf.rent);
-
-		
 
 		tenant0_inf = pallet_roles::Pallet::<Test>::tenants(TENANT0).unwrap();
 		next_block();

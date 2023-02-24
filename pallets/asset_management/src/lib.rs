@@ -32,9 +32,9 @@
 //!	  The Representative has to submit a judgement about the tenant profile. This judgement
 //!	  will be considered by the owners before voting.
 //!	  Representatives receive a judgement fee from the aspiring tenant.
-//!	  A positive result of the referendum will send a guaranty_deposit payment request to the tenant.
-//!   When the tenant finally pays the guaranty_deposit,his account is connected to the asset through `link_tenant_to_asset`
-//!	  and this marks the start of his contract with the owners.
+//!	  A positive result of the referendum will send a guaranty_deposit payment request to the
+//! tenant.   When the tenant finally pays the guaranty_deposit,his account is connected to the
+//! asset through `link_tenant_to_asset` 	  and this marks the start of his contract with the owners.
 //!
 //! * `link_tenant_to_asset` - Call used as a proposal to link an accepted tenant with an existing
 //!   asset.
@@ -470,20 +470,18 @@ pub mod pallet {
 			item: T::NftItemId,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone())?;
-			let asset_account = Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
+			let asset_account =
+				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 
 			//Check that the caller is a stored virtual account
-			ensure!(
-				caller
-					== asset_account.clone(),
-				Error::<T>::NotAnAssetAccount
-			);
+			ensure!(caller == asset_account.clone(), Error::<T>::NotAnAssetAccount);
 
 			//Ensure that the Representative is not already connected to this asset
-			let representative = Roles::Pallet::<T>::get_pending_representatives(&rep_account).unwrap();
+			let representative =
+				Roles::Pallet::<T>::get_pending_representatives(&rep_account).unwrap();
 			let rep_assets = representative.assets_accounts;
-			for i in rep_assets{
-				ensure!(i != asset_account,Error::<T>::AlreadyLinkedWithAsset);
+			for i in rep_assets {
+				ensure!(i != asset_account, Error::<T>::AlreadyLinkedWithAsset);
 			}
 
 			//Approve role request
@@ -514,8 +512,8 @@ pub mod pallet {
 
 			//Check that the caller is a stored virtual account
 			ensure!(
-				caller
-					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				caller ==
+					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
 
@@ -531,8 +529,8 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Using the function below, a representative triggers a vote session with a proposal for a tenant to be linked with
-		/// an asset The origin must be a representative
+		/// Using the function below, a representative triggers a vote session with a proposal for a
+		/// tenant to be linked with an asset The origin must be a representative
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - tenant: an account with the tenant role
@@ -697,13 +695,13 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// The function below sends a guaranty deposiy payment request to a tenant. This extrinsic is executed
-		/// After a positive tenant_session.
+		/// The function below sends a guaranty deposiy payment request to a tenant. This extrinsic
+		/// is executed After a positive tenant_session.
 		/// The origin must be the virtual account connected to the asset
 		/// - tenant: an account with the tenant role linked to the asset
 		/// - collection: collection_id of the asset
 		/// - item: item_id of the asset
-		/// - _judgement is provided by the representative while creating a tenant session  
+		/// - _judgement is provided by the representative while creating a tenant session
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_guaranty_payment(
 			origin: OriginFor<T>,

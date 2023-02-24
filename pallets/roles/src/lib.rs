@@ -221,7 +221,6 @@ pub mod pallet {
 			if !self.representatives.is_empty() {
 				crate::Pallet::<T>::init_representatives(self.representatives.clone());
 			}
-
 		}
 	}
 
@@ -348,13 +347,10 @@ pub mod pallet {
 				},
 			}
 
-			let need_approval = match account_type {
-				Accounts::INVESTOR => false,
-				Accounts::TENANT => false,
-				Accounts::REPRESENTATIVE => false,
-				_ => true,
-			};
-
+			let need_approval = !matches!(
+				account_type,
+				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE
+			);
 			if need_approval {
 				RequestedRoles::<T>::insert(&account, account_type);
 			}

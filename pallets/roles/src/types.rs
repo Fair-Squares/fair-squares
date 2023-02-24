@@ -206,8 +206,7 @@ where
 		let caller = ensure_signed(acc)?;
 		let now = <frame_system::Pallet<T>>::block_number();
 
-		if !RepresentativeLog::<T>::contains_key(&caller){
-
+		if !RepresentativeLog::<T>::contains_key(&caller) {
 			let rep = Representative::<T> {
 				account_id: caller.clone(),
 				age: now,
@@ -226,10 +225,6 @@ where
 				*val = rep;
 			});
 		}
-
-		
-
-		
 
 		Ok(())
 	}

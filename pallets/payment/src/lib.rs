@@ -11,7 +11,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-
 mod functions;
 mod types;
 pub use crate::types::*;
@@ -56,8 +55,6 @@ pub mod pallet {
 		type WeightInfo: WeightInfo;
 	}
 
-
-
 	#[pallet::storage]
 	#[pallet::getter(fn payment)]
 	/// Payments created by a user, this method of storageDoubleMap is chosen
@@ -99,11 +96,7 @@ pub mod pallet {
 		/// Payment has been cancelled by the creator
 		PaymentCancelled { from: T::AccountId, to: T::AccountId },
 		/// A payment that NeedsReview has been resolved by Judge
-		PaymentResolved {
-			from: T::AccountId,
-			to: T::AccountId,
-			recipient_share: Percent,
-		},
+		PaymentResolved { from: T::AccountId, to: T::AccountId, recipient_share: Percent },
 		/// the payment creator has created a refund request
 		PaymentCreatorRequestedRefund {
 			from: T::AccountId,
@@ -151,7 +144,7 @@ pub mod pallet {
 		/// This function will look for any pending scheduled tasks that can
 		/// be executed and will process them.
 		fn on_idle(now: T::BlockNumber, remaining_weight: Weight) -> Weight {
-			Self::check_task(now,remaining_weight)
+			Self::check_task(now, remaining_weight)
 		}
 	}
 
@@ -160,8 +153,6 @@ pub mod pallet {
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		
-
 		/// This allows any user to create a new payment, that releases only to
 		/// specified recipient The only action is to store the details of this
 		/// payment in storage and reserve the specified amount. User also has
@@ -189,11 +180,7 @@ pub mod pallet {
 			// reserve funds for payment
 			<Self as PaymentHandler<T>>::reserve_payment_amount(&who, &recipient, payment_detail)?;
 			// emit paymentcreated event
-			Self::deposit_event(Event::PaymentCreated {
-				from: who,
-				amount,
-				remark,
-			});
+			Self::deposit_event(Event::PaymentCreated { from: who, amount, remark });
 			Ok(().into())
 		}
 
@@ -224,9 +211,13 @@ pub mod pallet {
 				match payment.state {
 					// call settle payment with recipient_share=0, this refunds the sender
 					PaymentState::Created => {
-						<Self as PaymentHandler<T>>::settle_payment(&creator, &who, Percent::from_percent(0))?;
+						<Self as PaymentHandler<T>>::settle_payment(
+							&creator,
+							&who,
+							Percent::from_percent(0),
+						)?;
 						Self::deposit_event(Event::PaymentCancelled { from: creator, to: who });
-					}
+					},
 					// if the payment is in state PaymentRequested, remove from storage
 					PaymentState::PaymentRequested => Payment::<T>::remove(&creator, &who),
 					_ => fail!(Error::<T>::InvalidAction),
@@ -251,10 +242,7 @@ pub mod pallet {
 			// ensure the caller is the assigned resolver
 			if let Some(payment) = Payment::<T>::get(&account_pair.0, &account_pair.1) {
 				ensure!(who == payment.resolver_account, Error::<T>::InvalidAction);
-				ensure!(
-					payment.state != PaymentState::PaymentRequested,
-					Error::<T>::InvalidAction
-				);
+				ensure!(payment.state != PaymentState::PaymentRequested, Error::<T>::InvalidAction);
 				if matches!(payment.state, PaymentState::RefundRequested { .. }) {
 					ScheduledTasks::<T>::mutate(|tasks| {
 						tasks.remove(&account_pair);
@@ -262,7 +250,11 @@ pub mod pallet {
 				}
 			}
 			// try to update the payment to new state
-			<Self as PaymentHandler<T>>::settle_payment(&account_pair.0, &account_pair.1, recipient_share)?;
+			<Self as PaymentHandler<T>>::settle_payment(
+				&account_pair.0,
+				&account_pair.1,
+				recipient_share,
+			)?;
 			Self::deposit_event(Event::PaymentResolved {
 				from: account_pair.0,
 				to: account_pair.1,
@@ -275,44 +267,48 @@ pub mod pallet {
 		/// the funds after a configured amount of time that the reveiver has to
 		/// react and opose the request
 		#[pallet::weight(T::WeightInfo::request_refund())]
-		pub fn request_refund(origin: OriginFor<T>, recipient: T::AccountId) -> DispatchResultWithPostInfo {
+		pub fn request_refund(
+			origin: OriginFor<T>,
+			recipient: T::AccountId,
+		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
-			Payment::<T>::try_mutate(who.clone(), recipient.clone(), |maybe_payment| -> DispatchResult {
-				// ensure the payment exists
-				let payment = maybe_payment.as_mut().ok_or(Error::<T>::InvalidPayment)?;
-				// refunds only possible for payments in created state
-				ensure!(payment.state == PaymentState::Created, Error::<T>::InvalidAction);
+			Payment::<T>::try_mutate(
+				who.clone(),
+				recipient.clone(),
+				|maybe_payment| -> DispatchResult {
+					// ensure the payment exists
+					let payment = maybe_payment.as_mut().ok_or(Error::<T>::InvalidPayment)?;
+					// refunds only possible for payments in created state
+					ensure!(payment.state == PaymentState::Created, Error::<T>::InvalidAction);
 
-				// set the payment to requested refund
-				let current_block = frame_system::Pallet::<T>::block_number();
-				let cancel_block = current_block
-					.checked_add(&T::CancelBufferBlockLength::get())
-					.ok_or(Error::<T>::MathError)?;
+					// set the payment to requested refund
+					let current_block = frame_system::Pallet::<T>::block_number();
+					let cancel_block = current_block
+						.checked_add(&T::CancelBufferBlockLength::get())
+						.ok_or(Error::<T>::MathError)?;
 
-				ScheduledTasks::<T>::try_mutate(|task_list| -> DispatchResult {
-					task_list
-						.try_insert(
-							(who.clone(), recipient.clone()),
-							ScheduledTask {
-								task: Task::Cancel,
-								when: cancel_block,
-							},
-						)
-						.map_err(|_| Error::<T>::RefundQueueFull)?;
+					ScheduledTasks::<T>::try_mutate(|task_list| -> DispatchResult {
+						task_list
+							.try_insert(
+								(who.clone(), recipient.clone()),
+								ScheduledTask { task: Task::Cancel, when: cancel_block },
+							)
+							.map_err(|_| Error::<T>::RefundQueueFull)?;
+						Ok(())
+					})?;
+
+					payment.state = PaymentState::RefundRequested { cancel_block };
+
+					Self::deposit_event(Event::PaymentCreatorRequestedRefund {
+						from: who,
+						to: recipient,
+						expiry: cancel_block,
+					});
+
 					Ok(())
-				})?;
-
-				payment.state = PaymentState::RefundRequested { cancel_block };
-
-				Self::deposit_event(Event::PaymentCreatorRequestedRefund {
-					from: who,
-					to: recipient,
-					expiry: cancel_block,
-				});
-
-				Ok(())
-			})?;
+				},
+			)?;
 
 			Ok(().into())
 		}
@@ -322,7 +318,10 @@ pub mod pallet {
 		/// payment to a NeedsReview state The assigned resolver account can
 		/// then change the state of the payment after review.
 		#[pallet::weight(T::WeightInfo::dispute_refund())]
-		pub fn dispute_refund(origin: OriginFor<T>, creator: T::AccountId) -> DispatchResultWithPostInfo {
+		pub fn dispute_refund(
+			origin: OriginFor<T>,
+			creator: T::AccountId,
+		) -> DispatchResultWithPostInfo {
 			use PaymentState::*;
 			let who = ensure_signed(origin)?;
 
@@ -350,8 +349,11 @@ pub mod pallet {
 								Ok(())
 							})?;
 
-							Self::deposit_event(Event::PaymentRefundDisputed { from: creator, to: who });
-						}
+							Self::deposit_event(Event::PaymentRefundDisputed {
+								from: creator,
+								to: who,
+							});
+						},
 						_ => fail!(Error::<T>::InvalidAction),
 					}
 
@@ -394,15 +396,15 @@ pub mod pallet {
 		// recipient. The amount will be transferred to the recipient and payment
 		// removed from storage
 		#[pallet::weight(T::WeightInfo::accept_and_pay())]
-		pub fn accept_and_pay(origin: OriginFor<T>, to: T::AccountId) -> DispatchResultWithPostInfo {
+		pub fn accept_and_pay(
+			origin: OriginFor<T>,
+			to: T::AccountId,
+		) -> DispatchResultWithPostInfo {
 			let from = ensure_signed(origin)?;
 
 			let payment = Payment::<T>::get(&from, &to).ok_or(Error::<T>::InvalidPayment)?;
 
-			ensure!(
-				payment.state == PaymentState::PaymentRequested,
-				Error::<T>::InvalidAction
-			);
+			ensure!(payment.state == PaymentState::PaymentRequested, Error::<T>::InvalidAction);
 
 			// reserve all the fees from the sender
 			<Self as PaymentHandler<T>>::reserve_payment_amount(&from, &to, payment)?;
