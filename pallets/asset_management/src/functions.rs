@@ -10,7 +10,7 @@ impl<T: Config> Pallet<T> {
 		let caller = ensure_signed(origin.clone())?;
 
 		let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();
-		Roles::RepApprovalList::<T>::remove(&who);		
+		Roles::RepApprovalList::<T>::remove(&who);
 		let who2 = T::Lookup::unlookup(who.clone());
 		//get Rep number
 		let mut index = Roles::Pallet::<T>::rep_num();
@@ -18,25 +18,23 @@ impl<T: Config> Pallet<T> {
 		//Check if we're dealing with an already registered representative
 		let registered = Roles::RepresentativeLog::<T>::contains_key(&who);
 
-		if registered == false{
+		if registered == false {
 			representative.activated = true;
 			representative.assets_accounts.clear();
 			representative.assets_accounts.push(caller);
-			
+
 			//Update Rep index
 			representative.index = index;
 
 			Roles::RepresentativeLog::<T>::insert(&who, representative);
 			Roles::AccountsRolesLog::<T>::insert(&who, Roles::Accounts::REPRESENTATIVE);
-			
-		} else{
-			//Add the new asset_account to the representative struct 
+		} else {
+			//Add the new asset_account to the representative struct
 			representative.assets_accounts.push(caller);
-			Roles::RepresentativeLog::<T>::mutate(&who,|val|{
+			Roles::RepresentativeLog::<T>::mutate(&who, |val| {
 				*val = Some(representative);
 			})
 		}
-		
 
 		//Check that the Representative is not already a Registrar
 		//If a Representative is revoked from a given asset, and approved
@@ -65,10 +63,10 @@ impl<T: Config> Pallet<T> {
 			let fees = bals0.ident_bal;
 			Ident::Pallet::<T>::set_fee(origin2, index, fees).ok();
 
-			if registered==false{
-			//Update Rep number if not yet a registered Representative
-			index += 1;
-			Roles::RepNumber::<T>::put(index);
+			if registered == false {
+				//Update Rep number if not yet a registered Representative
+				index += 1;
+				Roles::RepNumber::<T>::put(index);
 			}
 		}
 
@@ -105,7 +103,8 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		let creator = ensure_signed(origin.clone())?;
 
-		//Calculate guaranty deposit using Return On Rent and guaranty coefficients found in runtime
+		//Calculate guaranty deposit using Return On Rent and guaranty coefficients found in
+		// runtime
 		let amount = Self::calculate_guaranty(collection, item);
 
 		//convert amount to payment_pallet compatible balance
@@ -272,9 +271,8 @@ impl<T: Config> Pallet<T> {
 				//check if the status is Finished
 				let ref_infos: RefInfos<T> = Dem::Pallet::<T>::referendum_info(index.1).unwrap();
 				let b = match ref_infos {
-					pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => {
-						(1, approved)
-					},
+					pallet_democracy::ReferendumInfo::Finished { approved, end: _ } =>
+						(1, approved),
 					_ => (0, false),
 				};
 				if b.0 == 1 {
@@ -381,11 +379,11 @@ impl<T: Config> Pallet<T> {
 						//Now distribute rent between owners according to their share
 						for i in owners.clone() {
 							//Get owner's share: we divide
-							//the owner's tokens by the total token issuance, and multiply the result by
-							//the total amount to be distributed.
+							//the owner's tokens by the total token issuance, and multiply the
+							// result by the total amount to be distributed.
 							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(), &i);
-							let share_float = Self::assets_bal_to_u128(share).unwrap() as f64
-								/ total_issuance_float;
+							let share_float = Self::assets_bal_to_u128(share).unwrap() as f64 /
+								total_issuance_float;
 							let amount_float = share_float * distribute_float.clone();
 							let bals0 = BalanceType::<T>::convert_to_balance(amount_float as u128);
 							let amount = bals0.manage_bal;

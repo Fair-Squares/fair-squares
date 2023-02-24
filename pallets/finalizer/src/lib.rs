@@ -246,7 +246,7 @@ impl<T: Config> Pallet<T> {
 			let value: T::NftCollectionId = item.value().into();
 			if value == collection_id {
 				possible_collection = *item;
-				break;
+				break
 			}
 		}
 		possible_collection

@@ -3,9 +3,9 @@ use frame_support::{
 	parameter_types,
 	traits::{ConstU32, ConstU64, GenesisBuild},
 };
-use sp_core::H256;
 use frame_system as system;
 pub use frame_system::RawOrigin;
+use sp_core::H256;
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -89,8 +89,8 @@ pub type Acc = pallet_roles::Accounts;
 pub fn new_test_ext(root_key: u64) -> sp_io::TestExternalities {
 	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
 	pallet_sudo::GenesisConfig::<Test> { key: Some(root_key) }
-	.assimilate_storage(&mut t)
-	.unwrap();
+		.assimilate_storage(&mut t)
+		.unwrap();
 	t.into()
 }
 
@@ -99,10 +99,11 @@ pub const GABRIEL: u64 = 101;
 
 pub fn new_test_ext_with_genesis(root_key: u64) -> sp_io::TestExternalities {
 	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-	pallet_sudo::GenesisConfig::<Test> { key: Some(root_key) }.assimilate_storage(&mut t).unwrap();
-	pallet_roles::GenesisConfig::<Test> {
-		new_admin: None,
-		representatives: vec![GABRIEL, HENRY],
-	}.assimilate_storage(&mut t).unwrap();
+	pallet_sudo::GenesisConfig::<Test> { key: Some(root_key) }
+		.assimilate_storage(&mut t)
+		.unwrap();
+	pallet_roles::GenesisConfig::<Test> { new_admin: None, representatives: vec![GABRIEL, HENRY] }
+		.assimilate_storage(&mut t)
+		.unwrap();
 	t.into()
 }

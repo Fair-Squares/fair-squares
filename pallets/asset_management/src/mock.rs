@@ -115,9 +115,8 @@ impl pallet_payment::FeeHandler<Test> for MockFeeHandler {
 		_remark: Option<&[u8]>,
 	) -> (AccountId, Percent) {
 		match to {
-			&PAYMENT_RECIPENT_FEE_CHARGED => {
-				(FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE))
-			},
+			&PAYMENT_RECIPENT_FEE_CHARGED =>
+				(FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE)),
 			_ => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(0)),
 		}
 	}

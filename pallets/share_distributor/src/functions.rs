@@ -145,13 +145,8 @@ impl<T: Config> Pallet<T> {
 		debug_assert!(res.is_ok());
 
 		//Set class metadata
-		let token_name = format!("FairOwner_nbr{:?}", token_id.clone())
-			.as_bytes()
-			.to_vec()
-			.try_into()
-			.unwrap();
-		let token_symbol =
-			format!("FO{:?}", token_id.clone()).as_bytes().to_vec().try_into().unwrap();
+		let token_name = format!("FairOwner_nbr{:?}", token_id.clone()).as_bytes().to_vec();
+		let token_symbol = format!("FO{:?}", token_id.clone()).as_bytes().to_vec();
 		let decimals = 1;
 		Assets::Pallet::<T>::force_set_metadata(
 			origin,

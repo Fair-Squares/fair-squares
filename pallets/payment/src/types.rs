@@ -1,29 +1,31 @@
 pub use super::*;
+use codec::{Decode, Encode, HasCompact, MaxEncodedLen};
 pub use frame_support::{
 	assert_ok,
-	dispatch::{DispatchResult,DispatchResultWithPostInfo, EncodeLike},
-	inherent::Vec,fail,require_transactional,
+	dispatch::{DispatchResult, DispatchResultWithPostInfo, EncodeLike},
+	fail,
+	inherent::Vec,
 	pallet_prelude::*,
+	require_transactional,
 	sp_runtime::{
 		traits::{AccountIdConversion, Hash, One, Saturating, StaticLookup, Zero},
 		FixedU128, PerThing, Percent,
 	},
-	storage::{child,bounded_btree_map::BoundedBTreeMap},
+	storage::{bounded_btree_map::BoundedBTreeMap, child},
 	traits::{
+		tokens::{
+			BalanceStatus,
+			ExistenceRequirement::{AllowDeath, KeepAlive},
+		},
 		Contains, Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency,
 		UnfilteredDispatchable, WithdrawReasons,
-		tokens::{BalanceStatus,ExistenceRequirement::{KeepAlive,AllowDeath}},
 	},
 	weights::GetDispatchInfo,
 	PalletId,
 };
-use codec::{Decode, Encode, HasCompact, MaxEncodedLen};
 pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 pub use scale_info::{prelude::vec, TypeInfo};
-pub use sp_runtime::{
-	traits::{BadOrigin, BlakeTwo256, IdentityLookup,CheckedAdd},
-
-};
+pub use sp_runtime::traits::{BadOrigin, BlakeTwo256, CheckedAdd, IdentityLookup};
 pub use sp_std::boxed::Box;
 
 pub type BalanceOf<T> =
@@ -35,12 +37,9 @@ pub type BoundedDataOf<T> = BoundedVec<u8, <T as Config>::MaxRemarkLength>;
 pub type ScheduledTaskOf<T> = ScheduledTask<<T as frame_system::Config>::BlockNumber>;
 /// list of ScheduledTasks, stored as a BoundedBTreeMap
 pub type ScheduledTaskList<T> = BoundedBTreeMap<
-(
-	<T as frame_system::Config>::AccountId,
-	<T as frame_system::Config>::AccountId,
-),
-ScheduledTaskOf<T>,
-<T as Config>::MaxRemarkLength,
+	(<T as frame_system::Config>::AccountId, <T as frame_system::Config>::AccountId),
+	ScheduledTaskOf<T>,
+	<T as Config>::MaxRemarkLength,
 >;
 
 /// The PaymentDetail struct stores information about the payment/escrow
@@ -106,7 +105,11 @@ pub trait PaymentHandler<T: pallet::Config> {
 	/// Attempt to reserve the amount from the caller
 	/// If not possible then return Error. Possible reasons for failure include:
 	/// - User does not have enough balance.
-	fn reserve_payment_amount(from: &T::AccountId, to: &T::AccountId, payment: PaymentDetail<T>) -> DispatchResult;
+	fn reserve_payment_amount(
+		from: &T::AccountId,
+		to: &T::AccountId,
+		payment: PaymentDetail<T>,
+	) -> DispatchResult;
 
 	// Settle a payment of `from` to `to`. To release a payment, the
 	// recipient_share=100, to cancel a payment recipient_share=0
@@ -115,7 +118,11 @@ pub trait PaymentHandler<T: pallet::Config> {
 	/// - The payment does not exist
 	/// - The unreserve operation fails
 	/// - The transfer operation fails
-	fn settle_payment(from: &T::AccountId, to: &T::AccountId, recipient_share: Percent) -> DispatchResult;
+	fn settle_payment(
+		from: &T::AccountId,
+		to: &T::AccountId,
+		recipient_share: Percent,
+	) -> DispatchResult;
 
 	/// Attempt to fetch the details of a payment from the given payment_id
 	/// Possible reasons for failure include:

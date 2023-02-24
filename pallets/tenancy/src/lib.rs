@@ -5,19 +5,19 @@
 //!
 //!## Overview
 //!Using this pallet, a user with the Tenant role can do the following:
-//!- Request a lease for a purchased asset
-//!- Pay a guaranty_deposit to confirm the lease start
-//!- Pay his rent
+//! - Request a lease for a purchased asset
+//! - Pay a guaranty_deposit to confirm the lease start
+//! - Pay his rent
 //!
 //!### Dispatchable Functions
 //!
-//!* `request_asset` - A prospecting tenant can requestfor a particular asset
+//! * `request_asset` - A prospecting tenant can requestfor a particular asset
 //!  after providing personal information requested by the Representative.
 //!  
-//!* `pay_guaranty_deposit` - A newly selected tenant pays for a guaranty deposit
+//! * `pay_guaranty_deposit` - A newly selected tenant pays for a guaranty deposit
 //!  requested by the asset's owners, and confirms the start of his contract/lease.
 //!  
-//!* `pay_rent` - The Tenant can pay the monthly rent anytime.
+//! * `pay_rent` - The Tenant can pay the monthly rent anytime.
 //!  He cannot pay more than 12 months, which is the length of the lease/contract.
 
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -192,8 +192,8 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// The function below allows the newly selected tenant to pay for a guaranty deposit request
-		/// and confirms the start of his contract.
+		/// The function below allows the newly selected tenant to pay for a guaranty deposit
+		/// request and confirms the start of his contract.
 		/// The origin must be the tenant.
 		/// - asset_type: Asset class requested by the tenant.
 		/// - asset_id: ID of the Asset requested by the tenant.

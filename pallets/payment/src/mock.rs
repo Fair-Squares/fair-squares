@@ -1,9 +1,9 @@
 use crate as pallet_payment;
 use crate::PaymentDetail;
 use frame_support::{
-	weights::DispatchClass,
 	parameter_types,
-	traits::{ConstU16, ConstU64,ConstU32, Hooks, OnFinalize}
+	traits::{ConstU16, ConstU32, ConstU64, Hooks, OnFinalize},
+	weights::DispatchClass,
 };
 use frame_system as system;
 use sp_core::{crypto::AccountId32, H256};
@@ -69,7 +69,6 @@ impl system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-
 pub struct MockDisputeResolver;
 impl crate::types::DisputeResolver<AccountId> for MockDisputeResolver {
 	fn get_resolver_account() -> AccountId {
@@ -86,7 +85,8 @@ impl crate::types::FeeHandler<Test> for MockFeeHandler {
 		_remark: Option<&[u8]>,
 	) -> (AccountId, Percent) {
 		match to {
-			&PAYMENT_RECIPENT_FEE_CHARGED => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE)),
+			&PAYMENT_RECIPENT_FEE_CHARGED =>
+				(FEE_RECIPIENT_ACCOUNT, Percent::from_percent(MARKETPLACE_FEE_PERCENTAGE)),
 			_ => (FEE_RECIPIENT_ACCOUNT, Percent::from_percent(0)),
 		}
 	}
@@ -128,19 +128,19 @@ impl pallet_balances::Config for Test {
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
-		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![
-				(PAYMENT_CREATOR, 100_000_000_000),
-				(PAYMENT_CREATOR_TWO, 100_000_000_000),
-				(PAYMENT_RECIPENT,1),
-				(PAYMENT_RECIPENT_TWO,1),
-				(FEE_RECIPIENT_ACCOUNT,1),
-				(PAYMENT_RECIPENT_FEE_CHARGED,1),
-			],
-		}
-		.assimilate_storage(&mut t)
-		.unwrap();
-		let mut ext: sp_io::TestExternalities = t.into();
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![
+			(PAYMENT_CREATOR, 100_000_000_000),
+			(PAYMENT_CREATOR_TWO, 100_000_000_000),
+			(PAYMENT_RECIPENT, 1),
+			(PAYMENT_RECIPENT_TWO, 1),
+			(FEE_RECIPIENT_ACCOUNT, 1),
+			(PAYMENT_RECIPENT_FEE_CHARGED, 1),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+	let mut ext: sp_io::TestExternalities = t.into();
 	// need to set block number to 1 to test events
 	ext.execute_with(|| System::set_block_number(1));
 	ext
@@ -156,14 +156,13 @@ pub fn run_n_blocks(n: u64) -> u64 {
 		System::set_block_number(block_number);
 
 		// Odd blocks gets busy
-		let idle_weight = if block_number % 2 == 0 {
-			IDLE_WEIGHT
-		} else {
-			BUSY_WEIGHT
-		};
+		let idle_weight = if block_number % 2 == 0 { IDLE_WEIGHT } else { BUSY_WEIGHT };
 		// ensure the on_idle is executed
 		<frame_system::Pallet<Test>>::register_extra_weight_unchecked(
-			PaymentModule::on_idle(block_number, frame_support::weights::Weight::from_ref_time(idle_weight)),
+			PaymentModule::on_idle(
+				block_number,
+				frame_support::weights::Weight::from_ref_time(idle_weight),
+			),
 			DispatchClass::Mandatory,
 		);
 
