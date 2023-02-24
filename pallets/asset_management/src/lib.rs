@@ -261,8 +261,10 @@ pub mod pallet {
 		AssetOutOfControl,
 		/// The candidate is not a tenant
 		NotATenant,
-		/// An asset is already linked to the provided account
+		/// An asset is already linked with the representative
 		RepresentativeAlreadyLinkedWithAsset,
+		/// An asset is already linked with the tenant
+		TenantAlreadyLinkedWithAsset,
 		/// The tenant is not linked to the asset
 		TenantAssetNotLinked,
 		/// Errors should have helpful documentation associated with them.
@@ -615,7 +617,7 @@ pub mod pallet {
 					// Ensure that the tenant is not linked to an asset
 					ensure!(
 						tenant0.asset_account.is_none(),
-						Error::<T>::RepresentativeAlreadyLinkedWithAsset
+						Error::<T>::TenantAlreadyLinkedWithAsset
 					);
 					//Ensure there is no existing payment request for this asset
 					ensure!(

@@ -487,10 +487,11 @@ fn test_integration_test() {
 				VoteProposals::Election,
 				Ident::Judgement::Reasonable,
 			),
-			Error::<Test>::RepresentativeAlreadyLinkedWithAsset
+			Error::<Test>::TenantAlreadyLinkedWithAsset
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
 
+		assert!(Roles::TenantLog::<Test>::contains_key(PEGGY));
 		//change PEGGY to a RegisteredTenant
 		Roles::TenantLog::<Test>::mutate(PEGGY, |val| {
 			let mut val0 = val.clone().unwrap();
@@ -509,7 +510,7 @@ fn test_integration_test() {
 			),
 			Error::<Test>::NotEnoughTenantFunds
 		);
-		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
+		println!("\n\nlaunch_tenant_session - : THE TENANT DOESN'T HAVE ENOUGH FUNDS");
 
 		//change HUNTER to a RegisteredTenant
 		Roles::TenantLog::<Test>::mutate(HUNTER, |val| {
