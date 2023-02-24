@@ -547,7 +547,12 @@ pub mod pallet {
 			);
 
 			//revoke Representative Role
-			Self::revoke_representative(rep_account.clone()).ok();
+			Self::revoke_representative_role(rep_account.clone()).ok();
+			Onboarding::Houses::<T>::mutate(collection, item, |asset| {
+				let mut asset0 = asset.clone().unwrap();
+				asset0.representative = None;
+				*asset = Some(asset0);
+			});
 
 			Self::deposit_event(Event::RepresentativeDemoted {
 				candidate: rep_account,

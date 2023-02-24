@@ -300,6 +300,10 @@ fn test_integration_test() {
 			Error::<Test>::NotAPendingRepresentative
 		);
 
+		let asset = Onboarding::Pallet::<Test>::houses(NftColl::OFFICESTEST.value(), item_id0);
+		assert!(asset.is_some());
+		assert_eq!(asset.unwrap().representative, Some(FERDIE));
+
 		// FIXME: the following test should not fail
 		// assert_ok!(AssetManagement::launch_representative_session(
 		// 	origin_eve.clone(),
@@ -677,5 +681,8 @@ fn test_integration_test() {
 		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result
 		// of a correctly executed call.
 		assert!(!Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
+
+		let asset = Onboarding::Pallet::<Test>::houses(NftColl::OFFICESTEST.value(), item_id0);
+		assert!(asset.unwrap().representative.is_none());
 	});
 }

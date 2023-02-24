@@ -73,7 +73,7 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	pub fn revoke_representative(who: T::AccountId) -> DispatchResult {
+	pub fn revoke_representative_role(who: T::AccountId) -> DispatchResult {
 		Roles::RepresentativeLog::<T>::mutate(&who, |val| {
 			let mut val0 = val.clone().unwrap();
 			val0.activated = false;
