@@ -300,7 +300,7 @@ pub mod pallet {
 					));
 					Investor::<T>::new(investor).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
-					TotalMembers::<T>::put(members + 1);
+					Self::increase_total_members().ok();
 					Self::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER => {
@@ -317,7 +317,7 @@ pub mod pallet {
 					));
 					Tenant::<T>::new(tenant).map_err(|_| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
-					TotalMembers::<T>::put(members + 1);
+					Self::increase_total_members().ok();
 					Self::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER => {
@@ -353,6 +353,8 @@ pub mod pallet {
 			);
 			if need_approval {
 				RequestedRoles::<T>::insert(&account, account_type);
+			} else {
+				TotalMembers::<T>::put(members + 1);
 			}
 
 			Ok(())
@@ -372,9 +374,7 @@ pub mod pallet {
 
 			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
 
-			let members = Self::total_members();
 			Self::approve_account(sender, account.clone())?;
-			TotalMembers::<T>::put(members + 1);
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(())

@@ -85,9 +85,10 @@ impl<T: Config> Pallet<T> {
 			_ => false,
 		};
 		ensure!(success, Error::<T>::NotInWaitingList);
-		Ok(())
+		Self::increase_total_members()
 	}
 
+	// TODO: This function can be updated
 	pub fn check_account_role(caller: T::AccountId) -> DispatchResult {
 		ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
 		ensure!(!InvestorLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
@@ -192,5 +193,13 @@ impl<T: Config> Pallet<T> {
 
 		let reps = Self::rep_num();
 		RepNumber::<T>::put(reps.saturating_add(rep_count));
+	}
+
+	pub fn increase_total_members() -> DispatchResult {
+		let members: u32 = Self::total_members();
+		ensure!(members < T::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
+		TotalMembers::<T>::put(members.saturating_add(1));
+
+		Ok(())
 	}
 }
