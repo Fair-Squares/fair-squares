@@ -245,6 +245,8 @@ pub mod pallet {
 		NoneValue,
 		/// The account is not an Asset account
 		NotAnAssetAccount,
+		/// The account is not in the representative waiting list
+		NotAPendingRepresentative,
 		/// The account is not a representative
 		NotARepresentative,
 		/// Not an active Representative
@@ -360,7 +362,7 @@ pub mod pallet {
 					//Check that the account is in the representative waiting list
 					ensure!(
 						Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),
-						"No pending representative with this account"
+						Error::<T>::NotAPendingRepresentative
 					);
 					Call::<T>::representative_approval {
 						rep_account: representative.clone(),
