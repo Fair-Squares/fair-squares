@@ -36,6 +36,8 @@ pub struct Asset<T: Config> {
 	pub(super) infos: ItemInfoOf<T>,
 	/// NFT Price
 	pub price: Option<BalanceOf<T>>,
+	/// Representative
+	pub representative: Option<T::AccountId>,
 	/// Tenants
 	pub tenants: Vec<T::AccountId>,
 	/// Proposal hash
@@ -56,6 +58,7 @@ impl<T: Config> Asset<T> {
 			created,
 			infos,
 			price,
+			representative: None,
 			tenants: Default::default(),
 			proposal_hash: Default::default(),
 		};
