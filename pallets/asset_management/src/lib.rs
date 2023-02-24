@@ -356,15 +356,15 @@ pub mod pallet {
 			// Create the call
 			let proposal_call = match proposal {
 				VoteProposals::Election => {
+					// Check if the account is in the representative waiting list
+					let rep = Roles::Pallet::<T>::get_pending_representatives(&representative);
+					ensure!(rep.is_some(), Error::<T>::NotAPendingRepresentative);
+
 					// Ensure that the asset doesn't have a representative yet
 					ensure!(
 						asset.representative.is_none(),
 						Error::<T>::AssetAlreadyLinkedWithRepresentative
 					);
-
-					// Check if the account is in the representative waiting list
-					let rep = Roles::Pallet::<T>::get_pending_representatives(&representative);
-					ensure!(rep.is_some(), Error::<T>::NotAPendingRepresentative);
 
 					//Ensure that the Representative is not already connected to this asset
 					ensure!(
@@ -507,8 +507,14 @@ pub mod pallet {
 			//Check that the caller is a stored virtual account
 			ensure!(caller == asset_account.clone(), Error::<T>::NotAnAssetAccount);
 
+			Onboarding::Houses::<T>::mutate(collection, item, |asset| {
+				let mut asset0 = asset.clone().unwrap();
+				asset0.representative = Some(rep_account.clone());
+				*asset = Some(asset0);
+			});
+
 			//Approve role request
-			Self::approve_representative(origin, rep_account.clone()).ok();
+			Self::approve_representative_role(origin, rep_account.clone()).ok();
 
 			Self::deposit_event(Event::RepresentativeCandidateApproved {
 				candidate: rep_account,

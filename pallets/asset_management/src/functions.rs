@@ -6,7 +6,7 @@ pub use scale_info::prelude::boxed::Box;
 pub use sp_core::H256;
 use sp_runtime::traits::{StaticLookup, Zero};
 impl<T: Config> Pallet<T> {
-	pub fn approve_representative(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
+	pub fn approve_representative_role(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 		let caller = ensure_signed(origin.clone())?;
 
 		let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();

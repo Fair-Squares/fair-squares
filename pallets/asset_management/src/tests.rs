@@ -75,9 +75,13 @@ pub fn prep_test(
 	));
 }
 
-// FIXME: write more tests for the representative flow
 #[test]
 fn test_representative() {
+	// TODO: write more tests for the representative flow
+	// edge cases to cover
+	//  - asset is already linked with the given representative(election)
+	//  - asset is already linked with a representative(election)
+	// ...
 	ExtBuilder::default().build().execute_with(|| {
 		//submit a request for representative role
 		RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::REPRESENTATIVE).ok();
@@ -284,7 +288,7 @@ fn test_integration_test() {
 		assert!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE));
 		assert!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 
-		// TODO: after fixing the issue of the representative flow, please uncomment
+		// TODO: after fixing the issue of the representative flow, please comment
 		assert_err!(
 			AssetManagement::launch_representative_session(
 				origin_eve.clone(),
