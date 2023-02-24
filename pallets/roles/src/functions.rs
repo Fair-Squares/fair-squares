@@ -175,9 +175,9 @@ impl<T: Config> Pallet<T> {
 		let now = <frame_system::Pallet<T>>::block_number();
 		let rep_count = representatives.len() as u32;
 		for (index, account) in representatives.iter().enumerate() {
-			AccountsRolesLog::<T>::insert(&account, Accounts::REPRESENTATIVE);
+			AccountsRolesLog::<T>::insert(account, Accounts::REPRESENTATIVE);
 			RepresentativeLog::<T>::insert(
-				&account,
+				account,
 				Representative::<T> {
 					account_id: account.clone(),
 					age: now,

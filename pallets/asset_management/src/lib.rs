@@ -29,7 +29,7 @@
 //!   proposals:
 //!   - Admit a Tenant for a given asset.
 //!   - Evict  a Tenant from a given asset.
-//!	  The Representative has to submit a judgement about the tenant profile. This judgement
+//!   The Representative has to submit a judgement about the tenant profile. This judgement
 //!	  will be considered by the owners before voting.
 //!	  Representatives receive a judgement fee from the aspiring tenant.
 //!	  A positive result of the referendum will send a guaranty_deposit payment request to the
@@ -505,7 +505,7 @@ pub mod pallet {
 				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 
 			//Check that the caller is a stored virtual account
-			ensure!(caller == asset_account.clone(), Error::<T>::NotAnAssetAccount);
+			ensure!(caller == asset_account, Error::<T>::NotAnAssetAccount);
 
 			Onboarding::Houses::<T>::mutate(collection, item, |asset| {
 				let mut asset0 = asset.clone().unwrap();
@@ -593,7 +593,7 @@ pub mod pallet {
 			//Compare guaranty payment amount+fees with tenant free_balance
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
-			let bals0 = BalanceType::<T>::convert_to_balance(guaranty.clone());
+			let bals0 = BalanceType::<T>::convert_to_balance(guaranty);
 			let fee1 = T::IncentivePercentage::get() * bals0.manage_bal;
 			let total_amount = guaranty + fee0 + Self::manage_bal_to_u128(fee1).unwrap();
 			let tenant_bal0: BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
@@ -607,7 +607,7 @@ pub mod pallet {
 			ensure!(tenant0.is_some(), Error::<T>::NotATenant);
 			// Ensure that the tenant is registered
 			let tenant_infos = Roles::Pallet::<T>::tenants(tenant.clone()).unwrap();
-			ensure!(tenant_infos.registered == true, Error::<T>::NotARegisteredTenant);
+			ensure!(tenant_infos.registered, Error::<T>::NotARegisteredTenant);
 
 			let tenant0 = tenant0.unwrap();
 			match proposal {
@@ -627,13 +627,8 @@ pub mod pallet {
 					//provide judgement
 					let index = rep.index;
 					let target = T::Lookup::unlookup(tenant.clone());
-					Ident::Pallet::<T>::provide_judgement(
-						origin.clone(),
-						index.into(),
-						target,
-						judgement.clone(),
-					)
-					.ok();
+					Ident::Pallet::<T>::provide_judgement(origin.clone(), index, target, judgement)
+						.ok();
 				},
 				VoteProposals::Demotion => {
 					// Ensure that the tenant is linked to the asset
