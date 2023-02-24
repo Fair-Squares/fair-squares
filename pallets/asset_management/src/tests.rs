@@ -479,7 +479,7 @@ fn test_integration_test() {
 				VoteProposals::Election,
 				Ident::Judgement::Reasonable,
 			),
-			Error::<Test>::AlreadyLinkedWithAsset
+			Error::<Test>::RepresentativeAlreadyLinkedWithAsset
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
 
