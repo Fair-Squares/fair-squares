@@ -288,17 +288,16 @@ fn test_integration_test() {
 		assert!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE));
 		assert!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 
-		// TODO: after fixing the issue of the representative flow, please comment
-		assert_err!(
-			AssetManagement::launch_representative_session(
-				origin_eve.clone(),
-				NftColl::OFFICESTEST,
-				item_id0,
-				FERDIE,
-				VoteProposals::Election
-			),
-			Error::<Test>::NotAPendingRepresentative
-		);
+		// assert_err!(
+		// 	AssetManagement::launch_representative_session(
+		// 		origin_eve.clone(),
+		// 		NftColl::OFFICESTEST,
+		// 		item_id0,
+		// 		FERDIE,
+		// 		VoteProposals::Election
+		// 	),
+		// 	Error::<Test>::NotAPendingRepresentative
+		// );
 
 		let asset = Onboarding::Pallet::<Test>::houses(NftColl::OFFICESTEST.value(), item_id0);
 		assert!(asset.is_some());
