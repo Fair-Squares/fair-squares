@@ -193,6 +193,7 @@ fn test_account_creation() {
 		assert_eq!(RoleModule::total_members(), 4);
 		//Servicer user5 successfully assign Investor role to 7
 		assert_ok!(RoleModule::set_role(user5, 7, Acc::INVESTOR));
+		assert_eq!(RoleModule::total_members(), 5);
 		//No additional member can be added
 		assert_noop!(
 			RoleModule::set_role(user4, 5, Acc::TENANT),

@@ -6,7 +6,7 @@ pub use scale_info::prelude::boxed::Box;
 pub use sp_core::H256;
 use sp_runtime::traits::{StaticLookup, Zero};
 impl<T: Config> Pallet<T> {
-	pub fn approve_representative(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
+	pub fn approve_representative_role(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
 		let caller = ensure_signed(origin.clone())?;
 
 		let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();
@@ -18,7 +18,7 @@ impl<T: Config> Pallet<T> {
 		//Check if we're dealing with an already registered representative
 		let registered = Roles::RepresentativeLog::<T>::contains_key(&who);
 
-		if registered == false {
+		if !registered {
 			representative.activated = true;
 			representative.assets_accounts.clear();
 			representative.assets_accounts.push(caller);
@@ -49,7 +49,7 @@ impl<T: Config> Pallet<T> {
 			}
 		}
 
-		if check0 == false {
+		if !check0 {
 			//Set the representative as a registrar
 			Ident::Pallet::<T>::add_registrar(origin, who2).ok();
 
@@ -63,7 +63,7 @@ impl<T: Config> Pallet<T> {
 			let fees = bals0.ident_bal;
 			Ident::Pallet::<T>::set_fee(origin2, index, fees).ok();
 
-			if registered == false {
+			if !registered {
 				//Update Rep number if not yet a registered Representative
 				index += 1;
 				Roles::RepNumber::<T>::put(index);
@@ -73,7 +73,7 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	pub fn revoke_representative(who: T::AccountId) -> DispatchResult {
+	pub fn revoke_representative_role(who: T::AccountId) -> DispatchResult {
 		Roles::RepresentativeLog::<T>::mutate(&who, |val| {
 			let mut val0 = val.clone().unwrap();
 			val0.activated = false;
@@ -116,7 +116,7 @@ impl<T: Config> Pallet<T> {
 
 		//Store payment details
 		let details = Payment::Pallet::<T>::get_payment_details(&from, &creator).unwrap();
-		GuarantyPayment::<T>::insert(from.clone(), creator.clone(), details);
+		GuarantyPayment::<T>::insert(from, creator, details);
 
 		Ok(())
 	}
@@ -171,7 +171,7 @@ impl<T: Config> Pallet<T> {
 			let rent = bals.roles_bal;
 			bals = BalanceType::<T>::convert_to_balance(rent1);
 			let year_rent = bals.roles_bal;
-			val0.rent = rent.into();
+			val0.rent = rent;
 			val0.asset_account = Some(asset_account);
 			val0.remaining_rent = year_rent;
 			val0.remaining_payments = time as u8;
@@ -227,7 +227,7 @@ impl<T: Config> Pallet<T> {
 		match Dem::Pallet::<T>::note_preimage(origin, proposal_encoded) {
 			Ok(_) => (),
 			Err(x) if x == Error::<T>::DuplicatePreimage.into() => (),
-			Err(x) => panic!("{:?}", x),
+			Err(x) => panic!("{x:?}"),
 		}
 		proposal_hash
 	}
@@ -306,7 +306,7 @@ impl<T: Config> Pallet<T> {
 			let tenants = Roles::Pallet::<T>::tenant_list();
 			for i in tenants {
 				let tenant = Roles::Pallet::<T>::tenants(i).unwrap();
-				if !tenant.asset_account.is_none() {
+				if tenant.asset_account.is_some() {
 					let time = <T as Config>::Lease::get();
 					let remaining_p = tenant.remaining_payments;
 					let contract_begin = tenant.contract_start;
@@ -317,7 +317,7 @@ impl<T: Config> Pallet<T> {
 
 					//Calculate rent per block
 					let total_blocks = <T as Config>::ContractLength::get();
-					let mut rpb = Self::blocknumber_to_u128(total_blocks.clone()).unwrap();
+					let mut rpb = Self::blocknumber_to_u128(total_blocks).unwrap();
 					let mut rpb_float = rpb as f64;
 					rpb_float = (rent_float / rpb_float).round();
 					rpb = rpb_float as u128;
@@ -327,7 +327,7 @@ impl<T: Config> Pallet<T> {
 					let amount_due = blocks.saturating_mul(rpb);
 
 					//check how many rents were payed
-					let payed = (time as u128 - remaining_p as u128) * rent.clone();
+					let payed = (time as u128 - remaining_p as u128) * rent;
 					let asset_account = tenant.asset_account.clone().unwrap();
 					let asset_account_free_balance =
 						<T as Config>::Currency::free_balance(&asset_account);
@@ -345,33 +345,32 @@ impl<T: Config> Pallet<T> {
 
 						//Get Asset_tokens infos
 						let token_id = infos.token_id;
-						let total_issuance =
-							Assetss::Pallet::<T>::total_supply(token_id.clone().into());
+						let total_issuance = Assetss::Pallet::<T>::total_supply(token_id.into());
 						let total_issuance_float =
 							Self::assets_bal_to_u128(total_issuance).unwrap() as f64;
 
 						//Remove maintenance fees from rent and convert it to f64
-						let maintenance = T::Maintenance::get() * rent1.clone();
-						let distribute = rent1.saturating_sub(maintenance.clone());
+						let maintenance = T::Maintenance::get() * rent1;
+						let distribute = rent1.saturating_sub(maintenance);
 
 						//Get the total amount to distribute
-						let distribute_float = (Self::manage_bal_to_u128(distribute.clone())
-							.unwrap() * infos.rent_nbr as u128) as f64;
+						let distribute_float = (Self::manage_bal_to_u128(distribute).unwrap() *
+							infos.rent_nbr as u128) as f64;
 
-						debug_assert!(distribute.clone() > Zero::zero());
-						debug_assert!(distribute.clone() < rent1.clone());
-						debug_assert!(maintenance.clone() < asset_account_free_balance);
+						debug_assert!(distribute > Zero::zero());
+						debug_assert!(distribute < rent1);
+						debug_assert!(maintenance < asset_account_free_balance);
 
 						//Reserve maintenance fees
 						let reservation =
-							<T as Config>::Currency::reserve(&asset_account, maintenance.into());
+							<T as Config>::Currency::reserve(&asset_account, maintenance);
 
 						//Emmit maintenance fee payment event
 						Self::deposit_event(Event::MaintenanceFeesPayment {
 							tenant: tenant.account_id.clone(),
 							when: now,
 							asset_account: tenant.asset_account.unwrap(),
-							amount: maintenance.clone(),
+							amount: maintenance,
 						});
 
 						debug_assert!(reservation.is_ok());
@@ -381,10 +380,10 @@ impl<T: Config> Pallet<T> {
 							//Get owner's share: we divide
 							//the owner's tokens by the total token issuance, and multiply the
 							// result by the total amount to be distributed.
-							let share = Assetss::Pallet::<T>::balance(token_id.clone().into(), &i);
+							let share = Assetss::Pallet::<T>::balance(token_id.into(), &i);
 							let share_float = Self::assets_bal_to_u128(share).unwrap() as f64 /
 								total_issuance_float;
-							let amount_float = share_float * distribute_float.clone();
+							let amount_float = share_float * distribute_float;
 							let bals0 = BalanceType::<T>::convert_to_balance(amount_float as u128);
 							let amount = bals0.manage_bal;
 							<T as Config>::Currency::transfer(
@@ -406,9 +405,9 @@ impl<T: Config> Pallet<T> {
 						//Now return the awaiting payment number to 0
 						let ownership_infos = Share::Virtual::<T>::iter_keys();
 						for (i, j) in ownership_infos {
-							let infos = Share::Pallet::<T>::virtual_acc(&i, &j).unwrap();
+							let infos = Share::Pallet::<T>::virtual_acc(i, j).unwrap();
 							if infos.virtual_account == asset_account {
-								Share::Virtual::<T>::mutate(i.clone(), j.clone(), |val| {
+								Share::Virtual::<T>::mutate(i, j, |val| {
 									let mut val0 = val.clone().unwrap();
 									val0.rent_nbr = 0;
 									*val = Some(val0);

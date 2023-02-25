@@ -29,7 +29,7 @@
 //!   proposals:
 //!   - Admit a Tenant for a given asset.
 //!   - Evict  a Tenant from a given asset.
-//!	  The Representative has to submit a judgement about the tenant profile. This judgement
+//!   The Representative has to submit a judgement about the tenant profile. This judgement
 //!	  will be considered by the owners before voting.
 //!	  Representatives receive a judgement fee from the aspiring tenant.
 //!	  A positive result of the referendum will send a guaranty_deposit payment request to the
@@ -251,12 +251,20 @@ pub mod pallet {
 		NotARepresentative,
 		/// Not an active Representative
 		NotAnActiveRepresentative,
+		/// The asset is already linked with a representative
+		AssetAlreadyLinkedWithRepresentative,
+		/// The asset is not linked with a representative
+		AssetNotLinkedWithRepresentative,
+		/// The given representative is not linked with the asset
+		InvalidRepresentative,
 		/// The asset is not linked to the representative
 		AssetOutOfControl,
 		/// The candidate is not a tenant
 		NotATenant,
-		/// An asset is already linked to the provided account
-		AlreadyLinkedWithAsset,
+		/// An asset is already linked with the representative
+		RepresentativeAlreadyLinkedWithAsset,
+		/// An asset is already linked with the tenant
+		TenantAlreadyLinkedWithAsset,
 		/// The tenant is not linked to the asset
 		TenantAssetNotLinked,
 		/// Errors should have helpful documentation associated with them.
@@ -331,22 +339,66 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let caller = ensure_signed(origin.clone())?;
 
-			//Get the asset virtual account if it exists
+			// Get asset virtual account if it exists
 			let collection_id: T::NftCollectionId = asset_type.value().into();
+
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
+			let ownership = ownership.unwrap();
 
-			//Ensure that the caller is an owner related to the virtual account
-			ensure!(
-				Self::caller_can_vote(&caller, ownership.clone().unwrap()),
-				Error::<T>::NotAnOwner
-			);
+			let asset = Onboarding::Pallet::<T>::houses(collection_id, asset_id);
+			ensure!(asset.is_some(), Error::<T>::NotAnAsset);
+			let asset = asset.unwrap();
 
-			let virtual_account = ownership.clone().unwrap().virtual_account;
+			// Ensure that the caller is one of the asset owners
+			ensure!(ownership.owners.contains(&caller), Error::<T>::NotAnOwner);
+
+			let virtual_account = ownership.virtual_account;
+
+			// Create the call
+			let proposal_call = match proposal {
+				VoteProposals::Election => {
+					// Check if the account is in the representative waiting list
+					let rep = Roles::Pallet::<T>::get_pending_representatives(&representative);
+					ensure!(rep.is_some(), Error::<T>::NotAPendingRepresentative);
+
+					// Ensure that the asset doesn't have a representative yet
+					ensure!(
+						asset.representative.is_none(),
+						Error::<T>::AssetAlreadyLinkedWithRepresentative
+					);
+
+					//Ensure that the Representative is not already connected to this asset
+					ensure!(
+						!rep.unwrap().assets_accounts.contains(&virtual_account),
+						Error::<T>::RepresentativeAlreadyLinkedWithAsset
+					);
+
+					Call::<T>::representative_approval {
+						rep_account: representative.clone(),
+						collection: collection_id,
+						item: asset_id,
+					}
+				},
+				VoteProposals::Demotion => {
+					// Ensure that the asset is linked with the representative
+					let asset_rep = asset.representative;
+					ensure!(asset_rep.is_some(), Error::<T>::AssetNotLinkedWithRepresentative);
+					ensure!(
+						asset_rep == Some(representative.clone()),
+						Error::<T>::InvalidRepresentative
+					);
+					Call::<T>::demote_representative {
+						rep_account: representative.clone(),
+						collection: collection_id,
+						item: asset_id,
+					}
+				},
+			};
+
 			let deposit = T::MinimumDeposit::get();
-
 			//Ensure that the virtual account has enough funds
-			for f in ownership.unwrap().owners {
+			for f in ownership.owners {
 				<T as Dem::Config>::Currency::transfer(
 					&f,
 					&virtual_account,
@@ -355,27 +407,6 @@ pub mod pallet {
 				)
 				.ok();
 			}
-
-			//Create the call
-			let proposal_call = match proposal {
-				VoteProposals::Election => {
-					//Check that the account is in the representative waiting list
-					ensure!(
-						Roles::Pallet::<T>::get_pending_representatives(&representative).is_some(),
-						Error::<T>::NotAPendingRepresentative
-					);
-					Call::<T>::representative_approval {
-						rep_account: representative.clone(),
-						collection: collection_id,
-						item: asset_id,
-					}
-				},
-				VoteProposals::Demotion => Call::<T>::demote_representative {
-					rep_account: representative.clone(),
-					collection: collection_id,
-					item: asset_id,
-				},
-			};
 
 			//Format the call and create the proposal Hash
 			let proposal_hash =
@@ -476,18 +507,16 @@ pub mod pallet {
 				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 
 			//Check that the caller is a stored virtual account
-			ensure!(caller == asset_account.clone(), Error::<T>::NotAnAssetAccount);
+			ensure!(caller == asset_account, Error::<T>::NotAnAssetAccount);
 
-			//Ensure that the Representative is not already connected to this asset
-			let representative =
-				Roles::Pallet::<T>::get_pending_representatives(&rep_account).unwrap();
-			let rep_assets = representative.assets_accounts;
-			for i in rep_assets {
-				ensure!(i != asset_account, Error::<T>::AlreadyLinkedWithAsset);
-			}
+			Onboarding::Houses::<T>::mutate(collection, item, |asset| {
+				let mut asset0 = asset.clone().unwrap();
+				asset0.representative = Some(rep_account.clone());
+				*asset = Some(asset0);
+			});
 
 			//Approve role request
-			Self::approve_representative(origin, rep_account.clone()).ok();
+			Self::approve_representative_role(origin, rep_account.clone()).ok();
 
 			Self::deposit_event(Event::RepresentativeCandidateApproved {
 				candidate: rep_account,
@@ -520,7 +549,12 @@ pub mod pallet {
 			);
 
 			//revoke Representative Role
-			Self::revoke_representative(rep_account.clone()).ok();
+			Self::revoke_representative_role(rep_account.clone()).ok();
+			Onboarding::Houses::<T>::mutate(collection, item, |asset| {
+				let mut asset0 = asset.clone().unwrap();
+				asset0.representative = None;
+				*asset = Some(asset0);
+			});
 
 			Self::deposit_event(Event::RepresentativeDemoted {
 				candidate: rep_account,
@@ -561,7 +595,7 @@ pub mod pallet {
 			//Compare guaranty payment amount+fees with tenant free_balance
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
-			let bals0 = BalanceType::<T>::convert_to_balance(guaranty.clone());
+			let bals0 = BalanceType::<T>::convert_to_balance(guaranty);
 			let fee1 = T::IncentivePercentage::get() * bals0.manage_bal;
 			let total_amount = guaranty + fee0 + Self::manage_bal_to_u128(fee1).unwrap();
 			let tenant_bal0: BalanceOf<T> = <T as Config>::Currency::free_balance(&tenant);
@@ -575,13 +609,16 @@ pub mod pallet {
 			ensure!(tenant0.is_some(), Error::<T>::NotATenant);
 			// Ensure that the tenant is registered
 			let tenant_infos = Roles::Pallet::<T>::tenants(tenant.clone()).unwrap();
-			ensure!(tenant_infos.registered == true, Error::<T>::NotARegisteredTenant);
+			ensure!(tenant_infos.registered, Error::<T>::NotARegisteredTenant);
 
 			let tenant0 = tenant0.unwrap();
 			match proposal {
 				VoteProposals::Election => {
 					// Ensure that the tenant is not linked to an asset
-					ensure!(tenant0.asset_account.is_none(), Error::<T>::AlreadyLinkedWithAsset);
+					ensure!(
+						tenant0.asset_account.is_none(),
+						Error::<T>::TenantAlreadyLinkedWithAsset
+					);
 					//Ensure there is no existing payment request for this asset
 					ensure!(
 						Self::guaranty(&tenant0.account_id, &asset_account).is_none(),
@@ -592,13 +629,8 @@ pub mod pallet {
 					//provide judgement
 					let index = rep.index;
 					let target = T::Lookup::unlookup(tenant.clone());
-					Ident::Pallet::<T>::provide_judgement(
-						origin.clone(),
-						index.into(),
-						target,
-						judgement.clone(),
-					)
-					.ok();
+					Ident::Pallet::<T>::provide_judgement(origin.clone(), index, target, judgement)
+						.ok();
 				},
 				VoteProposals::Demotion => {
 					// Ensure that the tenant is linked to the asset

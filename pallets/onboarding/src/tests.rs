@@ -47,6 +47,8 @@ fn create_proposal() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
 		let status: AssetStatus = Houses::<Test>::get(coll_id, item_id).unwrap().status;
 
+		assert!(Houses::<Test>::get(coll_id, item_id).unwrap().representative.is_none());
+
 		expect_events(vec![
 			crate::Event::ProposalCreated {
 				who: BOB,

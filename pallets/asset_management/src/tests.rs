@@ -75,9 +75,13 @@ pub fn prep_test(
 	));
 }
 
-// FIXME: write more tests for the representative flow
 #[test]
 fn test_representative() {
+	// TODO: write more tests for the representative flow
+	// edge cases to cover
+	//  - asset is already linked with the given representative(election)
+	//  - asset is already linked with a representative(election)
+	// ...
 	ExtBuilder::default().build().execute_with(|| {
 		//submit a request for representative role
 		RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::REPRESENTATIVE).ok();
@@ -284,7 +288,7 @@ fn test_integration_test() {
 		assert!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE));
 		assert!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 
-		// TODO: after fixing the issue of the representative flow, please uncomment
+		// TODO: after fixing the issue of the representative flow, please comment
 		assert_err!(
 			AssetManagement::launch_representative_session(
 				origin_eve.clone(),
@@ -295,6 +299,10 @@ fn test_integration_test() {
 			),
 			Error::<Test>::NotAPendingRepresentative
 		);
+
+		let asset = Onboarding::Pallet::<Test>::houses(NftColl::OFFICESTEST.value(), item_id0);
+		assert!(asset.is_some());
+		assert_eq!(asset.unwrap().representative, Some(FERDIE));
 
 		// FIXME: the following test should not fail
 		// assert_ok!(AssetManagement::launch_representative_session(
@@ -479,10 +487,11 @@ fn test_integration_test() {
 				VoteProposals::Election,
 				Ident::Judgement::Reasonable,
 			),
-			Error::<Test>::AlreadyLinkedWithAsset
+			Error::<Test>::TenantAlreadyLinkedWithAsset
 		);
 		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
 
+		assert!(Roles::TenantLog::<Test>::contains_key(PEGGY));
 		//change PEGGY to a RegisteredTenant
 		Roles::TenantLog::<Test>::mutate(PEGGY, |val| {
 			let mut val0 = val.clone().unwrap();
@@ -501,7 +510,7 @@ fn test_integration_test() {
 			),
 			Error::<Test>::NotEnoughTenantFunds
 		);
-		println!("\n\nlaunch_tenant_session - : THE TENANT IS ALREADY LINKED WITH AN ASSET");
+		println!("\n\nlaunch_tenant_session - : THE TENANT DOESN'T HAVE ENOUGH FUNDS");
 
 		//change HUNTER to a RegisteredTenant
 		Roles::TenantLog::<Test>::mutate(HUNTER, |val| {
@@ -673,5 +682,8 @@ fn test_integration_test() {
 		//The line below evaluate the results of TEST_0, TEST_1, & TEST_2 by looking for the result
 		// of a correctly executed call.
 		assert!(!Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
+
+		let asset = Onboarding::Pallet::<Test>::houses(NftColl::OFFICESTEST.value(), item_id0);
+		assert!(asset.unwrap().representative.is_none());
 	});
 }
