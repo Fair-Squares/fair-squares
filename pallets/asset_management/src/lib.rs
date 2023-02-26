@@ -325,6 +325,9 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		/// Using the function below, an active Representative can request an additional asset to manage
+		/// The origin must be an active Representative
+		/// - account_id: type of the asset
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_asset_management(
 			origin: OriginFor<T>,
