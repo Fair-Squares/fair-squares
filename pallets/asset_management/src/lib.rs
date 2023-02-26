@@ -21,6 +21,8 @@
 //!
 //! * `owners_vote` - Each asset owner can vote in an ongoing referendum.
 //!
+//! * `request_asset_management` - An active Representative can request an additional asset to manage.
+//!
 //! * `representative_approval` - Call used as a proposal for Representative election.
 //!
 //! * `demote_representative` - Call used as a proposal for Representative demotion.
@@ -325,15 +327,18 @@ pub mod pallet {
 			Ok(().into())
 		}
 
-		/// Using the function below, an active Representative can request an additional asset to manage
-		/// The origin must be an active Representative
+		/// Using the function below, an active Representative can request an additional asset to manage.
+		/// The origin must be an active Representative.
 		/// - account_id: an account with the representative role
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_asset_management(
 			origin: OriginFor<T>,
 			account_id: AccountIdOf<T>,
 		) -> DispatchResultWithPostInfo {
-			let _caller = ensure_signed(origin.clone())?;
+			let caller = ensure_signed(origin.clone())?;
+			if caller != account_id {
+				ensure!(Roles::Pallet::<T>::servicers(&caller).is_some(), Roles::Error::<T>::OnlyForServicers);
+			}
 			//Caller is a registered Representative
 			ensure!(
 				Roles::RepresentativeLog::<T>::contains_key(&account_id),
