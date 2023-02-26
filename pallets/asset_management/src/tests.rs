@@ -288,11 +288,9 @@ fn test_integration_test() {
 		assert!(Roles::RepresentativeLog::<Test>::contains_key(FERDIE));
 		assert!(Roles::AccountsRolesLog::<Test>::contains_key(FERDIE));
 
-
 		let asset = Onboarding::Pallet::<Test>::houses(NftColl::OFFICESTEST.value(), item_id0);
 		assert!(asset.is_some());
 		assert_eq!(asset.unwrap().representative, Some(FERDIE));
-
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////							TEST launch_tenant_session							//////

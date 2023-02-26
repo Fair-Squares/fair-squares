@@ -214,13 +214,10 @@ where
 				assets_accounts: Vec::new(),
 				index: Default::default(),
 			};
-			RepApprovalList::<T>::insert(caller,rep);
-			
+			RepApprovalList::<T>::insert(caller, rep);
 		} else {
 			let rep = RepresentativeLog::<T>::get(&caller).unwrap();
-			RepApprovalList::<T>::insert(caller,rep);
-
-			
+			RepApprovalList::<T>::insert(caller, rep);
 		}
 
 		Ok(())

@@ -271,8 +271,9 @@ impl<T: Config> Pallet<T> {
 				//check if the status is Finished
 				let ref_infos: RefInfos<T> = Dem::Pallet::<T>::referendum_info(index.1).unwrap();
 				let b = match ref_infos {
-					pallet_democracy::ReferendumInfo::Finished { approved, end: _ } =>
-						(1, approved),
+					pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => {
+						(1, approved)
+					},
 					_ => (0, false),
 				};
 				if b.0 == 1 {
@@ -354,8 +355,8 @@ impl<T: Config> Pallet<T> {
 						let distribute = rent1.saturating_sub(maintenance);
 
 						//Get the total amount to distribute
-						let distribute_float = (Self::manage_bal_to_u128(distribute).unwrap() *
-							infos.rent_nbr as u128) as f64;
+						let distribute_float = (Self::manage_bal_to_u128(distribute).unwrap()
+							* infos.rent_nbr as u128) as f64;
 
 						debug_assert!(distribute > Zero::zero());
 						debug_assert!(distribute < rent1);
@@ -381,8 +382,8 @@ impl<T: Config> Pallet<T> {
 							//the owner's tokens by the total token issuance, and multiply the
 							// result by the total amount to be distributed.
 							let share = Assetss::Pallet::<T>::balance(token_id.into(), &i);
-							let share_float = Self::assets_bal_to_u128(share).unwrap() as f64 /
-								total_issuance_float;
+							let share_float = Self::assets_bal_to_u128(share).unwrap() as f64
+								/ total_issuance_float;
 							let amount_float = share_float * distribute_float;
 							let bals0 = BalanceType::<T>::convert_to_balance(amount_float as u128);
 							let amount = bals0.manage_bal;

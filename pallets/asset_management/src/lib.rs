@@ -327,7 +327,7 @@ pub mod pallet {
 
 		/// Using the function below, an active Representative can request an additional asset to manage
 		/// The origin must be an active Representative
-		/// - account_id: type of the asset
+		/// - account_id: an account with the representative role
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_asset_management(
 			origin: OriginFor<T>,
@@ -335,16 +335,20 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let _caller = ensure_signed(origin.clone())?;
 			//Caller is a registered Representative
-			ensure!(Roles::RepresentativeLog::<T>::contains_key(&account_id), Error::<T>::NotAnActiveRepresentative);
+			ensure!(
+				Roles::RepresentativeLog::<T>::contains_key(&account_id),
+				Error::<T>::NotAnActiveRepresentative
+			);
 			//Caller is not already in Representative waiting list
-			ensure!(!Roles::RepApprovalList::<T>::contains_key(&account_id), Error::<T>::ExistingPendingRequest);
+			ensure!(
+				!Roles::RepApprovalList::<T>::contains_key(&account_id),
+				Error::<T>::ExistingPendingRequest
+			);
 			//Send request
-			let representative = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
-				account_id,
-			));
+			let representative =
+				<T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id));
 			Roles::Representative::<T>::new(representative).ok();
 
-			
 			Ok(().into())
 		}
 
@@ -568,8 +572,8 @@ pub mod pallet {
 
 			//Check that the caller is a stored virtual account
 			ensure!(
-				caller ==
-					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				caller
+					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
 
