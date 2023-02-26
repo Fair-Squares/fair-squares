@@ -289,6 +289,8 @@ pub mod pallet {
 		NotEnoughTenantFunds,
 		/// The Tenant did not provide detailed information
 		NotARegisteredTenant,
+		/// Existing Representative request
+		ExistingPendingRequest,
 	}
 
 	#[pallet::hooks]
@@ -320,6 +322,26 @@ pub mod pallet {
 				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id.clone()).into())
 				.ok();
 
+			Ok(().into())
+		}
+
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn request_asset_management(
+			origin: OriginFor<T>,
+			account_id: AccountIdOf<T>,
+		) -> DispatchResultWithPostInfo {
+			let _caller = ensure_signed(origin.clone())?;
+			//Caller is a registered Representative
+			ensure!(Roles::RepresentativeLog::<T>::contains_key(&account_id), Error::<T>::NotAnActiveRepresentative);
+			//Caller is not already in Representative waiting list
+			ensure!(!Roles::RepApprovalList::<T>::contains_key(&account_id), Error::<T>::ExistingPendingRequest);
+			//Send request
+			let representative = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+				account_id,
+			));
+			Roles::Representative::<T>::new(representative).ok();
+
+			
 			Ok(().into())
 		}
 

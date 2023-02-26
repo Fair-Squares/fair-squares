@@ -352,10 +352,9 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	assert!(Roles::AccountsRolesLog::<Test>::contains_key(REPRESENTATIVE));
 
 	//The representative wants another job
-	assert_ok!(RoleModule::set_role(
+	assert_ok!(AssetManagement::request_asset_management(
 		Origin::signed(REPRESENTATIVE),
 		REPRESENTATIVE,
-		Acc::REPRESENTATIVE
 	));
 
 	assert_ok!(AssetManagement::launch_representative_session(
