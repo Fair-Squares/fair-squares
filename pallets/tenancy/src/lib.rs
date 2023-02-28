@@ -174,8 +174,6 @@ pub mod pallet {
 			// Ensure that the caller has the tenancy role
 			ensure!(Roles::TenantLog::<T>::contains_key(caller.clone()), Error::<T>::NotATenant);
 			
-			
-
 			// Ensure that the asset is valid
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
