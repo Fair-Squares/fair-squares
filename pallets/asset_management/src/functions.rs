@@ -50,8 +50,9 @@ impl<T: Config> Pallet<T> {
 		}
 
 		if !check0 {
+			let origin_root: OriginFor<T> = frame_system::RawOrigin::Root.into();
 			//Set the representative as a registrar
-			Ident::Pallet::<T>::add_registrar(origin, who2).ok();
+			Ident::Pallet::<T>::add_registrar(origin_root, who2).ok();
 
 			//Set registrar fields
 			let origin2: OriginFor<T> = RawOrigin::Signed(who).into();
@@ -224,11 +225,8 @@ impl<T: Config> Pallet<T> {
 
 		let proposal_hash = T::Hashing::hash_of(&call_dispatch);
 		let proposal_encoded: Vec<u8> = call_dispatch.encode();
-		match Dem::Pallet::<T>::note_preimage(origin, proposal_encoded) {
-			Ok(_) => (),
-			Err(x) if x == Error::<T>::DuplicatePreimage.into() => (),
-			Err(x) => panic!("{x:?}"),
-		}
+		Dem::Pallet::<T>::note_preimage(origin, proposal_encoded).ok();
+		
 		proposal_hash
 	}
 

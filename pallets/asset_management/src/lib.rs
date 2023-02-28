@@ -273,8 +273,6 @@ pub mod pallet {
 		StorageOverflow,
 		/// The proposal could not be created
 		FailedToCreateProposal,
-		/// This Preimage already exists
-		DuplicatePreimage,
 		/// Not an owner in the corresponding virtual account
 		NotAnOwner,
 		/// The Asset Does not Exists
