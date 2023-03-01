@@ -34,15 +34,19 @@ pub struct RegisteredTenant<T: Config> {
 	pub infos: Box<IdentityInfo<T::MaxAdditionalFields>>,
 	///Creation Blocknumber
 	pub registered_at_block: BlockNumberOf<T>,
+	///Asset requested by the tenant
+	pub asset_requested: Option<T::AccountId>,
 }
 
 impl<T: Config> RegisteredTenant<T> {
 	pub fn new(
 		tenant_id: T::AccountId,
 		infos: Box<IdentityInfo<T::MaxAdditionalFields>>,
+		asset_requested: Option<T::AccountId>,
+
 	) -> DispatchResult {
 		let registered_at_block = <frame_system::Pallet<T>>::block_number();
-		let tenant = RegisteredTenant::<T> { infos, registered_at_block };
+		let tenant = RegisteredTenant::<T> { infos, registered_at_block,asset_requested};
 		Tenants::<T>::insert(tenant_id.clone(), tenant);
 		Roles::TenantLog::<T>::mutate(tenant_id, |val| {
 			let mut val0 = val.clone().unwrap();

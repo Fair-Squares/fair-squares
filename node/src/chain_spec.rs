@@ -192,8 +192,8 @@ fn testnet_genesis(
 		role_module: RoleModuleConfig {
 			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 			representatives: vec![
-				get_account_id_from_seed::<sr25519::Public>("Gabriel"),
-				get_account_id_from_seed::<sr25519::Public>("Henry"),
+				//get_account_id_from_seed::<sr25519::Public>("Gabriel"),
+				//get_account_id_from_seed::<sr25519::Public>("Henry"),
 			],
 		},
 		nft_module: NftModuleConfig {
