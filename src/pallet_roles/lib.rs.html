@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/roles/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-505eba68f310f6bf.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-f501212b8b071243.css"><link rel="stylesheet" disabled href="../../static.files/dark-e92fc12c34ff89d3.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c8c85693c8a4f9db.css"><script id="default-settings" ></script><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-364b95f387bc3166.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_roles/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/roles/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e5308b57e507db71.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-d59023bfa12059d2.css"><link rel="stylesheet" disabled href="../../static.files/dark-1ca41bb1e10af075.css"><link rel="stylesheet" disabled href="../../static.files/ayu-18b4181a2f3fb862.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_roles/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -519,8 +519,6 @@
 	#[pallet::without_storage_info]
 	</span><span class="kw">pub struct </span>Pallet&lt;T&gt;(<span class="kw">_</span>);
 
-	
-
 	<span class="attr">#[pallet::storage]
 	#[pallet::getter(<span class="kw">fn </span>investors)]
 	</span><span class="doccomment">///Registry of Investors organized by AccountId
@@ -631,7 +629,7 @@
 	<span class="attr">#[pallet::storage]
 	#[pallet::getter(<span class="kw">fn </span>rep_num)]
 	</span><span class="doccomment">///Number of active Representative
-	</span><span class="kw">pub type </span>RepNumber&lt;T: Config&gt; = StorageValue&lt;<span class="kw">_</span>,u32,ValueQuery,InitRepMembers&lt;T&gt;&gt;;
+	</span><span class="kw">pub type </span>RepNumber&lt;T: Config&gt; = StorageValue&lt;<span class="kw">_</span>, u32, ValueQuery, InitRepMembers&lt;T&gt;&gt;;
 
 	<span class="attr">#[pallet::genesis_config]
 	</span><span class="kw">pub struct </span>GenesisConfig&lt;T: Config&gt; {
@@ -648,12 +646,16 @@
 	<span class="attr">#[pallet::genesis_build]
 	</span><span class="kw">impl</span>&lt;T: Config&gt; GenesisBuild&lt;T&gt; <span class="kw">for </span>GenesisConfig&lt;T&gt; {
 		<span class="kw">fn </span>build(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-			<span class="kw">let </span>servicer0 = <span class="self">self</span>.new_admin.clone().unwrap(); <span class="comment">// AccountId
-			</span><span class="kw">let </span>origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); <span class="comment">//Origin
-			</span><span class="kw">let </span>source = T::Lookup::unlookup(servicer0); <span class="comment">//Source
-			</span><span class="kw">crate</span>::Pallet::&lt;T&gt;::set_manager(origin, source).ok();
+			<span class="kw">if </span><span class="self">self</span>.new_admin.is_some() {
+				<span class="kw">let </span>servicer0 = <span class="self">self</span>.new_admin.clone().unwrap(); <span class="comment">// AccountId
+				</span><span class="kw">let </span>origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); <span class="comment">//Origin
+				</span><span class="kw">let </span>source = T::Lookup::unlookup(servicer0); <span class="comment">//Source
+				</span><span class="kw">crate</span>::Pallet::&lt;T&gt;::set_manager(origin, source).ok();
+			}
 
-			<span class="kw">crate</span>::Pallet::&lt;T&gt;::init_representatives(<span class="self">self</span>.representatives.clone());
+			<span class="kw">if </span>!<span class="self">self</span>.representatives.is_empty() {
+				<span class="kw">crate</span>::Pallet::&lt;T&gt;::init_representatives(<span class="self">self</span>.representatives.clone());
+			}
 		}
 	}
 
@@ -733,7 +735,7 @@
 					));
 					Investor::&lt;T&gt;::new(investor).map_err(|<span class="kw">_</span>| &lt;Error&lt;T&gt;&gt;::InitializationError)<span class="question-mark">?</span>;
 					AccountsRolesLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>account, Accounts::INVESTOR);
-					TotalMembers::&lt;T&gt;::put(members + <span class="number">1</span>);
+					<span class="self">Self</span>::increase_total_members().ok();
 					<span class="self">Self</span>::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER =&gt; {
@@ -750,7 +752,7 @@
 					));
 					Tenant::&lt;T&gt;::new(tenant).map_err(|<span class="kw">_</span>| &lt;Error&lt;T&gt;&gt;::InitializationError)<span class="question-mark">?</span>;
 					AccountsRolesLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>account, Accounts::TENANT);
-					TotalMembers::&lt;T&gt;::put(members + <span class="number">1</span>);
+					<span class="self">Self</span>::increase_total_members().ok();
 					<span class="self">Self</span>::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER =&gt; {
@@ -770,8 +772,8 @@
 					<span class="self">Self</span>::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::REPRESENTATIVE =&gt; {
-					<span class="macro">ensure!</span>(!requested, &lt;Error&lt;T&gt;&gt;::AlreadyWaiting);
-					<span class="kw">let </span>representative = &lt;T <span class="kw">as </span>frame_system::Config&gt;::Origin::from(
+					<span class="comment">//ensure!(!requested, &lt;Error&lt;T&gt;&gt;::AlreadyWaiting);
+					</span><span class="kw">let </span>representative = &lt;T <span class="kw">as </span>frame_system::Config&gt;::Origin::from(
 						RawOrigin::Signed(account.clone()),
 					);
 					Representative::&lt;T&gt;::new(representative)
@@ -780,21 +782,21 @@
 				},
 			}
 
-			<span class="kw">let </span>need_approval = <span class="kw">match </span>account_type {
-				Accounts::INVESTOR =&gt; <span class="bool-val">false</span>,
-				Accounts::TENANT =&gt; <span class="bool-val">false</span>,
-				<span class="kw">_ </span>=&gt; <span class="bool-val">true</span>,
-			};
-
+			<span class="kw">let </span>need_approval = !<span class="macro">matches!</span>(
+				account_type,
+				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE
+			);
 			<span class="kw">if </span>need_approval {
 				RequestedRoles::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>account, account_type);
+			} <span class="kw">else </span>{
+				TotalMembers::&lt;T&gt;::put(members + <span class="number">1</span>);
 			}
 
 			<span class="prelude-val">Ok</span>(())
 		}
 
 		<span class="attr">#[pallet::weight(&lt;T <span class="kw">as </span>pallet::Config&gt;::WeightInfo::approval(<span class="number">5</span>))]
-		</span><span class="doccomment">///Approval function for Sellers and Servicers. Only for admin level.
+		</span><span class="doccomment">///Approval function for Sellers, Servicers, and Notary. Only for admin level.
 		</span><span class="kw">pub fn </span>account_approval(origin: OriginFor&lt;T&gt;, account: T::AccountId) -&gt; DispatchResult {
 			<span class="kw">let </span>sender = ensure_signed(origin)<span class="question-mark">?</span>;
 			<span class="macro">ensure!</span>(
@@ -807,9 +809,7 @@
 
 			<span class="macro">ensure!</span>(role != <span class="prelude-val">Some</span>(Accounts::REPRESENTATIVE), Error::&lt;T&gt;::UnAuthorized);
 
-			<span class="kw">let </span>members = <span class="self">Self</span>::total_members();
 			<span class="self">Self</span>::approve_account(sender, account.clone())<span class="question-mark">?</span>;
-			TotalMembers::&lt;T&gt;::put(members + <span class="number">1</span>);
 			<span class="kw">let </span>now = &lt;frame_system::Pallet&lt;T&gt;&gt;::block_number();
 			<span class="self">Self</span>::deposit_event(Event::AccountCreationApproved(now, account));
 			<span class="prelude-val">Ok</span>(())
@@ -869,4 +869,4 @@
 	}
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_roles" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f3126500f 2023-02-02)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_roles" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f77bfb733 2023-03-01)" data-search-js="search-2cde8914278f97ed.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

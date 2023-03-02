@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/asset_management/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-505eba68f310f6bf.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-f501212b8b071243.css"><link rel="stylesheet" disabled href="../../static.files/dark-e92fc12c34ff89d3.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c8c85693c8a4f9db.css"><script id="default-settings" ></script><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-364b95f387bc3166.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_asset_management/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/asset_management/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e5308b57e507db71.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-d59023bfa12059d2.css"><link rel="stylesheet" disabled href="../../static.files/dark-1ca41bb1e10af075.css"><link rel="stylesheet" disabled href="../../static.files/ayu-18b4181a2f3fb862.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_asset_management/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -716,6 +716,81 @@
 <a href="#716" id="716">716</a>
 <a href="#717" id="717">717</a>
 <a href="#718" id="718">718</a>
+<a href="#719" id="719">719</a>
+<a href="#720" id="720">720</a>
+<a href="#721" id="721">721</a>
+<a href="#722" id="722">722</a>
+<a href="#723" id="723">723</a>
+<a href="#724" id="724">724</a>
+<a href="#725" id="725">725</a>
+<a href="#726" id="726">726</a>
+<a href="#727" id="727">727</a>
+<a href="#728" id="728">728</a>
+<a href="#729" id="729">729</a>
+<a href="#730" id="730">730</a>
+<a href="#731" id="731">731</a>
+<a href="#732" id="732">732</a>
+<a href="#733" id="733">733</a>
+<a href="#734" id="734">734</a>
+<a href="#735" id="735">735</a>
+<a href="#736" id="736">736</a>
+<a href="#737" id="737">737</a>
+<a href="#738" id="738">738</a>
+<a href="#739" id="739">739</a>
+<a href="#740" id="740">740</a>
+<a href="#741" id="741">741</a>
+<a href="#742" id="742">742</a>
+<a href="#743" id="743">743</a>
+<a href="#744" id="744">744</a>
+<a href="#745" id="745">745</a>
+<a href="#746" id="746">746</a>
+<a href="#747" id="747">747</a>
+<a href="#748" id="748">748</a>
+<a href="#749" id="749">749</a>
+<a href="#750" id="750">750</a>
+<a href="#751" id="751">751</a>
+<a href="#752" id="752">752</a>
+<a href="#753" id="753">753</a>
+<a href="#754" id="754">754</a>
+<a href="#755" id="755">755</a>
+<a href="#756" id="756">756</a>
+<a href="#757" id="757">757</a>
+<a href="#758" id="758">758</a>
+<a href="#759" id="759">759</a>
+<a href="#760" id="760">760</a>
+<a href="#761" id="761">761</a>
+<a href="#762" id="762">762</a>
+<a href="#763" id="763">763</a>
+<a href="#764" id="764">764</a>
+<a href="#765" id="765">765</a>
+<a href="#766" id="766">766</a>
+<a href="#767" id="767">767</a>
+<a href="#768" id="768">768</a>
+<a href="#769" id="769">769</a>
+<a href="#770" id="770">770</a>
+<a href="#771" id="771">771</a>
+<a href="#772" id="772">772</a>
+<a href="#773" id="773">773</a>
+<a href="#774" id="774">774</a>
+<a href="#775" id="775">775</a>
+<a href="#776" id="776">776</a>
+<a href="#777" id="777">777</a>
+<a href="#778" id="778">778</a>
+<a href="#779" id="779">779</a>
+<a href="#780" id="780">780</a>
+<a href="#781" id="781">781</a>
+<a href="#782" id="782">782</a>
+<a href="#783" id="783">783</a>
+<a href="#784" id="784">784</a>
+<a href="#785" id="785">785</a>
+<a href="#786" id="786">786</a>
+<a href="#787" id="787">787</a>
+<a href="#788" id="788">788</a>
+<a href="#789" id="789">789</a>
+<a href="#790" id="790">790</a>
+<a href="#791" id="791">791</a>
+<a href="#792" id="792">792</a>
+<a href="#793" id="793">793</a>
 </pre><pre class="rust"><code><span class="doccomment">//!# Asset_Management Pallet
 //!
 //!The Asset_Management pallet is used for everything that is related to
@@ -747,6 +822,12 @@
 //!   proposals:
 //!   - Admit a Tenant for a given asset.
 //!   - Evict  a Tenant from a given asset.
+//!   The Representative has to submit a judgement about the tenant profile. This judgement
+//!	  will be considered by the owners before voting.
+//!	  Representatives receive a judgement fee from the aspiring tenant.
+//!	  A positive result of the referendum will send a guaranty_deposit payment request to the
+//! tenant.   When the tenant finally pays the guaranty_deposit,his account is connected to the
+//! asset through `link_tenant_to_asset` 	  and this marks the start of his contract with the owners.
 //!
 //! * `link_tenant_to_asset` - Call used as a proposal to link an accepted tenant with an existing
 //!   asset.
@@ -819,26 +900,40 @@
 		<span class="kw">type </span>Currency: Currency&lt;<span class="self">Self</span>::AccountId&gt; + ReservableCurrency&lt;<span class="self">Self</span>::AccountId&gt;;
 		<span class="kw">type </span>WeightInfo: WeightInfo;
 
-		<span class="attr">#[pallet::constant]
+		<span class="doccomment">/// Number of months for the guaranty deposit
+		</span><span class="attr">#[pallet::constant]
 		</span><span class="kw">type </span>Guaranty: Get&lt;u32&gt;;
 
-		<span class="attr">#[pallet::constant]
+		<span class="doccomment">/// Return on Rent
+		</span><span class="attr">#[pallet::constant]
 		</span><span class="kw">type </span>RoR: Get&lt;Percent&gt;;
 
 		<span class="attr">#[pallet::constant]
 		</span><span class="kw">type </span>MinimumDepositVote: Get&lt;BalanceOf&lt;<span class="self">Self</span>&gt;&gt;;
 
-		<span class="attr">#[pallet::constant]
+		<span class="doccomment">/// Fees payed to the Representative by the tenant, to provide a judgement
+		</span><span class="attr">#[pallet::constant]
 		</span><span class="kw">type </span>RepFees: Get&lt;BalanceOf&lt;<span class="self">Self</span>&gt;&gt;;
 
-		<span class="attr">#[pallet::constant]
+		<span class="doccomment">/// Lease period in number of blocks
+		</span><span class="attr">#[pallet::constant]
 		</span><span class="kw">type </span>ContractLength: Get&lt;<span class="self">Self</span>::BlockNumber&gt;;
 
-		<span class="attr">#[pallet::constant]
+		<span class="doccomment">/// Period between check of Referendum status
+		</span><span class="attr">#[pallet::constant]
 		</span><span class="kw">type </span>CheckPeriod: Get&lt;<span class="self">Self</span>::BlockNumber&gt;;
 
-		<span class="attr">#[pallet::constant]
+		<span class="doccomment">/// Period between check of rent payment status for active tenants
+		</span><span class="attr">#[pallet::constant]
 		</span><span class="kw">type </span>RentCheck: Get&lt;<span class="self">Self</span>::BlockNumber&gt;;
+
+		<span class="doccomment">/// Lease period in number of months
+		</span><span class="attr">#[pallet::constant]
+		</span><span class="kw">type </span>Lease: Get&lt;u32&gt;;
+
+		<span class="doccomment">/// Maintenance fees percentage taken on monthly rent
+		</span><span class="attr">#[pallet::constant]
+		</span><span class="kw">type </span>Maintenance: Get&lt;Percent&gt;;
 	}
 
 	<span class="comment">//Store the referendum_index and the struct containing the
@@ -916,12 +1011,23 @@
 		<span class="doccomment">///The amount of the tenant debt
 		</span>TenantDebt { tenant: T::AccountId, debt: BalanceOf&lt;T&gt;, when: BlockNumberOf&lt;T&gt; },
 
+		<span class="doccomment">///Rent distributed to owners
+		</span>RentDistributed { owners: Vec&lt;T::AccountId&gt;, amount: BalanceOf&lt;T&gt;, when: BlockNumberOf&lt;T&gt; },
+
 		<span class="doccomment">/// Guaranty payment request sent
 		</span>GuarantyPaymentRequested {
 			tenant: T::AccountId,
 			asset_account: T::AccountId,
 			amount: Payment::BalanceOf&lt;T&gt;,
 			when: BlockNumberOf&lt;T&gt;,
+		},
+
+		<span class="comment">//Asset maintenance fees, have been taken from the rent received, and reserved
+		</span>MaintenanceFeesPayment {
+			tenant: T::AccountId,
+			when: BlockNumberOf&lt;T&gt;,
+			asset_account: T::AccountId,
+			amount: BalanceOf&lt;T&gt;,
 		},
 	}
 
@@ -932,24 +1038,32 @@
 		</span>NoneValue,
 		<span class="doccomment">/// The account is not an Asset account
 		</span>NotAnAssetAccount,
+		<span class="doccomment">/// The account is not in the representative waiting list
+		</span>NotAPendingRepresentative,
 		<span class="doccomment">/// The account is not a representative
 		</span>NotARepresentative,
 		<span class="doccomment">/// Not an active Representative
 		</span>NotAnActiveRepresentative,
+		<span class="doccomment">/// The asset is already linked with a representative
+		</span>AssetAlreadyLinkedWithRepresentative,
+		<span class="doccomment">/// The asset is not linked with a representative
+		</span>AssetNotLinkedWithRepresentative,
+		<span class="doccomment">/// The given representative is not linked with the asset
+		</span>InvalidRepresentative,
 		<span class="doccomment">/// The asset is not linked to the representative
 		</span>AssetOutOfControl,
 		<span class="doccomment">/// The candidate is not a tenant
 		</span>NotATenant,
-		<span class="doccomment">/// An asset is already linked to the provided tenant
-		</span>AlreadyLinkedWithAsset,
+		<span class="doccomment">/// An asset is already linked with the representative
+		</span>RepresentativeAlreadyLinkedWithAsset,
+		<span class="doccomment">/// An asset is already linked with the tenant
+		</span>TenantAlreadyLinkedWithAsset,
 		<span class="doccomment">/// The tenant is not linked to the asset
 		</span>TenantAssetNotLinked,
 		<span class="doccomment">/// Errors should have helpful documentation associated with them.
 		</span>StorageOverflow,
 		<span class="doccomment">/// The proposal could not be created
 		</span>FailedToCreateProposal,
-		<span class="doccomment">/// This Preimage already exists
-		</span>DuplicatePreimage,
 		<span class="doccomment">/// Not an owner in the corresponding virtual account
 		</span>NotAnOwner,
 		<span class="doccomment">/// The Asset Does not Exists
@@ -964,6 +1078,8 @@
 		</span>ExistingPaymentRequest,
 		<span class="doccomment">/// Not enough funds in the tenant account
 		</span>NotEnoughTenantFunds,
+		<span class="doccomment">/// The Tenant did not provide detailed information
+		</span>NotARegisteredTenant,
 	}
 
 	<span class="attr">#[pallet::hooks]
@@ -1014,22 +1130,66 @@
 		) -&gt; DispatchResultWithPostInfo {
 			<span class="kw">let </span>caller = ensure_signed(origin.clone())<span class="question-mark">?</span>;
 
-			<span class="comment">//Get the asset virtual account if it exists
+			<span class="comment">// Get asset virtual account if it exists
 			</span><span class="kw">let </span>collection_id: T::NftCollectionId = asset_type.value().into();
+
 			<span class="kw">let </span>ownership = Share::Pallet::&lt;T&gt;::virtual_acc(collection_id, asset_id);
 			<span class="macro">ensure!</span>(ownership.is_some(), Error::&lt;T&gt;::NotAnAsset);
+			<span class="kw">let </span>ownership = ownership.unwrap();
 
-			<span class="comment">//Ensure that the caller is an owner related to the virtual account
-			</span><span class="macro">ensure!</span>(
-				<span class="self">Self</span>::caller_can_vote(<span class="kw-2">&amp;</span>caller, ownership.clone().unwrap()),
-				Error::&lt;T&gt;::NotAnOwner
-			);
+			<span class="kw">let </span>asset = Onboarding::Pallet::&lt;T&gt;::houses(collection_id, asset_id);
+			<span class="macro">ensure!</span>(asset.is_some(), Error::&lt;T&gt;::NotAnAsset);
+			<span class="kw">let </span>asset = asset.unwrap();
 
-			<span class="kw">let </span>virtual_account = ownership.clone().unwrap().virtual_account;
+			<span class="comment">// Ensure that the caller is one of the asset owners
+			</span><span class="macro">ensure!</span>(ownership.owners.contains(<span class="kw-2">&amp;</span>caller), Error::&lt;T&gt;::NotAnOwner);
+
+			<span class="kw">let </span>virtual_account = ownership.virtual_account;
+
+			<span class="comment">// Create the call
+			</span><span class="kw">let </span>proposal_call = <span class="kw">match </span>proposal {
+				VoteProposals::Election =&gt; {
+					<span class="comment">// Check if the account is in the representative waiting list
+					</span><span class="kw">let </span>rep = Roles::Pallet::&lt;T&gt;::get_pending_representatives(<span class="kw-2">&amp;</span>representative);
+					<span class="macro">ensure!</span>(rep.is_some(), Error::&lt;T&gt;::NotAPendingRepresentative);
+
+					<span class="comment">// Ensure that the asset doesn&#39;t have a representative yet
+					</span><span class="macro">ensure!</span>(
+						asset.representative.is_none(),
+						Error::&lt;T&gt;::AssetAlreadyLinkedWithRepresentative
+					);
+
+					<span class="comment">//Ensure that the Representative is not already connected to this asset
+					</span><span class="macro">ensure!</span>(
+						!rep.unwrap().assets_accounts.contains(<span class="kw-2">&amp;</span>virtual_account),
+						Error::&lt;T&gt;::RepresentativeAlreadyLinkedWithAsset
+					);
+
+					Call::&lt;T&gt;::representative_approval {
+						rep_account: representative.clone(),
+						collection: collection_id,
+						item: asset_id,
+					}
+				},
+				VoteProposals::Demotion =&gt; {
+					<span class="comment">// Ensure that the asset is linked with the representative
+					</span><span class="kw">let </span>asset_rep = asset.representative;
+					<span class="macro">ensure!</span>(asset_rep.is_some(), Error::&lt;T&gt;::AssetNotLinkedWithRepresentative);
+					<span class="macro">ensure!</span>(
+						asset_rep == <span class="prelude-val">Some</span>(representative.clone()),
+						Error::&lt;T&gt;::InvalidRepresentative
+					);
+					Call::&lt;T&gt;::demote_representative {
+						rep_account: representative.clone(),
+						collection: collection_id,
+						item: asset_id,
+					}
+				},
+			};
+
 			<span class="kw">let </span>deposit = T::MinimumDeposit::get();
-
 			<span class="comment">//Ensure that the virtual account has enough funds
-			</span><span class="kw">for </span>f <span class="kw">in </span>ownership.unwrap().owners {
+			</span><span class="kw">for </span>f <span class="kw">in </span>ownership.owners {
 				&lt;T <span class="kw">as </span>Dem::Config&gt;::Currency::transfer(
 					<span class="kw-2">&amp;</span>f,
 					<span class="kw-2">&amp;</span>virtual_account,
@@ -1038,27 +1198,6 @@
 				)
 				.ok();
 			}
-
-			<span class="comment">//Create the call
-			</span><span class="kw">let </span>proposal_call = <span class="kw">match </span>proposal {
-				VoteProposals::Election =&gt; {
-					<span class="comment">//Check that the account is in the representative waiting list
-					</span><span class="macro">ensure!</span>(
-						Roles::Pallet::&lt;T&gt;::get_pending_representatives(<span class="kw-2">&amp;</span>representative).is_some(),
-						<span class="string">&quot;No pending representative with this account&quot;
-					</span>);
-					Call::&lt;T&gt;::representative_approval {
-						rep_account: representative.clone(),
-						collection: collection_id,
-						item: asset_id,
-					}
-				},
-				VoteProposals::Demotion =&gt; Call::&lt;T&gt;::demote_representative {
-					rep_account: representative.clone(),
-					collection: collection_id,
-					item: asset_id,
-				},
-			};
 
 			<span class="comment">//Format the call and create the proposal Hash
 			</span><span class="kw">let </span>proposal_hash =
@@ -1119,11 +1258,12 @@
 			<span class="macro">ensure!</span>(<span class="self">Self</span>::caller_can_vote(<span class="kw-2">&amp;</span>voter, ownership.clone()), Error::&lt;T&gt;::NotAnOwner);
 			<span class="comment">//Get number of FS tokens own by caller
 			</span><span class="kw">let </span>tokens = Assetss::Pallet::&lt;T&gt;::balance(ownership.token_id.into(), <span class="kw-2">&amp;</span>voter);
-			<span class="kw">let </span>token0 = <span class="self">Self</span>::balance_to_u128_option(tokens).unwrap();
-			<span class="kw">let </span>token1 = <span class="self">Self</span>::u128_to_balance_option(token0).unwrap();
+			<span class="kw">let </span>token0 = <span class="self">Self</span>::assets_bal_to_u128(tokens).unwrap();
+			<span class="kw">let </span>bals0 = BalanceType::&lt;T&gt;::convert_to_balance(token0);
+			<span class="kw">let </span>token1 = bals0.dem_bal;
 
-			<span class="kw">let </span>v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
-
+			<span class="comment">//let v = Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x };
+			</span><span class="kw">let </span>v = <span class="self">Self</span>::vote_helper(token0, vote).unwrap();
 			Dem::Pallet::&lt;T&gt;::vote(
 				origin.clone(),
 				referendum_index,
@@ -1154,16 +1294,20 @@
 			item: T::NftItemId,
 		) -&gt; DispatchResult {
 			<span class="kw">let </span>caller = ensure_signed(origin.clone())<span class="question-mark">?</span>;
+			<span class="kw">let </span>asset_account =
+				Share::Pallet::&lt;T&gt;::virtual_acc(collection, item).unwrap().virtual_account;
 
 			<span class="comment">//Check that the caller is a stored virtual account
-			</span><span class="macro">ensure!</span>(
-				caller
-					== Share::Pallet::&lt;T&gt;::virtual_acc(collection, item).unwrap().virtual_account,
-				Error::&lt;T&gt;::NotAnAssetAccount
-			);
+			</span><span class="macro">ensure!</span>(caller == asset_account, Error::&lt;T&gt;::NotAnAssetAccount);
+
+			Onboarding::Houses::&lt;T&gt;::mutate(collection, item, |asset| {
+				<span class="kw">let </span><span class="kw-2">mut </span>asset0 = asset.clone().unwrap();
+				asset0.representative = <span class="prelude-val">Some</span>(rep_account.clone());
+				<span class="kw-2">*</span>asset = <span class="prelude-val">Some</span>(asset0);
+			});
 
 			<span class="comment">//Approve role request
-			</span><span class="self">Self</span>::approve_representative(origin, rep_account.clone()).ok();
+			</span><span class="self">Self</span>::approve_representative_role(origin, rep_account.clone()).ok();
 
 			<span class="self">Self</span>::deposit_event(Event::RepresentativeCandidateApproved {
 				candidate: rep_account,
@@ -1190,13 +1334,18 @@
 
 			<span class="comment">//Check that the caller is a stored virtual account
 			</span><span class="macro">ensure!</span>(
-				caller
-					== Share::Pallet::&lt;T&gt;::virtual_acc(collection, item).unwrap().virtual_account,
+				caller ==
+					Share::Pallet::&lt;T&gt;::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::&lt;T&gt;::NotAnAssetAccount
 			);
 
 			<span class="comment">//revoke Representative Role
-			</span><span class="self">Self</span>::revoke_representative(rep_account.clone()).ok();
+			</span><span class="self">Self</span>::revoke_representative_role(rep_account.clone()).ok();
+			Onboarding::Houses::&lt;T&gt;::mutate(collection, item, |asset| {
+				<span class="kw">let </span><span class="kw-2">mut </span>asset0 = asset.clone().unwrap();
+				asset0.representative = <span class="prelude-val">None</span>;
+				<span class="kw-2">*</span>asset = <span class="prelude-val">Some</span>(asset0);
+			});
 
 			<span class="self">Self</span>::deposit_event(Event::RepresentativeDemoted {
 				candidate: rep_account,
@@ -1207,8 +1356,8 @@
 			<span class="prelude-val">Ok</span>(())
 		}
 
-		<span class="doccomment">/// Using the function below, a representative triggers a vote session with a proposal for a tenant to be linked with
-		/// an asset The origin must be a representative
+		<span class="doccomment">/// Using the function below, a representative triggers a vote session with a proposal for a
+		/// tenant to be linked with an asset The origin must be a representative
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - tenant: an account with the tenant role
@@ -1236,12 +1385,12 @@
 
 			<span class="comment">//Compare guaranty payment amount+fees with tenant free_balance
 			</span><span class="kw">let </span>guaranty = <span class="self">Self</span>::calculate_guaranty(collection_id, asset_id);
-			<span class="kw">let </span>fee0 = <span class="self">Self</span>::balance_to_u128_option1(T::RepFees::get()).unwrap();
-			<span class="kw">let </span>fee1 = T::IncentivePercentage::get()
-				* <span class="self">Self</span>::u128_to_balance_option2(guaranty.clone()).unwrap();
-			<span class="kw">let </span>total_amount = guaranty + fee0 + <span class="self">Self</span>::balance_to_u128_option1(fee1).unwrap();
+			<span class="kw">let </span>fee0 = <span class="self">Self</span>::manage_bal_to_u128(T::RepFees::get()).unwrap();
+			<span class="kw">let </span>bals0 = BalanceType::&lt;T&gt;::convert_to_balance(guaranty);
+			<span class="kw">let </span>fee1 = T::IncentivePercentage::get() * bals0.manage_bal;
+			<span class="kw">let </span>total_amount = guaranty + fee0 + <span class="self">Self</span>::manage_bal_to_u128(fee1).unwrap();
 			<span class="kw">let </span>tenant_bal0: BalanceOf&lt;T&gt; = &lt;T <span class="kw">as </span>Config&gt;::Currency::free_balance(<span class="kw-2">&amp;</span>tenant);
-			<span class="kw">let </span>tenant_bal = <span class="self">Self</span>::balance_to_u128_option1(tenant_bal0).unwrap();
+			<span class="kw">let </span>tenant_bal = <span class="self">Self</span>::manage_bal_to_u128(tenant_bal0).unwrap();
 
 			<span class="kw">let </span>asset_account = ownership.unwrap().virtual_account;
 			<span class="macro">ensure!</span>(rep.assets_accounts.contains(<span class="kw-2">&amp;</span>asset_account), Error::&lt;T&gt;::AssetOutOfControl);
@@ -1249,12 +1398,18 @@
 			<span class="comment">// Ensure that provided account is a valid tenant
 			</span><span class="kw">let </span>tenant0 = Roles::Pallet::&lt;T&gt;::tenants(tenant.clone());
 			<span class="macro">ensure!</span>(tenant0.is_some(), Error::&lt;T&gt;::NotATenant);
+			<span class="comment">// Ensure that the tenant is registered
+			</span><span class="kw">let </span>tenant_infos = Roles::Pallet::&lt;T&gt;::tenants(tenant.clone()).unwrap();
+			<span class="macro">ensure!</span>(tenant_infos.registered, Error::&lt;T&gt;::NotARegisteredTenant);
 
 			<span class="kw">let </span>tenant0 = tenant0.unwrap();
 			<span class="kw">match </span>proposal {
 				VoteProposals::Election =&gt; {
 					<span class="comment">// Ensure that the tenant is not linked to an asset
-					</span><span class="macro">ensure!</span>(tenant0.asset_account.is_none(), Error::&lt;T&gt;::AlreadyLinkedWithAsset);
+					</span><span class="macro">ensure!</span>(
+						tenant0.asset_account.is_none(),
+						Error::&lt;T&gt;::TenantAlreadyLinkedWithAsset
+					);
 					<span class="comment">//Ensure there is no existing payment request for this asset
 					</span><span class="macro">ensure!</span>(
 						<span class="self">Self</span>::guaranty(<span class="kw-2">&amp;</span>tenant0.account_id, <span class="kw-2">&amp;</span>asset_account).is_none(),
@@ -1265,13 +1420,8 @@
 					<span class="comment">//provide judgement
 					</span><span class="kw">let </span>index = rep.index;
 					<span class="kw">let </span>target = T::Lookup::unlookup(tenant.clone());
-					Ident::Pallet::&lt;T&gt;::provide_judgement(
-						origin.clone(),
-						index.into(),
-						target,
-						judgement.clone(),
-					)
-					.ok();
+					Ident::Pallet::&lt;T&gt;::provide_judgement(origin.clone(), index, target, judgement)
+						.ok();
 				},
 				VoteProposals::Demotion =&gt; {
 					<span class="comment">// Ensure that the tenant is linked to the asset
@@ -1370,13 +1520,13 @@
 			<span class="prelude-val">Ok</span>(())
 		}
 
-		<span class="doccomment">/// The function below sends a guaranty deposiy payment request to a tenant. This extrinsic is executed
-		/// After a positive tenant_session.
+		<span class="doccomment">/// The function below sends a guaranty deposiy payment request to a tenant. This extrinsic
+		/// is executed After a positive tenant_session.
 		/// The origin must be the virtual account connected to the asset
 		/// - tenant: an account with the tenant role linked to the asset
 		/// - collection: collection_id of the asset
 		/// - item: item_id of the asset
-		/// - _judgement is provided by the representative while creating a tenant session  
+		/// - _judgement is provided by the representative while creating a tenant session
 		</span><span class="attr">#[pallet::weight(<span class="number">10_000 </span>+ T::DbWeight::get().reads_writes(<span class="number">1</span>,<span class="number">1</span>).ref_time())]
 		</span><span class="kw">pub fn </span>request_guaranty_payment(
 			origin: OriginFor&lt;T&gt;,
@@ -1435,4 +1585,4 @@
 	}
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_asset_management" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f3126500f 2023-02-02)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_asset_management" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f77bfb733 2023-03-01)" data-search-js="search-2cde8914278f97ed.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

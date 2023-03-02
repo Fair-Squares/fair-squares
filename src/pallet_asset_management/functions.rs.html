@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/asset_management/src/functions.rs`."><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-505eba68f310f6bf.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-f501212b8b071243.css"><link rel="stylesheet" disabled href="../../static.files/dark-e92fc12c34ff89d3.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c8c85693c8a4f9db.css"><script id="default-settings" ></script><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-364b95f387bc3166.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_asset_management/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/asset_management/src/functions.rs`."><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e5308b57e507db71.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-d59023bfa12059d2.css"><link rel="stylesheet" disabled href="../../static.files/dark-1ca41bb1e10af075.css"><link rel="stylesheet" disabled href="../../static.files/ayu-18b4181a2f3fb862.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_asset_management/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -299,6 +299,140 @@
 <a href="#299" id="299">299</a>
 <a href="#300" id="300">300</a>
 <a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
 </pre><pre class="rust"><code><span class="kw">pub use super</span>::<span class="kw-2">*</span>;
 <span class="kw">pub use </span>frame_support::pallet_prelude::<span class="kw-2">*</span>;
 <span class="attr">#[allow(unused_imports)]
@@ -307,21 +441,35 @@
 <span class="kw">pub use </span>sp_core::H256;
 <span class="kw">use </span>sp_runtime::traits::{StaticLookup, Zero};
 <span class="kw">impl</span>&lt;T: Config&gt; Pallet&lt;T&gt; {
-	<span class="kw">pub fn </span>approve_representative(origin: OriginFor&lt;T&gt;, who: T::AccountId) -&gt; DispatchResult {
+	<span class="kw">pub fn </span>approve_representative_role(origin: OriginFor&lt;T&gt;, who: T::AccountId) -&gt; DispatchResult {
 		<span class="kw">let </span>caller = ensure_signed(origin.clone())<span class="question-mark">?</span>;
+
 		<span class="kw">let </span><span class="kw-2">mut </span>representative = Roles::Pallet::&lt;T&gt;::get_pending_representatives(<span class="kw-2">&amp;</span>who).unwrap();
-		representative.activated = <span class="bool-val">true</span>;
-		representative.assets_accounts.clear();
-		representative.assets_accounts.push(caller);
+		Roles::RepApprovalList::&lt;T&gt;::remove(<span class="kw-2">&amp;</span>who);
+		<span class="kw">let </span>who2 = T::Lookup::unlookup(who.clone());
 		<span class="comment">//get Rep number
 		</span><span class="kw">let </span><span class="kw-2">mut </span>index = Roles::Pallet::&lt;T&gt;::rep_num();
-		<span class="comment">//Update Rep index
-		</span>representative.index = index;
 
-		Roles::RepresentativeLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, representative);
-		Roles::RepApprovalList::&lt;T&gt;::remove(<span class="kw-2">&amp;</span>who);
-		Roles::AccountsRolesLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, Roles::Accounts::REPRESENTATIVE);
-		<span class="kw">let </span>who2 = T::Lookup::unlookup(who.clone());
+		<span class="comment">//Check if we&#39;re dealing with an already registered representative
+		</span><span class="kw">let </span>registered = Roles::RepresentativeLog::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>who);
+
+		<span class="kw">if </span>!registered {
+			representative.activated = <span class="bool-val">true</span>;
+			representative.assets_accounts.clear();
+			representative.assets_accounts.push(caller);
+
+			<span class="comment">//Update Rep index
+			</span>representative.index = index;
+
+			Roles::RepresentativeLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, representative);
+			Roles::AccountsRolesLog::&lt;T&gt;::insert(<span class="kw-2">&amp;</span>who, Roles::Accounts::REPRESENTATIVE);
+		} <span class="kw">else </span>{
+			<span class="comment">//Add the new asset_account to the representative struct
+			</span>representative.assets_accounts.push(caller);
+			Roles::RepresentativeLog::&lt;T&gt;::mutate(<span class="kw-2">&amp;</span>who, |val| {
+				<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(representative);
+			})
+		}
 
 		<span class="comment">//Check that the Representative is not already a Registrar
 		//If a Representative is revoked from a given asset, and approved
@@ -336,28 +484,32 @@
 			}
 		}
 
-		<span class="kw">if </span>check0 == <span class="bool-val">false </span>{
+		<span class="kw">if </span>!check0 {
+			<span class="kw">let </span>origin_root: OriginFor&lt;T&gt; = frame_system::RawOrigin::Root.into();
 			<span class="comment">//Set the representative as a registrar
-			</span>Ident::Pallet::&lt;T&gt;::add_registrar(origin, who2).ok();
+			</span>Ident::Pallet::&lt;T&gt;::add_registrar(origin_root, who2).ok();
 
 			<span class="comment">//Set registrar fields
 			</span><span class="kw">let </span>origin2: OriginFor&lt;T&gt; = RawOrigin::Signed(who).into();
 			Ident::Pallet::&lt;T&gt;::set_fields(origin2.clone(), index, Default::default()).ok();
 
 			<span class="comment">//Set registrar fees
-			</span><span class="kw">let </span>fee0 = <span class="self">Self</span>::balance_to_u128_option1(T::RepFees::get()).unwrap();
-			<span class="kw">let </span>fees = <span class="self">Self</span>::u128_to_balance_option1(fee0).unwrap();
+			</span><span class="kw">let </span>fee0 = <span class="self">Self</span>::manage_bal_to_u128(T::RepFees::get()).unwrap();
+			<span class="kw">let </span>bals0 = BalanceType::&lt;T&gt;::convert_to_balance(fee0);
+			<span class="kw">let </span>fees = bals0.ident_bal;
 			Ident::Pallet::&lt;T&gt;::set_fee(origin2, index, fees).ok();
 
-			<span class="comment">//Update Rep number
-			</span>index += <span class="number">1</span>;
-			Roles::RepNumber::&lt;T&gt;::put(index);
+			<span class="kw">if </span>!registered {
+				<span class="comment">//Update Rep number if not yet a registered Representative
+				</span>index += <span class="number">1</span>;
+				Roles::RepNumber::&lt;T&gt;::put(index);
+			}
 		}
 
 		<span class="prelude-val">Ok</span>(())
 	}
 
-	<span class="kw">pub fn </span>revoke_representative(who: T::AccountId) -&gt; DispatchResult {
+	<span class="kw">pub fn </span>revoke_representative_role(who: T::AccountId) -&gt; DispatchResult {
 		Roles::RepresentativeLog::&lt;T&gt;::mutate(<span class="kw-2">&amp;</span>who, |val| {
 			<span class="kw">let </span><span class="kw-2">mut </span>val0 = val.clone().unwrap();
 			val0.activated = <span class="bool-val">false</span>;
@@ -372,8 +524,9 @@
 		<span class="kw">let </span>coeff = T::Guaranty::get() <span class="kw">as </span>u128;
 		<span class="kw">let </span>ror = T::RoR::get();
 		<span class="kw">let </span>price0 = Onboarding::Pallet::&lt;T&gt;::houses(collection, item).unwrap().price.unwrap();
-		<span class="kw">let </span>price1 = Onboarding::Pallet::&lt;T&gt;::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
-		<span class="kw">let </span>rent = ((price1 <span class="kw">as </span>f64) / <span class="number">12.0</span>).round();
+		<span class="kw">let </span>price1 = <span class="self">Self</span>::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
+		<span class="kw">let </span>time = &lt;T <span class="kw">as </span>Config&gt;::Lease::get();
+		<span class="kw">let </span>rent = ((price1 <span class="kw">as </span>f64) / time <span class="kw">as </span>f64).round();
 		<span class="kw">let </span>amount: u128 = coeff * (rent <span class="kw">as </span>u128);
 		amount
 	}
@@ -386,20 +539,48 @@
 	) -&gt; DispatchResult {
 		<span class="kw">let </span>creator = ensure_signed(origin.clone())<span class="question-mark">?</span>;
 
-		<span class="comment">//Calculate guaranty deposit using Return On Rent and guaranty coefficients found in runtime
+		<span class="comment">//Calculate guaranty deposit using Return On Rent and guaranty coefficients found in
+		// runtime
 		</span><span class="kw">let </span>amount = <span class="self">Self</span>::calculate_guaranty(collection, item);
 
 		<span class="comment">//convert amount to payment_pallet compatible balance
-		</span><span class="kw">let </span>amount1 = Payment::Pallet::&lt;T&gt;::u128_to_balance_option(amount).unwrap();
+		</span><span class="kw">let </span>bals0 = BalanceType::&lt;T&gt;::convert_to_balance(amount);
+		<span class="kw">let </span>amount1 = bals0.payment_bal;
 
 		<span class="comment">//create payment_request
 		</span>Payment::Pallet::&lt;T&gt;::request_payment(origin, from.clone(), amount1).ok();
 
 		<span class="comment">//Store payment details
 		</span><span class="kw">let </span>details = Payment::Pallet::&lt;T&gt;::get_payment_details(<span class="kw-2">&amp;</span>from, <span class="kw-2">&amp;</span>creator).unwrap();
-		GuarantyPayment::&lt;T&gt;::insert(from.clone(), creator.clone(), details);
+		GuarantyPayment::&lt;T&gt;::insert(from, creator, details);
 
 		<span class="prelude-val">Ok</span>(())
+	}
+
+	<span class="kw">pub fn </span>owners_infos(asset_account: T::AccountId) -&gt; <span class="prelude-ty">Option</span>&lt;Share::Ownership&lt;T&gt;&gt; {
+		<span class="comment">//Find the asset in Share Distributor using asset account
+		</span><span class="kw">let </span>assets = Share::Virtual::&lt;T&gt;::iter_keys();
+		<span class="kw">let </span><span class="kw-2">mut </span>infos = <span class="prelude-val">None</span>;
+		<span class="kw">for </span>(i, j) <span class="kw">in </span>assets {
+			<span class="kw">let </span>ownership = Share::Pallet::&lt;T&gt;::virtual_acc(i, j).unwrap();
+			<span class="kw">if </span>asset_account.clone() == ownership.virtual_account {
+				<span class="comment">//Get the owners
+				</span>infos = <span class="prelude-val">Some</span>(ownership);
+			}
+		}
+		infos
+	}
+
+	<span class="kw">pub fn </span>vote_helper(share: u128, vote: bool) -&gt; <span class="prelude-ty">Option</span>&lt;Dem::Vote&gt; {
+		<span class="kw">match </span>share {
+			<span class="number">50</span>..=<span class="number">100 </span>=&gt; <span class="prelude-val">Some</span>(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked1x }),
+			<span class="number">101</span>..=<span class="number">150 </span>=&gt; <span class="prelude-val">Some</span>(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked2x }),
+			<span class="number">151</span>..=<span class="number">300 </span>=&gt; <span class="prelude-val">Some</span>(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked3x }),
+			<span class="number">301</span>..=<span class="number">350 </span>=&gt; <span class="prelude-val">Some</span>(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked4x }),
+			<span class="number">351</span>..=<span class="number">400 </span>=&gt; <span class="prelude-val">Some</span>(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked5x }),
+			<span class="number">401</span>.. =&gt; <span class="prelude-val">Some</span>(Dem::Vote { aye: vote, conviction: Dem::Conviction::Locked6x }),
+			<span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
+		}
 	}
 
 	<span class="kw">pub fn </span>tenant_link_asset(
@@ -415,20 +596,21 @@
 			<span class="kw">let </span><span class="kw-2">mut </span>val0 = val.clone().unwrap();
 			<span class="comment">// get asset price
 			</span><span class="kw">let </span>price0 = Onboarding::Pallet::&lt;T&gt;::houses(collection, item).unwrap().price.unwrap();
-			<span class="kw">let </span>price1 =
-				Onboarding::Pallet::&lt;T&gt;::balance_to_u64_option(ror.mul_floor(price0)).unwrap();
+			<span class="kw">let </span>price1 = <span class="self">Self</span>::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
 
 			<span class="comment">//Update rent in tenant infos added.
-			</span><span class="kw">let </span>rent0 = ((price1 <span class="kw">as </span>f64) / <span class="number">12.0</span>).round();
-			<span class="kw">let </span>rent1 = (rent0 <span class="kw">as </span>u128) * <span class="number">12</span>;
+			</span><span class="kw">let </span>time = &lt;T <span class="kw">as </span>Config&gt;::Lease::get();
+			<span class="kw">let </span>rent0 = ((price1 <span class="kw">as </span>f64) / time <span class="kw">as </span>f64).round();
+			<span class="kw">let </span>rent1 = (rent0 <span class="kw">as </span>u128) * time <span class="kw">as </span>u128;
 			<span class="kw">let </span>now = &lt;frame_system::Pallet&lt;T&gt;&gt;::block_number();
-
-			<span class="kw">let </span>rent = Roles::Pallet::&lt;T&gt;::u128_to_balance_option(rent0 <span class="kw">as </span>u128).unwrap();
-			<span class="kw">let </span>year_rent = Roles::Pallet::&lt;T&gt;::u128_to_balance_option(rent1).unwrap();
-			val0.rent = rent.into();
+			<span class="kw">let </span><span class="kw-2">mut </span>bals = BalanceType::&lt;T&gt;::convert_to_balance(rent0 <span class="kw">as </span>u128);
+			<span class="kw">let </span>rent = bals.roles_bal;
+			bals = BalanceType::&lt;T&gt;::convert_to_balance(rent1);
+			<span class="kw">let </span>year_rent = bals.roles_bal;
+			val0.rent = rent;
 			val0.asset_account = <span class="prelude-val">Some</span>(asset_account);
 			val0.remaining_rent = year_rent;
-			val0.remaining_payments = <span class="number">12</span>;
+			val0.remaining_payments = time <span class="kw">as </span>u8;
 			val0.contract_start = now;
 			<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(val0);
 		});
@@ -478,11 +660,8 @@
 
 		<span class="kw">let </span>proposal_hash = T::Hashing::hash_of(<span class="kw-2">&amp;</span>call_dispatch);
 		<span class="kw">let </span>proposal_encoded: Vec&lt;u8&gt; = call_dispatch.encode();
-		<span class="kw">match </span>Dem::Pallet::&lt;T&gt;::note_preimage(origin, proposal_encoded) {
-			<span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; (),
-			<span class="prelude-val">Err</span>(x) <span class="kw">if </span>x == Error::&lt;T&gt;::DuplicatePreimage.into() =&gt; (),
-			<span class="prelude-val">Err</span>(x) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;{:?}&quot;</span>, x),
-		}
+		Dem::Pallet::&lt;T&gt;::note_preimage(origin, proposal_encoded).ok();
+		
 		proposal_hash
 	}
 
@@ -491,30 +670,27 @@
 		owners.contains(caller)
 	}
 
-	<span class="kw">pub fn </span>balance_to_u128_option(input: &lt;T <span class="kw">as </span>Assetss::Config&gt;::Balance) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
+	<span class="kw">pub fn </span>manage_bal_to_u128(input: BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
 		input.try_into().ok()
 	}
-	<span class="kw">pub fn </span>u128_to_balance_option(input: u128) -&gt; <span class="prelude-ty">Option</span>&lt;DemoBalanceOf&lt;T&gt;&gt; {
+	<span class="kw">pub fn </span>assets_bal_to_u128(input: &lt;T <span class="kw">as </span>Assetss::Config&gt;::Balance) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
 		input.try_into().ok()
 	}
-
-	<span class="kw">pub fn </span>balance_to_u128_option1(input: BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
+	<span class="kw">pub fn </span>roles_bal_to_u128(input: Roles::BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
 		input.try_into().ok()
 	}
-
-	<span class="kw">pub fn </span>u128_to_balance_option1(input: u128) -&gt; <span class="prelude-ty">Option</span>&lt;IdentBalanceOf&lt;T&gt;&gt; {
-		input.try_into().ok()
-	}
-
-	<span class="kw">pub fn </span>u128_to_balance_option2(input: u128) -&gt; <span class="prelude-ty">Option</span>&lt;BalanceOf&lt;T&gt;&gt; {
+	<span class="kw">pub fn </span>onboarding_bal_to_u128(input: Onboarding::BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
 		input.try_into().ok()
 	}
 
-	<span class="kw">pub fn </span>blocknumber_to_u128(input: BlockNumberFor&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
+	<span class="comment">// to be deleted//
+
+	</span><span class="kw">pub fn </span>blocknumber_to_u128(input: BlockNumberFor&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
 		input.try_into().ok()
 	}
+	<span class="comment">// to be deleted//
 
-	<span class="kw">pub fn </span>get_formatted_call(call: &lt;T <span class="kw">as </span>Config&gt;::Call) -&gt; &lt;T <span class="kw">as </span>Config&gt;::Call {
+	</span><span class="kw">pub fn </span>get_formatted_call(call: &lt;T <span class="kw">as </span>Config&gt;::Call) -&gt; &lt;T <span class="kw">as </span>Config&gt;::Call {
 		call
 	}
 
@@ -528,9 +704,8 @@
 				<span class="comment">//check if the status is Finished
 				</span><span class="kw">let </span>ref_infos: RefInfos&lt;T&gt; = Dem::Pallet::&lt;T&gt;::referendum_info(index.<span class="number">1</span>).unwrap();
 				<span class="kw">let </span>b = <span class="kw">match </span>ref_infos {
-					pallet_democracy::ReferendumInfo::Finished { approved, end: <span class="kw">_ </span>} =&gt; {
-						(<span class="number">1</span>, approved)
-					},
+					pallet_democracy::ReferendumInfo::Finished { approved, end: <span class="kw">_ </span>} =&gt;
+						(<span class="number">1</span>, approved),
 					<span class="kw">_ </span>=&gt; (<span class="number">0</span>, <span class="bool-val">false</span>),
 				};
 				<span class="kw">if </span>b.<span class="number">0 </span>== <span class="number">1 </span>{
@@ -557,22 +732,25 @@
 	///with the amount that has been actually paid.
 	///If the balance of the Tenant is negative, an event is emitted to notify him of his debt,
 	///If not, nothing happens.
+	///It will also distribute payed rent to the owners, according to their share.
 	</span><span class="kw">pub fn </span>finish_block(now: T::BlockNumber) -&gt; Weight {
 		<span class="kw">if </span>(now % &lt;T <span class="kw">as </span>Config&gt;::CheckPeriod::get()).is_zero() {
 			<span class="comment">//get list of tenants
 			</span><span class="kw">let </span>tenants = Roles::Pallet::&lt;T&gt;::tenant_list();
 			<span class="kw">for </span>i <span class="kw">in </span>tenants {
 				<span class="kw">let </span>tenant = Roles::Pallet::&lt;T&gt;::tenants(i).unwrap();
-				<span class="kw">if </span>!tenant.asset_account.is_none() {
+				<span class="kw">if </span>tenant.asset_account.is_some() {
+					<span class="kw">let </span>time = &lt;T <span class="kw">as </span>Config&gt;::Lease::get();
 					<span class="kw">let </span>remaining_p = tenant.remaining_payments;
 					<span class="kw">let </span>contract_begin = tenant.contract_start;
-					<span class="kw">let </span>rent =
-						Roles::Pallet::&lt;T&gt;::balance_to_u128_option(tenant.rent).unwrap() * <span class="number">12</span>;
+
+					<span class="kw">let </span>rent = <span class="self">Self</span>::roles_bal_to_u128(tenant.rent).unwrap() * time <span class="kw">as </span>u128;
 					<span class="kw">let </span>rent_float = rent <span class="kw">as </span>f64;
+					<span class="kw">let </span>rent0 = <span class="self">Self</span>::roles_bal_to_u128(tenant.rent).unwrap();
 
 					<span class="comment">//Calculate rent per block
 					</span><span class="kw">let </span>total_blocks = &lt;T <span class="kw">as </span>Config&gt;::ContractLength::get();
-					<span class="kw">let </span><span class="kw-2">mut </span>rpb = <span class="self">Self</span>::blocknumber_to_u128(total_blocks.clone()).unwrap();
+					<span class="kw">let </span><span class="kw-2">mut </span>rpb = <span class="self">Self</span>::blocknumber_to_u128(total_blocks).unwrap();
 					<span class="kw">let </span><span class="kw-2">mut </span>rpb_float = rpb <span class="kw">as </span>f64;
 					rpb_float = (rent_float / rpb_float).round();
 					rpb = rpb_float <span class="kw">as </span>u128;
@@ -582,12 +760,102 @@
 					<span class="kw">let </span>amount_due = blocks.saturating_mul(rpb);
 
 					<span class="comment">//check how many rents were payed
-					</span><span class="kw">let </span>payed = (<span class="number">12 </span>- remaining_p <span class="kw">as </span>u128) * rent.clone();
-					<span class="kw">if </span>payed &lt; amount_due &amp;&amp; (now % &lt;T <span class="kw">as </span>Config&gt;::RentCheck::get()).is_zero() {
-						<span class="kw">let </span>tenant_debt0 = amount_due - payed;
-						<span class="kw">let </span>debt = <span class="self">Self</span>::u128_to_balance_option2(tenant_debt0).unwrap();
+					</span><span class="kw">let </span>payed = (time <span class="kw">as </span>u128 - remaining_p <span class="kw">as </span>u128) * rent;
+					<span class="kw">let </span>asset_account = tenant.asset_account.clone().unwrap();
+					<span class="kw">let </span>asset_account_free_balance =
+						&lt;T <span class="kw">as </span>Config&gt;::Currency::free_balance(<span class="kw-2">&amp;</span>asset_account);
 
-						<span class="comment">//Emmit event to inform the tenant of the amount of his debt
+					<span class="kw">let </span>infos = <span class="self">Self</span>::owners_infos(asset_account.clone()).unwrap();
+
+					<span class="comment">//Distribute rent to owners if number of rents
+					//awaiting for distribution is greater than 0
+					</span><span class="kw">if </span>infos.rent_nbr &gt; <span class="number">0 </span>{
+						<span class="comment">//Get owners list
+
+						</span><span class="kw">let </span>owners = infos.owners;
+						<span class="kw">let </span>bals0 = BalanceType::&lt;T&gt;::convert_to_balance(rent0);
+						<span class="kw">let </span>rent1 = bals0.manage_bal;
+
+						<span class="comment">//Get Asset_tokens infos
+						</span><span class="kw">let </span>token_id = infos.token_id;
+						<span class="kw">let </span>total_issuance = Assetss::Pallet::&lt;T&gt;::total_supply(token_id.into());
+						<span class="kw">let </span>total_issuance_float =
+							<span class="self">Self</span>::assets_bal_to_u128(total_issuance).unwrap() <span class="kw">as </span>f64;
+
+						<span class="comment">//Remove maintenance fees from rent and convert it to f64
+						</span><span class="kw">let </span>maintenance = T::Maintenance::get() * rent1;
+						<span class="kw">let </span>distribute = rent1.saturating_sub(maintenance);
+
+						<span class="comment">//Get the total amount to distribute
+						</span><span class="kw">let </span>distribute_float = (<span class="self">Self</span>::manage_bal_to_u128(distribute).unwrap() *
+							infos.rent_nbr <span class="kw">as </span>u128) <span class="kw">as </span>f64;
+
+						<span class="macro">debug_assert!</span>(distribute &gt; Zero::zero());
+						<span class="macro">debug_assert!</span>(distribute &lt; rent1);
+						<span class="macro">debug_assert!</span>(maintenance &lt; asset_account_free_balance);
+
+						<span class="comment">//Reserve maintenance fees
+						</span><span class="kw">let </span>reservation =
+							&lt;T <span class="kw">as </span>Config&gt;::Currency::reserve(<span class="kw-2">&amp;</span>asset_account, maintenance);
+
+						<span class="comment">//Emmit maintenance fee payment event
+						</span><span class="self">Self</span>::deposit_event(Event::MaintenanceFeesPayment {
+							tenant: tenant.account_id.clone(),
+							when: now,
+							asset_account: tenant.asset_account.unwrap(),
+							amount: maintenance,
+						});
+
+						<span class="macro">debug_assert!</span>(reservation.is_ok());
+
+						<span class="comment">//Now distribute rent between owners according to their share
+						</span><span class="kw">for </span>i <span class="kw">in </span>owners.clone() {
+							<span class="comment">//Get owner&#39;s share: we divide
+							//the owner&#39;s tokens by the total token issuance, and multiply the
+							// result by the total amount to be distributed.
+							</span><span class="kw">let </span>share = Assetss::Pallet::&lt;T&gt;::balance(token_id.into(), <span class="kw-2">&amp;</span>i);
+							<span class="kw">let </span>share_float = <span class="self">Self</span>::assets_bal_to_u128(share).unwrap() <span class="kw">as </span>f64 /
+								total_issuance_float;
+							<span class="kw">let </span>amount_float = share_float * distribute_float;
+							<span class="kw">let </span>bals0 = BalanceType::&lt;T&gt;::convert_to_balance(amount_float <span class="kw">as </span>u128);
+							<span class="kw">let </span>amount = bals0.manage_bal;
+							&lt;T <span class="kw">as </span>Config&gt;::Currency::transfer(
+								<span class="kw-2">&amp;</span>asset_account,
+								<span class="kw-2">&amp;</span>i,
+								amount,
+								ExistenceRequirement::AllowDeath,
+							)
+							.ok();
+						}
+
+						<span class="comment">//Emmit rent distribution event
+						</span><span class="self">Self</span>::deposit_event(Event::RentDistributed {
+							owners,
+							amount: distribute,
+							when: now,
+						});
+
+						<span class="comment">//Now return the awaiting payment number to 0
+						</span><span class="kw">let </span>ownership_infos = Share::Virtual::&lt;T&gt;::iter_keys();
+						<span class="kw">for </span>(i, j) <span class="kw">in </span>ownership_infos {
+							<span class="kw">let </span>infos = Share::Pallet::&lt;T&gt;::virtual_acc(i, j).unwrap();
+							<span class="kw">if </span>infos.virtual_account == asset_account {
+								Share::Virtual::&lt;T&gt;::mutate(i, j, |val| {
+									<span class="kw">let </span><span class="kw-2">mut </span>val0 = val.clone().unwrap();
+									val0.rent_nbr = <span class="number">0</span>;
+									<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(val0);
+								});
+							}
+						}
+					}
+
+					<span class="comment">//Calculate the debt if negative balance
+					</span><span class="kw">if </span>payed &lt; amount_due &amp;&amp; (now % &lt;T <span class="kw">as </span>Config&gt;::RentCheck::get()).is_zero() {
+						<span class="kw">let </span>tenant_debt0 = amount_due - payed;
+						<span class="kw">let </span>bals0 = BalanceType::&lt;T&gt;::convert_to_balance(tenant_debt0);
+						<span class="kw">let </span>debt = bals0.manage_bal;
+
+						<span class="comment">//Event to inform the tenant of the amount of his debt
 						</span><span class="self">Self</span>::deposit_event(Event::TenantDebt {
 							tenant: tenant.account_id,
 							debt,
@@ -601,4 +869,4 @@
 	}
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_asset_management" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f3126500f 2023-02-02)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_asset_management" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f77bfb733 2023-03-01)" data-search-js="search-2cde8914278f97ed.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

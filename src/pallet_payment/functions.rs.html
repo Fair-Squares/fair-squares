@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/payment/src/functions.rs`."><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-505eba68f310f6bf.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-f501212b8b071243.css"><link rel="stylesheet" disabled href="../../static.files/dark-e92fc12c34ff89d3.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c8c85693c8a4f9db.css"><script id="default-settings" ></script><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-364b95f387bc3166.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_payment/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/payment/src/functions.rs`."><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e5308b57e507db71.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-d59023bfa12059d2.css"><link rel="stylesheet" disabled href="../../static.files/dark-1ca41bb1e10af075.css"><link rel="stylesheet" disabled href="../../static.files/ayu-18b4181a2f3fb862.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_payment/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -188,9 +188,14 @@
 <a href="#188" id="188">188</a>
 <a href="#189" id="189">189</a>
 <a href="#190" id="190">190</a>
+<a href="#191" id="191">191</a>
+<a href="#192" id="192">192</a>
+<a href="#193" id="193">193</a>
+<a href="#194" id="194">194</a>
+<a href="#195" id="195">195</a>
 </pre><pre class="rust"><code><span class="kw">pub use super</span>::<span class="kw-2">*</span>;
 
-<span class="kw">impl</span>&lt;T: Config&gt; Pallet&lt;T&gt;{
+<span class="kw">impl</span>&lt;T: Config&gt; Pallet&lt;T&gt; {
 	<span class="kw">pub fn </span>balance_to_u128_option(input: BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u128&gt; {
 		input.try_into().ok()
 	}
@@ -200,182 +205,188 @@
 }
 
 <span class="kw">impl</span>&lt;T: Config&gt; PaymentHandler&lt;T&gt; <span class="kw">for </span>Pallet&lt;T&gt; {
-    <span class="doccomment">/// The function will create a new payment. The fee and incentive
-    /// amounts will be calculated and the `PaymentDetail` will be added to
-    /// storage.
-    </span><span class="attr">#[require_transactional]
-    </span><span class="kw">fn </span>create_payment(
-        from: <span class="kw-2">&amp;</span>T::AccountId,
-        recipient: <span class="kw-2">&amp;</span>T::AccountId,
-        amount: BalanceOf&lt;T&gt;,
-        payment_state: PaymentState&lt;T&gt;,
-        incentive_percentage: Percent,
-        remark: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[u8]&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;PaymentDetail&lt;T&gt;, sp_runtime::DispatchError&gt; {
-        Payment::&lt;T&gt;::try_mutate(
-            from,
-            recipient,
-            |maybe_payment| -&gt; <span class="prelude-ty">Result</span>&lt;PaymentDetail&lt;T&gt;, sp_runtime::DispatchError&gt; {
-                <span class="comment">// only payment requests can be overwritten
-                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(payment) = maybe_payment {
-                    <span class="macro">ensure!</span>(
-                        payment.state == PaymentState::PaymentRequested,
-                        Error::&lt;T&gt;::PaymentAlreadyInProcess
-                    );
-                }
+	<span class="doccomment">/// The function will create a new payment. The fee and incentive
+	/// amounts will be calculated and the `PaymentDetail` will be added to
+	/// storage.
+	</span><span class="attr">#[require_transactional]
+	</span><span class="kw">fn </span>create_payment(
+		from: <span class="kw-2">&amp;</span>T::AccountId,
+		recipient: <span class="kw-2">&amp;</span>T::AccountId,
+		amount: BalanceOf&lt;T&gt;,
+		payment_state: PaymentState&lt;T&gt;,
+		incentive_percentage: Percent,
+		remark: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[u8]&gt;,
+	) -&gt; <span class="prelude-ty">Result</span>&lt;PaymentDetail&lt;T&gt;, sp_runtime::DispatchError&gt; {
+		Payment::&lt;T&gt;::try_mutate(
+			from,
+			recipient,
+			|maybe_payment| -&gt; <span class="prelude-ty">Result</span>&lt;PaymentDetail&lt;T&gt;, sp_runtime::DispatchError&gt; {
+				<span class="comment">// only payment requests can be overwritten
+				</span><span class="kw">if let </span><span class="prelude-val">Some</span>(payment) = maybe_payment {
+					<span class="macro">ensure!</span>(
+						payment.state == PaymentState::PaymentRequested,
+						Error::&lt;T&gt;::PaymentAlreadyInProcess
+					);
+				}
 
-                <span class="comment">// Calculate incentive amount - this is to insentivise the user to release
-                // the funds once a transaction has been completed
-                </span><span class="kw">let </span>incentive_amount = incentive_percentage.mul_floor(amount);
+				<span class="comment">// Calculate incentive amount - this is to insentivise the user to release
+				// the funds once a transaction has been completed
+				</span><span class="kw">let </span>incentive_amount = incentive_percentage.mul_floor(amount);
 
-                <span class="kw">let </span><span class="kw-2">mut </span>new_payment = PaymentDetail {
-                    amount,
-                    incentive_amount,
-                    state: payment_state,
-                    resolver_account: T::DisputeResolver::get_resolver_account(),
-                    fee_detail: <span class="prelude-val">None</span>,
-                };
-
-                <span class="comment">// Calculate fee amount - this will be implemented based on the custom
-                // implementation of the fee provider
-                </span><span class="kw">let </span>(fee_recipient, fee_percent) = T::FeeHandler::apply_fees(from, recipient, <span class="kw-2">&amp;</span>new_payment, remark);
-                <span class="kw">let </span>fee_amount = fee_percent.mul_floor(amount);
-                new_payment.fee_detail = <span class="prelude-val">Some</span>((fee_recipient, fee_amount));
-
-                <span class="kw-2">*</span>maybe_payment = <span class="prelude-val">Some</span>(new_payment.clone());
-
-                <span class="prelude-val">Ok</span>(new_payment)
-            },
-        )
-    }
-
-    <span class="doccomment">/// The function will reserve the fees+transfer amount from the `from`
-		/// account. After reserving the payment.amount will be transferred to
-		/// the recipient but will stay in Reserve state.
-		</span><span class="attr">#[require_transactional]
-		</span><span class="kw">fn </span>reserve_payment_amount(from: <span class="kw-2">&amp;</span>T::AccountId, to: <span class="kw-2">&amp;</span>T::AccountId, payment: PaymentDetail&lt;T&gt;) -&gt; DispatchResult {
-			<span class="kw">let </span>fee_amount = payment.fee_detail.map(|(<span class="kw">_</span>, f)| f).unwrap_or_else(|| <span class="number">0u32</span>.into());
-
-			<span class="kw">let </span>total_fee_amount = payment.incentive_amount.saturating_add(fee_amount);
-			<span class="kw">let </span>total_amount = total_fee_amount.saturating_add(payment.amount);
-
-			<span class="comment">// reserve the total amount from payment creator
-			</span>T::Currency::reserve( from, total_amount)<span class="question-mark">?</span>;
-			<span class="comment">// transfer payment amount to recipient -- keeping reserve status
-			</span>T::Currency::repatriate_reserved(from, to, payment.amount, BalanceStatus::Reserved)<span class="question-mark">?</span>;
-			<span class="prelude-val">Ok</span>(())
-		}
-
-		<span class="doccomment">/// This function allows the caller to settle the payment by specifying
-		/// a recipient_share this will unreserve the fee+incentive to sender
-		/// and unreserve transferred amount to recipient if the settlement is a
-		/// release (ie recipient_share=100), the fee is transferred to
-		/// fee_recipient For cancelling a payment, recipient_share = 0
-		/// For releasing a payment, recipient_share = 100
-		/// In other cases, the custom recipient_share can be specified
-		</span><span class="kw">fn </span>settle_payment(from: <span class="kw-2">&amp;</span>T::AccountId, to: <span class="kw-2">&amp;</span>T::AccountId, recipient_share: Percent) -&gt; DispatchResult {
-			Payment::&lt;T&gt;::try_mutate(from, to, |maybe_payment| -&gt; DispatchResult {
-				<span class="kw">let </span>payment = maybe_payment.take().ok_or(Error::&lt;T&gt;::InvalidPayment)<span class="question-mark">?</span>;
-
-				<span class="comment">// unreserve the incentive amount and fees from the owner account
-				</span><span class="kw">match </span>payment.fee_detail {
-					<span class="prelude-val">Some</span>((fee_recipient, fee_amount)) =&gt; {
-						T::Currency::unreserve(from, payment.incentive_amount + fee_amount);
-						<span class="comment">// transfer fee to marketplace if operation is not cancel
-						</span><span class="kw">if </span>recipient_share != Percent::zero() {
-							T::Currency::transfer(
-								from,           <span class="comment">// fee is paid by payment creator
-								</span><span class="kw-2">&amp;</span>fee_recipient, <span class="comment">// account of fee recipient
-								</span>fee_amount,     <span class="comment">// amount of fee
-                                </span>AllowDeath,
-							)<span class="question-mark">?</span>;
-						}
-					}
-					<span class="prelude-val">None </span>=&gt; {
-						T::Currency::unreserve(from, payment.incentive_amount);
-					}
+				<span class="kw">let </span><span class="kw-2">mut </span>new_payment = PaymentDetail {
+					amount,
+					incentive_amount,
+					state: payment_state,
+					resolver_account: T::DisputeResolver::get_resolver_account(),
+					fee_detail: <span class="prelude-val">None</span>,
 				};
 
-				<span class="comment">// Unreserve the transfer amount
-				</span>T::Currency::unreserve(to, payment.amount);
+				<span class="comment">// Calculate fee amount - this will be implemented based on the custom
+				// implementation of the fee provider
+				</span><span class="kw">let </span>(fee_recipient, fee_percent) =
+					T::FeeHandler::apply_fees(from, recipient, <span class="kw-2">&amp;</span>new_payment, remark);
+				<span class="kw">let </span>fee_amount = fee_percent.mul_floor(amount);
+				new_payment.fee_detail = <span class="prelude-val">Some</span>((fee_recipient, fee_amount));
 
-				<span class="kw">let </span>amount_to_recipient = recipient_share.mul_floor(payment.amount);
-				<span class="kw">let </span>amount_to_sender = payment.amount.saturating_sub(amount_to_recipient);
-				<span class="comment">// send share to recipient
-				</span>T::Currency::transfer(to, from, amount_to_sender,AllowDeath)<span class="question-mark">?</span>;
+				<span class="kw-2">*</span>maybe_payment = <span class="prelude-val">Some</span>(new_payment.clone());
 
-				<span class="prelude-val">Ok</span>(())
-			})<span class="question-mark">?</span>;
-			<span class="prelude-val">Ok</span>(())
-		}
-
-		<span class="kw">fn </span>get_payment_details(from: <span class="kw-2">&amp;</span>T::AccountId, to: <span class="kw-2">&amp;</span>T::AccountId) -&gt; <span class="prelude-ty">Option</span>&lt;PaymentDetail&lt;T&gt;&gt; {
-			Payment::&lt;T&gt;::get(from, to)
-		}
-
-	
-	
+				<span class="prelude-val">Ok</span>(new_payment)
+			},
+		)
 	}
 
+	<span class="doccomment">/// The function will reserve the fees+transfer amount from the `from`
+	/// account. After reserving the payment.amount will be transferred to
+	/// the recipient but will stay in Reserve state.
+	</span><span class="attr">#[require_transactional]
+	</span><span class="kw">fn </span>reserve_payment_amount(
+		from: <span class="kw-2">&amp;</span>T::AccountId,
+		to: <span class="kw-2">&amp;</span>T::AccountId,
+		payment: PaymentDetail&lt;T&gt;,
+	) -&gt; DispatchResult {
+		<span class="kw">let </span>fee_amount = payment.fee_detail.map(|(<span class="kw">_</span>, f)| f).unwrap_or_else(|| <span class="number">0u32</span>.into());
 
+		<span class="kw">let </span>total_fee_amount = payment.incentive_amount.saturating_add(fee_amount);
+		<span class="kw">let </span>total_amount = total_fee_amount.saturating_add(payment.amount);
+
+		<span class="comment">// reserve the total amount from payment creator
+		</span>T::Currency::reserve(from, total_amount)<span class="question-mark">?</span>;
+		<span class="comment">// transfer payment amount to recipient -- keeping reserve status
+		</span>T::Currency::repatriate_reserved(from, to, payment.amount, BalanceStatus::Reserved)<span class="question-mark">?</span>;
+		<span class="prelude-val">Ok</span>(())
+	}
+
+	<span class="doccomment">/// This function allows the caller to settle the payment by specifying
+	/// a recipient_share this will unreserve the fee+incentive to sender
+	/// and unreserve transferred amount to recipient if the settlement is a
+	/// release (ie recipient_share=100), the fee is transferred to
+	/// fee_recipient For cancelling a payment, recipient_share = 0
+	/// For releasing a payment, recipient_share = 100
+	/// In other cases, the custom recipient_share can be specified
+	</span><span class="kw">fn </span>settle_payment(
+		from: <span class="kw-2">&amp;</span>T::AccountId,
+		to: <span class="kw-2">&amp;</span>T::AccountId,
+		recipient_share: Percent,
+	) -&gt; DispatchResult {
+		Payment::&lt;T&gt;::try_mutate(from, to, |maybe_payment| -&gt; DispatchResult {
+			<span class="kw">let </span>payment = maybe_payment.take().ok_or(Error::&lt;T&gt;::InvalidPayment)<span class="question-mark">?</span>;
+
+			<span class="comment">// unreserve the incentive amount and fees from the owner account
+			</span><span class="kw">match </span>payment.fee_detail {
+				<span class="prelude-val">Some</span>((fee_recipient, fee_amount)) =&gt; {
+					T::Currency::unreserve(from, payment.incentive_amount + fee_amount);
+					<span class="comment">// transfer fee to marketplace if operation is not cancel
+					</span><span class="kw">if </span>recipient_share != Percent::zero() {
+						T::Currency::transfer(
+							from,           <span class="comment">// fee is paid by payment creator
+							</span><span class="kw-2">&amp;</span>fee_recipient, <span class="comment">// account of fee recipient
+							</span>fee_amount,     <span class="comment">// amount of fee
+							</span>AllowDeath,
+						)<span class="question-mark">?</span>;
+					}
+				},
+				<span class="prelude-val">None </span>=&gt; {
+					T::Currency::unreserve(from, payment.incentive_amount);
+				},
+			};
+
+			<span class="comment">// Unreserve the transfer amount
+			</span>T::Currency::unreserve(to, payment.amount);
+
+			<span class="kw">let </span>amount_to_recipient = recipient_share.mul_floor(payment.amount);
+			<span class="kw">let </span>amount_to_sender = payment.amount.saturating_sub(amount_to_recipient);
+			<span class="comment">// send share to recipient
+			</span>T::Currency::transfer(to, from, amount_to_sender, AllowDeath)<span class="question-mark">?</span>;
+
+			<span class="prelude-val">Ok</span>(())
+		})<span class="question-mark">?</span>;
+		<span class="prelude-val">Ok</span>(())
+	}
+
+	<span class="kw">fn </span>get_payment_details(from: <span class="kw-2">&amp;</span>T::AccountId, to: <span class="kw-2">&amp;</span>T::AccountId) -&gt; <span class="prelude-ty">Option</span>&lt;PaymentDetail&lt;T&gt;&gt; {
+		Payment::&lt;T&gt;::get(from, to)
+	}
+}
 
 <span class="kw">impl</span>&lt;T: Config&gt; Pallet&lt;T&gt; {
+	<span class="kw">pub fn </span>check_task(now: T::BlockNumber, remaining_weight: Weight) -&gt; Weight {
+		<span class="kw">const </span>MAX_TASKS_TO_PROCESS: usize = <span class="number">5</span>;
+		<span class="comment">// reduce the weight used to read the task list
+		</span>remaining_weight.saturating_sub(T::WeightInfo::remove_task());
+		<span class="kw">let </span>cancel_weight = T::WeightInfo::cancel();
 
-    <span class="kw">pub fn </span>check_task(now: T::BlockNumber, remaining_weight: Weight) -&gt; Weight {
-        <span class="kw">const </span>MAX_TASKS_TO_PROCESS: usize = <span class="number">5</span>;
-			<span class="comment">// reduce the weight used to read the task list
-			</span>remaining_weight.saturating_sub(T::WeightInfo::remove_task());
-			<span class="kw">let </span>cancel_weight = T::WeightInfo::cancel();
+		<span class="comment">// calculate count of tasks that can be processed with remaining weight
+		</span><span class="kw">let </span>possible_task_count: usize = remaining_weight
+			.ref_time()
+			.saturating_div(cancel_weight.ref_time())
+			.try_into()
+			.unwrap_or(MAX_TASKS_TO_PROCESS);
 
-			<span class="comment">// calculate count of tasks that can be processed with remaining weight
-			</span><span class="kw">let </span>possible_task_count: usize = remaining_weight
-				.ref_time()
-				.saturating_div(cancel_weight.ref_time())
-				.try_into()
-				.unwrap_or(MAX_TASKS_TO_PROCESS);
+		ScheduledTasks::&lt;T&gt;::mutate(|tasks| {
+			<span class="kw">let </span><span class="kw-2">mut </span>task_list: Vec&lt;<span class="kw">_</span>&gt; = tasks
+				.clone()
+				.into_iter()
+				.take(possible_task_count)
+				<span class="comment">// leave out tasks in the future
+				</span>.filter(|(<span class="kw">_</span>, ScheduledTask { when, task })| {
+					when &lt;= <span class="kw-2">&amp;</span>now &amp;&amp; <span class="macro">matches!</span>(task, Task::Cancel)
+				})
+				.collect();
 
-			ScheduledTasks::&lt;T&gt;::mutate(|tasks| {
-				<span class="kw">let </span><span class="kw-2">mut </span>task_list: Vec&lt;<span class="kw">_</span>&gt; = tasks
-					.clone()
-					.into_iter()
-					.take(possible_task_count)
-					<span class="comment">// leave out tasks in the future
-					</span>.filter(|(<span class="kw">_</span>, ScheduledTask { when, task })| when &lt;= <span class="kw-2">&amp;</span>now &amp;&amp; <span class="macro">matches!</span>(task, Task::Cancel))
-					.collect();
+			<span class="comment">// order by oldest task to process
+			</span>task_list.sort_by(|(<span class="kw">_</span>, t), (<span class="kw">_</span>, x)| x.when.cmp(<span class="kw-2">&amp;</span>t.when));
 
-				<span class="comment">// order by oldest task to process
-				</span>task_list.sort_by(|(<span class="kw">_</span>, t), (<span class="kw">_</span>, x)| x.when.cmp(<span class="kw-2">&amp;</span>t.when));
+			<span class="kw">while </span>!task_list.is_empty() &amp;&amp; remaining_weight &gt;= cancel_weight {
+				<span class="kw">if let </span><span class="prelude-val">Some</span>((account_pair, <span class="kw">_</span>)) = task_list.pop() {
+					remaining_weight.saturating_sub(cancel_weight);
+					<span class="comment">// remove the task form the tasks storage
+					</span>tasks.remove(<span class="kw-2">&amp;</span>account_pair);
 
-				<span class="kw">while </span>!task_list.is_empty() &amp;&amp; remaining_weight &gt;= cancel_weight {
-					<span class="kw">if let </span><span class="prelude-val">Some</span>((account_pair, <span class="kw">_</span>)) = task_list.pop() {
-						remaining_weight.saturating_sub(cancel_weight);
-						<span class="comment">// remove the task form the tasks storage
-						</span>tasks.remove(<span class="kw-2">&amp;</span>account_pair);
-
-						<span class="comment">// process the cancel payment
-						</span><span class="kw">if </span>&lt;<span class="self">Self </span><span class="kw">as </span>PaymentHandler&lt;T&gt;&gt;::settle_payment(
-							<span class="kw-2">&amp;</span>account_pair.<span class="number">0</span>,
-							<span class="kw-2">&amp;</span>account_pair.<span class="number">1</span>,
-							Percent::from_percent(<span class="number">0</span>),
-						)
-						.is_err()
-						{
-							<span class="comment">// log the payment refund failure
-							</span><span class="macro">log::warn!</span>(
-								target: <span class="string">&quot;runtime::payments&quot;</span>,
-								<span class="string">&quot;Warning: Unable to process payment refund!&quot;
-							</span>);
-						} <span class="kw">else </span>{
-							<span class="comment">// emit the cancel event if the refund was successful
-							</span><span class="self">Self</span>::deposit_event(Event::PaymentCancelled {
-								from: account_pair.<span class="number">0</span>,
-								to: account_pair.<span class="number">1</span>,
-							});
-						}
+					<span class="comment">// process the cancel payment
+					</span><span class="kw">if </span>&lt;<span class="self">Self </span><span class="kw">as </span>PaymentHandler&lt;T&gt;&gt;::settle_payment(
+						<span class="kw-2">&amp;</span>account_pair.<span class="number">0</span>,
+						<span class="kw-2">&amp;</span>account_pair.<span class="number">1</span>,
+						Percent::from_percent(<span class="number">0</span>),
+					)
+					.is_err()
+					{
+						<span class="comment">// log the payment refund failure
+						</span><span class="macro">log::warn!</span>(
+							target: <span class="string">&quot;runtime::payments&quot;</span>,
+							<span class="string">&quot;Warning: Unable to process payment refund!&quot;
+						</span>);
+					} <span class="kw">else </span>{
+						<span class="comment">// emit the cancel event if the refund was successful
+						</span><span class="self">Self</span>::deposit_event(Event::PaymentCancelled {
+							from: account_pair.<span class="number">0</span>,
+							to: account_pair.<span class="number">1</span>,
+						});
 					}
 				}
-			});
-			remaining_weight
-    }
-}</code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_payment" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f3126500f 2023-02-02)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+			}
+		});
+		remaining_weight
+	}
+}
+</code></pre></div>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_payment" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f77bfb733 2023-03-01)" data-search-js="search-2cde8914278f97ed.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>

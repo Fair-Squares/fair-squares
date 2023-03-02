@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/onboarding/src/functions.rs`."><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-505eba68f310f6bf.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-f501212b8b071243.css"><link rel="stylesheet" disabled href="../../static.files/dark-e92fc12c34ff89d3.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c8c85693c8a4f9db.css"><script id="default-settings" ></script><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-364b95f387bc3166.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_onboarding/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/onboarding/src/functions.rs`."><title>functions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e5308b57e507db71.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-d59023bfa12059d2.css"><link rel="stylesheet" disabled href="../../static.files/dark-1ca41bb1e10af075.css"><link rel="stylesheet" disabled href="../../static.files/ayu-18b4181a2f3fb862.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_onboarding/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -196,7 +196,33 @@
 <a href="#196" id="196">196</a>
 <a href="#197" id="197">197</a>
 <a href="#198" id="198">198</a>
+<a href="#199" id="199">199</a>
+<a href="#200" id="200">200</a>
+<a href="#201" id="201">201</a>
+<a href="#202" id="202">202</a>
+<a href="#203" id="203">203</a>
+<a href="#204" id="204">204</a>
+<a href="#205" id="205">205</a>
+<a href="#206" id="206">206</a>
+<a href="#207" id="207">207</a>
+<a href="#208" id="208">208</a>
+<a href="#209" id="209">209</a>
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
 </pre><pre class="rust"><code><span class="kw">use super</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::Roles::Hash;
 
 <span class="kw">pub use </span>codec::HasCompact;
 <span class="kw">pub use </span>frame_support::{
@@ -214,7 +240,7 @@
 
 <span class="kw">pub use </span>sp_runtime::{
 	traits::{AccountIdConversion, AtLeast32BitUnsigned, Saturating, StaticLookup, Zero},
-	DispatchError,
+	DispatchError, Percent,
 };
 <span class="kw">pub use </span>sp_std::boxed::Box;
 
@@ -343,16 +369,6 @@
 		</span>}
 	}
 
-	<span class="comment">// Conversion of u64 to BalanxceOf&lt;T&gt;
-	</span><span class="kw">pub fn </span>u64_to_balance_option(input: u64) -&gt; <span class="prelude-ty">Option</span>&lt;BalanceOf&lt;T&gt;&gt; {
-		input.try_into().ok()
-	}
-
-	<span class="comment">// Conversion of BalanceOf&lt;T&gt; to u32
-	</span><span class="kw">pub fn </span>balance_to_u64_option(input: BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;u64&gt; {
-		input.try_into().ok()
-	}
-
 	<span class="kw">pub fn </span>account_id() -&gt; T::AccountId {
 		T::FeesAccount::get().into_account_truncating()
 	}
@@ -393,6 +409,40 @@
 	)&gt; {
 		<span class="self">Self</span>::get_houses_by_status(types::AssetStatus::FINALISING)
 	}
+
+	<span class="kw">pub fn </span>do_submit_proposal(
+		origin: OriginFor&lt;T&gt;,
+		collection: NftCollectionOf,
+		item_id: T::NftItemId,
+	) {
+		<span class="comment">//Change asset status to REVIEWING
+		</span><span class="self">Self</span>::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING).ok();
+		<span class="comment">//Send Proposal struct to voting pallet
+		//get the needed call and convert them to pallet_voting format
+		</span><span class="kw">let </span>collection_id: T::NftCollectionId = collection.clone().value().into();
+		<span class="kw">let </span>out_call = Vcalls::&lt;T&gt;::get(collection_id, item_id).unwrap();
+
+		<span class="kw">let </span>w_status0 =
+			Box::new(<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.democracy_status).unwrap());
+		<span class="kw">let </span>w_status1 =
+			Box::new(<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.after_vote_status).unwrap());
+
+		<span class="kw">let </span>w_r_destroy =
+			Box::new(<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.reject_destroy).unwrap());
+		<span class="kw">let </span>w_r_edit =
+			Box::new(<span class="self">Self</span>::get_formatted_collective_proposal(<span class="kw-2">*</span>out_call.reject_edit).unwrap());
+
+		<span class="kw">let </span>proposal_hash = T::Hashing::hash_of(<span class="kw-2">&amp;</span>w_status1);
+		Houses::&lt;T&gt;::mutate_exists(collection_id, item_id, |val| {
+			<span class="kw">let </span><span class="kw-2">mut </span>v0 = val.clone().unwrap();
+			v0.proposal_hash = proposal_hash;
+			<span class="kw-2">*</span>val = <span class="prelude-val">Some</span>(v0)
+		});
+
+		<span class="comment">//Send Calls struct to voting pallet
+		</span>Votes::Pallet::&lt;T&gt;::submit_proposal(origin, w_status1, w_status0, w_r_destroy, w_r_edit)
+			.ok();
+	}
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_onboarding" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f3126500f 2023-02-02)" data-search-js="search-98d53477a794af0b.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_onboarding" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f77bfb733 2023-03-01)" data-search-js="search-2cde8914278f97ed.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
