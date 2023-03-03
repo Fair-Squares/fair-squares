@@ -33,7 +33,8 @@ fn validate_transaction_asset_no_notary_role_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -114,7 +115,8 @@ fn validate_transaction_asset_no_finalising_status_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -169,7 +171,8 @@ fn validate_transaction_asset_should_succeed() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -239,7 +242,8 @@ fn reject_transaction_asset_no_notary_role_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -320,7 +324,8 @@ fn reject_transaction_asset_no_finalising_status_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -384,7 +389,8 @@ fn reject_transaction_asset_should_succeed() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -477,7 +483,8 @@ fn cancel_transaction_asset_no_seller_role_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -544,7 +551,8 @@ fn cancel_transaction_asset_no_finalised_status_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -612,7 +620,8 @@ fn cancel_transaction_asset_should_succeed() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();

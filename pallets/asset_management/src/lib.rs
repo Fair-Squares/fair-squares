@@ -795,6 +795,10 @@ pub mod pallet {
 			let vacancy = Self::fetch_house(collection,item).max_tenants;
 			ensure!(vacancy > 0, Error::<T>::MaximumNumberOfTenantsReached);
 
+			// Check for awaiting guaranty payment requests
+			let requests = Payment::Payment::<T>::iter().count();
+			ensure!(vacancy > requests as u8, Error::<T>::MaximumNumberOfTenantsReached);
+			
 			//Launch payment request
 			Self::guaranty_payment(origin, from.clone(), collection, item).ok();
 			let payment = Self::guaranty(from.clone(), asset_account).unwrap();

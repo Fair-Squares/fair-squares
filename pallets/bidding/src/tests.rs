@@ -429,7 +429,8 @@ fn process_onboarded_assets_not_enough_fund_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -513,7 +514,8 @@ fn process_onboarded_assets_not_enough_fund_among_investors_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -599,7 +601,8 @@ fn process_onboarded_assets_cannot_assemble_investor_should_fail() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -683,7 +686,8 @@ fn process_onboarded_assets_should_succeed() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
@@ -840,7 +844,8 @@ fn process_finalised_assets_should_succeed() {
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
-			false
+			false,
+			3
 		));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
