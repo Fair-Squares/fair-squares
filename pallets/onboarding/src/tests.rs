@@ -19,6 +19,8 @@ pub fn prep_roles() {
 	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
 }
 
+pub const max_tenants:u8 = 3;
+
 #[test]
 fn create_proposal() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -40,7 +42,8 @@ fn create_proposal() {
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
-			false
+			false,
+			max_tenants
 		));
 
 		let coll_id = NftColl::OFFICESTEST.value();
@@ -121,7 +124,8 @@ fn create_proposal_2() {
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
-			true
+			true,
+			max_tenants
 		));
 
 		let coll_id = NftColl::OFFICESTEST.value();
@@ -191,7 +195,8 @@ fn proposal_rejections() {
 			NftColl::OFFICESTEST,
 			Some(price0),
 			metadata1,
-			true
+			true,
+			max_tenants
 		));
 		let coll_id = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
@@ -207,7 +212,8 @@ fn proposal_rejections() {
 			NftColl::OFFICESTEST,
 			Some(price1),
 			metadata2,
-			true
+			true,
+			max_tenants
 		));
 		let item_id1 = pallet_nft::ItemsCount::<Test>::get()[coll_id as usize] - 1;
 		let status_1: AssetStatus = Houses::<Test>::get(coll_id, item_id0).unwrap().status;
@@ -294,7 +300,8 @@ fn get_onboarded_houses_no_onboarded_houses() {
 			NftColl::OFFICESTEST,
 			Some(100_000_000),
 			metadata1,
-			false
+			false,
+			max_tenants
 		));
 
 		let onboarded_houses = OnboardingModule::get_onboarded_houses();
@@ -325,7 +332,8 @@ fn get_onboarded_houses_with_onboarded_houses() {
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
-			false
+			false,
+			max_tenants
 		));
 
 		let collection_id = NftColl::OFFICESTEST.value();
@@ -346,7 +354,8 @@ fn get_onboarded_houses_with_onboarded_houses() {
 			NftColl::OFFICESTEST,
 			Some(price2),
 			metadata2,
-			false
+			false,
+			max_tenants
 		));
 
 		// we check that the onboarded house is correctly retrieved
@@ -381,7 +390,8 @@ fn get_finalised_houses_no_finalised_houses() {
 			NftColl::OFFICESTEST,
 			Some(100_000_000),
 			metadata1,
-			false
+			false,
+			max_tenants
 		));
 
 		let finalised_houses = OnboardingModule::get_finalised_houses();
@@ -412,7 +422,8 @@ fn get_finalised_houses_with_finalised_houses() {
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
-			false
+			false,
+			max_tenants
 		));
 
 		let collection_id = NftColl::OFFICESTEST.value();
@@ -433,7 +444,8 @@ fn get_finalised_houses_with_finalised_houses() {
 			NftColl::OFFICESTEST,
 			Some(price2),
 			metadata2,
-			false
+			false,
+			max_tenants
 		));
 
 		// we check that the finalised house is correctly retrieved
@@ -468,7 +480,8 @@ fn get_finalising_houses_no_finalising_houses() {
 			NftColl::OFFICESTEST,
 			Some(100_000_000),
 			metadata1,
-			false
+			false,
+			max_tenants
 		));
 
 		let finalising_houses = OnboardingModule::get_finalising_houses();
@@ -499,7 +512,8 @@ fn get_finalising_houses_with_finalising_houses() {
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
-			false
+			false,
+			max_tenants
 		));
 
 		let collection_id = NftColl::OFFICESTEST.value();
@@ -520,7 +534,8 @@ fn get_finalising_houses_with_finalising_houses() {
 			NftColl::OFFICESTEST,
 			Some(price2),
 			metadata2,
-			false
+			false,
+			max_tenants
 		));
 
 		// we check that the finalising house is correctly retrieved

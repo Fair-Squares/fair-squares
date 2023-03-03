@@ -60,7 +60,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		NftColl::OFFICESTEST,
 		Some(price1),
 		metadata1.clone(),
-		true
+		true,
+		3
 	));
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
@@ -68,7 +69,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		NftColl::APPARTMENTSTEST,
 		Some(price2),
 		metadata1,
-		true
+		true,
+		3
 	));
 
 	//Get the proposal hash

@@ -63,7 +63,8 @@ pub fn prep_test(
 		NftColl::OFFICESTEST,
 		Some(price1),
 		metadata1,
-		false
+		false,
+		3
 	));
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
@@ -71,7 +72,8 @@ pub fn prep_test(
 		NftColl::APPARTMENTSTEST,
 		Some(price2),
 		metadata2,
-		false
+		false,
+		3
 	));
 }
 

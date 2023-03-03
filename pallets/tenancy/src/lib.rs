@@ -180,6 +180,11 @@ pub mod pallet {
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 			let virtual_account = ownership.unwrap().virtual_account;
 
+			// Check vacancy state of the asset
+			let vacancy = Assets::Pallet::<T>::fetch_house(collection_id,asset_id).max_tenants;
+			ensure!(vacancy > 0, Assets::Error::<T>::MaximumNumberOfTenantsReached);
+
+
 			if !Tenants::<T>::contains_key(caller.clone()){
 				RegisteredTenant::<T>::new(caller.clone(), info.clone(), Some(virtual_account.clone())).ok();
 			}else{

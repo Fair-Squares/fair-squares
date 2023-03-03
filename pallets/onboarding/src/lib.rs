@@ -448,6 +448,7 @@ pub mod pallet {
 			price: Option<BalanceOf<T>>,
 			metadata: Nft::BoundedVecOfUnq<T>,
 			submit: bool,
+			max_tenants:u8,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
 			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(), Error::<T>::ReservedToSeller);
@@ -462,7 +463,7 @@ pub mod pallet {
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
 
 			<T as Config>::Currency::reserve(&caller, balance0).ok();
-			Self::create_asset(origin.clone(), collection, metadata, price, item_id).ok();
+			Self::create_asset(origin.clone(), collection, metadata, price, item_id,max_tenants).ok();
 
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 
