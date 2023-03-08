@@ -343,21 +343,20 @@ pub mod pallet {
 				<T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id.clone()));
 			let rep_infos = Roles::Pallet::<T>::reps(caller.clone()).unwrap();
 			
+			//Caller is not already in Representative waiting list
+			ensure!(
+				!Roles::RepApprovalList::<T>::contains_key(&account_id),
+				Error::<T>::ExistingPendingRequest
+			);
+
 			//Caller is a registered and activated Representative
 			ensure!(
 				Roles::RepresentativeLog::<T>::contains_key(&account_id),
 				Error::<T>::NotAnActiveRepresentative
 			);
 			ensure!(rep_infos.activated,Error::<T>::NotAnActiveRepresentative);
-			//Caller is not already in Representative waiting list
-			ensure!(
-				!Roles::RepApprovalList::<T>::contains_key(&account_id),
-				Error::<T>::ExistingPendingRequest
-			);
+			
 			//Send request
-			
-
-			
 			Roles::Representative::<T>::new(representative).ok();
 
 			Ok(().into())
