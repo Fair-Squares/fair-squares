@@ -226,7 +226,7 @@ impl<T: Config> Pallet<T> {
 		let proposal_hash = T::Hashing::hash_of(&call_dispatch);
 		let proposal_encoded: Vec<u8> = call_dispatch.encode();
 		Dem::Pallet::<T>::note_preimage(origin, proposal_encoded).ok();
-		
+
 		proposal_hash
 	}
 
