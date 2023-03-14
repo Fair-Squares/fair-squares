@@ -62,6 +62,34 @@ pub fn get_endowed_accounts_with_balance() -> Vec<(AccountId, u128)> {
 		get_account_id_from_seed::<sr25519::Public>("Obito"),
 	];
 
+
+	let accounts_with_balance: Vec<(AccountId, u128)> =
+		accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
+	let json_data = &include_bytes!("../../seed/balances.json")[..];
+	let additional_accounts_with_balance: Vec<(AccountId, u128)> =
+		serde_json::from_slice(json_data).unwrap();
+
+	let mut accounts = additional_accounts_with_balance.clone();
+
+	accounts_with_balance.iter().for_each(|tup1| {
+		for tup2 in additional_accounts_with_balance.iter() {
+			if tup1.0 == tup2.0 {
+				return
+			}
+		}
+		accounts.push(tup1.to_owned());
+	});
+
+	accounts
+}
+
+pub fn team_accounts_with_balance() -> Vec<(AccountId, u128)> {
+	let accounts: Vec<AccountId> = vec![
+		// get_account_id_from_seed::<sr25519::Public>("Alice"),
+		// get_account_id_from_seed::<sr25519::Public>("Bob"),
+		// get_account_id_from_seed::<sr25519::Public>("Charlie"),
+	];
+
 	let accounts_with_balance: Vec<(AccountId, u128)> =
 		accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
 	let json_data = &include_bytes!("../../seed/balances.json")[..];
@@ -160,6 +188,44 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	))
 }
 
+
+pub fn square_one_config() -> Result<ChainSpec, String> {
+	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
+
+	Ok(ChainSpec::from_genesis(
+		// Name
+		"Square One",
+		// ID
+		"square_one",
+		ChainType::Live,
+		move || {
+			square_one_genesis(
+				wasm_binary,
+				// Initial PoA authorities
+				//TODO: Add the real authorities
+				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
+				// Sudo account
+				//TODO: Add the real sudo account 
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				// Pre-funded accounts
+				team_accounts_with_balance(),
+				true,
+			)
+		},
+		// Bootnodes
+		vec![],
+		// Telemetry
+		None,
+		// Protocol ID
+		None,
+		None,
+		// Properties
+		Some(fs_properties()),
+		// Extensions
+		None,
+	))
+}
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
 	wasm_binary: &[u8],
@@ -209,6 +275,60 @@ fn testnet_genesis(
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Bob"),
 				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			],
+			phantom: Default::default(),
+		},
+		assets: Default::default(),
+	}
+}
+
+fn square_one_genesis(
+	wasm_binary: &[u8],
+	initial_authorities: Vec<(AuraId, GrandpaId)>,
+	root_key: AccountId,
+	endowed_accounts: Vec<(AccountId, u128)>,
+	_enable_println: bool,
+) -> GenesisConfig {
+	GenesisConfig {
+		system: SystemConfig {
+			// Add Wasm runtime to storage.
+			code: wasm_binary.to_vec(),
+		},
+		balances: BalancesConfig {
+			// Configure endowed accounts with initial balance of 1 << 60.
+			balances: endowed_accounts,
+		},
+		aura: AuraConfig {
+			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
+		},
+		grandpa: GrandpaConfig {
+			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
+		},
+		sudo: SudoConfig {
+			// Assign network admin rights.
+			key: Some(root_key.clone()),
+		},
+		transaction_payment: Default::default(),
+
+		role_module: RoleModuleConfig {
+			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			representatives: vec![
+			],
+		},
+		nft_module: NftModuleConfig {
+			owner: Some(root_key),
+			collection_id: Some(1),
+			created_by: Some(pallet_roles::Accounts::SERVICER),
+			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
+		},
+		democracy: Default::default(),
+		treasury: Default::default(),
+		council: CouncilConfig {
+			members: vec![
+				//TODO TEAM
+				// get_account_id_from_seed::<sr25519::Public>("Alice"),
+				// get_account_id_from_seed::<sr25519::Public>("Bob"),
+				// get_account_id_from_seed::<sr25519::Public>("Charlie"),
 			],
 			phantom: Default::default(),
 		},
