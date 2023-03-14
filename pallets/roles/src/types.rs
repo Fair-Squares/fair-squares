@@ -26,21 +26,16 @@ pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
 pub type Idle<T> = (Vec<HouseSeller<T>>, Vec<Servicer<T>>);
 
 ///This enum contains the roles selectable at account creation
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum Accounts {
 	INVESTOR,
+	#[default]
 	SELLER,
 	TENANT,
 	SERVICER,
 	NOTARY,
 	REPRESENTATIVE,
-}
-
-impl Default for Accounts {
-	fn default() -> Self {
-		Accounts::SELLER
-	}
 }
 
 //-------------------------------------------------------------------------------------

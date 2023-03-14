@@ -138,9 +138,9 @@ pub mod pallet {
 			let tenant = Roles::Pallet::<T>::tenants(tenant_account.clone()).unwrap();
 
 			//Check that the Tenant is connected to the asset
-			ensure!(!tenant.asset_account.clone().is_none(), Error::<T>::TenantAssetNotLinked);
+			ensure!(tenant.asset_account.is_some(), Error::<T>::TenantAssetNotLinked);
 			//Check that the remaining rent-to-pay is greater than 1
-			ensure!(tenant.remaining_payments.clone() > 0, Error::<T>::NoRentToPay);
+			ensure!(tenant.remaining_payments > 0, Error::<T>::NoRentToPay);
 			//Pay the rent
 			Self::rent_helper(tenant_account.clone()).ok();
 

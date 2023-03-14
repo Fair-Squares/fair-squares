@@ -61,8 +61,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: TemplateModule Something (r:0 w:1)
 	/// The range of component `s` is `[0, 100]`.
 	fn do_something(_s: u32, ) -> Weight {
-		Weight::from_ref_time(15_009_000 as u64)
-			.saturating_add(T::DbWeight::get().writes(1 as u64))
+		Weight::from_ref_time(15_009_000_u64)
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 }
 
@@ -71,7 +71,7 @@ impl WeightInfo for () {
 	// Storage: TemplateModule Something (r:0 w:1)
 	/// The range of component `s` is `[0, 100]`.
 	fn do_something(_s: u32, ) -> Weight {
-		Weight::from_ref_time(15_009_000 as u64)
-			.saturating_add(RocksDbWeight::get().writes(1 as u64))
+		Weight::from_ref_time(15_009_000_u64)
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 }
