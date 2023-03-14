@@ -30,11 +30,11 @@
 //!   - Admit a Tenant for a given asset.
 //!   - Evict  a Tenant from a given asset.
 //!   The Representative has to submit a judgement about the tenant profile. This judgement
-//!	  will be considered by the owners before voting.
-//!	  Representatives receive a judgement fee from the aspiring tenant.
-//!	  A positive result of the referendum will send a guaranty_deposit payment request to the
+//!   will be considered by the owners before voting.
+//!   Representatives receive a judgement fee from the aspiring tenant.
+//!   A positive result of the referendum will send a guaranty_deposit payment request to the
 //! tenant.   When the tenant finally pays the guaranty_deposit,his account is connected to the
-//! asset through `link_tenant_to_asset` 	  and this marks the start of his contract with the owners.
+//!   asset through `link_tenant_to_asset` and this marks the start of his contract with the owners.
 //!
 //! * `link_tenant_to_asset` - Call used as a proposal to link an accepted tenant with an existing
 //!   asset.

@@ -68,6 +68,11 @@ pub mod pallet {
 		type NewAssetScanPeriod: Get<Self::BlockNumber>;
 	}
 
+	pub type HousingFundAccount<T> = Housing_Fund::AccountIdOf<T>;
+	pub type HousingFundBalance<T> = Housing_Fund::BalanceOf<T>;
+	pub type EligibleContribution<T> = (HousingFundAccount<T>, HousingFundBalance<T>, HousingFundBalance<T>);
+	pub type UserBalance<T> = (HousingFundAccount<T>, HousingFundBalance<T>);
+
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::without_storage_info]
@@ -80,29 +85,29 @@ pub mod pallet {
 		HousingFundNotEnough(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf<T>,
+			HousingFundBalance<T>,
 			BlockNumberOf<T>,
 		),
 		/// Bidding on the house is successful
 		HouseBiddingSucceeded(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf<T>,
+			HousingFundBalance<T>,
 			BlockNumberOf<T>,
 		),
 		/// Bidding on the house failed
 		HouseBiddingFailed(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf<T>,
+			HousingFundBalance<T>,
 			BlockNumberOf<T>,
-			Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)>,
+			Vec<UserBalance<T>>,
 		),
 		/// Failed to assemble a list of investors for an onboarded asset
 		FailedToAssembleInvestors(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf<T>,
+			HousingFundBalance<T>,
 			BlockNumberOf<T>,
 		),
 		/// No new onboarded houses found
@@ -111,7 +116,7 @@ pub mod pallet {
 		NotEnoughAmongEligibleInvestors(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf<T>,
+			HousingFundBalance<T>,
 			BlockNumberOf<T>,
 		),
 		/// No new finalised houses found
@@ -123,14 +128,14 @@ pub mod pallet {
 		SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
 
 		/// Processing an asset
-		ProcessingAsset(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf<T>),
+		ProcessingAsset(T::NftCollectionId, T::NftItemId, HousingFundBalance<T>),
 
 		/// Potential owners list successfully created
 		InvestorListCreationSuccessful(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf<T>,
-			Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)>,
+			HousingFundBalance<T>,
+			Vec<UserBalance<T>>,
 		),
 	}
 
@@ -333,9 +338,9 @@ impl<T: Config> Pallet<T> {
 	/// - no less than T::MinimumSharePerInvestor share per investor
 	/// The total contribution from the investor list should be equal to the asset's price
 	fn create_investor_list(
-		amount: Housing_Fund::BalanceOf<T>,
-	) -> Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> {
-		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> =
+		amount: HousingFundBalance<T>,
+	) -> Vec<UserBalance<T>> {
+		let mut result: Vec<UserBalance<T>> =
 			Vec::new();
 		let percent = Self::u64_to_balance_option(100).unwrap();
 		// We get contributions following the min-max rules
@@ -384,16 +389,12 @@ impl<T: Config> Pallet<T> {
 
 	/// Get a list of tuple of account id and their contribution set at the same amount
 	fn get_common_investor_distribution(
-		amount: Housing_Fund::BalanceOf<T>,
-		common_share: Housing_Fund::BalanceOf<T>,
-		eligible_contributions: Vec<(
-			Housing_Fund::AccountIdOf<T>,
-			Housing_Fund::BalanceOf<T>,
-			Housing_Fund::BalanceOf<T>,
-		)>,
-	) -> Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> {
+		amount: HousingFundBalance<T>,
+		common_share: HousingFundBalance<T>,
+		eligible_contributions: Vec<EligibleContribution<T>>,
+	) -> Vec<UserBalance<T>> {
 		let percent = Self::u64_to_balance_option(100).unwrap();
-		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> =
+		let mut result: Vec<UserBalance<T>> =
 			Vec::new();
 
 		for item in eligible_contributions.iter() {
@@ -406,17 +407,17 @@ impl<T: Config> Pallet<T> {
 	/// Get a list of tuple of account id and their contribution with different values
 	/// The contribubtions follow the min-max rule of the amount
 	fn get_investor_distribution(
-		amount: Housing_Fund::BalanceOf<T>,
+		amount: HousingFundBalance<T>,
 		eligible_contributions: Vec<(
-			Housing_Fund::AccountIdOf<T>,
-			Housing_Fund::BalanceOf<T>,
-			Housing_Fund::BalanceOf<T>,
+			HousingFundAccount<T>,
+			HousingFundBalance<T>,
+			HousingFundBalance<T>,
 		)>,
-	) -> Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> {
+	) -> Vec<UserBalance<T>> {
 		let percent = Self::u64_to_balance_option(100).unwrap();
 		let zero_percent = Self::u64_to_balance_option(0).unwrap();
-		let mut actual_percentage: Housing_Fund::BalanceOf<T> = percent;
-		let mut result: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>)> =
+		let mut actual_percentage: HousingFundBalance<T> = percent;
+		let mut result: Vec<UserBalance<T>> =
 			Vec::new();
 		let mut count: u64 = 1;
 		let contributions_length: u64 = eligible_contributions.len() as u64;
@@ -476,24 +477,24 @@ impl<T: Config> Pallet<T> {
 	/// - a list of tuples (AccountId, Share, Amount) following the min-max share rule
 	/// - the total amount of the list
 	fn get_eligible_investors_contribution(
-		amount: Housing_Fund::BalanceOf<T>,
+		amount: HousingFundBalance<T>,
 	) -> (
-		Housing_Fund::BalanceOf<T>,
-		Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>)>,
+		HousingFundBalance<T>,
+		Vec<(HousingFundAccount<T>, HousingFundBalance<T>, HousingFundBalance<T>)>,
 	) {
 		let mut result: Vec<(
-			Housing_Fund::AccountIdOf<T>,
-			Housing_Fund::BalanceOf<T>,
-			Housing_Fund::BalanceOf<T>,
+			HousingFundAccount<T>,
+			HousingFundBalance<T>,
+			HousingFundBalance<T>,
 		)> = Vec::new();
 		let contributions = Housing_Fund::Pallet::<T>::get_contributions();
-		let mut ordered_account_id_list: Vec<Housing_Fund::AccountIdOf<T>> = Vec::new();
+		let mut ordered_account_id_list: Vec<HousingFundAccount<T>> = Vec::new();
 		let mut ordered_contributions: Vec<(
-			Housing_Fund::AccountIdOf<T>,
+			HousingFundAccount<T>,
 			Housing_Fund::Contribution<T>,
 		)> = Vec::new();
 		let zero_percent = Self::u64_to_balance_option(0).unwrap();
-		let mut total_share: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
+		let mut total_share: HousingFundBalance<T> = Self::u64_to_balance_option(0).unwrap();
 
 		// the contributions are ordered by block number ascending order
 		for _ in 0..contributions.len() {
@@ -521,11 +522,11 @@ impl<T: Config> Pallet<T> {
 
 	/// Get the oldest contribution which accountId is not present in the ordered_list
 	fn get_oldest_contribution(
-		ordered_list: Vec<Housing_Fund::AccountIdOf<T>>,
-		contributions: Vec<(Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>)>,
-	) -> (Housing_Fund::AccountIdOf<T>, Housing_Fund::Contribution<T>) {
+		ordered_list: Vec<HousingFundAccount<T>>,
+		contributions: Vec<(HousingFundAccount<T>, Housing_Fund::Contribution<T>)>,
+	) -> (HousingFundAccount<T>, Housing_Fund::Contribution<T>) {
 		let mut contributions_cut: Vec<(
-			Housing_Fund::AccountIdOf<T>,
+			HousingFundAccount<T>,
 			Housing_Fund::Contribution<T>,
 		)> = Vec::new();
 
@@ -549,11 +550,11 @@ impl<T: Config> Pallet<T> {
 
 	// Get the share of the house price from a given contribution
 	fn get_investor_share(
-		amount: Housing_Fund::BalanceOf<T>,
+		amount: HousingFundBalance<T>,
 		contribution: Housing_Fund::Contribution<T>,
-	) -> (Housing_Fund::BalanceOf<T>, Housing_Fund::BalanceOf<T>) {
-		let mut share: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
-		let mut value: Housing_Fund::BalanceOf<T> = Self::u64_to_balance_option(0).unwrap();
+	) -> (HousingFundBalance<T>, HousingFundBalance<T>) {
+		let mut share: HousingFundBalance<T> = Self::u64_to_balance_option(0).unwrap();
+		let mut value: HousingFundBalance<T> = Self::u64_to_balance_option(0).unwrap();
 		// If the available amount is greater than the maximum amount, then the maximum amount is
 		// returned
 		if contribution.available_balance >=
@@ -576,20 +577,20 @@ impl<T: Config> Pallet<T> {
 	}
 
 	fn get_amount_percentage(
-		amount: Housing_Fund::BalanceOf<T>,
+		amount: HousingFundBalance<T>,
 		percentage: u64,
-	) -> Housing_Fund::BalanceOf<T> {
+	) -> HousingFundBalance<T> {
 		amount * Self::u64_to_balance_option(percentage).unwrap() /
 			Self::u64_to_balance_option(100).unwrap()
 	}
 
-	fn convert_balance(amount: Onboarding::BalanceOf<T>) -> Option<Housing_Fund::BalanceOf<T>> {
+	fn convert_balance(amount: Onboarding::BalanceOf<T>) -> Option<HousingFundBalance<T>> {
 		let value: Option<u128> = amount.try_into().ok();
-		let result: Option<Housing_Fund::BalanceOf<T>> = value.unwrap().try_into().ok();
+		let result: Option<HousingFundBalance<T>> = value.unwrap().try_into().ok();
 		result
 	}
 
-	pub fn u64_to_balance_option(input: u64) -> Option<Housing_Fund::BalanceOf<T>> {
+	pub fn u64_to_balance_option(input: u64) -> Option<HousingFundBalance<T>> {
 		input.try_into().ok()
 	}
 }
