@@ -96,7 +96,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	fn request_payment() -> Weight {
 		Weight::from_ref_time(17_000_000)
 			.saturating_add(T::DbWeight::get().reads(2 as u64))
-			.saturating_add(T::DbWeight::get().writes(1 as u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 	// Storage: Payment Payment (r:1 w:1)
 	// Storage: Assets Accounts (r:2 w:2)
@@ -109,8 +109,8 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Payment ScheduledTasks (r:1 w:1)
 	fn remove_task() -> Weight {
 		Weight::from_ref_time(4_000_000)
-			.saturating_add(T::DbWeight::get().reads(1 as u64))
-			.saturating_add(T::DbWeight::get().writes(1 as u64))
+			.saturating_add(T::DbWeight::get().reads(1_u64))
+			.saturating_add(T::DbWeight::get().writes(1_u64))
 	}
 }
 
@@ -166,7 +166,7 @@ impl WeightInfo for () {
 	fn request_payment() -> Weight {
 		Weight::from_ref_time(17_000_000)
 			.saturating_add(RocksDbWeight::get().reads(2 as u64))
-			.saturating_add(RocksDbWeight::get().writes(1 as u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 	// Storage: Payment Payment (r:1 w:1)
 	// Storage: Assets Accounts (r:2 w:2)
@@ -179,7 +179,7 @@ impl WeightInfo for () {
 	// Storage: Payment ScheduledTasks (r:1 w:1)
 	fn remove_task() -> Weight {
 		Weight::from_ref_time(4_000_000)
-			.saturating_add(RocksDbWeight::get().reads(1 as u64))
-			.saturating_add(RocksDbWeight::get().writes(1 as u64))
+			.saturating_add(RocksDbWeight::get().reads(1_u64))
+			.saturating_add(RocksDbWeight::get().writes(1_u64))
 	}
 }

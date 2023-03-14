@@ -138,9 +138,9 @@ pub mod pallet {
 			let tenant = Roles::Pallet::<T>::tenants(tenant_account.clone()).unwrap();
 
 			//Check that the Tenant is connected to the asset
-			ensure!(!tenant.asset_account.clone().is_none(), Error::<T>::TenantAssetNotLinked);
+			ensure!(tenant.asset_account.is_some(), Error::<T>::TenantAssetNotLinked);
 			//Check that the remaining rent-to-pay is greater than 1
-			ensure!(tenant.remaining_payments.clone() > 0, Error::<T>::NoRentToPay);
+			ensure!(tenant.remaining_payments > 0, Error::<T>::NoRentToPay);
 			//Pay the rent
 			Self::rent_helper(tenant_account.clone()).ok();
 
@@ -173,8 +173,6 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 			// Ensure that the caller has the tenancy role
 			ensure!(Roles::TenantLog::<T>::contains_key(caller.clone()), Error::<T>::NotATenant);
-			
-			
 
 			// Ensure that the asset is valid
 			let collection_id: T::NftCollectionId = asset_type.value().into();
@@ -182,14 +180,19 @@ pub mod pallet {
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 			let virtual_account = ownership.unwrap().virtual_account;
 
-			if !Tenants::<T>::contains_key(caller.clone()){
-				RegisteredTenant::<T>::new(caller.clone(), info.clone(), Some(virtual_account.clone())).ok();
-			}else{
+			if !Tenants::<T>::contains_key(caller.clone()) {
+				RegisteredTenant::<T>::new(
+					caller.clone(),
+					info.clone(),
+					Some(virtual_account.clone()),
+				)
+				.ok();
+			} else {
 				let mut val0 = Self::infos(&caller).unwrap();
-				Tenants::<T>::mutate(&caller,|val|{
+				Tenants::<T>::mutate(&caller, |val| {
 					val0.asset_requested = Some(virtual_account.clone());
 					*val = Some(val0);
-				}); 
+				});
 			}
 
 			Self::request_helper(origin.clone(), virtual_account.clone(), info).ok();
@@ -237,11 +240,8 @@ pub mod pallet {
 				Error::<T>::NotAValidPayment
 			);
 
-			
 			Self::payment_helper(origin, virtual_account.clone(), collection_id, asset_id).ok();
 			let now = <frame_system::Pallet<T>>::block_number();
-
-			
 
 			Self::deposit_event(Event::GuarantyDepositPayment {
 				tenant: caller,
