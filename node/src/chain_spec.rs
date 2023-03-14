@@ -311,6 +311,7 @@ fn square_one_genesis(
 		transaction_payment: Default::default(),
 
 		role_module: RoleModuleConfig {
+			//TODO: Add the real admin
 			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
 			representatives: vec![
 			],
@@ -327,8 +328,6 @@ fn square_one_genesis(
 			members: vec![
 				//TODO TEAM
 				// get_account_id_from_seed::<sr25519::Public>("Alice"),
-				// get_account_id_from_seed::<sr25519::Public>("Bob"),
-				// get_account_id_from_seed::<sr25519::Public>("Charlie"),
 			],
 			phantom: Default::default(),
 		},
