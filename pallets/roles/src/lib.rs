@@ -177,24 +177,24 @@ pub mod pallet {
 
 	#[pallet::type_value]
 	///Initializing function for the total number of members
-	pub(super) fn InitTotalMembers<T: Config>() -> u32 {
+	pub(super) fn InitTotalMembers() -> u32 {
 		0
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn total_members)]
-	pub(super) type TotalMembers<T> = StorageValue<_, u32, ValueQuery, InitTotalMembers<T>>;
+	pub(super) type TotalMembers<T: Config> = StorageValue<_, u32, ValueQuery, InitTotalMembers>;
 
 	#[pallet::type_value]
 	///Initializing function for the total number of Rep members
-	pub fn InitRepMembers<T: Config>() -> u32 {
+	pub fn InitRepMembers() -> u32 {
 		0
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn rep_num)]
 	///Number of active Representative
-	pub type RepNumber<T: Config> = StorageValue<_, u32, ValueQuery, InitRepMembers<T>>;
+	pub type RepNumber<T: Config> = StorageValue<_, u32, ValueQuery, InitRepMembers>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
