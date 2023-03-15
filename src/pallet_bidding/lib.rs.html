@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/bidding/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e5308b57e507db71.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-d59023bfa12059d2.css"><link rel="stylesheet" disabled href="../../static.files/dark-1ca41bb1e10af075.css"><link rel="stylesheet" disabled href="../../static.files/ayu-18b4181a2f3fb862.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_bidding/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/bidding/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_bidding" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (171693274 2023-03-14)" data-search-js="search-d1bc581867fd0849.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_bidding/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -593,6 +593,7 @@
 <a href="#593" id="593">593</a>
 <a href="#594" id="594">594</a>
 <a href="#595" id="595">595</a>
+<a href="#596" id="596">596</a>
 </pre><pre class="rust"><code><span class="doccomment">//! # Bidding pallet
 //!
 //! The Bidding pallet provides functionality to assembble investors and associate them to an
@@ -663,6 +664,11 @@
 		</span><span class="kw">type </span>NewAssetScanPeriod: Get&lt;<span class="self">Self</span>::BlockNumber&gt;;
 	}
 
+	<span class="kw">pub type </span>HousingFundAccount&lt;T&gt; = Housing_Fund::AccountIdOf&lt;T&gt;;
+	<span class="kw">pub type </span>HousingFundBalance&lt;T&gt; = Housing_Fund::BalanceOf&lt;T&gt;;
+	<span class="kw">pub type </span>EligibleContribution&lt;T&gt; = (HousingFundAccount&lt;T&gt;, HousingFundBalance&lt;T&gt;, HousingFundBalance&lt;T&gt;);
+	<span class="kw">pub type </span>UserBalance&lt;T&gt; = (HousingFundAccount&lt;T&gt;, HousingFundBalance&lt;T&gt;);
+
 	<span class="attr">#[pallet::pallet]
 	#[pallet::generate_store(<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">trait </span>Store)]
 	#[pallet::without_storage_info]
@@ -675,29 +681,29 @@
 		</span>HousingFundNotEnough(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
 			BlockNumberOf&lt;T&gt;,
 		),
 		<span class="doccomment">/// Bidding on the house is successful
 		</span>HouseBiddingSucceeded(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
 			BlockNumberOf&lt;T&gt;,
 		),
 		<span class="doccomment">/// Bidding on the house failed
 		</span>HouseBiddingFailed(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
 			BlockNumberOf&lt;T&gt;,
-			Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt;,
+			Vec&lt;UserBalance&lt;T&gt;&gt;,
 		),
 		<span class="doccomment">/// Failed to assemble a list of investors for an onboarded asset
 		</span>FailedToAssembleInvestors(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
 			BlockNumberOf&lt;T&gt;,
 		),
 		<span class="doccomment">/// No new onboarded houses found
@@ -706,7 +712,7 @@
 		</span>NotEnoughAmongEligibleInvestors(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
 			BlockNumberOf&lt;T&gt;,
 		),
 		<span class="doccomment">/// No new finalised houses found
@@ -718,14 +724,14 @@
 		</span>SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf&lt;T&gt;),
 
 		<span class="doccomment">/// Processing an asset
-		</span>ProcessingAsset(T::NftCollectionId, T::NftItemId, Housing_Fund::BalanceOf&lt;T&gt;),
+		</span>ProcessingAsset(T::NftCollectionId, T::NftItemId, HousingFundBalance&lt;T&gt;),
 
 		<span class="doccomment">/// Potential owners list successfully created
 		</span>InvestorListCreationSuccessful(
 			T::NftCollectionId,
 			T::NftItemId,
-			Housing_Fund::BalanceOf&lt;T&gt;,
-			Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt;,
+			HousingFundBalance&lt;T&gt;,
+			Vec&lt;UserBalance&lt;T&gt;&gt;,
 		),
 	}
 
@@ -928,9 +934,9 @@
 	/// - no less than T::MinimumSharePerInvestor share per investor
 	/// The total contribution from the investor list should be equal to the asset&#39;s price
 	</span><span class="kw">fn </span>create_investor_list(
-		amount: Housing_Fund::BalanceOf&lt;T&gt;,
-	) -&gt; Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt; {
-		<span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt; =
+		amount: HousingFundBalance&lt;T&gt;,
+	) -&gt; Vec&lt;UserBalance&lt;T&gt;&gt; {
+		<span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;UserBalance&lt;T&gt;&gt; =
 			Vec::new();
 		<span class="kw">let </span>percent = <span class="self">Self</span>::u64_to_balance_option(<span class="number">100</span>).unwrap();
 		<span class="comment">// We get contributions following the min-max rules
@@ -979,16 +985,12 @@
 
 	<span class="doccomment">/// Get a list of tuple of account id and their contribution set at the same amount
 	</span><span class="kw">fn </span>get_common_investor_distribution(
-		amount: Housing_Fund::BalanceOf&lt;T&gt;,
-		common_share: Housing_Fund::BalanceOf&lt;T&gt;,
-		eligible_contributions: Vec&lt;(
-			Housing_Fund::AccountIdOf&lt;T&gt;,
-			Housing_Fund::BalanceOf&lt;T&gt;,
-			Housing_Fund::BalanceOf&lt;T&gt;,
-		)&gt;,
-	) -&gt; Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt; {
+		amount: HousingFundBalance&lt;T&gt;,
+		common_share: HousingFundBalance&lt;T&gt;,
+		eligible_contributions: Vec&lt;EligibleContribution&lt;T&gt;&gt;,
+	) -&gt; Vec&lt;UserBalance&lt;T&gt;&gt; {
 		<span class="kw">let </span>percent = <span class="self">Self</span>::u64_to_balance_option(<span class="number">100</span>).unwrap();
-		<span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt; =
+		<span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;UserBalance&lt;T&gt;&gt; =
 			Vec::new();
 
 		<span class="kw">for </span>item <span class="kw">in </span>eligible_contributions.iter() {
@@ -1001,17 +1003,17 @@
 	<span class="doccomment">/// Get a list of tuple of account id and their contribution with different values
 	/// The contribubtions follow the min-max rule of the amount
 	</span><span class="kw">fn </span>get_investor_distribution(
-		amount: Housing_Fund::BalanceOf&lt;T&gt;,
+		amount: HousingFundBalance&lt;T&gt;,
 		eligible_contributions: Vec&lt;(
-			Housing_Fund::AccountIdOf&lt;T&gt;,
-			Housing_Fund::BalanceOf&lt;T&gt;,
-			Housing_Fund::BalanceOf&lt;T&gt;,
+			HousingFundAccount&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
 		)&gt;,
-	) -&gt; Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt; {
+	) -&gt; Vec&lt;UserBalance&lt;T&gt;&gt; {
 		<span class="kw">let </span>percent = <span class="self">Self</span>::u64_to_balance_option(<span class="number">100</span>).unwrap();
 		<span class="kw">let </span>zero_percent = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
-		<span class="kw">let </span><span class="kw-2">mut </span>actual_percentage: Housing_Fund::BalanceOf&lt;T&gt; = percent;
-		<span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt; =
+		<span class="kw">let </span><span class="kw-2">mut </span>actual_percentage: HousingFundBalance&lt;T&gt; = percent;
+		<span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;UserBalance&lt;T&gt;&gt; =
 			Vec::new();
 		<span class="kw">let </span><span class="kw-2">mut </span>count: u64 = <span class="number">1</span>;
 		<span class="kw">let </span>contributions_length: u64 = eligible_contributions.len() <span class="kw">as </span>u64;
@@ -1071,24 +1073,24 @@
 	/// - a list of tuples (AccountId, Share, Amount) following the min-max share rule
 	/// - the total amount of the list
 	</span><span class="kw">fn </span>get_eligible_investors_contribution(
-		amount: Housing_Fund::BalanceOf&lt;T&gt;,
+		amount: HousingFundBalance&lt;T&gt;,
 	) -&gt; (
-		Housing_Fund::BalanceOf&lt;T&gt;,
-		Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;)&gt;,
+		HousingFundBalance&lt;T&gt;,
+		Vec&lt;(HousingFundAccount&lt;T&gt;, HousingFundBalance&lt;T&gt;, HousingFundBalance&lt;T&gt;)&gt;,
 	) {
 		<span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;(
-			Housing_Fund::AccountIdOf&lt;T&gt;,
-			Housing_Fund::BalanceOf&lt;T&gt;,
-			Housing_Fund::BalanceOf&lt;T&gt;,
+			HousingFundAccount&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
+			HousingFundBalance&lt;T&gt;,
 		)&gt; = Vec::new();
 		<span class="kw">let </span>contributions = Housing_Fund::Pallet::&lt;T&gt;::get_contributions();
-		<span class="kw">let </span><span class="kw-2">mut </span>ordered_account_id_list: Vec&lt;Housing_Fund::AccountIdOf&lt;T&gt;&gt; = Vec::new();
+		<span class="kw">let </span><span class="kw-2">mut </span>ordered_account_id_list: Vec&lt;HousingFundAccount&lt;T&gt;&gt; = Vec::new();
 		<span class="kw">let </span><span class="kw-2">mut </span>ordered_contributions: Vec&lt;(
-			Housing_Fund::AccountIdOf&lt;T&gt;,
+			HousingFundAccount&lt;T&gt;,
 			Housing_Fund::Contribution&lt;T&gt;,
 		)&gt; = Vec::new();
 		<span class="kw">let </span>zero_percent = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
-		<span class="kw">let </span><span class="kw-2">mut </span>total_share: Housing_Fund::BalanceOf&lt;T&gt; = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
+		<span class="kw">let </span><span class="kw-2">mut </span>total_share: HousingFundBalance&lt;T&gt; = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
 
 		<span class="comment">// the contributions are ordered by block number ascending order
 		</span><span class="kw">for _ in </span><span class="number">0</span>..contributions.len() {
@@ -1116,11 +1118,11 @@
 
 	<span class="doccomment">/// Get the oldest contribution which accountId is not present in the ordered_list
 	</span><span class="kw">fn </span>get_oldest_contribution(
-		ordered_list: Vec&lt;Housing_Fund::AccountIdOf&lt;T&gt;&gt;,
-		contributions: Vec&lt;(Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::Contribution&lt;T&gt;)&gt;,
-	) -&gt; (Housing_Fund::AccountIdOf&lt;T&gt;, Housing_Fund::Contribution&lt;T&gt;) {
+		ordered_list: Vec&lt;HousingFundAccount&lt;T&gt;&gt;,
+		contributions: Vec&lt;(HousingFundAccount&lt;T&gt;, Housing_Fund::Contribution&lt;T&gt;)&gt;,
+	) -&gt; (HousingFundAccount&lt;T&gt;, Housing_Fund::Contribution&lt;T&gt;) {
 		<span class="kw">let </span><span class="kw-2">mut </span>contributions_cut: Vec&lt;(
-			Housing_Fund::AccountIdOf&lt;T&gt;,
+			HousingFundAccount&lt;T&gt;,
 			Housing_Fund::Contribution&lt;T&gt;,
 		)&gt; = Vec::new();
 
@@ -1144,11 +1146,11 @@
 
 	<span class="comment">// Get the share of the house price from a given contribution
 	</span><span class="kw">fn </span>get_investor_share(
-		amount: Housing_Fund::BalanceOf&lt;T&gt;,
+		amount: HousingFundBalance&lt;T&gt;,
 		contribution: Housing_Fund::Contribution&lt;T&gt;,
-	) -&gt; (Housing_Fund::BalanceOf&lt;T&gt;, Housing_Fund::BalanceOf&lt;T&gt;) {
-		<span class="kw">let </span><span class="kw-2">mut </span>share: Housing_Fund::BalanceOf&lt;T&gt; = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
-		<span class="kw">let </span><span class="kw-2">mut </span>value: Housing_Fund::BalanceOf&lt;T&gt; = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
+	) -&gt; (HousingFundBalance&lt;T&gt;, HousingFundBalance&lt;T&gt;) {
+		<span class="kw">let </span><span class="kw-2">mut </span>share: HousingFundBalance&lt;T&gt; = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
+		<span class="kw">let </span><span class="kw-2">mut </span>value: HousingFundBalance&lt;T&gt; = <span class="self">Self</span>::u64_to_balance_option(<span class="number">0</span>).unwrap();
 		<span class="comment">// If the available amount is greater than the maximum amount, then the maximum amount is
 		// returned
 		</span><span class="kw">if </span>contribution.available_balance &gt;=
@@ -1171,22 +1173,22 @@
 	}
 
 	<span class="kw">fn </span>get_amount_percentage(
-		amount: Housing_Fund::BalanceOf&lt;T&gt;,
+		amount: HousingFundBalance&lt;T&gt;,
 		percentage: u64,
-	) -&gt; Housing_Fund::BalanceOf&lt;T&gt; {
+	) -&gt; HousingFundBalance&lt;T&gt; {
 		amount * <span class="self">Self</span>::u64_to_balance_option(percentage).unwrap() /
 			<span class="self">Self</span>::u64_to_balance_option(<span class="number">100</span>).unwrap()
 	}
 
-	<span class="kw">fn </span>convert_balance(amount: Onboarding::BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;Housing_Fund::BalanceOf&lt;T&gt;&gt; {
+	<span class="kw">fn </span>convert_balance(amount: Onboarding::BalanceOf&lt;T&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;HousingFundBalance&lt;T&gt;&gt; {
 		<span class="kw">let </span>value: <span class="prelude-ty">Option</span>&lt;u128&gt; = amount.try_into().ok();
-		<span class="kw">let </span>result: <span class="prelude-ty">Option</span>&lt;Housing_Fund::BalanceOf&lt;T&gt;&gt; = value.unwrap().try_into().ok();
+		<span class="kw">let </span>result: <span class="prelude-ty">Option</span>&lt;HousingFundBalance&lt;T&gt;&gt; = value.unwrap().try_into().ok();
 		result
 	}
 
-	<span class="kw">pub fn </span>u64_to_balance_option(input: u64) -&gt; <span class="prelude-ty">Option</span>&lt;Housing_Fund::BalanceOf&lt;T&gt;&gt; {
+	<span class="kw">pub fn </span>u64_to_balance_option(input: u64) -&gt; <span class="prelude-ty">Option</span>&lt;HousingFundBalance&lt;T&gt;&gt; {
 		input.try_into().ok()
 	}
 }
 </code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_bidding" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0-nightly (f77bfb733 2023-03-01)" data-search-js="search-2cde8914278f97ed.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</section></main></body></html>

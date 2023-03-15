@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"derive":["Decode","Encode","RuntimeDebug"],"mod":["pallet"],"struct":["VotingProposal"],"trait":["Currency","Decode","Encode"],"type":["AccountIdOf","BalanceOf","BlockNumberOf"]};
+window.SIDEBAR_ITEMS = {"derive":["Decode","Encode","RuntimeDebug"],"mod":["pallet"],"struct":["CollectiveParams","DemocracyParams","ProposalParams","VotingProposal"],"trait":["Currency","Decode","Encode"],"type":["AccountIdOf","BalanceOf","BlockNumberOf"]};
