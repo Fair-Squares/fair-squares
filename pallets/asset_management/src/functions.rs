@@ -188,7 +188,7 @@ impl<T: Config> Pallet<T> {
 		Onboarding::Houses::<T>::mutate(collection, item, |house| {
 			let mut house0 = house.clone().unwrap();
 			house0.tenants.push(tenant);
-			house0.max_tenants = house0.max_tenants -1;
+			house0.max_tenants -= 1;
 			*house = Some(house0);
 		});
 
@@ -211,7 +211,7 @@ impl<T: Config> Pallet<T> {
 		Onboarding::Houses::<T>::mutate(collection, item, |house| {
 			let mut house0 = house.clone().unwrap();
 			house0.tenants.retain(|t| *t != tenant);
-			house0.max_tenants = house0.max_tenants +1;
+			house0.max_tenants += 1;
 			*house = Some(house0);
 		});
 

@@ -434,8 +434,7 @@ fn test_integration_test() {
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
-		assert_eq!(
-			true,
+		assert!(
 			GuarantyPayment::<Test>::contains_key(GERARD, virtual0.virtual_account.clone())
 		);
 		assert_ok!(AssetManagement::tenant_link_asset(

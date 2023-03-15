@@ -55,7 +55,7 @@ fn contribute_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let account_id: u64 = 1;
 		let fund_account_id = HousingFundModule::fund_account_id();
-		let fund_account_balance = Balances::free_balance(&fund_account_id);
+		let fund_account_balance = Balances::free_balance(fund_account_id);
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
 			Origin::signed(account_id),
@@ -102,7 +102,7 @@ fn contribute_with_valid_values_should_succeed() {
 
 		// Check the fund account has received the correct amount => 10 (minimum balance) + 25
 		assert_eq!(
-			Balances::free_balance(&fund_account_id),
+			Balances::free_balance(fund_account_id),
 			HousingFundModule::u64_to_balance_option(25).unwrap() + fund_account_balance
 		);
 
@@ -301,7 +301,7 @@ fn withdraw_with_valid_values_should_succeed() {
 	new_test_ext().execute_with(|| {
 		let account_id: u64 = 1;
 		let fund_account_id = HousingFundModule::fund_account_id();
-		let fund_account_balance = Balances::free_balance(&fund_account_id);
+		let fund_account_balance = Balances::free_balance(fund_account_id);
 
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
@@ -371,7 +371,7 @@ fn withdraw_with_valid_values_should_succeed() {
 
 		// Check the fund account has been withdraw the correct amount
 		assert_eq!(
-			Balances::free_balance(&fund_account_id),
+			Balances::free_balance(fund_account_id),
 			HousingFundModule::u64_to_balance_option(5).unwrap() + fund_account_balance
 		);
 
@@ -584,7 +584,7 @@ fn house_bidding_with_valid_values_should_succeed() {
 
 		// Check the amount reserved for the account
 		assert_eq!(
-			Balances::reserved_balance(&fund_account_id),
+			Balances::reserved_balance(fund_account_id),
 			HousingFundModule::u64_to_balance_option(60).unwrap()
 		);
 
@@ -674,7 +674,7 @@ fn cancel_house_bidding_with_valid_values_should_succeed() {
 
 		// Check the amount reserved for the account
 		assert_eq!(
-			Balances::reserved_balance(&fund_account_id),
+			Balances::reserved_balance(fund_account_id),
 			HousingFundModule::u64_to_balance_option(0).unwrap()
 		);
 

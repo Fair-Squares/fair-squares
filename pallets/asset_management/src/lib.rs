@@ -341,7 +341,7 @@ pub mod pallet {
 			}
 			let representative =
 				<T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id.clone()));
-			let rep_infos = Roles::Pallet::<T>::reps(caller.clone()).unwrap();
+			let rep_infos = Roles::Pallet::<T>::reps(caller).unwrap();
 			
 			//Caller is not already in Representative waiting list
 			ensure!(

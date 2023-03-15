@@ -312,7 +312,7 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	let proposal_rec = ref1.1;
 	assert_eq!(proposal_rec.caller_account, SALIM);
 	assert_eq!(proposal_rec.candidate_account, REPRESENTATIVE);
-	assert_eq!(proposal_rec.virtual_account, asset_account.clone());
+	assert_eq!(proposal_rec.virtual_account, asset_account);
 	//Get the referendum index and start voting
 	let ref_index = ref1.0;
 
@@ -615,7 +615,7 @@ fn test_00() {
 
 		//TENANT0 is now connected to an asset. let's check rent payment status
 		let end_block = tenant0_inf
-			.clone()
+			
 			.contract_start
 			.saturating_add(<Test as pallet_asset_management::Config>::RentCheck::get());
 
@@ -626,13 +626,13 @@ fn test_00() {
 		next_block();
 
 		let asset = tenant0_inf.asset_account.clone().unwrap();
-		let virtual_initial_balance = Balances::free_balance(asset.clone());
+		let virtual_initial_balance = Balances::free_balance(asset);
 
 		//TENANT0 pays the first rent
 		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));
 
 		//Let's check that rent transfer toward virtual account occured
-		let virtual_balance = Balances::free_balance(&tenant0_inf.asset_account.unwrap());
+		let virtual_balance = Balances::free_balance(tenant0_inf.asset_account.unwrap());
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let asset_ownership = ShareDistributor::virtual_acc(coll_id0, item_id0).unwrap();
