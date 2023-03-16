@@ -63,7 +63,7 @@ pub mod pallet {
 	/// interest. The storage map keys are the creator and the recipient, this
 	/// also ensures that for any (sender,recipient) combo, only a single
 	/// payment is active. The history of payment is not stored.
-	pub(super) type Payment<T: Config> = StorageDoubleMap<
+	pub type Payment<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
 		T::AccountId, // payment creator
@@ -407,10 +407,11 @@ pub mod pallet {
 			ensure!(payment.state == PaymentState::PaymentRequested, Error::<T>::InvalidAction);
 
 			// reserve all the fees from the sender
-			<Self as PaymentHandler<T>>::reserve_payment_amount(&from, &to, payment)?;
+			<Self as PaymentHandler<T>>::reserve_payment_amount(&from, &to, payment.clone())?;
 
 			// release the payment and delete the payment from storage
-			//<Self as PaymentHandler<T>>::settle_payment(&from, &to, Percent::from_percent(100))?;
+			<Self as PaymentHandler<T>>::settle_payment(&from, &to, Percent::from_percent(100))?;
+			T::Currency::reserve(&to, payment.amount).ok();
 
 			Self::deposit_event(Event::PaymentRequestCompleted { from, to });
 

@@ -63,7 +63,8 @@ pub fn prep_test(
 		NftColl::OFFICESTEST,
 		Some(price1),
 		metadata1,
-		false
+		false,
+		3
 	));
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
@@ -71,7 +72,8 @@ pub fn prep_test(
 		NftColl::APPARTMENTSTEST,
 		Some(price2),
 		metadata2,
-		false
+		false,
+		3
 	));
 }
 
@@ -432,8 +434,7 @@ fn test_integration_test() {
 		//Proposal enactement should happen 2 blocks later
 		fast_forward_to(end_block_number.saturating_add(<Test as crate::Config>::Delay::get()));
 
-		assert_eq!(
-			true,
+		assert!(
 			GuarantyPayment::<Test>::contains_key(GERARD, virtual0.virtual_account.clone())
 		);
 		assert_ok!(AssetManagement::tenant_link_asset(

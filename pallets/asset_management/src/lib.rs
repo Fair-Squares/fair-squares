@@ -291,6 +291,8 @@ pub mod pallet {
 		NotARegisteredTenant,
 		/// Existing Representative request
 		ExistingPendingRequest,
+		/// Maximum number of tenants reached
+		MaximumNumberOfTenantsReached,
 	}
 
 	#[pallet::hooks]
@@ -337,19 +339,24 @@ pub mod pallet {
 			if caller != account_id {
 				ensure!(Roles::Pallet::<T>::servicers(&caller).is_some(), Roles::Error::<T>::OnlyForServicers);
 			}
-			//Caller is a registered Representative
-			ensure!(
-				Roles::RepresentativeLog::<T>::contains_key(&account_id),
-				Error::<T>::NotAnActiveRepresentative
-			);
+			let representative =
+				<T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id.clone()));
+			let rep_infos = Roles::Pallet::<T>::reps(caller).unwrap();
+			
 			//Caller is not already in Representative waiting list
 			ensure!(
 				!Roles::RepApprovalList::<T>::contains_key(&account_id),
 				Error::<T>::ExistingPendingRequest
 			);
+
+			//Caller is a registered and activated Representative
+			ensure!(
+				Roles::RepresentativeLog::<T>::contains_key(&account_id),
+				Error::<T>::NotAnActiveRepresentative
+			);
+			ensure!(rep_infos.activated,Error::<T>::NotAnActiveRepresentative);
+			
 			//Send request
-			let representative =
-				<T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id));
 			Roles::Representative::<T>::new(representative).ok();
 
 			Ok(().into())
@@ -623,7 +630,7 @@ pub mod pallet {
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
-
+			
 			//Compare guaranty payment amount+fees with tenant free_balance
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
@@ -783,6 +790,14 @@ pub mod pallet {
 				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 			ensure!(creator == asset_account, Error::<T>::NotAnAssetAccount);
 
+			// Check vacancy state of the asset
+			let vacancy = Self::fetch_house(collection,item).max_tenants;
+			ensure!(vacancy > 0, Error::<T>::MaximumNumberOfTenantsReached);
+
+			// Check for awaiting guaranty payment requests
+			let requests = Payment::Payment::<T>::iter().count();
+			ensure!(vacancy > requests as u8, Error::<T>::MaximumNumberOfTenantsReached);
+			
 			//Launch payment request
 			Self::guaranty_payment(origin, from.clone(), collection, item).ok();
 			let payment = Self::guaranty(from.clone(), asset_account).unwrap();

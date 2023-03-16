@@ -85,10 +85,14 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn fetch_house(collection: T::NftCollectionId, item: T::NftItemId) -> Onboarding::Asset<T>{
+		Onboarding::Pallet::<T>::houses(collection, item).unwrap()
+	}
+
 	pub fn calculate_guaranty(collection: T::NftCollectionId, item: T::NftItemId) -> u128 {
 		let coeff = T::Guaranty::get() as u128;
 		let ror = T::RoR::get();
-		let price0 = Onboarding::Pallet::<T>::houses(collection, item).unwrap().price.unwrap();
+		let price0 = Self::fetch_house(collection, item).price.unwrap();
 		let price1 = Self::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
 		let time = <T as Config>::Lease::get();
 		let rent = ((price1 as f64) / time as f64).round();
@@ -160,7 +164,7 @@ impl<T: Config> Pallet<T> {
 		Roles::TenantLog::<T>::mutate(&tenant, |val| {
 			let mut val0 = val.clone().unwrap();
 			// get asset price
-			let price0 = Onboarding::Pallet::<T>::houses(collection, item).unwrap().price.unwrap();
+			let price0 = Self::fetch_house(collection, item).price.unwrap();
 			let price1 = Self::onboarding_bal_to_u128(ror.mul_floor(price0)).unwrap();
 
 			//Update rent in tenant infos added.
@@ -184,6 +188,7 @@ impl<T: Config> Pallet<T> {
 		Onboarding::Houses::<T>::mutate(collection, item, |house| {
 			let mut house0 = house.clone().unwrap();
 			house0.tenants.push(tenant);
+			house0.max_tenants -= 1;
 			*house = Some(house0);
 		});
 
@@ -206,6 +211,7 @@ impl<T: Config> Pallet<T> {
 		Onboarding::Houses::<T>::mutate(collection, item, |house| {
 			let mut house0 = house.clone().unwrap();
 			house0.tenants.retain(|t| *t != tenant);
+			house0.max_tenants += 1;
 			*house = Some(house0);
 		});
 

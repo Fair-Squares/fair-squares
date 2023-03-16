@@ -28,6 +28,7 @@ impl<T: Config> Pallet<T> {
 		metadata: Nft::BoundedVecOfUnq<T>,
 		new_price: Option<BalanceOf<T>>,
 		item_id: T::NftItemId,
+		max_tenants: u8,
 	) -> DispatchResult {
 		let coll_id: T::NftCollectionId = collection.clone().value().into();
 		// Mint nft
@@ -37,7 +38,7 @@ impl<T: Config> Pallet<T> {
 		// Set asset price
 		Self::price(origin, collection, item_id, new_price).ok();
 		// Create Asset
-		Asset::<T>::new(coll_id, item_id, infos, new_price).ok();
+		Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants).ok();
 
 		Ok(())
 	}
