@@ -70,8 +70,7 @@ pub mod pallet {
 
 	pub type HousingFundAccount<T> = Housing_Fund::AccountIdOf<T>;
 	pub type HousingFundBalance<T> = Housing_Fund::BalanceOf<T>;
-	pub type EligibleContribution<T> =
-		(HousingFundAccount<T>, HousingFundBalance<T>, HousingFundBalance<T>);
+	pub type EligibleContribution<T> = (HousingFundAccount<T>, HousingFundBalance<T>, HousingFundBalance<T>);
 	pub type UserBalance<T> = (HousingFundAccount<T>, HousingFundBalance<T>);
 
 	#[pallet::pallet]
@@ -338,8 +337,11 @@ impl<T: Config> Pallet<T> {
 	/// - no more than T::MaximumSharePerInvestor share per investor
 	/// - no less than T::MinimumSharePerInvestor share per investor
 	/// The total contribution from the investor list should be equal to the asset's price
-	fn create_investor_list(amount: HousingFundBalance<T>) -> Vec<UserBalance<T>> {
-		let mut result: Vec<UserBalance<T>> = Vec::new();
+	fn create_investor_list(
+		amount: HousingFundBalance<T>,
+	) -> Vec<UserBalance<T>> {
+		let mut result: Vec<UserBalance<T>> =
+			Vec::new();
 		let percent = Self::u64_to_balance_option(100).unwrap();
 		// We get contributions following the min-max rules
 		let contributions = Self::get_eligible_investors_contribution(amount);
@@ -392,7 +394,8 @@ impl<T: Config> Pallet<T> {
 		eligible_contributions: Vec<EligibleContribution<T>>,
 	) -> Vec<UserBalance<T>> {
 		let percent = Self::u64_to_balance_option(100).unwrap();
-		let mut result: Vec<UserBalance<T>> = Vec::new();
+		let mut result: Vec<UserBalance<T>> =
+			Vec::new();
 
 		for item in eligible_contributions.iter() {
 			result.push((item.0.clone(), common_share * amount / percent));
@@ -414,7 +417,8 @@ impl<T: Config> Pallet<T> {
 		let percent = Self::u64_to_balance_option(100).unwrap();
 		let zero_percent = Self::u64_to_balance_option(0).unwrap();
 		let mut actual_percentage: HousingFundBalance<T> = percent;
-		let mut result: Vec<UserBalance<T>> = Vec::new();
+		let mut result: Vec<UserBalance<T>> =
+			Vec::new();
 		let mut count: u64 = 1;
 		let contributions_length: u64 = eligible_contributions.len() as u64;
 
@@ -474,13 +478,21 @@ impl<T: Config> Pallet<T> {
 	/// - the total amount of the list
 	fn get_eligible_investors_contribution(
 		amount: HousingFundBalance<T>,
-	) -> (HousingFundBalance<T>, Vec<EligibleContribution<T>>) {
-		let mut result: Vec<(HousingFundAccount<T>, HousingFundBalance<T>, HousingFundBalance<T>)> =
-			Vec::new();
+	) -> (
+		HousingFundBalance<T>,
+		Vec<(HousingFundAccount<T>, HousingFundBalance<T>, HousingFundBalance<T>)>,
+	) {
+		let mut result: Vec<(
+			HousingFundAccount<T>,
+			HousingFundBalance<T>,
+			HousingFundBalance<T>,
+		)> = Vec::new();
 		let contributions = Housing_Fund::Pallet::<T>::get_contributions();
 		let mut ordered_account_id_list: Vec<HousingFundAccount<T>> = Vec::new();
-		let mut ordered_contributions: Vec<(HousingFundAccount<T>, Housing_Fund::Contribution<T>)> =
-			Vec::new();
+		let mut ordered_contributions: Vec<(
+			HousingFundAccount<T>,
+			Housing_Fund::Contribution<T>,
+		)> = Vec::new();
 		let zero_percent = Self::u64_to_balance_option(0).unwrap();
 		let mut total_share: HousingFundBalance<T> = Self::u64_to_balance_option(0).unwrap();
 
@@ -513,8 +525,10 @@ impl<T: Config> Pallet<T> {
 		ordered_list: Vec<HousingFundAccount<T>>,
 		contributions: Vec<(HousingFundAccount<T>, Housing_Fund::Contribution<T>)>,
 	) -> (HousingFundAccount<T>, Housing_Fund::Contribution<T>) {
-		let mut contributions_cut: Vec<(HousingFundAccount<T>, Housing_Fund::Contribution<T>)> =
-			Vec::new();
+		let mut contributions_cut: Vec<(
+			HousingFundAccount<T>,
+			Housing_Fund::Contribution<T>,
+		)> = Vec::new();
 
 		// We build the list where the min will be searched
 		for item in contributions.iter() {
