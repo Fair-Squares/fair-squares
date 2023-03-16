@@ -238,15 +238,18 @@ pub mod pallet {
 			let voting_proposal: VotingProposal<T, Box<<T as COLL::Config<Instance1>>::Proposal>> =
 				VotingProposal::new(
 					who.clone(),
-					proposal,
-					collective_passed_call,
-					collective_failed_call,
-					democracy_failed_call,
-					proposal_hash,
-					collective_index,
-					democracy_call_formatted.clone(),
-					T::Hashing::hash_of(&democracy_call_formatted),
-					T::Hashing::hash_of(&call_dispatch),
+					ProposalParams { call: proposal, hash: proposal_hash },
+					CollectiveParams {
+						call: democracy_call_formatted.clone(),
+						call_pass: collective_passed_call,
+						call_fail: collective_failed_call,
+						index: collective_index,
+						hash: T::Hashing::hash_of(&democracy_call_formatted),
+					},
+					DemocracyParams {
+						call_fail: democracy_failed_call,
+						hash: T::Hashing::hash_of(&call_dispatch),
+					},
 				);
 
 			VotingProposals::<T>::insert(proposal_hash, voting_proposal);

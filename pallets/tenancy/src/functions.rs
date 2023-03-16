@@ -50,11 +50,11 @@ impl<T: Config> Pallet<T> {
 		// in the Share_distributor --> Virtual storage --> Ownership struct
 		let ownership_infos = Share::Virtual::<T>::iter_keys();
 		for (i, j) in ownership_infos {
-			let infos = Share::Pallet::<T>::virtual_acc(&i, &j).unwrap();
+			let infos = Share::Pallet::<T>::virtual_acc(i, j).unwrap();
 			if infos.virtual_account == asset_account {
-				Share::Virtual::<T>::mutate(i.clone(), j.clone(), |val| {
+				Share::Virtual::<T>::mutate(i, j, |val| {
 					let mut val0 = val.clone().unwrap();
-					val0.rent_nbr = 1 + val0.rent_nbr;
+					val0.rent_nbr += 1;
 					*val = Some(val0);
 				});
 			}
@@ -72,7 +72,7 @@ impl<T: Config> Pallet<T> {
 		let tenant = ensure_signed(from.clone())?;
 
 		//Accept and pay the guaranty
-		Payment::Pallet::<T>::accept_and_pay(from.clone(), virtual_account.clone()).ok();
+		Payment::Pallet::<T>::accept_and_pay(from, virtual_account.clone()).ok();
 		let origin2 = frame_system::RawOrigin::Signed(virtual_account.clone());
 
 		//Change payment state in Asset_Management storage

@@ -7,7 +7,7 @@ pub use sp_core::H256;
 use sp_runtime::traits::{StaticLookup, Zero};
 impl<T: Config> Pallet<T> {
 	pub fn approve_representative_role(origin: OriginFor<T>, who: T::AccountId) -> DispatchResult {
-		let caller = ensure_signed(origin.clone())?;
+		let caller = ensure_signed(origin)?;
 
 		let mut representative = Roles::Pallet::<T>::get_pending_representatives(&who).unwrap();
 		Roles::RepApprovalList::<T>::remove(&who);
@@ -50,8 +50,9 @@ impl<T: Config> Pallet<T> {
 		}
 
 		if !check0 {
+			let origin_root: OriginFor<T> = frame_system::RawOrigin::Root.into();
 			//Set the representative as a registrar
-			Ident::Pallet::<T>::add_registrar(origin, who2).ok();
+			Ident::Pallet::<T>::add_registrar(origin_root, who2).ok();
 
 			//Set registrar fields
 			let origin2: OriginFor<T> = RawOrigin::Signed(who).into();
@@ -225,7 +226,7 @@ impl<T: Config> Pallet<T> {
 		let proposal_hash = T::Hashing::hash_of(&call_dispatch);
 		let proposal_encoded: Vec<u8> = call_dispatch.encode();
 		Dem::Pallet::<T>::note_preimage(origin, proposal_encoded).ok();
-		
+
 		proposal_hash
 	}
 

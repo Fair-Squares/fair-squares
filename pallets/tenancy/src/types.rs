@@ -30,19 +30,29 @@ pub type BalanceOf<T> =
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct RegisteredTenant<T: Config> {
+	/// account id
+	pub account_id: T::AccountId,
 	///infos
 	pub infos: Box<IdentityInfo<T::MaxAdditionalFields>>,
 	///Creation Blocknumber
 	pub registered_at_block: BlockNumberOf<T>,
+	///Asset requested by the tenant
+	pub asset_requested: Option<T::AccountId>,
 }
 
 impl<T: Config> RegisteredTenant<T> {
 	pub fn new(
 		tenant_id: T::AccountId,
 		infos: Box<IdentityInfo<T::MaxAdditionalFields>>,
+		asset_requested: Option<T::AccountId>,
 	) -> DispatchResult {
 		let registered_at_block = <frame_system::Pallet<T>>::block_number();
-		let tenant = RegisteredTenant::<T> { infos, registered_at_block };
+		let tenant = RegisteredTenant::<T> {
+			account_id: tenant_id.clone(),
+			infos,
+			registered_at_block,
+			asset_requested,
+		};
 		Tenants::<T>::insert(tenant_id.clone(), tenant);
 		Roles::TenantLog::<T>::mutate(tenant_id, |val| {
 			let mut val0 = val.clone().unwrap();
