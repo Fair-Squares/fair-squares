@@ -18,7 +18,7 @@ jobs:
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly
+          toolchain: nightly-2023-03-15
           target: wasm32-unknown-unknown
           override: true
           default: true
