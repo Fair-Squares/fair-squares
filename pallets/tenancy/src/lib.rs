@@ -173,12 +173,17 @@ pub mod pallet {
 			let caller = ensure_signed(origin.clone())?;
 			// Ensure that the caller has the tenancy role
 			ensure!(Roles::TenantLog::<T>::contains_key(caller.clone()), Error::<T>::NotATenant);
+			
 
 			// Ensure that the asset is valid
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
 			let virtual_account = ownership.unwrap().virtual_account;
+
+			// Check vacancy state of the asset
+			let vacancy = Assets::Pallet::<T>::fetch_house(collection_id,asset_id).max_tenants;
+			ensure!(vacancy > 0, Assets::Error::<T>::MaximumNumberOfTenantsReached);
 
 			if !Tenants::<T>::contains_key(caller.clone()) {
 				RegisteredTenant::<T>::new(

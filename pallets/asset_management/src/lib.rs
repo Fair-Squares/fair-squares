@@ -21,6 +21,8 @@
 //!
 //! * `owners_vote` - Each asset owner can vote in an ongoing referendum.
 //!
+//! * `request_asset_management` - An active Representative can request an additional asset to manage.
+//!
 //! * `representative_approval` - Call used as a proposal for Representative election.
 //!
 //! * `demote_representative` - Call used as a proposal for Representative demotion.
@@ -287,6 +289,10 @@ pub mod pallet {
 		NotEnoughTenantFunds,
 		/// The Tenant did not provide detailed information
 		NotARegisteredTenant,
+		/// Existing Representative request
+		ExistingPendingRequest,
+		/// Maximum number of tenants reached
+		MaximumNumberOfTenantsReached,
 	}
 
 	#[pallet::hooks]
@@ -317,6 +323,41 @@ pub mod pallet {
 			proposal
 				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id.clone()).into())
 				.ok();
+
+			Ok(().into())
+		}
+
+		/// Using the function below, an active Representative can request an additional asset to manage.
+		/// The origin must be an active Representative.
+		/// - account_id: an account with the representative role
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn request_asset_management(
+			origin: OriginFor<T>,
+			account_id: AccountIdOf<T>,
+		) -> DispatchResultWithPostInfo {
+			let caller = ensure_signed(origin.clone())?;
+			if caller != account_id {
+				ensure!(Roles::Pallet::<T>::servicers(&caller).is_some(), Roles::Error::<T>::OnlyForServicers);
+			}
+			let representative =
+				<T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id.clone()));
+			let rep_infos = Roles::Pallet::<T>::reps(caller).unwrap();
+			
+			//Caller is not already in Representative waiting list
+			ensure!(
+				!Roles::RepApprovalList::<T>::contains_key(&account_id),
+				Error::<T>::ExistingPendingRequest
+			);
+
+			//Caller is a registered and activated Representative
+			ensure!(
+				Roles::RepresentativeLog::<T>::contains_key(&account_id),
+				Error::<T>::NotAnActiveRepresentative
+			);
+			ensure!(rep_infos.activated,Error::<T>::NotAnActiveRepresentative);
+			
+			//Send request
+			Roles::Representative::<T>::new(representative).ok();
 
 			Ok(().into())
 		}
@@ -541,8 +582,8 @@ pub mod pallet {
 
 			//Check that the caller is a stored virtual account
 			ensure!(
-				caller ==
-					Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
+				caller
+					== Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::<T>::NotAnAssetAccount
 			);
 
@@ -589,7 +630,7 @@ pub mod pallet {
 			let collection_id: T::NftCollectionId = asset_type.value().into();
 			let ownership = Share::Pallet::<T>::virtual_acc(collection_id, asset_id);
 			ensure!(ownership.is_some(), Error::<T>::NotAnAsset);
-
+			
 			//Compare guaranty payment amount+fees with tenant free_balance
 			let guaranty = Self::calculate_guaranty(collection_id, asset_id);
 			let fee0 = Self::manage_bal_to_u128(T::RepFees::get()).unwrap();
@@ -749,6 +790,14 @@ pub mod pallet {
 				Share::Pallet::<T>::virtual_acc(collection, item).unwrap().virtual_account;
 			ensure!(creator == asset_account, Error::<T>::NotAnAssetAccount);
 
+			// Check vacancy state of the asset
+			let vacancy = Self::fetch_house(collection,item).max_tenants;
+			ensure!(vacancy > 0, Error::<T>::MaximumNumberOfTenantsReached);
+
+			// Check for awaiting guaranty payment requests
+			let requests = Payment::Payment::<T>::iter().count();
+			ensure!(vacancy > requests as u8, Error::<T>::MaximumNumberOfTenantsReached);
+			
 			//Launch payment request
 			Self::guaranty_payment(origin, from.clone(), collection, item).ok();
 			let payment = Self::guaranty(from.clone(), asset_account).unwrap();

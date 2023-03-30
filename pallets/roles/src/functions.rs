@@ -19,7 +19,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerCreated(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -43,7 +43,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerCreated(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -67,7 +67,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryCreated(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -94,7 +94,7 @@ impl<T: Config> Pallet<T> {
 		ensure!(!InvestorLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
 		ensure!(!ServicerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
 		ensure!(!TenantLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
-		//ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
 		ensure!(Self::total_members() < T::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
 		Ok(())
 	}
@@ -110,7 +110,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerAccountCreationRejected(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -128,7 +128,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerAccountCreationRejected(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 		exist
@@ -146,7 +146,7 @@ impl<T: Config> Pallet<T> {
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryAccountCreationRejected(now, who));
 				exist = true;
-				break
+				break;
 			}
 		}
 

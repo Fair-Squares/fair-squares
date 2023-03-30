@@ -15,7 +15,7 @@ fn last_event() -> Event {
 fn test_pay_works() {
 	new_test_ext().execute_with(|| {
 		let creator_initial_balance = 100_000_000_000;
-		let payment_amount = 2000 as u64;
+		let payment_amount = 2000_u64;
 		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
 
 		// the payment amount should not be reserved
@@ -144,8 +144,8 @@ fn test_cancel_works() {
 #[test]
 fn test_release_works() {
 	new_test_ext().execute_with(|| {
-		let creator_initial_balance = 100_000_000_000 as u64;
-		let payment_amount = 40 as u64;
+		let creator_initial_balance = 100_000_000_000_u64;
+		let payment_amount = 40_u64;
 		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
 		let initial_recipient_balance = Balances::free_balance(&PAYMENT_RECIPENT);
 
@@ -215,8 +215,8 @@ fn test_release_works() {
 #[test]
 fn test_resolve_payment_works() {
 	new_test_ext().execute_with(|| {
-		let creator_initial_balance = 100_000_000_000 as u64;
-		let payment_amount = 40 as u64;
+		let creator_initial_balance = 100_000_000_000_u64;
+		let payment_amount = 40_u64;
 		let initial_recipient_balance = Balances::free_balance(&PAYMENT_RECIPENT);
 
 		// should be able to create a payment with available balance

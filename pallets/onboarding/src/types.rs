@@ -42,6 +42,8 @@ pub struct Asset<T: Config> {
 	pub tenants: Vec<T::AccountId>,
 	/// Proposal hash
 	pub proposal_hash: T::Hash,
+	/// Maximum number of tenants for this asset
+	pub max_tenants: u8,
 }
 
 impl<T: Config> Asset<T> {
@@ -50,6 +52,7 @@ impl<T: Config> Asset<T> {
 		item: T::NftItemId,
 		infos: ItemInfoOf<T>,
 		price: Option<BalanceOf<T>>,
+		max_tenants: u8
 	) -> DispatchResult {
 		let status = AssetStatus::EDITING;
 		let created = <frame_system::Pallet<T>>::block_number();
@@ -61,6 +64,7 @@ impl<T: Config> Asset<T> {
 			representative: None,
 			tenants: Default::default(),
 			proposal_hash: Default::default(),
+			max_tenants,
 		};
 		Houses::<T>::insert(collection, item, house);
 
