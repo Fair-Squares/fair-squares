@@ -522,7 +522,7 @@ impl pallet_scheduler::Config for Runtime {
 
 parameter_types! {
 	pub const LaunchPeriod: BlockNumber = 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 3 * MINUTES;//28 * 24 * 60 * MINUTES;
+	pub const VotingPeriod: BlockNumber = 12 * HOURS;//28 * 24 * 60 * MINUTES;
 	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
 	pub const MinimumDeposit: Balance = DOLLARS;
 	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
@@ -585,9 +585,9 @@ pub struct DontAllowCollectiveAndDemocracy;
 impl Contains<Call> for DontAllowCollectiveAndDemocracy {
 	fn contains(c: &Call) -> bool {
 		match c {
-			Call::Democracy(_) => false,
+			//Call::Democracy(_) => false,
 			Call::AssetManagementModule(pallet_asset_management::Call::execute_call_dispatch { .. }) => false,
-			Call::Council(_) => false,
+			//Call::Council(_) => false,
 			Call::NftModule(_) => false,
 			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
 			// Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
