@@ -9,6 +9,7 @@ use sp_core::{sr25519, Pair, Public};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 use sc_telemetry::TelemetryEndpoints;
+use hex_literal::hex;
 
 
 // The URL for the telemetry server.
@@ -85,6 +86,28 @@ pub fn get_endowed_accounts_with_balance() -> Vec<(AccountId, u128)> {
 	accounts
 }
 
+fn testnet_endowed_accounts() -> Vec<(AccountId> {
+	let accounts: Vec<AccountId> = vec![
+		hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
+		hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
+	];
+	let accounts_with_balance: Vec<(AccountId, u128)> =
+		accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
+	let json_data = &include_bytes!("../../seed/balances.json")[..];
+	let additional_accounts_with_balance: Vec<(AccountId, u128)> =
+		serde_json::from_slice(json_data).unwrap();
+
+	let mut accounts = additional_accounts_with_balance.clone();
+
+	accounts_with_balance.iter().for_each(|tup1| {
+		for tup2 in additional_accounts_with_balance.iter() {
+			if tup1.0 == tup2.0 {
+				return
+			}
+		}
+		accounts.push(tup1.to_owned());
+	});
+}
 
 pub fn fs_properties() -> Properties {
 	let mut properties = Properties::new();
@@ -169,7 +192,7 @@ pub fn square_one_testnet() -> Result<ChainSpec, String> {
 
 	Ok(ChainSpec::from_genesis(
 		// Name
-		"square one testnet",
+		"Fair Squares testnet",
 		// ID
 		"square-one",
 		ChainType::Live,
@@ -177,13 +200,11 @@ pub fn square_one_testnet() -> Result<ChainSpec, String> {
 			square_one(
 				wasm_binary,
 				// Initial PoA authorities
-				vec![],
+				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
 				// Sudo account
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// Pre-funded accounts
-				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-				],				
+				testnet_endowed_accounts(),
 				true,
 			)
 		},
@@ -240,7 +261,7 @@ fn testnet_genesis(
 		},
 		nft_module: NftModuleConfig {
 			owner: Some(root_key),
-			collection_id: Some(1),
+			collection_id: Some(3),
 			created_by: Some(pallet_roles::Accounts::SERVICER),
 			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
 		},
@@ -263,7 +284,7 @@ fn square_one(
 	wasm_binary: &[u8],
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
 	root_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
+	endowed_accounts: Vec<(AccountId, u128)>,
 	_enable_println: bool,
 ) -> GenesisConfig {
 	GenesisConfig {
@@ -273,7 +294,7 @@ fn square_one(
 		},
 		balances: BalancesConfig {
 			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: endowed_accounts.iter().cloned().map(|k| (k, 1 << 60)).collect(),
+			balances: endowed_accounts,
 		},
 		aura: AuraConfig {
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
@@ -294,7 +315,7 @@ fn square_one(
 		},
 		nft_module: NftModuleConfig {
 			owner: Some(root_key),
-			collection_id: Some(3),
+			collection_id: Some(1),
 			created_by: Some(pallet_roles::Accounts::SERVICER),
 			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
 		},
