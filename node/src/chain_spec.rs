@@ -88,8 +88,17 @@ pub fn get_endowed_accounts_with_balance() -> Vec<(AccountId, u128)> {
 
 fn testnet_endowed_accounts() -> Vec<(AccountId,u128)> {
 	let accounts: Vec<AccountId> = vec![
+		//5CcZ9b6Wezpos7BBfcN3o4Jam6NQ8tU4gb4Xa7roMCCyND5X
 		hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
+
+		//5D1nJ8M862utBuDG7mwszhm1o7Tzn5FSd6BYEoX3uc5e3AuB
 		hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
+
+		//5FnsQ9tHAjqbb1YHU4hAr2hPgDS82XGvNPA35CpV7hX58sVv ==> Faucet
+		hex!["a4dd21a5be2a4d85b80a0091f77b3371fa3c4f3cf511bead59cf65583251ce16"].into(),
+
+		//5Ferj4SHg8mtUGxWHuyjhciTCmh7TAyhw8pSjFtxRAJDynpk 
+		hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"].into(),
 	];
 	let accounts_with_balance: Vec<(AccountId, u128)> =
 		accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
