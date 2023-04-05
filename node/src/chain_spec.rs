@@ -134,7 +134,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![authority_keys_from_seed("Alice")],
 				// Sudo account
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
 				// Pre-funded accounts
 				get_endowed_accounts_with_balance(),
 				true,
@@ -169,7 +169,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
 				// Sudo account
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
 				// Pre-funded accounts
 				get_endowed_accounts_with_balance(),
 				true,
@@ -204,7 +204,7 @@ pub fn square_one_testnet() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
 				// Sudo account
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
 				// Pre-funded accounts
 				testnet_endowed_accounts(),
 				true,
@@ -257,7 +257,7 @@ fn testnet_genesis(
 		transaction_payment: Default::default(),
 
 		role_module: RoleModuleConfig {
-			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			new_admin: Some(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into()),
 			representatives: vec![
 			],
 		},
@@ -271,9 +271,9 @@ fn testnet_genesis(
 		treasury: Default::default(),
 		council: CouncilConfig {
 			members: vec![
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
+				hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
+				hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"].into(),
 			],
 			phantom: Default::default(),
 		},
@@ -311,7 +311,7 @@ fn square_one(
 		transaction_payment: Default::default(),
 
 		role_module: RoleModuleConfig {
-			new_admin: Some(get_account_id_from_seed::<sr25519::Public>("Alice")),
+			new_admin: Some(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into()),
 			representatives: vec![
 			],
 		},
@@ -325,9 +325,9 @@ fn square_one(
 		treasury: Default::default(),
 		council: CouncilConfig {
 			members: vec![
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				get_account_id_from_seed::<sr25519::Public>("Bob"),
-				get_account_id_from_seed::<sr25519::Public>("Charlie"),
+				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
+				hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
+				hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"].into(),
 			],
 			phantom: Default::default(),
 		},
