@@ -86,7 +86,7 @@ pub fn get_endowed_accounts_with_balance() -> Vec<(AccountId, u128)> {
 	accounts
 }
 
-fn testnet_endowed_accounts() -> Vec<(AccountId> {
+fn testnet_endowed_accounts() -> Vec<(AccountId,u128)> {
 	let accounts: Vec<AccountId> = vec![
 		hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
 		hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
@@ -102,11 +102,13 @@ fn testnet_endowed_accounts() -> Vec<(AccountId> {
 	accounts_with_balance.iter().for_each(|tup1| {
 		for tup2 in additional_accounts_with_balance.iter() {
 			if tup1.0 == tup2.0 {
-				return
+				return;
 			}
 		}
 		accounts.push(tup1.to_owned());
 	});
+
+	accounts
 }
 
 pub fn fs_properties() -> Properties {
