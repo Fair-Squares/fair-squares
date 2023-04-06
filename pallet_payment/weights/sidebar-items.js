@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["SubstrateWeight"],"trait":["WeightInfo"]};
+window.SIDEBAR_ITEMS = {"struct":[["SubstrateWeight","Weights for virto_payment using the Substrate node and recommended hardware."]],"trait":[["WeightInfo","Weight functions needed for virto_payment."]]};

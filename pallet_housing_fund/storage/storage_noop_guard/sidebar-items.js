@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["StorageNoopGuard"]};
+window.SIDEBAR_ITEMS = {"struct":[["StorageNoopGuard","Asserts that no storage changes took place between con- and destruction of [`Self`]."]]};

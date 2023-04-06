@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/asset_management/src/lib.rs`."><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_asset_management" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (171693274 2023-03-14)" data-search-js="search-d1bc581867fd0849.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../pallet_asset_management/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `pallets/asset_management/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-e963ab4a0d0c903e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-046227e470cd3629.css"><link rel="stylesheet" disabled href="../../static.files/dark-800f2ee593c8e6f7.css"><link rel="stylesheet" disabled href="../../static.files/ayu-9edae3c387f5a5b3.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-287cecec4dbb45b0.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../pallet_asset_management/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -791,6 +791,55 @@
 <a href="#791" id="791">791</a>
 <a href="#792" id="792">792</a>
 <a href="#793" id="793">793</a>
+<a href="#794" id="794">794</a>
+<a href="#795" id="795">795</a>
+<a href="#796" id="796">796</a>
+<a href="#797" id="797">797</a>
+<a href="#798" id="798">798</a>
+<a href="#799" id="799">799</a>
+<a href="#800" id="800">800</a>
+<a href="#801" id="801">801</a>
+<a href="#802" id="802">802</a>
+<a href="#803" id="803">803</a>
+<a href="#804" id="804">804</a>
+<a href="#805" id="805">805</a>
+<a href="#806" id="806">806</a>
+<a href="#807" id="807">807</a>
+<a href="#808" id="808">808</a>
+<a href="#809" id="809">809</a>
+<a href="#810" id="810">810</a>
+<a href="#811" id="811">811</a>
+<a href="#812" id="812">812</a>
+<a href="#813" id="813">813</a>
+<a href="#814" id="814">814</a>
+<a href="#815" id="815">815</a>
+<a href="#816" id="816">816</a>
+<a href="#817" id="817">817</a>
+<a href="#818" id="818">818</a>
+<a href="#819" id="819">819</a>
+<a href="#820" id="820">820</a>
+<a href="#821" id="821">821</a>
+<a href="#822" id="822">822</a>
+<a href="#823" id="823">823</a>
+<a href="#824" id="824">824</a>
+<a href="#825" id="825">825</a>
+<a href="#826" id="826">826</a>
+<a href="#827" id="827">827</a>
+<a href="#828" id="828">828</a>
+<a href="#829" id="829">829</a>
+<a href="#830" id="830">830</a>
+<a href="#831" id="831">831</a>
+<a href="#832" id="832">832</a>
+<a href="#833" id="833">833</a>
+<a href="#834" id="834">834</a>
+<a href="#835" id="835">835</a>
+<a href="#836" id="836">836</a>
+<a href="#837" id="837">837</a>
+<a href="#838" id="838">838</a>
+<a href="#839" id="839">839</a>
+<a href="#840" id="840">840</a>
+<a href="#841" id="841">841</a>
+<a href="#842" id="842">842</a>
 </pre><pre class="rust"><code><span class="doccomment">//!# Asset_Management Pallet
 //!
 //!The Asset_Management pallet is used for everything that is related to
@@ -813,6 +862,8 @@
 //!   - Demote a Representative.
 //!
 //! * `owners_vote` - Each asset owner can vote in an ongoing referendum.
+//!
+//! * `request_asset_management` - An active Representative can request an additional asset to manage.
 //!
 //! * `representative_approval` - Call used as a proposal for Representative election.
 //!
@@ -1080,6 +1131,10 @@
 		</span>NotEnoughTenantFunds,
 		<span class="doccomment">/// The Tenant did not provide detailed information
 		</span>NotARegisteredTenant,
+		<span class="doccomment">/// Existing Representative request
+		</span>ExistingPendingRequest,
+		<span class="doccomment">/// Maximum number of tenants reached
+		</span>MaximumNumberOfTenantsReached,
 	}
 
 	<span class="attr">#[pallet::hooks]
@@ -1110,6 +1165,41 @@
 			proposal
 				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id.clone()).into())
 				.ok();
+
+			<span class="prelude-val">Ok</span>(().into())
+		}
+
+		<span class="doccomment">/// Using the function below, an active Representative can request an additional asset to manage.
+		/// The origin must be an active Representative.
+		/// - account_id: an account with the representative role
+		</span><span class="attr">#[pallet::weight(<span class="number">10_000 </span>+ T::DbWeight::get().reads_writes(<span class="number">1</span>,<span class="number">1</span>).ref_time())]
+		</span><span class="kw">pub fn </span>request_asset_management(
+			origin: OriginFor&lt;T&gt;,
+			account_id: AccountIdOf&lt;T&gt;,
+		) -&gt; DispatchResultWithPostInfo {
+			<span class="kw">let </span>caller = ensure_signed(origin.clone())<span class="question-mark">?</span>;
+			<span class="kw">if </span>caller != account_id {
+				<span class="macro">ensure!</span>(Roles::Pallet::&lt;T&gt;::servicers(<span class="kw-2">&amp;</span>caller).is_some(), Roles::Error::&lt;T&gt;::OnlyForServicers);
+			}
+			<span class="kw">let </span>representative =
+				&lt;T <span class="kw">as </span>frame_system::Config&gt;::Origin::from(RawOrigin::Signed(account_id.clone()));
+			<span class="kw">let </span>rep_infos = Roles::Pallet::&lt;T&gt;::reps(caller).unwrap();
+			
+			<span class="comment">//Caller is not already in Representative waiting list
+			</span><span class="macro">ensure!</span>(
+				!Roles::RepApprovalList::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>account_id),
+				Error::&lt;T&gt;::ExistingPendingRequest
+			);
+
+			<span class="comment">//Caller is a registered and activated Representative
+			</span><span class="macro">ensure!</span>(
+				Roles::RepresentativeLog::&lt;T&gt;::contains_key(<span class="kw-2">&amp;</span>account_id),
+				Error::&lt;T&gt;::NotAnActiveRepresentative
+			);
+			<span class="macro">ensure!</span>(rep_infos.activated,Error::&lt;T&gt;::NotAnActiveRepresentative);
+			
+			<span class="comment">//Send request
+			</span>Roles::Representative::&lt;T&gt;::new(representative).ok();
 
 			<span class="prelude-val">Ok</span>(().into())
 		}
@@ -1334,8 +1424,8 @@
 
 			<span class="comment">//Check that the caller is a stored virtual account
 			</span><span class="macro">ensure!</span>(
-				caller ==
-					Share::Pallet::&lt;T&gt;::virtual_acc(collection, item).unwrap().virtual_account,
+				caller
+					== Share::Pallet::&lt;T&gt;::virtual_acc(collection, item).unwrap().virtual_account,
 				Error::&lt;T&gt;::NotAnAssetAccount
 			);
 
@@ -1382,7 +1472,7 @@
 			</span><span class="kw">let </span>collection_id: T::NftCollectionId = asset_type.value().into();
 			<span class="kw">let </span>ownership = Share::Pallet::&lt;T&gt;::virtual_acc(collection_id, asset_id);
 			<span class="macro">ensure!</span>(ownership.is_some(), Error::&lt;T&gt;::NotAnAsset);
-
+			
 			<span class="comment">//Compare guaranty payment amount+fees with tenant free_balance
 			</span><span class="kw">let </span>guaranty = <span class="self">Self</span>::calculate_guaranty(collection_id, asset_id);
 			<span class="kw">let </span>fee0 = <span class="self">Self</span>::manage_bal_to_u128(T::RepFees::get()).unwrap();
@@ -1542,6 +1632,14 @@
 				Share::Pallet::&lt;T&gt;::virtual_acc(collection, item).unwrap().virtual_account;
 			<span class="macro">ensure!</span>(creator == asset_account, Error::&lt;T&gt;::NotAnAssetAccount);
 
+			<span class="comment">// Check vacancy state of the asset
+			</span><span class="kw">let </span>vacancy = <span class="self">Self</span>::fetch_house(collection,item).max_tenants;
+			<span class="macro">ensure!</span>(vacancy &gt; <span class="number">0</span>, Error::&lt;T&gt;::MaximumNumberOfTenantsReached);
+
+			<span class="comment">// Check for awaiting guaranty payment requests
+			</span><span class="kw">let </span>requests = Payment::Payment::&lt;T&gt;::iter().count();
+			<span class="macro">ensure!</span>(vacancy &gt; requests <span class="kw">as </span>u8, Error::&lt;T&gt;::MaximumNumberOfTenantsReached);
+			
 			<span class="comment">//Launch payment request
 			</span><span class="self">Self</span>::guaranty_payment(origin, from.clone(), collection, item).ok();
 			<span class="kw">let </span>payment = <span class="self">Self</span>::guaranty(from.clone(), asset_account).unwrap();
@@ -1585,4 +1683,4 @@
 	}
 }
 </code></pre></div>
-</section></main></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="pallet_asset_management" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (234151769 2022-12-03)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
