@@ -71,7 +71,7 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + SUDO::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type Currency: ReservableCurrency<Self::AccountId>;
 		type WeightInfo: WeightInfo;
 
@@ -213,7 +213,7 @@ pub mod pallet {
 		fn build(&self) {
 			if self.new_admin.is_some() {
 				let servicer0 = self.new_admin.clone().unwrap(); // AccountId
-				let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
+				let origin = T::RuntimeOrigin::from(RawOrigin::Signed(servicer0.clone())); //Origin
 				let source = T::Lookup::unlookup(servicer0); //Source
 				crate::Pallet::<T>::set_manager(origin, source).ok();
 			}
@@ -278,6 +278,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(4))]
 		///Account creation function. Only one role per account is permitted.
 		pub fn set_role(
@@ -295,7 +296,7 @@ pub mod pallet {
 			let requested = Self::get_requested_role(&account).is_some();
 			match account_type {
 				Accounts::INVESTOR => {
-					let investor = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let investor = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					Investor::<T>::new(investor).map_err(|_| <Error<T>>::InitializationError)?;
@@ -305,14 +306,14 @@ pub mod pallet {
 				},
 				Accounts::SELLER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let seller = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let seller = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					HouseSeller::<T>::new(seller).map_err(|_| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::TENANT => {
-					let tenant = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let tenant = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					Tenant::<T>::new(tenant).map_err(|_| <Error<T>>::InitializationError)?;
@@ -322,7 +323,7 @@ pub mod pallet {
 				},
 				Accounts::SERVICER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let servicer = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let servicer = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					Servicer::<T>::new(servicer).map_err(|_| <Error<T>>::InitializationError)?;
@@ -330,7 +331,7 @@ pub mod pallet {
 				},
 				Accounts::NOTARY => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let notary = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let notary = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
 					Notary::<T>::new(notary).map_err(|_| <Error<T>>::InitializationError)?;
@@ -338,7 +339,7 @@ pub mod pallet {
 				},
 				Accounts::REPRESENTATIVE => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let representative = <T as frame_system::Config>::Origin::from(
+					let representative = <T as frame_system::Config>::RuntimeOrigin::from(
 						RawOrigin::Signed(account.clone()),
 					);
 					Representative::<T>::new(representative)
@@ -359,7 +360,7 @@ pub mod pallet {
 
 			Ok(())
 		}
-
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(5))]
 		///Approval function for Sellers, Servicers, and Notary. Only for admin level.
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
@@ -380,6 +381,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::rejection(6))]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
@@ -403,6 +405,7 @@ pub mod pallet {
 			Ok(())
 		}
 
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_admin(7))]
 		///The caller will transfer his admin authority to a different account
 		pub fn set_manager(
@@ -411,7 +414,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let new0 = T::Lookup::lookup(new.clone())?;
-			let new_origin = T::Origin::from(RawOrigin::Signed(new0.clone()));
+			let new_origin = T::RuntimeOrigin::from(RawOrigin::Signed(new0.clone()));
 			ensure!(
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"

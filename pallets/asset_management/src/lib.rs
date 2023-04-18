@@ -98,9 +98,9 @@ pub mod pallet {
 		+ Payment::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type Call: Parameter
-			+ UnfilteredDispatchable<Origin = <Self as frame_system::Config>::Origin>
+			+ UnfilteredDispatchable<Origin = <Self as frame_system::Config>::RuntimeOrigin>
 			+ From<Call<Self>>
 			+ GetDispatchInfo;
 		type Delay: Get<Self::BlockNumber>;
@@ -312,6 +312,7 @@ pub mod pallet {
 		/// The origin must but root
 		/// - account_id : the virtual account of the asset of the proposal
 		/// - proposal : call encapsulating the inital proposal
+		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn execute_call_dispatch(
 			origin: OriginFor<T>,
@@ -329,7 +330,8 @@ pub mod pallet {
 
 		/// Using the function below, an active Representative can request an additional asset to manage.
 		/// The origin must be an active Representative.
-		/// - account_id: an account with the representative role
+		/// account_id: an account with the representative role
+		#[pallet::call_index(1)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_asset_management(
 			origin: OriginFor<T>,
@@ -340,7 +342,7 @@ pub mod pallet {
 				ensure!(Roles::Pallet::<T>::servicers(&caller).is_some(), Roles::Error::<T>::OnlyForServicers);
 			}
 			let representative =
-				<T as frame_system::Config>::Origin::from(RawOrigin::Signed(account_id.clone()));
+				<T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(account_id.clone()));
 			let rep_infos = Roles::Pallet::<T>::reps(caller).unwrap();
 			
 			//Caller is not already in Representative waiting list
@@ -368,6 +370,7 @@ pub mod pallet {
 		/// - asset_id: id of the asset
 		/// - representative: an account with the representative role to be designed
 		/// - proposal contains the extrinsics to be executed depending on the vote result
+		#[pallet::call_index(2)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn launch_representative_session(
 			origin: OriginFor<T>,
@@ -484,6 +487,7 @@ pub mod pallet {
 		/// The origin must be an owner of the asset
 		/// - referendum_index: index of the referendum the voter is taking part in
 		/// - vote: aye or nay
+		#[pallet::call_index(3)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn owners_vote(
 			origin: OriginFor<T>,
@@ -534,6 +538,7 @@ pub mod pallet {
 		/// - rep_account: account Of the candidate to the representative account
 		/// - collection: collection number of the asset.
 		/// - item: item number of the asset.
+		#[pallet::call_index(4)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn representative_approval(
 			origin: OriginFor<T>,
@@ -571,6 +576,7 @@ pub mod pallet {
 		/// - rep_account: account Of the candidate to the representative account
 		/// - collection: collection_id of the asset.
 		/// - item: item_id of the asset.
+		#[pallet::call_index(5)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn demote_representative(
 			origin: OriginFor<T>,
@@ -609,6 +615,7 @@ pub mod pallet {
 		/// - asset_type: type of the asset
 		/// - asset_id: id of the asset
 		/// - tenant: an account with the tenant role
+		#[pallet::call_index(6)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn launch_tenant_session(
 			origin: OriginFor<T>,
@@ -742,6 +749,7 @@ pub mod pallet {
 		/// - tenant: an account with the tenant role
 		/// - collection: collection_id of the asset
 		/// - item: item_id of the asset
+		#[pallet::call_index(7)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn link_tenant_to_asset(
 			origin: OriginFor<T>,
@@ -775,6 +783,7 @@ pub mod pallet {
 		/// - collection: collection_id of the asset
 		/// - item: item_id of the asset
 		/// - _judgement is provided by the representative while creating a tenant session
+		#[pallet::call_index(8)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_guaranty_payment(
 			origin: OriginFor<T>,
@@ -818,6 +827,7 @@ pub mod pallet {
 		/// - tenant: an account with the tenant role linked to the asset
 		/// - collection: collection_id of the asset
 		/// - item: item_id of the asset
+		#[pallet::call_index(9)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn unlink_tenant_to_asset(
 			origin: OriginFor<T>,

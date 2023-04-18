@@ -66,9 +66,9 @@ pub mod pallet {
 		frame_system::Config + COLL::Config<Instance1> + DEMO::Config + ROLES::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type Call: Parameter
-			+ UnfilteredDispatchable<Origin = <Self as frame_system::Config>::Origin>
+			+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
 			+ From<Call<Self>>
 			+ GetDispatchInfo;
 		type WeightInfo: WeightInfo;
@@ -76,7 +76,7 @@ pub mod pallet {
 		type CheckDelay: Get<Self::BlockNumber>;
 		type InvestorVoteAmount: Get<u128>;
 		type LocalCurrency: ReservableCurrency<Self::AccountId>;
-		type HouseCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::Origin>;
+		type HouseCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 
 		#[pallet::constant]
 		type CheckPeriod: Get<Self::BlockNumber>;
@@ -172,6 +172,7 @@ pub mod pallet {
 		///   vote
 		/// - democracy_failed_call : action to be executed when the proposal fail the democracy
 		///   vote
+		#[pallet::call_index(0)]
 		#[pallet::weight(10_000)]
 		pub fn submit_proposal(
 			origin: OriginFor<T>,
@@ -274,6 +275,7 @@ pub mod pallet {
 		/// - account_id : the account of the issuer of the proposal
 		/// - proposal_id : hash of the initial proposal call
 		/// - proposal : call encapsulating the inital proposal
+		#[pallet::call_index(1)]
 		#[pallet::weight(10_000)]
 		pub fn call_democracy_proposal(
 			origin: OriginFor<T>,
@@ -344,6 +346,7 @@ pub mod pallet {
 		/// - account_id : the account of a member of the House Council
 		/// - proposal_hash : hash of the initial proposal call
 		/// - proposal : call encapsulating the inital proposal
+		#[pallet::call_index(2)]
 		#[pallet::weight(10_000)]
 		pub fn call_dispatch(
 			origin: OriginFor<T>,
@@ -372,6 +375,7 @@ pub mod pallet {
 		/// The origin must be signed and member of the House Council
 		/// - proposal_hash : hash of the dispatch to be executed
 		/// - approve : value of the vote (true or false)
+		#[pallet::call_index(3)]
 		#[pallet::weight(10_000)]
 		pub fn council_vote(
 			origin: OriginFor<T>,
@@ -416,6 +420,7 @@ pub mod pallet {
 		/// Close a vote on a proposal
 		/// The origin must be signed and member of the House Council
 		/// proposal hash : hash of the proposalto be executed
+		#[pallet::call_index(4)]
 		#[pallet::weight(10_000)]
 		pub fn council_close_vote(
 			origin: OriginFor<T>,
@@ -474,6 +479,7 @@ pub mod pallet {
 		/// The origin must be signed and and have the investor role
 		/// - proposal_hash : hash of the dispatch to be executed
 		/// - approve : value of the vote (true or false)
+		#[pallet::call_index(5)]
 		#[pallet::weight(10_000)]
 		pub fn investor_vote(
 			origin: OriginFor<T>,
@@ -557,7 +563,7 @@ impl<T: Config> Pallet<T> {
 		call
 	}
 
-	pub fn get_origin(account_id: AccountIdOf<T>) -> <T as frame_system::Config>::Origin {
+	pub fn get_origin(account_id: AccountIdOf<T>) -> <T as frame_system::Config>::RuntimeOrigin {
 		frame_system::RawOrigin::Signed(account_id).into()
 	}
 

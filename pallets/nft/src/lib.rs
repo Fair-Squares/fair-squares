@@ -89,9 +89,9 @@ pub mod pallet {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_uniques::Config + pallet_roles::Config {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type WeightInfo: WeightInfo;
-		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
+		type ProtocolOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 		type NftCollectionId: Member
 			+ Parameter
 			+ Default
@@ -189,6 +189,7 @@ pub mod pallet {
 		/// - `metadata`: Arbitrary data about a Collection, e.g. IPFS hash or name
 		///
 		/// Emits CollectionCreated event
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::create_collection())]
 		#[transactional]
 		pub fn create_collection(
@@ -217,6 +218,7 @@ pub mod pallet {
 		/// - `collection_id`: The Collection of the asset to be minted.
 		/// - `item_id`: The Collection of the asset to be minted.
 		/// - `metadata`: Arbitrary data about an Item, e.g. IPFS hash or symbol
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint())]
 		#[transactional]
 		pub fn mint(
@@ -246,6 +248,7 @@ pub mod pallet {
 		/// - `collection_id`: The Collection of the asset to be transferred.
 		/// - `item_id`: The Item of the asset to be transferred.
 		/// - `dest`: The account to receive ownership of the asset.
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::transfer())]
 		#[transactional]
 		pub fn transfer(
@@ -272,6 +275,7 @@ pub mod pallet {
 		/// Parameters:
 		/// - `collection_id`: The Collection of the asset to be burned.
 		/// - `item_id`: The Item of the asset to be burned.
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn())]
 		#[transactional]
 		pub fn burn(
@@ -295,6 +299,7 @@ pub mod pallet {
 		///
 		/// Parameters:
 		/// - `collection_id`: The identifier of the asset Collection to be destroyed.
+		#[pallet::call_index(4)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::destroy_collection())]
 		#[transactional]
 		pub fn destroy_collection(

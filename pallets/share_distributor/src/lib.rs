@@ -64,7 +64,7 @@ pub mod pallet {
 		+ HousingFund::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 		type AssetId: IsType<<Self as Assets::Config>::AssetId> + Parameter + From<u32> + Ord + Copy;
 		#[pallet::constant]

@@ -8,7 +8,7 @@ fn contribute_without_having_investor_role_should_fail() {
 		let account_id: u64 = 1;
 		// test contribute with unsufficient contribution: MinContribution is 10
 		assert_noop!(
-			HousingFundModule::contribute_to_fund(Origin::signed(account_id), 5),
+			HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 5),
 			Error::<Test>::NotAnInvestor
 		);
 	});
@@ -20,13 +20,13 @@ fn contribute_with_less_than_minimun_amount_should_fail() {
 		let account_id: u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		// test contribute with unsufficient contribution: MinContribution is 10
 		assert_noop!(
-			HousingFundModule::contribute_to_fund(Origin::signed(account_id), 5),
+			HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 5),
 			Error::<Test>::ContributionTooSmall
 		);
 	});
@@ -38,13 +38,13 @@ fn contribute_with_with_not_enough_free_balance_should_fail() {
 		let account_id: u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		// test contribute with unsufficient free balance: balancce is 100
 		assert_noop!(
-			HousingFundModule::contribute_to_fund(Origin::signed(account_id), 110),
+			HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 110),
 			Error::<Test>::NotEnoughToContribute
 		);
 	});
@@ -58,13 +58,13 @@ fn contribute_with_valid_values_should_succeed() {
 		let fund_account_balance = Balances::free_balance(fund_account_id);
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 
 		// test contribute with sufficient contribution and free balance
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 25));
 
 		// the fund should have been incremented
 		assert_eq!(
@@ -125,15 +125,15 @@ fn contribute_update_contribution_should_succeed() {
 		let account_id: u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 
 		// contribute to the fund
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 20));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 20));
 		// update the contribution
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 30));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 30));
 
 		// a contribution must have been registered for the account
 		assert_eq!(
@@ -168,18 +168,18 @@ fn contribute_with_valid_values_from_two_contributors_should_succeed() {
 		let second_account_id: u64 = 2;
 		// Give the investor role to the accounts
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(first_account_id),
+			RuntimeOrigin::signed(first_account_id),
 			first_account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(second_account_id),
+			RuntimeOrigin::signed(second_account_id),
 			second_account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		// test contribute with sufficient contribution: MinContribution is 10
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(first_account_id), 25));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(second_account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(first_account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(second_account_id), 25));
 
 		assert_eq!(
 			HousingFundModule::fund_balance(),
@@ -233,16 +233,16 @@ fn withdraw_without_being_investor_should_fail() {
 		let non_contributor_account_id = 2;
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		// test contribute with sufficient contribution: MinContribution is 10
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 25));
 
 		// Try to withdraw with a non investor account
 		assert_noop!(
-			HousingFundModule::withdraw_fund(Origin::signed(non_contributor_account_id), 25),
+			HousingFundModule::withdraw_fund(RuntimeOrigin::signed(non_contributor_account_id), 25),
 			Error::<Test>::NotAnInvestor
 		);
 	});
@@ -255,21 +255,21 @@ fn withdraw_without_being_contributor_should_fail() {
 		let non_contributor_account_id = 2;
 		// Give the investor role to the accounts
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(non_contributor_account_id),
+			RuntimeOrigin::signed(non_contributor_account_id),
 			non_contributor_account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		// test contribute with sufficient contribution: MinContribution is 10
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 25));
 
 		// Try to withdraw with a non contributor account
 		assert_noop!(
-			HousingFundModule::withdraw_fund(Origin::signed(non_contributor_account_id), 25),
+			HousingFundModule::withdraw_fund(RuntimeOrigin::signed(non_contributor_account_id), 25),
 			Error::<Test>::NotAContributor
 		);
 	});
@@ -281,16 +281,16 @@ fn withdraw_more_than_contributed_should_fail() {
 		let account_id: u64 = 1;
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 25));
 
 		// Try to withdraw more than contributed
 		assert_noop!(
-			HousingFundModule::withdraw_fund(Origin::signed(account_id), 30),
+			HousingFundModule::withdraw_fund(RuntimeOrigin::signed(account_id), 30),
 			Error::<Test>::NotEnoughFundToWithdraw
 		);
 	});
@@ -305,12 +305,12 @@ fn withdraw_with_valid_values_should_succeed() {
 
 		// Give the investor role to the account
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 25));
 
 		// Check the state of the contribution
 		assert_eq!(
@@ -330,7 +330,7 @@ fn withdraw_with_valid_values_should_succeed() {
 			})
 		);
 
-		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(account_id), 20));
+		assert_ok!(HousingFundModule::withdraw_fund(RuntimeOrigin::signed(account_id), 20));
 
 		// check if balance has been correctly updated
 		assert_eq!(
@@ -400,21 +400,21 @@ fn withdraw_with_valid_values_from_two_contributors_should_succeed() {
 		let second_account_id: u64 = 2;
 		// Give the investor role to the accounts
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(first_account_id),
+			RuntimeOrigin::signed(first_account_id),
 			first_account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(second_account_id),
+			RuntimeOrigin::signed(second_account_id),
 			second_account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 		// test contribute with sufficient contribution: MinContribution is 10
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(first_account_id), 25));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(second_account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(first_account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(second_account_id), 25));
 
-		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(first_account_id), 20));
-		assert_ok!(HousingFundModule::withdraw_fund(Origin::signed(second_account_id), 20));
+		assert_ok!(HousingFundModule::withdraw_fund(RuntimeOrigin::signed(first_account_id), 20));
+		assert_ok!(HousingFundModule::withdraw_fund(RuntimeOrigin::signed(second_account_id), 20));
 
 		assert_eq!(
 			HousingFundModule::fund_balance(),
@@ -482,9 +482,9 @@ fn house_bidding_without_enough_in_fund_should_fail() {
 fn house_bidding_with_an_non_contributor_account_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 62));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 62));
 
 		// Try to bid for a house without enough in pot
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
@@ -499,11 +499,11 @@ fn house_bidding_with_an_non_contributor_account_should_fail() {
 fn house_bidding_with_an_contributor_with_not_enough_available_should_fail() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 42));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 20));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 42));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(2), 20));
 
 		// Try to bid for a house without enough in pot
 		// account_id 2 hadn't contributed to the fund and should not be able to be part of the bid
@@ -520,11 +520,11 @@ fn house_bidding_with_valid_values_should_succeed() {
 		let fund_account_id = HousingFundModule::fund_account_id();
 
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(1, 1, 60, vec![(1, 30), (2, 30)]));
 
@@ -617,11 +617,11 @@ fn cancel_house_bidding_with_valid_values_should_succeed() {
 		let fund_account_id = HousingFundModule::fund_account_id();
 
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(1, 1, 60, vec![(1, 30), (2, 30)]));
 
@@ -748,8 +748,8 @@ fn fund_info_reserve_should_succeed() {
 fn contribution_get_total_balance_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 50));
 
 		let mut contribution = HousingFundModule::contributions(1).unwrap();
 		// reserve an amount from an account contribution
@@ -766,8 +766,8 @@ fn contribution_get_total_balance_should_succeed() {
 fn contribution_can_reserve_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the account
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 50));
 		// get the account contribution
 		let contribution = HousingFundModule::contributions(1).unwrap();
 		// check if the method respond correctly
@@ -780,8 +780,8 @@ fn contribution_can_reserve_should_succeed() {
 fn contribution_reserve_amount_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 50));
 
 		let mut contribution = HousingFundModule::contributions(1).unwrap();
 
@@ -796,8 +796,8 @@ fn contribution_reserve_amount_should_succeed() {
 fn contribution_unreserve_amount_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 50));
 
 		let mut contribution = HousingFundModule::contributions(1).unwrap();
 
@@ -813,11 +813,11 @@ fn contribution_unreserve_amount_should_succeed() {
 fn get_contribution_share_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(2), 40));
 
 		assert_eq!(
 			HousingFundModule::get_contribution_share(),
@@ -835,12 +835,12 @@ fn check_available_fund_not_enough_fund_should_fail() {
 		let account_id: u64 = 1;
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 20));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 20));
 
 		assert!(!HousingFundModule::check_available_fund(20));
 	});
@@ -852,12 +852,12 @@ fn check_available_fund_has_enough_fund_should_succeed() {
 		let account_id: u64 = 1;
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(account_id),
+			RuntimeOrigin::signed(account_id),
 			account_id,
 			crate::ROLES::Accounts::INVESTOR
 		));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), 25));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), 25));
 
 		assert!(HousingFundModule::check_available_fund(20));
 	});
@@ -875,8 +875,8 @@ fn get_contributions_without_contribution_should_succeed() {
 fn get_contributions_with_contribution_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 25));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 25));
 
 		let contributions = HousingFundModule::get_contributions();
 		assert_eq!(contributions.len(), 1);
@@ -919,8 +919,8 @@ fn fund_info_use_reserved_should_succeed() {
 fn contribution_use_reserved_amount_should_succeed() {
 	new_test_ext().execute_with(|| {
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 50));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 50));
 
 		let mut contribution = HousingFundModule::contributions(1).unwrap();
 
@@ -949,11 +949,11 @@ fn unreserve_house_bidding_amount_with_valid_values_should_succeed() {
 		let _fund_account_id = HousingFundModule::fund_account_id();
 
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(1, 1, 60, vec![(1, 30), (2, 30)]));
 
@@ -997,11 +997,11 @@ fn validate_house_bidding_with_valid_values_should_succeed() {
 		let _fund_account_id = HousingFundModule::fund_account_id();
 
 		// Give the investor role to the accounts
-		assert_ok!(RoleModule::set_role(Origin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
-		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(1), 1, crate::ROLES::Accounts::INVESTOR));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(2), 2, crate::ROLES::Accounts::INVESTOR));
 
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(1), 40));
-		assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(2), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(1), 40));
+		assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(2), 40));
 
 		assert_ok!(HousingFundModule::house_bidding(1, 1, 60, vec![(1, 30), (2, 30)]));
 

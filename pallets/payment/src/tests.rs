@@ -24,7 +24,7 @@ fn test_pay_works() {
 
 		// should be able to create a payment with available balance
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -72,7 +72,7 @@ fn test_pay_works() {
 		// the payment should not be overwritten
 		assert_noop!(
 			PaymentModule::pay(
-				Origin::signed(PAYMENT_CREATOR),
+				RuntimeOrigin::signed(PAYMENT_CREATOR),
 				PAYMENT_RECIPENT,
 				payment_amount,
 				None
@@ -102,7 +102,7 @@ fn test_cancel_works() {
 
 		// should be able to create a payment with available balance
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -126,7 +126,7 @@ fn test_cancel_works() {
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// cancel should succeed when caller is the recipent
-		assert_ok!(PaymentModule::cancel(Origin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR));
+		assert_ok!(PaymentModule::cancel(RuntimeOrigin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR));
 		assert_eq!(
 			last_event(),
 			crate::Event::<Test>::PaymentCancelled { from: PAYMENT_CREATOR, to: PAYMENT_RECIPENT }
@@ -151,7 +151,7 @@ fn test_release_works() {
 
 		// should be able to create a payment with available balance
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -174,7 +174,7 @@ fn test_release_works() {
 		assert_eq!(Balances::free_balance(&PAYMENT_RECIPENT), 1);
 
 		// should succeed for valid payment
-		assert_ok!(PaymentModule::release(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT));
+		assert_ok!(PaymentModule::release(RuntimeOrigin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT));
 		assert_eq!(
 			last_event(),
 			crate::Event::<Test>::PaymentReleased { from: PAYMENT_CREATOR, to: PAYMENT_RECIPENT }
@@ -195,7 +195,7 @@ fn test_release_works() {
 
 		// should be able to create another payment since previous is released
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -221,7 +221,7 @@ fn test_resolve_payment_works() {
 
 		// should be able to create a payment with available balance
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -230,7 +230,7 @@ fn test_resolve_payment_works() {
 		// should fail for non whitelisted caller
 		assert_noop!(
 			PaymentModule::resolve_payment(
-				Origin::signed(PAYMENT_CREATOR),
+				RuntimeOrigin::signed(PAYMENT_CREATOR),
 				PAYMENT_CREATOR,
 				PAYMENT_RECIPENT,
 				Percent::from_percent(100)
@@ -240,7 +240,7 @@ fn test_resolve_payment_works() {
 
 		// should be able to release a payment
 		assert_ok!(PaymentModule::resolve_payment(
-			Origin::signed(RESOLVER_ACCOUNT),
+			RuntimeOrigin::signed(RESOLVER_ACCOUNT),
 			PAYMENT_CREATOR,
 			PAYMENT_RECIPENT,
 			Percent::from_percent(100)
@@ -269,7 +269,7 @@ fn test_resolve_payment_works() {
 		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
 
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -277,7 +277,7 @@ fn test_resolve_payment_works() {
 
 		// should be able to cancel a payment
 		assert_ok!(PaymentModule::resolve_payment(
-			Origin::signed(RESOLVER_ACCOUNT),
+			RuntimeOrigin::signed(RESOLVER_ACCOUNT),
 			PAYMENT_CREATOR,
 			PAYMENT_RECIPENT,
 			Percent::from_percent(0)
@@ -319,7 +319,7 @@ fn test_charging_fee_payment_works() {
 
 		// should be able to create a payment with available balance
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT_FEE_CHARGED,
 			payment_amount,
 			None
@@ -348,7 +348,7 @@ fn test_charging_fee_payment_works() {
 
 		// should succeed for valid payment
 		assert_ok!(PaymentModule::release(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT_FEE_CHARGED
 		));
 		// the payment amount should be transferred
@@ -381,7 +381,7 @@ fn test_charging_fee_payment_works_when_canceled() {
 
 		// should be able to create a payment with available balance
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT_FEE_CHARGED,
 			payment_amount,
 			None
@@ -407,7 +407,7 @@ fn test_charging_fee_payment_works_when_canceled() {
 
 		// should succeed for valid payment
 		assert_ok!(PaymentModule::cancel(
-			Origin::signed(PAYMENT_RECIPENT_FEE_CHARGED),
+			RuntimeOrigin::signed(PAYMENT_RECIPENT_FEE_CHARGED),
 			PAYMENT_CREATOR
 		));
 		// the payment amount should be transferred
@@ -431,7 +431,7 @@ fn test_pay_with_remark_works() {
 
 		// should be able to create a payment with available balance
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			Some(vec![1u8; 10].try_into().unwrap())
@@ -469,7 +469,7 @@ fn test_pay_with_remark_works() {
 		// the payment should not be overwritten
 		assert_noop!(
 			PaymentModule::pay(
-				Origin::signed(PAYMENT_CREATOR),
+				RuntimeOrigin::signed(PAYMENT_CREATOR),
 				PAYMENT_RECIPENT,
 				payment_amount,
 				None
@@ -496,7 +496,7 @@ fn test_do_not_overwrite_logic_works() {
 		let expected_incentive_amount = payment_amount / INCENTIVE_PERCENTAGE as u64;
 
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -504,7 +504,7 @@ fn test_do_not_overwrite_logic_works() {
 
 		assert_noop!(
 			PaymentModule::pay(
-				Origin::signed(PAYMENT_CREATOR),
+				RuntimeOrigin::signed(PAYMENT_CREATOR),
 				PAYMENT_RECIPENT,
 				payment_amount,
 				None
@@ -528,7 +528,7 @@ fn test_do_not_overwrite_logic_works() {
 		// the payment should not be overwritten
 		assert_noop!(
 			PaymentModule::pay(
-				Origin::signed(PAYMENT_CREATOR),
+				RuntimeOrigin::signed(PAYMENT_CREATOR),
 				PAYMENT_RECIPENT,
 				payment_amount,
 				None
@@ -546,21 +546,21 @@ fn test_request_refund() {
 		let expected_cancel_block = CANCEL_BLOCK_BUFFER + 1;
 
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
 		));
 
 		assert_ok!(PaymentModule::request_refund(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT
 		));
 
 		// do not overwrite payment
 		assert_noop!(
 			PaymentModule::pay(
-				Origin::signed(PAYMENT_CREATOR),
+				RuntimeOrigin::signed(PAYMENT_CREATOR),
 				PAYMENT_RECIPENT,
 				payment_amount,
 				None
@@ -599,7 +599,7 @@ fn test_dispute_refund() {
 		let expected_cancel_block = CANCEL_BLOCK_BUFFER + 1;
 
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -607,12 +607,12 @@ fn test_dispute_refund() {
 
 		// cannot dispute if refund is not requested
 		assert_noop!(
-			PaymentModule::dispute_refund(Origin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR),
+			PaymentModule::dispute_refund(RuntimeOrigin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR),
 			Error::InvalidAction
 		);
 		// creator requests a refund
 		assert_ok!(PaymentModule::request_refund(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT
 		));
 		// ensure the request is added to the refund queue
@@ -624,7 +624,7 @@ fn test_dispute_refund() {
 
 		// recipient disputes the refund request
 		assert_ok!(PaymentModule::dispute_refund(
-			Origin::signed(PAYMENT_RECIPENT),
+			RuntimeOrigin::signed(PAYMENT_RECIPENT),
 			PAYMENT_CREATOR
 		));
 
@@ -661,13 +661,13 @@ fn test_request_payment() {
 		let expected_incentive_amount = 0;
 
 		assert_ok!(PaymentModule::request_payment(
-			Origin::signed(PAYMENT_RECIPENT),
+			RuntimeOrigin::signed(PAYMENT_RECIPENT),
 			PAYMENT_CREATOR,
 			payment_amount,
 		));
 
 		assert_noop!(
-			PaymentModule::request_refund(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT),
+			PaymentModule::request_refund(RuntimeOrigin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT),
 			crate::Error::<Test>::InvalidAction
 		);
 
@@ -699,14 +699,14 @@ fn test_requested_payment_cannot_be_released() {
 		let payment_amount = 20;
 
 		assert_ok!(PaymentModule::request_payment(
-			Origin::signed(PAYMENT_RECIPENT),
+			RuntimeOrigin::signed(PAYMENT_RECIPENT),
 			PAYMENT_CREATOR,
 			payment_amount,
 		));
 
 		// requested payment cannot be released
 		assert_noop!(
-			PaymentModule::release(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT),
+			PaymentModule::release(RuntimeOrigin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT),
 			Error::InvalidAction
 		);
 	});
@@ -718,12 +718,12 @@ fn test_requested_payment_can_be_cancelled_by_requestor() {
 		let payment_amount = 20;
 
 		assert_ok!(PaymentModule::request_payment(
-			Origin::signed(PAYMENT_RECIPENT),
+			RuntimeOrigin::signed(PAYMENT_RECIPENT),
 			PAYMENT_CREATOR,
 			payment_amount,
 		));
 
-		assert_ok!(PaymentModule::cancel(Origin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR));
+		assert_ok!(PaymentModule::cancel(RuntimeOrigin::signed(PAYMENT_RECIPENT), PAYMENT_CREATOR));
 
 		// the request should be removed from storage
 		assert_eq!(PaymentStore::<Test>::get(PAYMENT_CREATOR, PAYMENT_RECIPENT), None);
@@ -739,7 +739,7 @@ fn test_accept_and_pay() {
 		//let recipient_initial_balance = 1;
 
 		assert_ok!(PaymentModule::request_payment(
-			Origin::signed(PAYMENT_RECIPENT),
+			RuntimeOrigin::signed(PAYMENT_RECIPENT),
 			PAYMENT_CREATOR,
 			payment_amount,
 		));
@@ -756,7 +756,7 @@ fn test_accept_and_pay() {
 		);
 
 		assert_ok!(PaymentModule::accept_and_pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 		));
 
@@ -784,10 +784,10 @@ fn test_accept_and_pay() {
 #[test]
 fn test_accept_and_pay_should_fail_for_non_payment_requested() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(PaymentModule::pay(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT, 20, None));
+		assert_ok!(PaymentModule::pay(RuntimeOrigin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT, 20, None));
 
 		assert_noop!(
-			PaymentModule::accept_and_pay(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT,),
+			PaymentModule::accept_and_pay(RuntimeOrigin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT,),
 			Error::InvalidAction
 		);
 	});
@@ -803,7 +803,7 @@ fn test_accept_and_pay_should_charge_fee_correctly() {
 		let expected_fee_amount = payment_amount / MARKETPLACE_FEE_PERCENTAGE as u64;
 
 		assert_ok!(PaymentModule::request_payment(
-			Origin::signed(PAYMENT_RECIPENT_FEE_CHARGED),
+			RuntimeOrigin::signed(PAYMENT_RECIPENT_FEE_CHARGED),
 			PAYMENT_CREATOR,
 			payment_amount,
 		));
@@ -820,7 +820,7 @@ fn test_accept_and_pay_should_charge_fee_correctly() {
 		);
 
 		assert_ok!(PaymentModule::accept_and_pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT_FEE_CHARGED,
 		));
 
@@ -1021,7 +1021,7 @@ fn test_settle_payment_works_for_cancel() {
 		// should be able to create a payment with available balance within a
 		// transaction
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -1058,7 +1058,7 @@ fn test_settle_payment_works_for_release() {
 		// should be able to create a payment with available balance within a
 		// transaction
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
@@ -1102,7 +1102,7 @@ fn test_settle_payment_works_for_70_30() {
 		// should be able to create a payment with available balance within a
 		// transaction
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT_FEE_CHARGED,
 			payment_amount,
 			None
@@ -1152,7 +1152,7 @@ fn test_settle_payment_works_for_50_50() {
 		// should be able to create a payment with available balance within a
 		// transaction
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT_FEE_CHARGED,
 			payment_amount,
 			None
@@ -1197,14 +1197,14 @@ fn test_automatic_refund_works() {
 		const CANCEL_BLOCK: u64 = CANCEL_PERIOD + 1;
 
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT,
 			payment_amount,
 			None
 		));
 
 		assert_ok!(PaymentModule::request_refund(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT
 		));
 
@@ -1264,22 +1264,22 @@ fn test_automatic_refund_works_for_multiple_payments() {
 	new_test_ext().execute_with(|| {
 		const CANCEL_PERIOD: u64 = 600;
 
-		assert_ok!(PaymentModule::pay(Origin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT, 20, None));
+		assert_ok!(PaymentModule::pay(RuntimeOrigin::signed(PAYMENT_CREATOR), PAYMENT_RECIPENT, 20, None));
 
 		assert_ok!(PaymentModule::pay(
-			Origin::signed(PAYMENT_CREATOR_TWO),
+			RuntimeOrigin::signed(PAYMENT_CREATOR_TWO),
 			PAYMENT_RECIPENT_TWO,
 			20,
 			None
 		));
 
 		assert_ok!(PaymentModule::request_refund(
-			Origin::signed(PAYMENT_CREATOR),
+			RuntimeOrigin::signed(PAYMENT_CREATOR),
 			PAYMENT_RECIPENT
 		));
 		run_n_blocks(1);
 		assert_ok!(PaymentModule::request_refund(
-			Origin::signed(PAYMENT_CREATOR_TWO),
+			RuntimeOrigin::signed(PAYMENT_CREATOR_TWO),
 			PAYMENT_RECIPENT_TWO
 		));
 

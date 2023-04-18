@@ -121,7 +121,7 @@ config_pallet_line="pub use pallet_$pallet_name;"
 replace_librs "use" ""
 
 weight_line="type WeightInfo = pallet_$pallet_name::weights::SubstrateWeight<Runtime>;"
-config_pallet_line="impl pallet_$pallet_name::Config for Runtime {\n\ttype Event = Event;\n\t$weight_line\n}\n"
+config_pallet_line="impl pallet_$pallet_name::Config for Runtime {\n\ttype RuntimeEvent = RuntimeEvent;\n\t$weight_line\n}\n"
 replace_librs "config" ""
 
 config_pallet_line="$tab\t\t${pallet_module_name}Module: pallet_$pallet_name,"

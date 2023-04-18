@@ -5,7 +5,7 @@ use frame_support::{assert_noop, assert_ok};
 #[test]
 fn test_struct_methods() {
 	new_test_ext(4).execute_with(|| {
-		assert_ok!(Investor::<Test>::new(Origin::signed(1)));
+		assert_ok!(Investor::<Test>::new(RuntimeOrigin::signed(1)));
 		//--checking investor storage if its updated----
 		assert!(InvestorLog::<Test>::contains_key(1));
 		assert_eq!(
@@ -14,7 +14,7 @@ fn test_struct_methods() {
 		);
 
 		//---HouseSeller-------
-		assert_ok!(HouseSeller::<Test>::new(Origin::signed(1)));
+		assert_ok!(HouseSeller::<Test>::new(RuntimeOrigin::signed(1)));
 		assert_eq!(
 			RoleModule::get_pending_house_sellers(),
 			vec![HouseSeller {
@@ -28,7 +28,7 @@ fn test_struct_methods() {
 		assert_ne!(RoleModule::get_pending_house_sellers(), vec![]); //assert_ne! is not supported at the moment, as this expression should panic
 
 		//-------tenant-----------
-		assert_ok!(Tenant::<Test>::new(Origin::signed(1)));
+		assert_ok!(Tenant::<Test>::new(RuntimeOrigin::signed(1)));
 		//-- checking Tenant storage------
 		assert_eq!(
 			RoleModule::tenants(1),
@@ -45,7 +45,7 @@ fn test_struct_methods() {
 		);
 
 		//-----Servicer-----------------------------------------
-		assert_ok!(Servicer::<Test>::new(Origin::signed(2)));
+		assert_ok!(Servicer::<Test>::new(RuntimeOrigin::signed(2)));
 		//--checking storage-------------
 		assert_eq!(
 			RoleModule::get_pending_servicers(),
@@ -58,7 +58,7 @@ fn test_struct_methods() {
 		);
 
 		//Representative
-		assert_ok!(Representative::<Test>::new(Origin::signed(3)));
+		assert_ok!(Representative::<Test>::new(RuntimeOrigin::signed(3)));
 		//checking struct in Representative waiting list
 		assert_eq!(
 			RoleModule::get_pending_representatives(3).unwrap(),
@@ -77,18 +77,18 @@ fn test_struct_methods() {
 fn test_account_approval_rejection() {
 	new_test_ext(4).execute_with(|| {
 		//----testing account approval-----
-		let master = Origin::signed(4);
+		let master = RuntimeOrigin::signed(4);
 		assert_eq!(RoleModule::get_pending_servicers().len(), 0);
 		assert_eq!(RoleModule::get_pending_house_sellers().len(), 0);
 
 		assert_eq!(RoleModule::get_pending_notaries().len(), 0);
 
-		assert_ok!(RoleModule::set_role(Origin::signed(2), 2, Accounts::SERVICER));
-		assert_ok!(RoleModule::set_role(Origin::signed(3), 3, Accounts::SELLER));
-		assert_ok!(RoleModule::set_role(Origin::signed(5), 5, Accounts::SERVICER));
-		assert_ok!(RoleModule::set_role(Origin::signed(6), 6, Accounts::SELLER));
-		assert_ok!(RoleModule::set_role(Origin::signed(7), 7, Accounts::NOTARY));
-		assert_ok!(RoleModule::set_role(Origin::signed(8), 8, Accounts::NOTARY));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(2), 2, Accounts::SERVICER));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(3), 3, Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(5), 5, Accounts::SERVICER));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(6), 6, Accounts::SELLER));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(7), 7, Accounts::NOTARY));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(8), 8, Accounts::NOTARY));
 
 		assert_eq!(RoleModule::get_requested_role(2), Some(Accounts::SERVICER));
 		assert_eq!(RoleModule::get_requested_role(3), Some(Accounts::SELLER));
@@ -152,12 +152,12 @@ fn test_account_approval_rejection() {
 #[test]
 fn test_account_creation() {
 	new_test_ext(4).execute_with(|| {
-		let master = Origin::signed(4);
-		let user1 = Origin::signed(1);
-		let user2 = Origin::signed(2);
-		let user3 = Origin::signed(3);
-		let user4 = Origin::signed(5);
-		let user5 = Origin::signed(6);
+		let master = RuntimeOrigin::signed(4);
+		let user1 = RuntimeOrigin::signed(1);
+		let user2 = RuntimeOrigin::signed(2);
+		let user3 = RuntimeOrigin::signed(3);
+		let user4 = RuntimeOrigin::signed(5);
+		let user5 = RuntimeOrigin::signed(6);
 
 		let wait_sell = RoleModule::get_pending_house_sellers();
 		let sell_len = wait_sell.len();
@@ -209,7 +209,7 @@ fn test_role_notary() {
 		let user1 = 1;
 
 		// user1: set_role - notary
-		assert_ok!(RoleModule::set_role(Origin::signed(user1), user1, Acc::NOTARY));
+		assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(user1), user1, Acc::NOTARY));
 
 		// check notary approval list
 		assert_eq!(
@@ -223,7 +223,7 @@ fn test_role_notary() {
 		);
 
 		// approve notary
-		assert_ok!(RoleModule::account_approval(Origin::signed(admin), user1));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(admin), user1));
 
 		// check notary storage
 		assert_eq!(
@@ -248,7 +248,7 @@ fn test_set_manager() {
 		assert_eq!(Sudo::key(), Some(4));
 		//---changing--------------------------
 
-		assert_ok!(RoleModule::set_manager(Origin::signed(4), 2));
+		assert_ok!(RoleModule::set_manager(RuntimeOrigin::signed(4), 2));
 		assert_eq!(Sudo::key(), Some(2));
 	})
 }

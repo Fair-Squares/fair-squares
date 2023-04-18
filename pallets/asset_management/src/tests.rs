@@ -6,16 +6,16 @@ use mock::*;
 pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
 
 pub fn prep_roles() {
-	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
-	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
-	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok(); //FERDIE approval will be tested
-	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::TENANT).ok();
-	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::TENANT).ok();
-	RoleModule::set_role(Origin::signed(PEGGY), PEGGY, Acc::TENANT).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), CHARLIE).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(BOB), BOB, Acc::SELLER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), BOB).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(EVE), EVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(FERDIE), FERDIE, Acc::REPRESENTATIVE).ok(); //FERDIE approval will be tested
+	RoleModule::set_role(RuntimeOrigin::signed(GERARD), GERARD, Acc::TENANT).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(HUNTER), HUNTER, Acc::TENANT).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(PEGGY), PEGGY, Acc::TENANT).ok();
 }
 
 fn next_block() {
@@ -41,25 +41,25 @@ pub fn prep_test(
 	prep_roles();
 
 	//Dave and EVE contribute to the fund
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(DAVE), 50_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(EVE), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(DAVE), 50_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(EVE), 50_000));
 
 	//Charlie creates a collection
 	assert_ok!(NftModule::create_collection(
-		Origin::signed(CHARLIE),
+		RuntimeOrigin::signed(CHARLIE),
 		NftColl::OFFICESTEST,
 		metadata0.clone()
 	));
 	//Charlie creates a second collection
 	assert_ok!(NftModule::create_collection(
-		Origin::signed(CHARLIE),
+		RuntimeOrigin::signed(CHARLIE),
 		NftColl::APPARTMENTSTEST,
 		metadata0
 	));
 	// Bob creates a proposal without submiting for review
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
-		Origin::signed(BOB),
+		RuntimeOrigin::signed(BOB),
 		NftColl::OFFICESTEST,
 		Some(price1),
 		metadata1,
@@ -68,7 +68,7 @@ pub fn prep_test(
 	));
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
-		Origin::signed(BOB),
+		RuntimeOrigin::signed(BOB),
 		NftColl::APPARTMENTSTEST,
 		Some(price2),
 		metadata2,
@@ -86,7 +86,7 @@ fn test_representative() {
 	// ...
 	ExtBuilder::default().build().execute_with(|| {
 		//submit a request for representative role
-		RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::REPRESENTATIVE).ok();
+		RoleModule::set_role(RuntimeOrigin::signed(CHARLIE), CHARLIE, Acc::REPRESENTATIVE).ok();
 		//approve request
 		//assert_ok!(AssetManagement::)
 	});
@@ -108,7 +108,7 @@ fn test_integration_test() {
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
-		let origin_bob = Origin::signed(BOB);
+		let origin_bob = RuntimeOrigin::signed(BOB);
 
 		//Change first asset status to FINALISED
 		OnboardingModule::change_status(
@@ -219,8 +219,8 @@ fn test_integration_test() {
 		//Representative Role status before Approval
 		assert!(!RoleModule::get_pending_representatives(FERDIE).unwrap().activated);
 
-		let origin_eve = Origin::signed(EVE);
-		let origin_dave = Origin::signed(DAVE);
+		let origin_eve = RuntimeOrigin::signed(EVE);
+		let origin_dave = RuntimeOrigin::signed(DAVE);
 
 		//////////////////////////////////////////////////////////////////////////////////////////
 		/////							TEST representative_approval						//////
@@ -313,7 +313,7 @@ fn test_integration_test() {
 
 		println!("\n\nlaunch_tenant_session - : NOT A REPRESENTATIVE");
 
-		let origin_ferdie = Origin::signed(FERDIE);
+		let origin_ferdie = RuntimeOrigin::signed(FERDIE);
 
 		assert_err!(
 			AssetManagement::launch_tenant_session(

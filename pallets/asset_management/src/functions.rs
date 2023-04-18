@@ -222,7 +222,7 @@ impl<T: Config> Pallet<T> {
 		caller: T::AccountId,
 		proposal_call: pallet::Call<T>,
 	) -> T::Hash {
-		let origin: <T as frame_system::Config>::Origin = RawOrigin::Signed(caller.clone()).into();
+		let origin: <T as frame_system::Config>::RuntimeOrigin = RawOrigin::Signed(caller.clone()).into();
 		let proposal = Box::new(Self::get_formatted_call(proposal_call.into()));
 
 		let call = Call::<T>::execute_call_dispatch { account_id: caller, proposal };
