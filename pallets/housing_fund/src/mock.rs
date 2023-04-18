@@ -42,8 +42,8 @@ impl frame_system::Config for Test {
 	type BlockWeights = ();
 	type BlockLength = ();
 	type DbWeight = ();
-	type Origin = Origin;
-	type Call = Call;
+	type RuntimeOrigin = RuntimeOrigin;
+	type RuntimeCall = RuntimeCall;
 	type Index = u64;
 	type BlockNumber = u64;
 	type Hash = H256;
@@ -51,7 +51,7 @@ impl frame_system::Config for Test {
 	type AccountId = u64;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
@@ -65,14 +65,14 @@ impl frame_system::Config for Test {
 }
 
 impl pallet_sudo::Config for Test {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 }
 parameter_types! {
 	pub const MaxMembers:u32 =200;
 }
 impl pallet_roles::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type WeightInfo = ();
 	type MaxMembers = MaxMembers;
@@ -91,7 +91,7 @@ parameter_types! {
 }
 
 impl pallet_uniques::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type CollectionId = CollectionId;
 	type ItemId = ItemId;
 	type Currency = Balances;
@@ -113,7 +113,7 @@ parameter_types! {
 	pub ReserveCollectionIdUpTo: u32 = 3;
 }
 impl pallet_nft::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type NftCollectionId = CollectionId;
 	type NftItemId = ItemId;
@@ -131,7 +131,7 @@ parameter_types! {
 }
 
 impl pallet_housing_fund::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type LocalCurrency = Balances;
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
@@ -149,7 +149,7 @@ impl pallet_balances::Config for Test {
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
 	type Balance = Balance;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;

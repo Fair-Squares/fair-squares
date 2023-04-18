@@ -75,8 +75,8 @@ impl system::Config for Test {
 	type BlockWeights = ();
 	type BlockLength = ();
 	type DbWeight = ();
-	type Origin = Origin;
-	type Call = Call;
+	type RuntimeOrigin = RuntimeOrigin;
+	type RuntimeCall = RuntimeCall;
 	type Index = u64;
 	type BlockNumber = BlockNumber;
 	type Hash = H256;
@@ -84,7 +84,7 @@ impl system::Config for Test {
 	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Header = Header;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
@@ -98,7 +98,7 @@ impl system::Config for Test {
 }
 
 impl pallet_tenancy::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type WeightInfo = ();
 }
@@ -134,7 +134,7 @@ parameter_types! {
 }
 
 impl pallet_payment::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type DisputeResolver = MockDisputeResolver;
 	type IncentivePercentage = IncentivePercentage;
@@ -146,7 +146,7 @@ impl pallet_payment::Config for Test {
 }
 
 impl pallet_finalizer::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 }
 
@@ -163,7 +163,7 @@ parameter_types! {
 }
 
 impl pallet_uniques::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type CollectionId = CollectionId;
 	type ItemId = ItemId;
 	type Currency = Balances;
@@ -185,10 +185,10 @@ parameter_types! {
 	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) * BlockWeights::get().max_block;
 }
 impl pallet_scheduler::Config for Test {
-	type Event = Event;
-	type Origin = Origin;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeOrigin = RuntimeOrigin;
 	type PalletsOrigin = OriginCaller;
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	type MaximumWeight = MaximumSchedulerWeight;
 	type ScheduleOrigin = EnsureRoot<AccountId>;
 	type MaxScheduledPerBlock = ();
@@ -203,9 +203,9 @@ parameter_types! {
 	pub const MotionDuration: BlockNumber = 3;
 }
 impl pallet_collective::Config<Instance1> for Test {
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	type Proposal = Call;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type MotionDuration = MotionDuration;
 	type MaxProposals = MaxProposal;
 	type MaxMembers = MaxMembers;
@@ -235,7 +235,7 @@ parameter_types! {
 }
 
 impl pallet_bidding::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type Currency = Balances;
 	type SimultaneousAssetBidder = SimultaneousAssetBidder;
@@ -256,7 +256,7 @@ parameter_types! {
 }
 
 impl pallet_identity::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type BasicDeposit = BasicDeposit;
 	type FieldDeposit = FieldDeposit;
@@ -272,7 +272,7 @@ impl pallet_identity::Config for Test {
 
 impl pallet_democracy::Config for Test {
 	type Proposal = Call;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type EnactmentPeriod = EnactmentPeriod; //ok
 	type LaunchPeriod = LaunchPeriod; //ok
@@ -307,7 +307,7 @@ impl pallet_balances::Config for Test {
 	type ReserveIdentifier = [u8; 8];
 	type MaxLocks = ConstU32<10>;
 	type Balance = u64;
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = ConstU64<1>;
 	type AccountStore = System;
@@ -318,7 +318,7 @@ parameter_types! {
 	pub ReserveCollectionIdUpTo: u32 = 3;
 }
 impl pallet_nft::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type NftCollectionId = CollectionId;
 	type NftItemId = ItemId;
@@ -335,8 +335,8 @@ parameter_types! {
 }
 
 impl pallet_voting::Config for Test {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 	type WeightInfo = ();
 	type Delay = Delay;
 	type InvestorVoteAmount = InvestorVoteAmount;
@@ -355,7 +355,7 @@ parameter_types! {
 }
 
 impl pallet_onboarding::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type Prop = Call;
 	type ProposalFee = ProposalFee;
@@ -366,15 +366,15 @@ impl pallet_onboarding::Config for Test {
 
 //---implementing pallet sudo---------
 impl pallet_sudo::Config for Test {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 }
 
 parameter_types! {
 	pub const MaxMembers:u32 =15;
 }
 impl pallet_roles::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type WeightInfo = ();
 	type MaxMembers = MaxMembers;
@@ -390,7 +390,7 @@ parameter_types! {
 }
 
 impl pallet_assets::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Balance = u32;
 	type AssetId = u32;
 	type Currency = Balances;
@@ -410,7 +410,7 @@ parameter_types! {
 	pub const AssetsFees: Balance = 15000;
 }
 impl pallet_share_distributor::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type AssetId = u32;
 	type Fees = AssetsFees;
@@ -426,7 +426,7 @@ parameter_types! {
 
 /// Configure the pallet-housing_fund in pallets/housing_fund.
 impl pallet_housing_fund::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type LocalCurrency = Balances;
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
@@ -447,8 +447,8 @@ parameter_types! {
 }
 
 impl pallet_asset_management::Config for Test {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 	type Delay = Delay;
 	type CheckDelay = CheckDelay;
 	type InvestorVoteAmount = InvestorVoteAmount;

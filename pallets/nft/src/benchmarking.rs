@@ -47,14 +47,14 @@ fn do_mint<T: Config>(caller: T::AccountId) {
 benchmarks! {
 	create_collection {
 		let caller = create_account::<T>("caller", 0);
-		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+		let caller_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
 			caller.clone(),
 			Roles::Accounts::SERVICER
 		);
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
-		let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+		let key_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(key_account.clone()));
 		Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
 
 		let metadata: BoundedVec<_, _> = vec![0; <T as UNQ::Config>::StringLimit::get() as usize].try_into().unwrap();
@@ -67,13 +67,13 @@ benchmarks! {
 		let caller = create_account::<T>("caller", 0);
 		let caller1 = create_account::<T>("caller1", 0);
 
-		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+		let caller_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
 			caller.clone(),
 			Roles::Accounts::SELLER
 		);
-		let caller1_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller1.clone()));
+		let caller1_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller1.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller1_signed.clone(),
 			caller1.clone(),
@@ -81,7 +81,7 @@ benchmarks! {
 		);
 
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
-		let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+		let key_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(key_account.clone()));
 		Roles::Pallet::<T>::account_approval(key_signed.clone(),caller.clone()).ok();
 		Roles::Pallet::<T>::account_approval(key_signed,caller1.clone()).ok();
 
@@ -94,7 +94,7 @@ benchmarks! {
 
 	transfer {
 		let caller1 = create_account::<T>("caller", 1);
-		let caller1_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller1.clone()));
+		let caller1_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller1.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller1_signed.clone(),
 			caller1.clone(),
@@ -102,7 +102,7 @@ benchmarks! {
 		);
 
 		let caller3 = create_account::<T>("caller3", 1);
-		let caller3_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller3.clone()));
+		let caller3_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller3.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller3_signed.clone(),
 			caller3.clone(),
@@ -110,7 +110,7 @@ benchmarks! {
 		);
 
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
-		let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+		let key_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(key_account.clone()));
 		Roles::Pallet::<T>::account_approval(key_signed.clone(),caller1.clone()).ok();
 		Roles::Pallet::<T>::account_approval(key_signed,caller3.clone()).ok();
 
@@ -125,14 +125,14 @@ benchmarks! {
 
 	destroy_collection {
 		let caller = create_account::<T>("caller", 1);
-		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+		let caller_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller_signed.clone(),
 			caller.clone(),
 			Roles::Accounts::SERVICER
 		);
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
-		let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+		let key_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(key_account.clone()));
 		Roles::Pallet::<T>::account_approval(key_signed,caller.clone()).ok();
 
 		do_create_collection::<T>(caller.clone());
@@ -143,7 +143,7 @@ benchmarks! {
 
 	burn {
 		let caller1 = create_account::<T>("caller", 0);
-		let caller1_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller1.clone()));
+		let caller1_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller1.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller1_signed.clone(),
 			caller1.clone(),
@@ -151,14 +151,14 @@ benchmarks! {
 		);
 
 		let caller3 = create_account::<T>("caller3", 2);
-		let caller3_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller3.clone()));
+		let caller3_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller3.clone()));
 		let _ = Roles::Pallet::<T>::set_role(
 			caller3_signed.clone(),
 			caller3.clone(),
 			Roles::Accounts::SELLER
 		);
 		let key_account:T::AccountId = SUDO::Pallet::<T>::key().unwrap();
-		let key_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(key_account.clone()));
+		let key_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(key_account.clone()));
 		Roles::Pallet::<T>::account_approval(key_signed.clone(),caller1.clone()).ok();
 		Roles::Pallet::<T>::account_approval(key_signed,caller3.clone()).ok();
 

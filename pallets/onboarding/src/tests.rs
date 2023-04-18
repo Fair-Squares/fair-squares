@@ -3,20 +3,20 @@ use crate::mock::*;
 use frame_support::assert_ok;
 
 pub fn prep_roles() {
-	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
-	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::SERVICER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), EVE).ok();
-	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
-	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), CHARLIE).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(EVE), EVE, Acc::SERVICER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), EVE).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(BOB), BOB, Acc::SELLER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), BOB).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(
-		Origin::signed(ACCOUNT_WITH_NO_BALANCE0),
+		RuntimeOrigin::signed(ACCOUNT_WITH_NO_BALANCE0),
 		ACCOUNT_WITH_NO_BALANCE0,
 		Acc::SERVICER,
 	)
 	.ok();
-	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
 }
 
 pub const MAX_TENANTS:u8 = 3;
@@ -31,14 +31,14 @@ fn create_proposal() {
 		prep_roles();
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0.clone(),
 		));
 		// Bob creates a proposal without submiting for review
 		let price = 100_000_000;
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
@@ -68,7 +68,7 @@ fn create_proposal() {
 		// Bob changes the price of created proposal
 		let new_price = 150_000_000;
 		assert_ok!(OnboardingModule::set_price(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
 			Some(new_price)
@@ -88,7 +88,7 @@ fn create_proposal() {
 
 		//Bob finally submit the proposal without changing the price a second time
 		assert_ok!(OnboardingModule::submit_awaiting(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
 			None,
@@ -113,14 +113,14 @@ fn create_proposal_2() {
 		prep_roles();
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
 		// Bob creates a proposal and submit it for review
 		let price = 100_000_000;
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
@@ -138,7 +138,7 @@ fn create_proposal_2() {
 			OnboardingModule::get_formatted_collective_proposal(*out_call.after_vote_status)
 				.unwrap(),
 		);
-		assert_ok!(w_status1.dispatch(Origin::signed(ALICE)));
+		assert_ok!(w_status1.dispatch(RuntimeOrigin::signed(ALICE)));
 
 		let status_bis: AssetStatus = Houses::<Test>::get(coll_id, item_id).unwrap().status;
 		assert_ne!(status.clone(), status_bis.clone());
@@ -182,7 +182,7 @@ fn proposal_rejections() {
 
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
@@ -191,7 +191,7 @@ fn proposal_rejections() {
 		let price0 = 100_000_000;
 		let price1 = 150_000_000;
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price0),
 			metadata1,
@@ -208,7 +208,7 @@ fn proposal_rejections() {
 		);
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price1),
 			metadata2,
@@ -224,7 +224,7 @@ fn proposal_rejections() {
 		//Chalie Reject_Edit first proposal
 		let house0 = Houses::<Test>::get(coll_id, item_id0).unwrap();
 		assert_ok!(OnboardingModule::reject_edit(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			item_id0,
 			house0
@@ -248,7 +248,7 @@ fn proposal_rejections() {
 		//Charlie Reject_Destroy second proposal
 		let house1 = Houses::<Test>::get(coll_id, item_id1).unwrap();
 		assert_ok!(OnboardingModule::reject_destroy(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			item_id1,
 			house1
@@ -290,13 +290,13 @@ fn get_onboarded_houses_no_onboarded_houses() {
 
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
 		// Bob creates a proposal without submiting for review
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(100_000_000),
 			metadata1,
@@ -321,14 +321,14 @@ fn get_onboarded_houses_with_onboarded_houses() {
 		prep_roles();
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
 		// Bob creates a proposal without submiting for review
 		let price = 100_000_000;
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
@@ -341,7 +341,7 @@ fn get_onboarded_houses_with_onboarded_houses() {
 
 		// we simulate for the the presence of an onboarded house by changing its status
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
 			AssetStatus::ONBOARDED,
@@ -350,7 +350,7 @@ fn get_onboarded_houses_with_onboarded_houses() {
 		let price2 = 200_000_000;
 		// we add a new asset that won't have the ONBOARDED status
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price2),
 			metadata2,
@@ -380,13 +380,13 @@ fn get_finalised_houses_no_finalised_houses() {
 
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
 		// Bob creates a proposal without submiting for review
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(100_000_000),
 			metadata1,
@@ -411,14 +411,14 @@ fn get_finalised_houses_with_finalised_houses() {
 		prep_roles();
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
 		// Bob creates a proposal without submiting for review
 		let price = 100_000_000;
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
@@ -431,7 +431,7 @@ fn get_finalised_houses_with_finalised_houses() {
 
 		// we simulate for the the presence of a finalised house by changing its status
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
 			AssetStatus::FINALISED
@@ -440,7 +440,7 @@ fn get_finalised_houses_with_finalised_houses() {
 		let price2 = 200_000_000;
 		// we add a new asset that won't have the FINALISED status
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price2),
 			metadata2,
@@ -470,13 +470,13 @@ fn get_finalising_houses_no_finalising_houses() {
 
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
 		// Bob creates a proposal without submiting for review
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(100_000_000),
 			metadata1,
@@ -501,14 +501,14 @@ fn get_finalising_houses_with_finalising_houses() {
 		prep_roles();
 		//Charlie creates a collection
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(CHARLIE),
+			RuntimeOrigin::signed(CHARLIE),
 			NftColl::OFFICESTEST,
 			metadata0
 		));
 		// Bob creates a proposal without submiting for review
 		let price = 100_000_000;
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price),
 			metadata1,
@@ -521,7 +521,7 @@ fn get_finalising_houses_with_finalising_houses() {
 
 		// we simulate for the the presence of a finalising house by changing its status
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			item_id,
 			AssetStatus::FINALISING
@@ -530,7 +530,7 @@ fn get_finalising_houses_with_finalising_houses() {
 		let price2 = 200_000_000;
 		// we add a new asset that won't have the FINALISING status
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(BOB),
+			RuntimeOrigin::signed(BOB),
 			NftColl::OFFICESTEST,
 			Some(price2),
 			metadata2,

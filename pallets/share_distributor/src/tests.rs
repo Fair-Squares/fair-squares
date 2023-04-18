@@ -6,19 +6,19 @@ use frame_system::pallet_prelude::OriginFor;
 pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
 
 pub fn prep_roles() {
-	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
-	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
-	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), CHARLIE).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(BOB), BOB, Acc::SELLER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), BOB).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(EVE), EVE, Acc::INVESTOR).ok();
 	RoleModule::set_role(
-		Origin::signed(ACCOUNT_WITH_NO_BALANCE0),
+		RuntimeOrigin::signed(ACCOUNT_WITH_NO_BALANCE0),
 		ACCOUNT_WITH_NO_BALANCE0,
 		Acc::SERVICER,
 	)
 	.ok();
-	RoleModule::account_approval(Origin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), ACCOUNT_WITH_NO_BALANCE0).ok();
 }
 
 pub fn prep_test(
@@ -31,25 +31,25 @@ pub fn prep_test(
 	prep_roles();
 
 	//Dave and EVE contribute to the fund
-	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(DAVE), 50_000));
-	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(Origin::signed(EVE), 50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(RuntimeOrigin::signed(DAVE), 50_000));
+	assert_ok!(HousingFund::Pallet::<Test>::contribute_to_fund(RuntimeOrigin::signed(EVE), 50_000));
 
 	//Charlie creates a collection
 	assert_ok!(NftModule::create_collection(
-		Origin::signed(CHARLIE),
+		RuntimeOrigin::signed(CHARLIE),
 		NftColl::OFFICESTEST,
 		metadata0.clone()
 	));
 	//Charlie creates a second collection
 	assert_ok!(NftModule::create_collection(
-		Origin::signed(CHARLIE),
+		RuntimeOrigin::signed(CHARLIE),
 		NftColl::APPARTMENTSTEST,
 		metadata0
 	));
 	// Bob creates a proposal without submiting for review
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
-		Origin::signed(BOB),
+		RuntimeOrigin::signed(BOB),
 		NftColl::OFFICESTEST,
 		Some(price1),
 		metadata1,
@@ -58,7 +58,7 @@ pub fn prep_test(
 	));
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
-		Origin::signed(BOB),
+		RuntimeOrigin::signed(BOB),
 		NftColl::APPARTMENTSTEST,
 		Some(price2),
 		metadata2,
@@ -83,7 +83,7 @@ fn share_distributor0() {
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
-		let origin2 = Origin::signed(BOB);
+		let origin2 = RuntimeOrigin::signed(BOB);
 
 		//Change first asset status to FINALISED
 		Onboarding::Pallet::<Test>::change_status(
@@ -195,7 +195,7 @@ fn share_distributor1() {
 		let coll_id0 = NftColl::OFFICESTEST.value();
 		let item_id0 = pallet_nft::ItemsCount::<Test>::get()[coll_id0 as usize] - 1;
 		let origin: OriginFor<Test> = frame_system::RawOrigin::Root.into();
-		let origin2 = Origin::signed(BOB);
+		let origin2 = RuntimeOrigin::signed(BOB);
 
 		let contribution_eve = HousingFund::Contribution {
 			account_id: EVE,

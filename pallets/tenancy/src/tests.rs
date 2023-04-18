@@ -5,58 +5,58 @@ use mock::*;
 pub type Bvec<Test> = BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit>;
 
 pub fn prep_roles() {
-	RoleModule::set_role(Origin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), CHARLIE).ok();
-	RoleModule::set_role(Origin::signed(BOB), BOB, Acc::SELLER).ok();
-	RoleModule::account_approval(Origin::signed(ALICE), BOB).ok();
-	assert_ok!(RoleModule::set_role(Origin::signed(NOTARY), NOTARY, Acc::NOTARY));
-	assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), NOTARY));
+	RoleModule::set_role(RuntimeOrigin::signed(CHARLIE), CHARLIE, Acc::SERVICER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), CHARLIE).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(BOB), BOB, Acc::SELLER).ok();
+	RoleModule::account_approval(RuntimeOrigin::signed(ALICE), BOB).ok();
+	assert_ok!(RoleModule::set_role(RuntimeOrigin::signed(NOTARY), NOTARY, Acc::NOTARY));
+	assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), NOTARY));
 	assert_ok!(RoleModule::set_role(
-		Origin::signed(REPRESENTATIVE),
+		RuntimeOrigin::signed(REPRESENTATIVE),
 		REPRESENTATIVE,
 		Acc::REPRESENTATIVE
 	));
-	RoleModule::set_role(Origin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(EVE), EVE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(GERARD), GERARD, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(FERDIE), FERDIE, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(HUNTER), HUNTER, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(FRED), FRED, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(SALIM), SALIM, Acc::INVESTOR).ok();
-	RoleModule::set_role(Origin::signed(TENANT0), TENANT0, Acc::TENANT).ok();
-	RoleModule::set_role(Origin::signed(TENANT1), TENANT1, Acc::TENANT).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(DAVE), DAVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(EVE), EVE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(GERARD), GERARD, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(FERDIE), FERDIE, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(HUNTER), HUNTER, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(FRED), FRED, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(SALIM), SALIM, Acc::INVESTOR).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(TENANT0), TENANT0, Acc::TENANT).ok();
+	RoleModule::set_role(RuntimeOrigin::signed(TENANT1), TENANT1, Acc::TENANT).ok();
 }
 
 pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bvec<Test>) {
 	prep_roles();
 
 	//Dave and EVE contribute to the fund
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(DAVE), 1_000_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(EVE), 800_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(GERARD), 400_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FERDIE), 300_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(HUNTER), 100_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(FRED), 1_500_000));
-	assert_ok!(HousingFund::contribute_to_fund(Origin::signed(SALIM), 2_000_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(DAVE), 1_000_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(EVE), 800_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(GERARD), 400_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(FERDIE), 300_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(HUNTER), 100_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(FRED), 1_500_000));
+	assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(SALIM), 2_000_000));
 
 	//---ASSET PURCHASE STEP---
 
 	//Charlie creates a collection
 	assert_ok!(NftModule::create_collection(
-		Origin::signed(CHARLIE),
+		RuntimeOrigin::signed(CHARLIE),
 		NftColl::OFFICESTEST,
 		metadata0.clone()
 	));
 	//Charlie creates a second collection
 	assert_ok!(NftModule::create_collection(
-		Origin::signed(CHARLIE),
+		RuntimeOrigin::signed(CHARLIE),
 		NftColl::APPARTMENTSTEST,
 		metadata0
 	));
 	// Bob creates and submit a proposal
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
-		Origin::signed(BOB),
+		RuntimeOrigin::signed(BOB),
 		NftColl::OFFICESTEST,
 		Some(price1),
 		metadata1.clone(),
@@ -65,7 +65,7 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	));
 
 	assert_ok!(OnboardingModule::create_and_submit_proposal(
-		Origin::signed(BOB),
+		RuntimeOrigin::signed(BOB),
 		NftColl::APPARTMENTSTEST,
 		Some(price2),
 		metadata1,
@@ -96,13 +96,13 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	assert_eq!(house1.status, pallet_onboarding::AssetStatus::REVIEWING);
 
 	//Council vote
-	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash0, true,));
-	assert_ok!(VotingModule::council_vote(Origin::signed(CHARLIE), hash0, true,));
-	assert_ok!(VotingModule::council_vote(Origin::signed(BOB), hash0, true,));
+	assert_ok!(VotingModule::council_vote(RuntimeOrigin::signed(ALICE), hash0, true,));
+	assert_ok!(VotingModule::council_vote(RuntimeOrigin::signed(CHARLIE), hash0, true,));
+	assert_ok!(VotingModule::council_vote(RuntimeOrigin::signed(BOB), hash0, true,));
 
-	assert_ok!(VotingModule::council_vote(Origin::signed(ALICE), hash1, true,));
-	assert_ok!(VotingModule::council_vote(Origin::signed(CHARLIE), hash1, true,));
-	assert_ok!(VotingModule::council_vote(Origin::signed(BOB), hash1, true,));
+	assert_ok!(VotingModule::council_vote(RuntimeOrigin::signed(ALICE), hash1, true,));
+	assert_ok!(VotingModule::council_vote(RuntimeOrigin::signed(CHARLIE), hash1, true,));
+	assert_ok!(VotingModule::council_vote(RuntimeOrigin::signed(BOB), hash1, true,));
 
 	let initial_block_number = System::block_number();
 	let end_block_number = initial_block_number
@@ -115,8 +115,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	assert_eq!(VotingModule::collective_proposals(hash0), Some(end_block_number));
 	fast_forward_to(end_block_number);
 
-	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash0,));
-	assert_ok!(VotingModule::council_close_vote(Origin::signed(ALICE), hash1,));
+	assert_ok!(VotingModule::council_close_vote(RuntimeOrigin::signed(ALICE), hash0,));
+	assert_ok!(VotingModule::council_close_vote(RuntimeOrigin::signed(ALICE), hash1,));
 
 	let voting_proposal = VotingModule::voting_proposals(hash0).unwrap();
 	let voting_proposal1 = VotingModule::voting_proposals(hash1).unwrap();
@@ -143,7 +143,7 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 
 	// Start vote, and check events emitted after first voter.
 	// Also output referendum status after each vote.
-	assert_ok!(VotingModule::investor_vote(Origin::signed(DAVE), hash0, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(DAVE), hash0, true,));
 
 	let mut ref_infos =
 		Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
@@ -168,9 +168,9 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		)),
 	);
 
-	assert_ok!(VotingModule::investor_vote(Origin::signed(DAVE), hash1, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(DAVE), hash1, true,));
 
-	assert_ok!(VotingModule::investor_vote(Origin::signed(EVE), hash0, false,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(EVE), hash0, false,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
 		"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
@@ -178,8 +178,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		System::block_number()
 	);
 
-	assert_ok!(VotingModule::investor_vote(Origin::signed(GERARD), hash1, false,));
-	assert_ok!(VotingModule::investor_vote(Origin::signed(GERARD), hash0, false,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(GERARD), hash1, false,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(GERARD), hash0, false,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
 		"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
@@ -187,8 +187,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		System::block_number()
 	);
 
-	assert_ok!(VotingModule::investor_vote(Origin::signed(FERDIE), hash1, true,));
-	assert_ok!(VotingModule::investor_vote(Origin::signed(FERDIE), hash0, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(FERDIE), hash1, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(FERDIE), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
 		"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
@@ -196,8 +196,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		System::block_number()
 	);
 
-	assert_ok!(VotingModule::investor_vote(Origin::signed(HUNTER), hash1, true,));
-	assert_ok!(VotingModule::investor_vote(Origin::signed(HUNTER), hash0, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(HUNTER), hash1, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(HUNTER), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
 		"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
@@ -205,8 +205,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		System::block_number()
 	);
 
-	assert_ok!(VotingModule::investor_vote(Origin::signed(FRED), hash1, true,));
-	assert_ok!(VotingModule::investor_vote(Origin::signed(FRED), hash0, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(FRED), hash1, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(FRED), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
 		"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
@@ -214,8 +214,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		System::block_number()
 	);
 
-	assert_ok!(VotingModule::investor_vote(Origin::signed(SALIM), hash1, true,));
-	assert_ok!(VotingModule::investor_vote(Origin::signed(SALIM), hash0, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(SALIM), hash1, true,));
+	assert_ok!(VotingModule::investor_vote(RuntimeOrigin::signed(SALIM), hash0, true,));
 	ref_infos = Democracy::referendum_info(voting_proposal.democracy_referendum_index).unwrap();
 	println!(
 		"\n\nReferendum status after vote is: {:?}\n present block is: {:?}\n\n",
@@ -261,8 +261,8 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	assert_eq!(house1.status, pallet_onboarding::AssetStatus::FINALISING);
 
 	//The Notary will now Finalize the asset
-	assert_ok!(Finalise::validate_transaction_asset(Origin::signed(NOTARY), coll_id0, item_id0,));
-	assert_ok!(Finalise::validate_transaction_asset(Origin::signed(NOTARY), coll_id1, item_id1,));
+	assert_ok!(Finalise::validate_transaction_asset(RuntimeOrigin::signed(NOTARY), coll_id0, item_id0,));
+	assert_ok!(Finalise::validate_transaction_asset(RuntimeOrigin::signed(NOTARY), coll_id1, item_id1,));
 	house = OnboardingModule::houses(coll_id0, item_id0).unwrap();
 	house1 = OnboardingModule::houses(coll_id1, item_id1).unwrap();
 
@@ -298,7 +298,7 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	// a referendum for the representative candidate.
 
 	assert_ok!(AssetManagement::launch_representative_session(
-		Origin::signed(SALIM),
+		RuntimeOrigin::signed(SALIM),
 		NftColl::OFFICESTEST,
 		item_id0,
 		REPRESENTATIVE,
@@ -316,19 +316,19 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	//Get the referendum index and start voting
 	let ref_index = ref1.0;
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(SALIM), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(SALIM), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(DAVE), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(DAVE), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(EVE), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(EVE), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(GERARD), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(GERARD), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(FERDIE), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(FERDIE), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(HUNTER), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(HUNTER), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(FRED), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(FRED), ref_index, true));
 
 	//End REPRESENTATIVE referendum
 	let initial_block_number = System::block_number();
@@ -355,12 +355,12 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 
 	//The representative wants another job
 	assert_ok!(AssetManagement::request_asset_management(
-		Origin::signed(REPRESENTATIVE),
+		RuntimeOrigin::signed(REPRESENTATIVE),
 		REPRESENTATIVE,
 	));
 
 	assert_ok!(AssetManagement::launch_representative_session(
-		Origin::signed(SALIM),
+		RuntimeOrigin::signed(SALIM),
 		NftColl::APPARTMENTSTEST,
 		item_id1,
 		REPRESENTATIVE,
@@ -376,19 +376,19 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 		}
 	}
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(SALIM), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(SALIM), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(DAVE), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(DAVE), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(EVE), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(EVE), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(GERARD), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(GERARD), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(FERDIE), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(FERDIE), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(HUNTER), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(HUNTER), ref_index, true));
 
-	assert_ok!(AssetManagement::owners_vote(Origin::signed(FRED), ref_index, true));
+	assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(FRED), ref_index, true));
 
 	//End REPRESENTATIVE referendum
 	let initial_block_number = System::block_number();
@@ -412,14 +412,14 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	// asset
 	let tenant_bal_init = Balances::free_balance(TENANT0);
 	assert_ok!(crate::Pallet::<Test>::request_asset(
-		Origin::signed(TENANT0),
+		RuntimeOrigin::signed(TENANT0),
 		Box::new(ten0()),
 		NftColl::OFFICESTEST,
 		item_id0,
 	));
 
 	assert_ok!(crate::Pallet::<Test>::request_asset(
-		Origin::signed(TENANT1),
+		RuntimeOrigin::signed(TENANT1),
 		Box::new(ten1()),
 		NftColl::OFFICESTEST,
 		item_id0,
@@ -435,7 +435,7 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 
 	//Representative gives a positive Judgement and start a referendum for the tenant0
 	assert_ok!(AssetManagement::launch_tenant_session(
-		Origin::signed(REPRESENTATIVE),
+		RuntimeOrigin::signed(REPRESENTATIVE),
 		NftColl::OFFICESTEST,
 		item_id0,
 		TENANT0,
@@ -445,7 +445,7 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 
 	//Representative gives a positive Judgement and start a referendum for the tenant1
 	assert_ok!(AssetManagement::launch_tenant_session(
-		Origin::signed(REPRESENTATIVE),
+		RuntimeOrigin::signed(REPRESENTATIVE),
 		NftColl::OFFICESTEST,
 		item_id0,
 		TENANT1,
@@ -465,7 +465,7 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 			let owners = house.owners;
 			for owner in owners {
 				//each owner vote
-				assert_ok!(AssetManagement::owners_vote(Origin::signed(owner), ref_index, true));
+				assert_ok!(AssetManagement::owners_vote(RuntimeOrigin::signed(owner), ref_index, true));
 			}
 		}
 	}
@@ -501,13 +501,13 @@ pub fn prep_test(price1: u64, price2: u64, metadata0: Bvec<Test>, metadata1: Bve
 	let asset_initial = Balances::free_balance(asset_account.clone());
 
 	assert_ok!(crate::Pallet::<Test>::pay_guaranty_deposit(
-		Origin::signed(TENANT0),
+		RuntimeOrigin::signed(TENANT0),
 		NftColl::OFFICESTEST,
 		item_id0,
 	));
 
 	assert_ok!(crate::Pallet::<Test>::pay_guaranty_deposit(
-		Origin::signed(TENANT1),
+		RuntimeOrigin::signed(TENANT1),
 		NftColl::OFFICESTEST,
 		item_id0,
 	));
@@ -629,7 +629,7 @@ fn test_00() {
 		let virtual_initial_balance = Balances::free_balance(asset);
 
 		//TENANT0 pays the first rent
-		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT0)));
+		assert_ok!(crate::Pallet::<Test>::pay_rent(RuntimeOrigin::signed(TENANT0)));
 
 		//Let's check that rent transfer toward virtual account occured
 		let virtual_balance = Balances::free_balance(tenant0_inf.asset_account.unwrap());
@@ -659,7 +659,7 @@ fn test_00() {
 		);
 
 		//TENANT1 pays the first rent
-		assert_ok!(crate::Pallet::<Test>::pay_rent(Origin::signed(TENANT1)));
+		assert_ok!(crate::Pallet::<Test>::pay_rent(RuntimeOrigin::signed(TENANT1)));
 
 		let event = <frame_system::Pallet<Test>>::events()
 			.pop()

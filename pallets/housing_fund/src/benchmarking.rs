@@ -10,7 +10,7 @@ use frame_system::RawOrigin;
 benchmarks! {
 	contribute_to_fund {
 		let caller: T::AccountId = whitelisted_caller();
-		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+		let caller_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone()));
 		let _ = crate::ROLES::Pallet::<T>::set_role(
 			caller_signed.clone(),
 			caller.clone(),
@@ -22,7 +22,7 @@ benchmarks! {
 
 	withdraw_fund {
 		let caller: T::AccountId = whitelisted_caller();
-		let caller_signed = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(caller.clone()));
+		let caller_signed = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone()));
 		let _ = crate::ROLES::Pallet::<T>::set_role(
 			caller_signed.clone(),
 			caller.clone(),

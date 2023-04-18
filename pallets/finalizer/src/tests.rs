@@ -6,30 +6,30 @@ use frame_support::{assert_noop, assert_ok, BoundedVec};
 fn validate_transaction_asset_no_notary_role_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -42,7 +42,7 @@ fn validate_transaction_asset_no_notary_role_should_fail() {
 
 		assert_noop!(
 			FinalizerModule::validate_transaction_asset(
-				Origin::signed(AMANI),
+				RuntimeOrigin::signed(AMANI),
 				collection_id,
 				item_id,
 			),
@@ -55,23 +55,23 @@ fn validate_transaction_asset_no_notary_role_should_fail() {
 fn validate_transaction_asset_no_existing_house_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			DAN,
 			crate::Onboarding::HousingFund::ROLES::Accounts::NOTARY
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), DAN));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), DAN));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
 
 		assert_noop!(
-			FinalizerModule::validate_transaction_asset(Origin::signed(DAN), collection_id, 1,),
+			FinalizerModule::validate_transaction_asset(RuntimeOrigin::signed(DAN), collection_id, 1,),
 			Error::<Test>::AssetDoesNotExist
 		);
 	});
@@ -81,37 +81,37 @@ fn validate_transaction_asset_no_existing_house_should_fail() {
 fn validate_transaction_asset_no_finalising_status_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			DAN,
 			crate::Onboarding::HousingFund::ROLES::Accounts::NOTARY
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), DAN));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), DAN));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -124,7 +124,7 @@ fn validate_transaction_asset_no_finalising_status_should_fail() {
 
 		assert_noop!(
 			FinalizerModule::validate_transaction_asset(
-				Origin::signed(DAN),
+				RuntimeOrigin::signed(DAN),
 				collection_id,
 				item_id,
 			),
@@ -137,37 +137,37 @@ fn validate_transaction_asset_no_finalising_status_should_fail() {
 fn validate_transaction_asset_should_succeed() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			DAN,
 			crate::Onboarding::HousingFund::ROLES::Accounts::NOTARY
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), DAN));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), DAN));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -179,14 +179,14 @@ fn validate_transaction_asset_should_succeed() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::FINALISING
 		));
 
 		assert_ok!(FinalizerModule::validate_transaction_asset(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			collection_id,
 			item_id,
 		));
@@ -215,30 +215,30 @@ fn validate_transaction_asset_should_succeed() {
 fn reject_transaction_asset_no_notary_role_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -251,7 +251,7 @@ fn reject_transaction_asset_no_notary_role_should_fail() {
 
 		assert_noop!(
 			FinalizerModule::reject_transaction_asset(
-				Origin::signed(AMANI),
+				RuntimeOrigin::signed(AMANI),
 				collection_id,
 				item_id,
 			),
@@ -264,23 +264,23 @@ fn reject_transaction_asset_no_notary_role_should_fail() {
 fn reject_transaction_asset_no_existing_house_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			DAN,
 			crate::Onboarding::HousingFund::ROLES::Accounts::NOTARY
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), DAN));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), DAN));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
 
 		assert_noop!(
-			FinalizerModule::reject_transaction_asset(Origin::signed(DAN), collection_id, 1,),
+			FinalizerModule::reject_transaction_asset(RuntimeOrigin::signed(DAN), collection_id, 1,),
 			Error::<Test>::AssetDoesNotExist
 		);
 	});
@@ -290,37 +290,37 @@ fn reject_transaction_asset_no_existing_house_should_fail() {
 fn reject_transaction_asset_no_finalising_status_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			DAN,
 			crate::Onboarding::HousingFund::ROLES::Accounts::NOTARY
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), DAN));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), DAN));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -332,7 +332,7 @@ fn reject_transaction_asset_no_finalising_status_should_fail() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_noop!(
-			FinalizerModule::reject_transaction_asset(Origin::signed(DAN), collection_id, item_id,),
+			FinalizerModule::reject_transaction_asset(RuntimeOrigin::signed(DAN), collection_id, item_id,),
 			Error::<Test>::HouseHasNotFinalisingStatus
 		);
 	});
@@ -346,13 +346,13 @@ fn reject_transaction_asset_should_succeed() {
 
 		for account_id in 1..6 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFundModule::contributions(account_id).unwrap();
 
@@ -363,29 +363,29 @@ fn reject_transaction_asset_should_succeed() {
 		}
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -397,7 +397,7 @@ fn reject_transaction_asset_should_succeed() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::ONBOARDED
@@ -411,14 +411,14 @@ fn reject_transaction_asset_should_succeed() {
 		);
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			DAN,
 			crate::Onboarding::HousingFund::ROLES::Accounts::NOTARY
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), DAN));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), DAN));
 
 		assert_ok!(FinalizerModule::reject_transaction_asset(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			collection_id,
 			item_id,
 		));
@@ -456,30 +456,30 @@ fn reject_transaction_asset_should_succeed() {
 fn cancel_transaction_asset_no_seller_role_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -492,7 +492,7 @@ fn cancel_transaction_asset_no_seller_role_should_fail() {
 
 		assert_noop!(
 			FinalizerModule::cancel_transaction_asset(
-				Origin::signed(KEZIA),
+				RuntimeOrigin::signed(KEZIA),
 				collection_id,
 				item_id,
 			),
@@ -505,16 +505,16 @@ fn cancel_transaction_asset_no_seller_role_should_fail() {
 fn cancel_transaction_asset_no_existing_house_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let collection_id = NftCollection::OFFICESTEST.value();
 
 		assert_noop!(
-			FinalizerModule::cancel_transaction_asset(Origin::signed(AMANI), collection_id, 1,),
+			FinalizerModule::cancel_transaction_asset(RuntimeOrigin::signed(AMANI), collection_id, 1,),
 			Error::<Test>::AssetDoesNotExist
 		);
 	});
@@ -524,30 +524,30 @@ fn cancel_transaction_asset_no_existing_house_should_fail() {
 fn cancel_transaction_asset_no_finalised_status_should_fail() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -560,7 +560,7 @@ fn cancel_transaction_asset_no_finalised_status_should_fail() {
 
 		assert_noop!(
 			FinalizerModule::cancel_transaction_asset(
-				Origin::signed(AMANI),
+				RuntimeOrigin::signed(AMANI),
 				collection_id,
 				item_id,
 			),
@@ -577,13 +577,13 @@ fn cancel_transaction_asset_should_succeed() {
 
 		for account_id in 1..6 {
 			assert_ok!(RoleModule::set_role(
-				Origin::signed(account_id),
+				RuntimeOrigin::signed(account_id),
 				account_id,
 				crate::Onboarding::HousingFund::ROLES::Accounts::INVESTOR
 			));
 
 			// test contribute with sufficient contribution and free balance
-			assert_ok!(HousingFundModule::contribute_to_fund(Origin::signed(account_id), amount));
+			assert_ok!(HousingFundModule::contribute_to_fund(RuntimeOrigin::signed(account_id), amount));
 
 			let contribution = HousingFundModule::contributions(account_id).unwrap();
 
@@ -594,29 +594,29 @@ fn cancel_transaction_asset_should_succeed() {
 		}
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			KEZIA,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SERVICER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), KEZIA));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), KEZIA));
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			AMANI,
 			crate::Onboarding::HousingFund::ROLES::Accounts::SELLER
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), AMANI));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), AMANI));
 
 		let metadata: BoundedVec<u8, <Test as pallet_uniques::Config>::StringLimit> =
 			b"metadata0".to_vec().try_into().unwrap();
 
 		assert_ok!(NftModule::create_collection(
-			Origin::signed(KEZIA),
+			RuntimeOrigin::signed(KEZIA),
 			NftCollection::OFFICESTEST,
 			metadata.clone()
 		));
 
 		assert_ok!(OnboardingModule::create_and_submit_proposal(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			Some(100),
 			metadata,
@@ -628,7 +628,7 @@ fn cancel_transaction_asset_should_succeed() {
 		let item_id = pallet_nft::ItemsCount::<Test>::get()[collection_id as usize] - 1;
 
 		assert_ok!(OnboardingModule::change_status(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			NftCollection::OFFICESTEST,
 			item_id,
 			crate::Onboarding::AssetStatus::ONBOARDED
@@ -642,20 +642,20 @@ fn cancel_transaction_asset_should_succeed() {
 		);
 
 		assert_ok!(RoleModule::set_role(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			DAN,
 			crate::Onboarding::HousingFund::ROLES::Accounts::NOTARY
 		));
-		assert_ok!(RoleModule::account_approval(Origin::signed(ALICE), DAN));
+		assert_ok!(RoleModule::account_approval(RuntimeOrigin::signed(ALICE), DAN));
 
 		assert_ok!(FinalizerModule::validate_transaction_asset(
-			Origin::signed(DAN),
+			RuntimeOrigin::signed(DAN),
 			collection_id,
 			item_id,
 		));
 
 		assert_ok!(FinalizerModule::cancel_transaction_asset(
-			Origin::signed(AMANI),
+			RuntimeOrigin::signed(AMANI),
 			collection_id,
 			item_id,
 		));

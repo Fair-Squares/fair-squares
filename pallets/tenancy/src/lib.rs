@@ -70,14 +70,14 @@ pub mod pallet {
 		+ Payment::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type WeightInfo: WeightInfo;
 		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn infos)]
-	/// Stores Tenant informations
+	/// Stores Tenant information
 	pub type Tenants<T: Config> =
 		StorageMap<_, Blake2_128Concat, T::AccountId, RegisteredTenant<T>, OptionQuery>;
 
@@ -131,7 +131,8 @@ pub mod pallet {
 		/// The function below allows an active tenant to pay for his rent.
 		/// The origin must be the tenant accountId.
 		/// The amount payed is the monthly_rent, and can be payed at any moment.
-		/// The sum of all payments cannot exceed the yearly_rent  .
+		/// The sum of all payments cannot exceed the yearly_rent.
+		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn pay_rent(origin: OriginFor<T>) -> DispatchResult {
 			let tenant_account = ensure_signed(origin.clone())?;
@@ -163,6 +164,7 @@ pub mod pallet {
 		/// - info: Tenant personnal information requested by the asset Representative
 		/// - asset_type: Asset class requested by the tenant.
 		/// - asset_id: ID of the Asset requested by the tenant.
+		#[pallet::call_index(1)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn request_asset(
 			origin: OriginFor<T>,
