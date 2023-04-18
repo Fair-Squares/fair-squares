@@ -11,11 +11,12 @@ pub use frame_support::{
 	sp_runtime::traits::{AccountIdConversion, Hash, Saturating, StaticLookup, Zero},
 	storage::child,
 	traits::{
-		Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency, WithdrawReasons,
+		UnfilteredDispatchable,Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency, WithdrawReasons,
 	},
+	dispatch::GetDispatchInfo,
 	PalletId,
 };
-pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
+pub use frame_system::{ensure_signed, ensure_root, pallet_prelude::*, RawOrigin};
 pub use scale_info::{prelude::vec, TypeInfo};
 pub use serde::{Deserialize, Serialize};
 
@@ -40,7 +41,7 @@ pub enum Accounts {
 
 //-------------------------------------------------------------------------------------
 //-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Investor<T: Config> {
@@ -56,16 +57,16 @@ where
 {
 	//-------------------------------------------------------------------
 	//-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
-	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc)?;
+	pub fn new(acc: OriginFor<T>) -> Self {
+		let caller = ensure_signed(acc).unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 
 		let inv =
 			Investor { account_id: caller.clone(), age: now, share: Zero::zero(), selections: 0 };
 
 		InvestorLog::<T>::insert(caller, &inv);
+        inv
 
-		Ok(())
 	}
 	//-------------NEW INVESTOR CREATION METHOD_END--------------------
 	//-----------------------------------------------------------------
@@ -75,14 +76,13 @@ where
 
 //--------------------------------------------------------------------------------------
 //-------------HOUSE SELLER STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct HouseSeller<T: Config> {
 	pub account_id: T::AccountId,
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
-	pub verifier: T::AccountId,
 }
 impl<T: Config> HouseSeller<T>
 where
@@ -90,21 +90,20 @@ where
 {
 	//--------------------------------------------------------------------
 	//-------------HOUSE SELLER CREATION METHOD_BEGIN----------------------
-	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc)?;
-		let admin = SUDO::Pallet::<T>::key().unwrap();
+	pub fn new(acc: OriginFor<T>) -> Self {
+		let caller = ensure_signed(acc).unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
-		ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
-
-		let hw =
-			HouseSeller { account_id: caller.clone(), age: now, activated: false, verifier: admin };
+		let hw = HouseSeller { 
+            account_id: caller.clone(), 
+            age: now, activated: false
+        };
 
 		SellerApprovalList::<T>::mutate(|list| {
-			list.push(hw);
+			list.push(hw.clone());
 		});
 		RequestedRoles::<T>::insert(caller, Accounts::SELLER);
 
-		Ok(())
+        hw
 	}
 
 	//-------------HOUSE SELLER CREATION METHOD_END----------------------
@@ -115,7 +114,7 @@ where
 
 //--------------------------------------------------------------------------------------
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Tenant<T: Config> {
@@ -129,8 +128,8 @@ pub struct Tenant<T: Config> {
 	pub registered: bool,
 }
 impl<T: Config> Tenant<T> {
-	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc)?;
+	pub fn new(acc: OriginFor<T>) -> Self {
+		let caller = ensure_signed(acc).unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 		let tenant = Tenant {
 			account_id: caller.clone(),
@@ -143,7 +142,7 @@ impl<T: Config> Tenant<T> {
 			registered: false,
 		};
 		TenantLog::<T>::insert(caller, &tenant);
-		Ok(())
+        tenant
 	}
 }
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
@@ -151,28 +150,27 @@ impl<T: Config> Tenant<T> {
 
 //--------------------------------------------------------------------------------------
 //-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Servicer<T: Config> {
 	pub account_id: T::AccountId,
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
-	pub verifier: T::AccountId,
 }
 impl<T: Config> Servicer<T> {
-	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc)?;
-		let admin = SUDO::Pallet::<T>::key().unwrap();
+	pub fn new(acc: OriginFor<T>) -> Self {
+		let caller = ensure_signed(acc).unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 		let sv =
-			Servicer { account_id: caller.clone(), age: now, activated: false, verifier: admin };
+			Servicer { account_id: caller.clone(), age: now, activated: false};
 
 		ServicerApprovalList::<T>::mutate(|list| {
-			list.push(sv);
+			list.push(sv.clone());
 		});
 		RequestedRoles::<T>::insert(caller, Accounts::SERVICER);
-		Ok(())
+		sv
+
 	}
 }
 //-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_END---------------------------
@@ -181,7 +179,7 @@ impl<T: Config> Servicer<T> {
 //-------------------------------------------------------------------------------------
 //-------------REPRESENTATIVE STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Representative<T: Config> {
@@ -197,11 +195,11 @@ where
 {
 	//--------------------------------------------------------------------
 	//-------------REPRESENTATIVE CREATION METHOD_BEGIN----------------------
-	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc)?;
+	pub fn new(acc: OriginFor<T>) -> Self {
+		let caller = ensure_signed(acc).unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
 
-		if !RepresentativeLog::<T>::contains_key(&caller) {
+		if !RepresentativeLog::<T>::contains_key(caller.clone()) {
 			let rep = Representative::<T> {
 				account_id: caller.clone(),
 				age: now,
@@ -209,13 +207,14 @@ where
 				assets_accounts: Vec::new(),
 				index: Default::default(),
 			};
-			RepApprovalList::<T>::insert(caller, rep);
+			RepApprovalList::<T>::insert(caller.clone(), rep.clone());
+            rep
 		} else {
-			let rep = RepresentativeLog::<T>::get(&caller).unwrap();
-			RepApprovalList::<T>::insert(caller, rep);
+			let rep = RepresentativeLog::<T>::get(caller.clone()).unwrap();
+			RepApprovalList::<T>::insert(caller, rep.clone());
+            rep
 		}
 
-		Ok(())
 	}
 
 	//-------------HOUSE REPRESENTATIVE CREATION METHOD_END----------------------
@@ -227,35 +226,32 @@ where
 
 //-------------------------------------------------------------------------------------
 //-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Notary<T: Config> {
 	pub account_id: T::AccountId,
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
-	pub verifier: T::AccountId,
 }
 impl<T: Config> Notary<T>
 where
 	types::Notary<T>: EncodeLike<types::Notary<T>>,
 {
-	pub fn new(acc: OriginFor<T>) -> DispatchResult {
-		let caller = ensure_signed(acc)?;
+	pub fn new(acc: OriginFor<T>) -> Self {
+		let caller = ensure_signed(acc).unwrap();
 		let now = <frame_system::Pallet<T>>::block_number();
-
-		ensure!(!NotaryLog::<T>::contains_key(&caller), Error::<T>::NoneValue);
-
-		let admin = SUDO::Pallet::<T>::key().unwrap();
 		let notary =
-			Notary { account_id: caller.clone(), age: now, activated: false, verifier: admin };
+			Notary { account_id: caller.clone(), age: now, activated: false};
 		NotaryApprovalList::<T>::mutate(|list| {
-			list.push(notary);
+			list.push(notary.clone());
 		});
 		RequestedRoles::<T>::insert(caller, Accounts::NOTARY);
 
-		Ok(())
+        notary
+
 	}
 }
+
+//-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_END----------------------
 //-------------------------------------------------------------------------------------
-//-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------

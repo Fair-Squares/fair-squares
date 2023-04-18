@@ -1,8 +1,10 @@
+
 pub use super::*;
 
 impl<T: Config> Pallet<T> {
-	// Helper function for approving sellers.
-	pub fn approve_seller(sender: T::AccountId, who: T::AccountId) -> bool {
+
+    // Helper function for approving sellers.
+	pub fn approve_seller(who: T::AccountId) -> bool {
 		let sellers = Self::get_pending_house_sellers();
 		let mut exist = false;
 
@@ -10,7 +12,6 @@ impl<T: Config> Pallet<T> {
 			if sell.account_id == who.clone() {
 				let mut seller = sell.clone();
 				seller.activated = true;
-				seller.verifier = sender;
 				HouseSellerLog::<T>::insert(&who, seller);
 				SellerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
@@ -25,8 +26,10 @@ impl<T: Config> Pallet<T> {
 		exist
 	}
 
-	// Helper function for approving servicers
-	pub fn approve_servicer(sender: T::AccountId, who: T::AccountId) -> bool {
+
+
+    // Helper function for approving servicers
+	pub fn approve_servicer(who: T::AccountId) -> bool {
 		let servicers = Self::get_pending_servicers();
 		let mut exist = false;
 
@@ -34,7 +37,6 @@ impl<T: Config> Pallet<T> {
 			if serv.account_id == who.clone() {
 				let mut servicer = serv.clone();
 				servicer.activated = true;
-				servicer.verifier = sender;
 				ServicerLog::<T>::insert(&who, servicer);
 				ServicerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
@@ -50,7 +52,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	// Helper function for approving notaries
-	pub fn approve_notary(sender: T::AccountId, who: T::AccountId) -> bool {
+	pub fn approve_notary(who: T::AccountId) -> bool {
 		let notaries = Self::get_pending_notaries();
 		let mut exist = false;
 
@@ -58,7 +60,6 @@ impl<T: Config> Pallet<T> {
 			if notary.account_id == who.clone() {
 				let mut notary_ = notary.clone();
 				notary_.activated = true;
-				notary_.verifier = sender;
 				NotaryLog::<T>::insert(&who, notary_);
 				NotaryApprovalList::<T>::mutate(|list| {
 					list.remove(index);
@@ -73,33 +74,33 @@ impl<T: Config> Pallet<T> {
 		exist
 	}
 
-	//Helper function for account creation approval by admin only
-	pub fn approve_account(sender: T::AccountId, who: T::AccountId) -> DispatchResult {
+    //Helper function for account creation approval by admin only
+	pub fn approve_account(who: T::AccountId) -> DispatchResult {
 		let role = Self::get_requested_role(who.clone());
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
 		let success = match role {
-			Accounts::SELLER => Self::approve_seller(sender, who),
-			Accounts::SERVICER => Self::approve_servicer(sender, who),
-			Accounts::NOTARY => Self::approve_notary(sender, who),
+			Accounts::SELLER => Self::approve_seller( who),
+			Accounts::SERVICER => Self::approve_servicer(who),
+			Accounts::NOTARY => Self::approve_notary(who),
 			_ => false,
 		};
 		ensure!(success, Error::<T>::NotInWaitingList);
 		Self::increase_total_members()
 	}
 
-	// TODO: This function can be updated
-	pub fn check_account_role(caller: T::AccountId) -> DispatchResult {
-		ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
-		ensure!(!InvestorLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
-		ensure!(!ServicerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
-		ensure!(!TenantLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
-		ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
-		ensure!(Self::total_members() < T::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
+    // TODO: This function can be updated
+	pub fn check_account_role(_caller: T::AccountId) -> DispatchResult {
+		//ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		//ensure!(!InvestorLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		//ensure!(!ServicerLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		//ensure!(!TenantLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		//ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
+		ensure!(Self::total_members() < <T as Config>::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
 		Ok(())
 	}
 
-	pub fn reject_seller(who: T::AccountId) -> bool {
+    pub fn reject_seller(who: T::AccountId) -> bool {
 		let sellers = Self::get_pending_house_sellers();
 		let mut exist = false;
 		for (index, sell) in sellers.iter().enumerate() {
@@ -153,7 +154,7 @@ impl<T: Config> Pallet<T> {
 		exist
 	}
 
-	// Helper function for account creation rejection by admin only
+    // Helper function for account creation rejection by admin only
 	pub fn reject_account(who: T::AccountId) -> DispatchResult {
 		let role = Self::get_requested_role(who.clone());
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
@@ -172,34 +173,34 @@ impl<T: Config> Pallet<T> {
 		Box::new(TenantLog::<T>::iter_keys())
 	}
 
-	pub fn init_representatives(representatives: Vec<AccountIdOf<T>>) {
-		let now = <frame_system::Pallet<T>>::block_number();
-		let rep_count = representatives.len() as u32;
-		for (index, account) in representatives.iter().enumerate() {
-			AccountsRolesLog::<T>::insert(account, Accounts::REPRESENTATIVE);
-			RepresentativeLog::<T>::insert(
-				account,
-				Representative::<T> {
-					account_id: account.clone(),
-					age: now,
-					activated: false,
-					assets_accounts: vec![],
-					index: index as u32,
-				},
-			);
-		}
-		let members = Self::total_members();
-		TotalMembers::<T>::put(members.saturating_add(rep_count));
-
-		let reps = Self::rep_num();
-		RepNumber::<T>::put(reps.saturating_add(rep_count));
-	}
-
-	pub fn increase_total_members() -> DispatchResult {
+    pub fn increase_total_members() -> DispatchResult {
 		let members: u32 = Self::total_members();
-		ensure!(members < T::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
+		ensure!(members < <T as Config>::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
 		TotalMembers::<T>::put(members.saturating_add(1));
 
 		Ok(())
+	}
+
+	//Proposal creation for the democracy pallet
+	pub fn create_proposal_hash_and_note(
+		caller: T::AccountId,
+		proposal_call: pallet::Call<T>,
+	) -> T::Hash {
+		let origin: <T as frame_system::Config>::RuntimeOrigin = RawOrigin::Signed(caller.clone()).into();
+		let proposal = Box::new(Self::get_formatted_call(proposal_call.into()));
+
+		let call = Call::<T>::execute_call_dispatch { account_id: caller, proposal };
+		let call_formatted = Self::get_formatted_call(call.into());
+		let call_dispatch = Box::new(call_formatted);
+
+		let proposal_hash = T::Hashing::hash_of(&call_dispatch);
+		let proposal_encoded: Vec<u8> = call_dispatch.encode();
+		Preimage::Pallet::<T>::note_preimage(origin, proposal_encoded).ok();
+
+		proposal_hash
+	}
+
+	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> <T as Config>::RuntimeCall {
+		call
 	}
 }

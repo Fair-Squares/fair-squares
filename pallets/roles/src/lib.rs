@@ -1,47 +1,3 @@
-//! # Roles Pallet
-//!
-//! The Roles Pallet is used to set a role for a given AccountId in the FairSquares framework
-//!
-//! ## Overview
-//!
-//! The Roles Pallet provides roles management capabilities through the following actions:
-//! - Role setting
-//! - Role attribution to an AccountId
-//! - Role attribution approval or rejection
-//! During role setting, the user selects a role from the Accounts enum. Each
-//! role has access to specific set of actions used in Fairsquares. there are currently 5 kinds of
-//! roles available for selection:
-//! - INVESTOR
-//! - TENANT
-//! - SERVICER
-//! - SELLER
-//! The 5th role which is the accounts administrator role is not available during role setting.
-//! Sellers and Servicers roles, must be verified/approved by an administrator in order to become
-//! active
-//!
-//! ### Dispatchable Functions
-//! #### Role setting
-//! * `set_role` - Create one of the 4 selectable type of role.
-//! In the case of Sellers and Servicers, requests are transfered to a Role approval list.
-//! Servicer role (and only Servicer role) can also assign roles to a different user account.
-//!
-//! #### Roles management by Administrator
-//! * `account_approval` - This function allows the administrator to verify/approve Seller and
-//! Servicer role connection to the requesting AccountId.
-//! Verified AccountId are activated, i.e., the requesting AccountId is stored into the
-//! corresponding role storage.
-//!
-//! * `account_rejection` - This function allows the administrator to reject Seller and Servicer
-//! role connection to the requesting AccountId
-//! that are in the approval list, but do not fullfill the FaiSquares guideline.
-//!
-//! * `set_manager` - This function allows the current manager/Sudo_Account to transfer his
-//!   Administrative
-//! authority to a different user/account.
-//! Only the current manager can use this function, and he will lose all administrative power by
-//! using this function. The Servicer Role is affected to new manager account during this transfer.
-//! Previous manager account Servicer Role is revoked.
-
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use pallet::*;
@@ -54,35 +10,52 @@ mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-
 mod functions;
 mod types;
-pub mod weights;
 pub use crate::types::*;
+pub use functions::*;
 pub use pallet_sudo as SUDO;
+pub use pallet_democracy as Dem;
+pub use pallet_preimage as Preimage;
+pub use pallet_collective as Coll;
+use Coll::Instance2;
 use sp_std::prelude::*;
-pub use weights::WeightInfo;
+
 #[frame_support::pallet]
 pub mod pallet {
 	pub use super::*;
-	//use frame_system::WeightInfo;
+
+	#[pallet::pallet]
+	#[pallet::without_storage_info]
+	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + SUDO::Config {
+	pub trait Config: 
+	frame_system::Config 
+	+ SUDO::Config 
+	+ Dem::Config 
+	+ Preimage::Config
+	+ Coll::Config<Instance2>{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type Currency: ReservableCurrency<Self::AccountId>;
-		type WeightInfo: WeightInfo;
-
+		type RuntimeCall: Parameter
+			+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
+			+ From<Call<Self>>
+			+ GetDispatchInfo;
 		#[pallet::constant]
 		type MaxMembers: Get<u32>;
+		type BackgroundCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 	}
 
-	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
-	#[pallet::without_storage_info]
-	pub struct Pallet<T>(_);
+	// The pallet's runtime storage items.
+	// https://docs.substrate.io/main-docs/build/runtime-storage/
+	#[pallet::storage]
+	#[pallet::getter(fn something)]
+	// Learn more about declaring storage items:
+	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
+	pub type Something<T> = StorageValue<_, u32>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn investors)]
@@ -170,6 +143,7 @@ pub mod pallet {
 	pub type AccountsRolesLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
 
+	//This storage should not be necessary, as we already have approval waiting list
 	#[pallet::storage]
 	#[pallet::getter(fn get_requested_role)]
 	pub type RequestedRoles<T: Config> =
@@ -213,20 +187,22 @@ pub mod pallet {
 		fn build(&self) {
 			if self.new_admin.is_some() {
 				let servicer0 = self.new_admin.clone().unwrap(); // AccountId
-				let origin = T::Origin::from(RawOrigin::Signed(servicer0.clone())); //Origin
+				let origin = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(servicer0.clone())); //Origin
 				let source = T::Lookup::unlookup(servicer0); //Source
 				crate::Pallet::<T>::set_manager(origin, source).ok();
-			}
-
-			if !self.representatives.is_empty() {
-				crate::Pallet::<T>::init_representatives(self.representatives.clone());
 			}
 		}
 	}
 
+
+	// Pallets use events to inform users when important changes are made.
+	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
+		/// Event documentation should end with an array that provides descriptive names for event
+		/// parameters. [something, who]
+		SomethingStored { something: u32, who: T::AccountId },
 		/// Investor role successfully attributed
 		InvestorCreated(T::BlockNumber, T::AccountId),
 		/// Tenant role successfully attributed
@@ -251,9 +227,12 @@ pub mod pallet {
 		CreationRequestCreated(T::BlockNumber, T::AccountId),
 	}
 
+	// Errors inform users that something went wrong.
 	#[pallet::error]
 	pub enum Error<T> {
+		/// Error names should be descriptive.
 		NoneValue,
+
 		/// Error on initialization.
 		InitializationError,
 		/// Errors should have helpful documentation associated with them.
@@ -276,10 +255,54 @@ pub mod pallet {
 		UnAuthorized,
 	}
 
+	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
+	// These functions materialize as "extrinsics", which are often compared to transactions.
+	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::investor(4))]
+		/// An example dispatchable that takes a singles value as a parameter, writes the value to
+		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		#[pallet::call_index(0)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
+			// Check that the extrinsic was signed and get the signer.
+			// This function will return an error if the extrinsic is not signed.
+			// https://docs.substrate.io/main-docs/build/origins/
+			let who = ensure_signed(origin)?;
+
+			// Update storage.
+			<Something<T>>::put(something);
+
+			// Emit an event.
+			Self::deposit_event(Event::SomethingStored { something, who });
+			// Return a successful DispatchResultWithPostInfo
+			Ok(())
+		}
+
+		/// An example dispatchable that may throw a custom error.
+		#[pallet::call_index(1)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
+			let _who = ensure_signed(origin)?;
+
+			// Read a value from storage.
+			match <Something<T>>::get() {
+				// Return an error if the value has not been set.
+				None => return Err(Error::<T>::NoneValue.into()),
+				Some(old) => {
+					// Increment the value read from storage; will error in the event of overflow.
+					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
+					// Update the value in storage with the incremented result.
+					<Something<T>>::put(new);
+					Ok(())
+				},
+			}
+		}
+		//--------------------------------------------------------------------------------------------------//
+
 		///Account creation function. Only one role per account is permitted.
+		#[pallet::call_index(2)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn set_role(
 			origin: OriginFor<T>,
 			account: AccountIdOf<T>,
@@ -291,58 +314,58 @@ pub mod pallet {
 			}
 			Self::check_account_role(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			let members = Self::total_members();
 			let requested = Self::get_requested_role(&account).is_some();
 			match account_type {
 				Accounts::INVESTOR => {
-					let investor = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let investor = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Investor::<T>::new(investor).map_err(|_| <Error<T>>::InitializationError)?;
+					Ok(Investor::<T>::new(investor)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
+					//let investor0 = Some(Investor::<T>::new(investor)).expect(<Error<T>>::InitializationError);
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
 					Self::increase_total_members().ok();
 					Self::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let seller = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let seller = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					HouseSeller::<T>::new(seller).map_err(|_| <Error<T>>::InitializationError)?;
+					Ok(HouseSeller::<T>::new(seller)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::TENANT => {
-					let tenant = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let tenant = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Tenant::<T>::new(tenant).map_err(|_| <Error<T>>::InitializationError)?;
+					Ok(Tenant::<T>::new(tenant)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					Self::increase_total_members().ok();
 					Self::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let servicer = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let servicer = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Servicer::<T>::new(servicer).map_err(|_| <Error<T>>::InitializationError)?;
+					Ok(Servicer::<T>::new(servicer)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::NOTARY => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let notary = <T as frame_system::Config>::Origin::from(RawOrigin::Signed(
+					let notary = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
-					Notary::<T>::new(notary).map_err(|_| <Error<T>>::InitializationError)?;
+					Ok(Notary::<T>::new(notary)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::REPRESENTATIVE => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let representative = <T as frame_system::Config>::Origin::from(
+					let representative = <T as frame_system::Config>::RuntimeOrigin::from(
 						RawOrigin::Signed(account.clone()),
 					);
-					Representative::<T>::new(representative)
-						.map_err(|_| <Error<T>>::InitializationError)?;
+					Ok(Representative::<T>::new(representative))
+						.map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 			}
@@ -353,41 +376,39 @@ pub mod pallet {
 			);
 			if need_approval {
 				RequestedRoles::<T>::insert(&account, account_type);
+				//Create proposal
+				//Start Referendum
 			} else {
-				TotalMembers::<T>::put(members + 1);
+				Self::increase_total_members().ok();
 			}
 
 			Ok(())
 		}
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::approval(5))]
 		///Approval function for Sellers, Servicers, and Notary. Only for admin level.
+		#[pallet::call_index(3)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
-			ensure!(
-				sender == SUDO::Pallet::<T>::key().unwrap(),
-				"only the current sudo key can sudo"
-			);
+			let _sender = ensure_signed(origin.clone())?;
+			ensure_root(origin)?;
 
 			let role = Self::get_requested_role(&account);
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 
 			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
 
-			Self::approve_account(sender, account.clone())?;
+			Self::approve_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
 			Self::deposit_event(Event::AccountCreationApproved(now, account));
 			Ok(())
 		}
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::rejection(6))]
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
+		#[pallet::call_index(4)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
-			ensure!(
-				sender == SUDO::Pallet::<T>::key().unwrap(),
-				"only the current sudo key can sudo"
-			);
+			let _sender = ensure_signed(origin.clone())?;
+			ensure_root(origin)?;
 
 			let role = Self::get_requested_role(&account);
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
@@ -403,20 +424,22 @@ pub mod pallet {
 			Ok(())
 		}
 
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_admin(7))]
+		
 		///The caller will transfer his admin authority to a different account
+		#[pallet::call_index(5)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn set_manager(
 			origin: OriginFor<T>,
 			new: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let new0 = T::Lookup::lookup(new.clone())?;
-			let new_origin = T::Origin::from(RawOrigin::Signed(new0.clone()));
+			let new_origin = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(new0.clone()));
 			ensure!(
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
 			);
-			//ensure!(sender != new0, "The same manager is given");
+			
 			//Remove current Sudo from Servicers list
 			if ServicerLog::<T>::contains_key(sender.clone()) {
 				ServicerLog::<T>::remove(sender.clone());
@@ -425,11 +448,32 @@ pub mod pallet {
 			//create Servicer & approve a servicer account for new Sudo
 			//if the new Sudo has no role yet
 			if !AccountsRolesLog::<T>::contains_key(&new0) {
-				Servicer::<T>::new(new_origin).ok();
-				Self::approve_account(sender, new0).ok();
+				Servicer::<T>::new(new_origin);
+				Self::approve_account(new0).ok();
 			}
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
 			Ok(())
 		}
+
+		/// Build the call to be executed when the proposal pass the democracy vote
+		/// The origin must but root
+		/// - account_id : the virtual account of the asset of the proposal
+		/// - proposal : call encapsulating the inital proposal
+		#[pallet::call_index(6)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn execute_call_dispatch(
+			origin: OriginFor<T>,
+			account_id: AccountIdOf<T>,
+			proposal: Box<<T as Config>::RuntimeCall>,
+		) -> DispatchResultWithPostInfo {
+			ensure_root(origin)?;
+
+			proposal
+				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id.clone()).into())
+				.ok();
+
+			Ok(().into())
+		}
+
 	}
 }

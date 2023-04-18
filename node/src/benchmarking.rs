@@ -1,28 +1,10 @@
-// This file is part of Substrate.
-
-// Copyright (C) 2022 Parity Technologies (UK) Ltd.
-// SPDX-License-Identifier: GPL-3.0-or-later WITH Classpath-exception-2.0
-
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-// GNU General Public License for more details.
-
-// You should have received a copy of the GNU General Public License
-// along with this program. If not, see <https://www.gnu.org/licenses/>.
-
 //! Setup code for [`super::command`] which would otherwise bloat that module.
 //!
 //! Should only be used for benchmarking as it may break in other contexts.
 
 use crate::service::FullClient;
 
-use fs_node_runtime as runtime;
+use node_template_runtime as runtime;
 use runtime::{AccountId, Balance, BalancesCall, SystemCall};
 use sc_cli::Result;
 use sc_client_api::BlockBackend;
@@ -102,7 +84,7 @@ impl frame_benchmarking_cli::ExtrinsicBuilder for TransferKeepAliveBuilder {
 			acc,
 			BalancesCall::transfer_keep_alive {
 				dest: self.dest.clone().into(),
-				value: self.value,
+				value: self.value.into(),
 			}
 			.into(),
 			nonce,
@@ -119,7 +101,7 @@ impl frame_benchmarking_cli::ExtrinsicBuilder for TransferKeepAliveBuilder {
 pub fn create_benchmark_extrinsic(
 	client: &FullClient,
 	sender: sp_core::sr25519::Pair,
-	call: runtime::Call,
+	call: runtime::RuntimeCall,
 	nonce: u32,
 ) -> runtime::UncheckedExtrinsic {
 	let genesis_hash = client.block_hash(0).ok().flatten().expect("Genesis block exists; qed");
@@ -161,10 +143,10 @@ pub fn create_benchmark_extrinsic(
 	let signature = raw_payload.using_encoded(|e| sender.sign(e));
 
 	runtime::UncheckedExtrinsic::new_signed(
-		call,
+		call.clone(),
 		sp_runtime::AccountId32::from(sender.public()).into(),
-		runtime::Signature::Sr25519(signature),
-		extra,
+		runtime::Signature::Sr25519(signature.clone()),
+		extra.clone(),
 	)
 }
 
@@ -176,8 +158,7 @@ pub fn inherent_benchmark_data() -> Result<InherentData> {
 	let d = Duration::from_millis(0);
 	let timestamp = sp_timestamp::InherentDataProvider::new(d.into());
 
-	timestamp
-		.provide_inherent_data(&mut inherent_data)
+	futures::executor::block_on(timestamp.provide_inherent_data(&mut inherent_data))
 		.map_err(|e| format!("creating inherent data: {:?}", e))?;
 	Ok(inherent_data)
 }
