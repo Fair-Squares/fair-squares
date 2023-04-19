@@ -182,25 +182,30 @@ impl<T: Config> Pallet<T> {
 	}
 
 	//Proposal creation for the democracy pallet
-	pub fn create_proposal_hash_and_note(
-		caller: T::AccountId,
-		proposal_call: pallet::Call<T>,
+	pub fn create_proposal_hash(
+		proposal_call: <T as Config>::RuntimeCall,
 	) -> T::Hash {
-		let origin: <T as frame_system::Config>::RuntimeOrigin = RawOrigin::Signed(caller.clone()).into();
-		let proposal = Box::new(Self::get_formatted_call(proposal_call.into()));
+		let proposal = Box::new(proposal_call);
 
-		let call = Call::<T>::execute_call_dispatch { account_id: caller, proposal };
+		let call = Call::<T>::execute_call_dispatch { proposal };
 		let call_formatted = Self::get_formatted_call(call.into());
 		let call_dispatch = Box::new(call_formatted);
 
 		let proposal_hash = T::Hashing::hash_of(&call_dispatch);
-		let proposal_encoded: Vec<u8> = call_dispatch.encode();
-		Preimage::Pallet::<T>::note_preimage(origin, proposal_encoded).ok();
 
 		proposal_hash
 	}
 
-	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> <T as Config>::RuntimeCall {
-		call
+	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> Option<<T as Coll::Config<Instance2>>::Proposal> {
+		let call_encoded: Vec<u8> = call.encode();
+		let ref_call_encoded = &call_encoded;
+
+		if let Ok(call_formatted) = <T as pallet_collective::Config<Instance2>>::Proposal::decode(
+			&mut &ref_call_encoded[..],
+		) {
+			Some(call_formatted)
+		} else {
+			None
+		}
 	}
 }

@@ -58,5 +58,6 @@ try-runtime = [
 	"pallet-sudo/try-runtime",
 	"pallet-democracy/try-runtime",
 	"pallet-scheduler/try-runtime",
-	"pallet-collective/try-runtime"
+	"pallet-collective/try-runtime",
+	"pallet-preimage/try-runtime",
 	]

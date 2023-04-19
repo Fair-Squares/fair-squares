@@ -463,13 +463,13 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn execute_call_dispatch(
 			origin: OriginFor<T>,
-			account_id: AccountIdOf<T>,
 			proposal: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
-			ensure_root(origin)?;
+			ensure_root(origin.clone())?;
+			ensure_signed(origin.clone())?;
 
 			proposal
-				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id.clone()).into())
+				.dispatch_bypass_filter(origin)
 				.ok();
 
 			Ok(().into())

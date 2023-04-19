@@ -9,7 +9,7 @@ pub use frame_support::{
 	inherent::Vec,
 	pallet_prelude::*,
 	sp_runtime::traits::{AccountIdConversion, Hash, Saturating, StaticLookup, Zero},
-	storage::child,
+	storage::{child,bounded_vec::BoundedVec},
 	traits::{
 		UnfilteredDispatchable,Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency, WithdrawReasons,
 	},
