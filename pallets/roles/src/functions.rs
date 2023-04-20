@@ -181,19 +181,17 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	//Proposal creation for the democracy pallet
+	//Proposal creation for collective pallet
 	pub fn create_proposal_hash(
 		proposal_call: <T as Config>::RuntimeCall,
-	) -> T::Hash {
+	) -> Box<<T as Coll::Config<Instance2>>::Proposal>{
 		let proposal = Box::new(proposal_call);
 
 		let call = Call::<T>::execute_call_dispatch { proposal };
-		let call_formatted = Self::get_formatted_call(call.into());
+		let call_formatted = Self::get_formatted_call(call.into()).unwrap();
 		let call_dispatch = Box::new(call_formatted);
 
-		let proposal_hash = T::Hashing::hash_of(&call_dispatch);
-
-		proposal_hash
+		call_dispatch
 	}
 
 	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> Option<<T as Coll::Config<Instance2>>::Proposal> {

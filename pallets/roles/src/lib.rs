@@ -15,8 +15,6 @@ mod types;
 pub use crate::types::*;
 pub use functions::*;
 pub use pallet_sudo as SUDO;
-pub use pallet_democracy as Dem;
-pub use pallet_preimage as Preimage;
 pub use pallet_collective as Coll;
 use Coll::Instance2;
 use sp_std::prelude::*;
@@ -34,8 +32,6 @@ pub mod pallet {
 	pub trait Config: 
 	frame_system::Config 
 	+ SUDO::Config 
-	+ Dem::Config 
-	+ Preimage::Config
 	+ Coll::Config<Instance2>{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -377,7 +373,24 @@ pub mod pallet {
 			if need_approval {
 				RequestedRoles::<T>::insert(&account, account_type);
 				//Create proposal
-				//Start Referendum
+				let proposal = Self::create_proposal_hash(
+					Call::<T>::account_approval{
+						account: account.clone()
+					}.into()
+				);
+				let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
+				let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
+				let root:OriginFor<T> = RawOrigin::Signed(council_member).into();
+
+				//Start Collective refererendum
+				Coll::Pallet::<T,Instance2>::propose(
+					root,
+					2,
+					proposal,
+					proposal_len,
+				).ok();
+				
+				
 			} else {
 				Self::increase_total_members().ok();
 			}

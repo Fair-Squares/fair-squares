@@ -29,9 +29,6 @@ frame_support::construct_runtime!(
 		RolesModule: pallet_roles::{Pallet, Call, Storage, Event<T>, Config<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
-		Preimage: pallet_preimage::{Pallet, Call, Storage, Event<T>},
 		Collective: pallet_collective::<Instance2>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
 	}
 );
@@ -98,90 +95,9 @@ impl pallet_sudo::Config for Test {
 	type RuntimeCall = RuntimeCall;
 }
 
-parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 5;
-	pub const VotingPeriod: BlockNumber = 5;
-	pub const FastTrackVotingPeriod: BlockNumber = 2;
-	pub const MinimumDeposit: Balance = 100;
-	pub const EnactmentPeriod: BlockNumber = 5;
-	pub const CooloffPeriod: BlockNumber = 5;
-	pub const MaxProposals: u32 = 100;
-}
 
-impl pallet_democracy::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-	type Currency = Balances;
-	type EnactmentPeriod = EnactmentPeriod;
-	type LaunchPeriod = LaunchPeriod;
-	type VotingPeriod = VotingPeriod;
-	type VoteLockingPeriod = EnactmentPeriod; // Same as EnactmentPeriod
-	type MinimumDeposit = MinimumDeposit;
-	/// A straight majority of the council can decide what their next motion is.
-	type ExternalOrigin =EnsureRoot<Self::AccountId>;
-	/// A super-majority can have the next scheduled referendum be a straight majority-carries vote.
-	type ExternalMajorityOrigin =EnsureRoot<Self::AccountId>;
-	/// A unanimous council can have the next scheduled referendum be a straight default-carries
-	/// (NTB) vote.
-	type ExternalDefaultOrigin =EnsureRoot<Self::AccountId>;
-	type SubmitOrigin = EnsureSigned<Self::AccountId>;
-	/// Two thirds of the Background committee can have an ExternalMajority/ExternalDefault vote
-	/// be tabled immediately and with a shorter voting/enactment period.
-	type FastTrackOrigin =EnsureRoot<Self::AccountId>;
-	type InstantOrigin =EnsureRoot<Self::AccountId>;
-	type InstantAllowed = frame_support::traits::ConstBool<true>;
-	type FastTrackVotingPeriod = FastTrackVotingPeriod;
-	// To cancel a proposal which has been passed, 2/3 of the council must agree to it.
-	type CancellationOrigin =EnsureRoot<Self::AccountId>;
-	// To cancel a proposal before it has been passed, the Background committee must be unanimous or
-	// Root must agree.
-	type CancelProposalOrigin = EnsureRoot<Self::AccountId>;
-	type BlacklistOrigin =EnsureRoot<Self::AccountId>;
-	// Any single Background committee member may veto a coming council proposal, however they can
-	// only do it once and it lasts only for the cool-off period.
-	type VetoOrigin = EnsureSigned<Self::AccountId>;
-	type CooloffPeriod = CooloffPeriod;
-	type Slash = ();
-	type Scheduler = Scheduler;
-	type PalletsOrigin = OriginCaller;
-	type MaxVotes = ConstU32<100>;
-	type WeightInfo = ();
-	type MaxProposals = MaxProposals;
-	type Preimages = Preimage;
-	type MaxDeposits = ConstU32<100>;
-	type MaxBlacklisted = ConstU32<100>;
-}
 
-parameter_types! {
-	pub MaximumSchedulerWeight: Weight = Perbill::from_percent(80) * BlockWeights::get().max_block;
-}
-impl pallet_scheduler::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-	type RuntimeOrigin = RuntimeOrigin;
-	type PalletsOrigin = OriginCaller;
-	type RuntimeCall = RuntimeCall;
-	type MaximumWeight = MaximumSchedulerWeight;
-	type ScheduleOrigin = EnsureRoot<Self::AccountId>;
-	type MaxScheduledPerBlock = ();
-	type WeightInfo = ();
-	type OriginPrivilegeCmp = EqualPrivilegeOnly;
-	type Preimages = Preimage;
 
-}
-
-parameter_types! {
-	pub const PreimageMaxSize: u32 = 4096 * 1024;
-	pub const PreimageBaseDeposit: Balance = 1 ;
-	// One cent: $10,000 / MB
-	pub const PreimageByteDeposit: Balance = 1 ;
-}
-impl pallet_preimage::Config for Test {
-	type WeightInfo = ();
-	type RuntimeEvent = RuntimeEvent;
-	type Currency = Balances;
-	type ManagerOrigin = EnsureRoot<Self::AccountId>;
-	type BaseDeposit = PreimageBaseDeposit;
-	type ByteDeposit = PreimageByteDeposit;
-}
 
 parameter_types! {
 	pub const BackgroundMotionDuration: BlockNumber = 5;

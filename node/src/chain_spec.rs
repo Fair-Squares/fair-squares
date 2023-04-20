@@ -1,4 +1,4 @@
-use node_template_runtime::{
+use fs_node_runtime::{
 	RolesModuleConfig,AccountId, AuraConfig, BalancesConfig, CouncilConfig,BackgroundCouncilConfig,GenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };
