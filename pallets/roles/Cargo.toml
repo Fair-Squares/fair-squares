@@ -52,12 +52,10 @@ std = [
 	"pallet-preimage/std",
 	"pallet-collective/std",
 ]
-runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	]
+
 try-runtime = [
 	"frame-support/try-runtime",
-	"pallet-sudo/try-runtime",
-	"pallet-democracy/try-runtime",
-	"pallet-scheduler/try-runtime",
-	"pallet-collective/try-runtime",
-	"pallet-preimage/try-runtime",
 	]

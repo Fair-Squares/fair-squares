@@ -59,7 +59,6 @@ frame-benchmarking = { version = "4.0.0-dev", default-features = false, git = "h
 frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", optional = true , branch = "polkadot-v0.9.40" }
 
 # Local Dependencies
-pallet-template = { version = "4.0.0-dev", default-features = false, path = "../pallets/template" }
 pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
 ### add new pallet config
 
@@ -83,7 +82,6 @@ std = [
 	"pallet-balances/std",
 	"pallet-grandpa/std",
 	"pallet-sudo/std",
-	"pallet-template/std",
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
@@ -119,10 +117,19 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
-	"pallet-template/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",
+	"pallet-identity/runtime-benchmarks",
+	"pallet-assets/runtime-benchmarks",
+	"pallet-treasury/runtime-benchmarks",
+	"frame-system-benchmarking?/runtime-benchmarks",
+	"pallet-utility/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
+	"pallet-scheduler/runtime-benchmarks",
+	"pallet-uniques/runtime-benchmarks",
+	"pallet-preimage/runtime-benchmarks",
+	"pallet-democracy/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -134,12 +141,16 @@ try-runtime = [
 	"pallet-balances/try-runtime",
 	"pallet-grandpa/try-runtime",
 	"pallet-sudo/try-runtime",
-	"pallet-template/try-runtime",
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-roles/try-runtime",
 	"pallet-utility/try-runtime",
 	"pallet-identity/try-runtime",
 	"pallet-assets/try-runtime",
+	"pallet-collective/try-runtime",
+	"pallet-scheduler/try-runtime",
+	"pallet-uniques/try-runtime",
+	"pallet-preimage/try-runtime",
+	"pallet-democracy/try-runtime",
 	### add new try-runtime
 ]
