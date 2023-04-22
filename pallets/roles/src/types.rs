@@ -47,11 +47,12 @@ pub struct Proposal<T: Config>{
 	pub role: Option<Accounts>,
 	pub block: BlockNumberOf<T>,
 	pub proposal_hash: T::Hash,
+	pub proposal_index: u32,
 }
 impl<T: Config> Proposal<T>{
 	pub fn new(acc:T::AccountId, role: Option<Accounts>,proposal_hash: T::Hash) -> Self{
 		let now = <frame_system::Pallet<T>>::block_number();
-		let proposal = Proposal {account_id: acc,role,block: now,proposal_hash};
+		let proposal = Proposal {account_id: acc,role,block: now,proposal_hash,proposal_index:0};
 		proposal
 	}
 }
@@ -74,14 +75,13 @@ where
 {
 	//-------------------------------------------------------------------
 	//-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
-	pub fn new(acc: OriginFor<T>) -> Self {
-		let caller = ensure_signed(acc).unwrap();
+	pub fn new(acc: T::AccountId,) -> Self {
 		let now = <frame_system::Pallet<T>>::block_number();
 
 		let inv =
-			Investor { account_id: caller.clone(), age: now, share: Zero::zero(), selections: 0 };
+			Investor { account_id: acc.clone(), age: now, share: Zero::zero(), selections: 0 };
 
-		InvestorLog::<T>::insert(caller, &inv);
+		InvestorLog::<T>::insert(acc, &inv);
         inv
 
 	}
@@ -107,11 +107,10 @@ where
 {
 	//--------------------------------------------------------------------
 	//-------------HOUSE SELLER CREATION METHOD_BEGIN----------------------
-	pub fn new(acc: OriginFor<T>) -> Self {
-		let caller = ensure_signed(acc).unwrap();
+	pub fn new(acc: T::AccountId) -> Self {
 		let now = <frame_system::Pallet<T>>::block_number();
 		let hw = HouseSeller { 
-            account_id: caller.clone(), 
+            account_id: acc.clone(), 
             age: now, activated: false
         };
 
@@ -144,11 +143,10 @@ pub struct Tenant<T: Config> {
 	pub registered: bool,
 }
 impl<T: Config> Tenant<T> {
-	pub fn new(acc: OriginFor<T>) -> Self {
-		let caller = ensure_signed(acc).unwrap();
+	pub fn new(acc: T::AccountId) -> Self {
 		let now = <frame_system::Pallet<T>>::block_number();
 		let tenant = Tenant {
-			account_id: caller.clone(),
+			account_id: acc.clone(),
 			rent: Zero::zero(),
 			age: now,
 			asset_account: None,
@@ -157,7 +155,7 @@ impl<T: Config> Tenant<T> {
 			remaining_payments: 0,
 			registered: false,
 		};
-		TenantLog::<T>::insert(caller, &tenant);
+		TenantLog::<T>::insert(acc, &tenant);
         tenant
 	}
 }
@@ -175,11 +173,10 @@ pub struct Servicer<T: Config> {
 	pub activated: bool,
 }
 impl<T: Config> Servicer<T> {
-	pub fn new(acc: OriginFor<T>) -> Self {
-		let caller = ensure_signed(acc).unwrap();
+	pub fn new(acc: T::AccountId) -> Self {
 		let now = <frame_system::Pallet<T>>::block_number();
 		let sv =
-			Servicer { account_id: caller.clone(), age: now, activated: false};
+			Servicer { account_id: acc.clone(), age: now, activated: false};
 
 		ServicerApprovalList::<T>::mutate(|list| {
 			list.push(sv.clone());
@@ -210,23 +207,22 @@ where
 {
 	//--------------------------------------------------------------------
 	//-------------REPRESENTATIVE CREATION METHOD_BEGIN----------------------
-	pub fn new(acc: OriginFor<T>) -> Self {
-		let caller = ensure_signed(acc).unwrap();
+	pub fn new(acc: T::AccountId) -> Self {
 		let now = <frame_system::Pallet<T>>::block_number();
 
-		if !RepresentativeLog::<T>::contains_key(caller.clone()) {
+		if !RepresentativeLog::<T>::contains_key(acc.clone()) {
 			let rep = Representative::<T> {
-				account_id: caller.clone(),
+				account_id: acc.clone(),
 				age: now,
 				activated: false,
 				assets_accounts: Vec::new(),
 				index: Default::default(),
 			};
-			RepApprovalList::<T>::insert(caller.clone(), rep.clone());
+			RepApprovalList::<T>::insert(acc.clone(), rep.clone());
             rep
 		} else {
-			let rep = RepresentativeLog::<T>::get(caller.clone()).unwrap();
-			RepApprovalList::<T>::insert(caller, rep.clone());
+			let rep = RepresentativeLog::<T>::get(acc.clone()).unwrap();
+			RepApprovalList::<T>::insert(acc, rep.clone());
             rep
 		}
 

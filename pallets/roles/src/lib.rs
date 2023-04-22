@@ -221,6 +221,13 @@ pub mod pallet {
 		NotaryAccountCreationRejected(T::BlockNumber, T::AccountId),
 		/// Role request added to the role approval waiting list
 		CreationRequestCreated(T::BlockNumber, T::AccountId),
+		/// A proposal has been added by a Background Council member
+		BackgroundCouncilAddedProposal{for_who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
+		/// A proposal has been closed by a Background Council member
+		BackgroundCouncilClosedProposal{who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
+		/// A member of the Background Council has voted
+		BackgroundCouncilVoted{who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
+
 	}
 
 	// Errors inform users that something went wrong.
@@ -249,6 +256,10 @@ pub mod pallet {
 		OnlyForServicers,
 		/// Cannot do the approval or rejection
 		UnAuthorized,
+		/// This is not the accont of a council member
+		NotACouncilMember,
+		/// This proposal does not exists
+		ProposalDoesNotExist
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -312,39 +323,28 @@ pub mod pallet {
 			let now = <frame_system::Pallet<T>>::block_number();
 			let requested = Self::get_requested_role(&account).is_some();
 			match account_type {
-				Accounts::INVESTOR => {
-					let investor = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
-						account.clone(),
-					));
-					Ok(Investor::<T>::new(investor)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
-					//let investor0 = Some(Investor::<T>::new(investor)).expect(<Error<T>>::InitializationError);
+				Accounts::INVESTOR => {					
+					Ok(Investor::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);
 					Self::increase_total_members().ok();
 					Self::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER => {
-					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let seller = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
-						account.clone(),
-					));
-					Ok(HouseSeller::<T>::new(seller)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
+					ensure!(!requested, <Error<T>>::AlreadyWaiting);					
+					Ok(HouseSeller::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::TENANT => {
-					let tenant = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
-						account.clone(),
-					));
-					Ok(Tenant::<T>::new(tenant)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
+					
+					Ok(Tenant::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					Self::increase_total_members().ok();
 					Self::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let servicer = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
-						account.clone(),
-					));
-					Ok(Servicer::<T>::new(servicer)).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
+					
+					Ok(Servicer::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::NOTARY => {
@@ -357,10 +357,8 @@ pub mod pallet {
 				},
 				Accounts::REPRESENTATIVE => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					let representative = <T as frame_system::Config>::RuntimeOrigin::from(
-						RawOrigin::Signed(account.clone()),
-					);
-					Ok(Representative::<T>::new(representative))
+					
+					Ok(Representative::<T>::new(account.clone()))
 						.map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
@@ -371,30 +369,14 @@ pub mod pallet {
 				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE
 			);
 			if need_approval {
-
-				//Create proposal
-				let proposal = Self::create_proposal(
-					Call::<T>::account_approval{
-						account: account.clone()
-					}.into()
-				);
-				let proposal_hash =  T::Hashing::hash_of(&proposal);
-
-				let proposal_all = Proposal::<T>::new(account.clone(), Some(account_type),proposal_hash);
-				RequestedRoles::<T>::insert(&account, proposal_all);				
-				let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
-				
-				let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
-				let root:OriginFor<T> = RawOrigin::Signed(council_member).into();
-
-				//Start Collective refererendum
-				let _result = Coll::Pallet::<T,Instance2>::propose(
-					root,
-					2,
-					proposal,
-					proposal_len,
-				);
-								
+				Self::start_council_session(account.clone(),account_type).ok();	
+			
+			// deposit event
+			Self::deposit_event(Event::BackgroundCouncilAddedProposal{
+				for_who: account,
+				proposal_index: Coll::Pallet::<T,Instance2>::proposal_count().into(),
+				when: now,
+			});						
 				
 			} else {
 				Self::increase_total_members().ok();
@@ -452,7 +434,6 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let new0 = T::Lookup::lookup(new.clone())?;
-			let new_origin = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(new0.clone()));
 			ensure!(
 				sender == SUDO::Pallet::<T>::key().unwrap(),
 				"only the current sudo key can sudo"
@@ -466,10 +447,33 @@ pub mod pallet {
 			//create Servicer & approve a servicer account for new Sudo
 			//if the new Sudo has no role yet
 			if !AccountsRolesLog::<T>::contains_key(&new0) {
-				Servicer::<T>::new(new_origin);
+				Servicer::<T>::new(new0.clone());
 				Self::approve_account(new0).ok();
 			}
 			SUDO::Pallet::<T>::set_key(origin, new).ok();
+			Ok(())
+		}
+
+		/// Background council member vote for a proposal
+		/// The origin must be signed and member of the Background Council
+		/// - proposal_hash : hash of the dispatch to be executed
+		/// - approve : value of the vote (true or false)
+		#[pallet::call_index(6)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn council_vote(origin:OriginFor<T>,candidate:T::AccountId,approve:bool) -> DispatchResult{
+			let caller = ensure_signed(origin)?;
+			let proposal_all = Self::get_requested_role(&candidate).unwrap();
+			let index = proposal_all.proposal_index;
+			Self::vote_action(caller.clone(),candidate,approve).ok();
+			let now = <frame_system::Pallet<T>>::block_number();
+
+			// deposit event
+			Self::deposit_event(Event::BackgroundCouncilVoted{
+				who: caller,
+				proposal_index: index,
+				when: now,
+			});	
+
 			Ok(())
 		}
 
@@ -477,7 +481,7 @@ pub mod pallet {
 		/// The origin must but root
 		/// - account_id : the virtual account of the asset of the proposal
 		/// - proposal : call encapsulating the inital proposal
-		#[pallet::call_index(6)]
+		#[pallet::call_index(7)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn execute_call_dispatch(
 			origin: OriginFor<T>,

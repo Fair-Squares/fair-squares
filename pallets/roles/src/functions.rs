@@ -182,7 +182,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	//Proposal creation for collective pallet
-	pub fn create_proposal(
+	pub fn build_proposal(
 		proposal_call: <T as Config>::RuntimeCall,
 	) -> Box<<T as Coll::Config<Instance2>>::Proposal>{
 		let proposal = Box::new(proposal_call);
@@ -192,6 +192,64 @@ impl<T: Config> Pallet<T> {
 		let call_dispatch = Box::new(call_formatted);
 
 		call_dispatch
+	}
+
+	pub fn start_council_session(account: T::AccountId,account_type: Accounts) -> DispatchResult{
+		//Create proposal
+		let proposal = Self::build_proposal(
+			Call::<T>::account_approval{
+				account: account.clone()
+			}.into()
+		);
+		let proposal_hash =  T::Hashing::hash_of(&proposal);
+
+		let mut proposal_all = Proposal::<T>::new(account.clone(), Some(account_type),proposal_hash);
+						
+		let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
+		
+		let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
+		let root:OriginFor<T> = RawOrigin::Signed(council_member).into();
+
+		//Start Collective refererendum
+		Coll::Pallet::<T,Instance2>::propose(
+			root,
+			2,
+			proposal,
+			proposal_len,
+		).ok();
+
+		//Update proposal index
+		proposal_all.proposal_index = Coll::Pallet::<T,Instance2>::proposal_count();
+		RequestedRoles::<T>::insert(&account, proposal_all);
+		
+		Ok(())
+	}
+
+	pub fn vote_action(caller: T::AccountId,candidate_account: T::AccountId,approve:bool) -> DispatchResult{
+		
+		// Check that the caller is a backgroundcouncil member
+		ensure!(
+			Coll::Pallet::<T, Instance2>::members().contains(&caller),
+			Error::<T>::NotACouncilMember
+		);
+		// Check that the proposal exists
+		ensure!(
+			RequestedRoles::<T>::contains_key(&candidate_account),
+			Error::<T>::ProposalDoesNotExist
+		);
+		let proposal_all = Self::get_requested_role(candidate_account.clone()).unwrap();
+		let proposal_hash = proposal_all.proposal_hash;
+		let proposal_index = proposal_all.proposal_index;
+		let origin = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone())); 
+		// Execute the council vote
+		Coll::Pallet::<T, Instance2>::vote(
+			origin,
+			proposal_hash,
+			proposal_index,
+			approve,
+		).ok();
+
+		Ok(())
 	}
 
 	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> Option<<T as Coll::Config<Instance2>>::Proposal> {
