@@ -76,7 +76,7 @@ impl<T: Config> Pallet<T> {
 
     //Helper function for account creation approval by admin only
 	pub fn approve_account(who: T::AccountId) -> DispatchResult {
-		let role = Self::get_requested_role(who.clone());
+		let role = Self::get_requested_role(who.clone()).unwrap().role;
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
 		let success = match role {
@@ -156,7 +156,7 @@ impl<T: Config> Pallet<T> {
 
     // Helper function for account creation rejection by admin only
 	pub fn reject_account(who: T::AccountId) -> DispatchResult {
-		let role = Self::get_requested_role(who.clone());
+		let role = Self::get_requested_role(who.clone()).unwrap().role;
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
 		let success = match role {
@@ -182,7 +182,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	//Proposal creation for collective pallet
-	pub fn create_proposal_hash(
+	pub fn create_proposal(
 		proposal_call: <T as Config>::RuntimeCall,
 	) -> Box<<T as Coll::Config<Instance2>>::Proposal>{
 		let proposal = Box::new(proposal_call);

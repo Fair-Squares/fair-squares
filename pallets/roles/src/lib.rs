@@ -143,7 +143,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn get_requested_role)]
 	pub type RequestedRoles<T: Config> =
-		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, Proposal<T>, OptionQuery>;
 
 	#[pallet::type_value]
 	///Initializing function for the total number of members
@@ -371,25 +371,30 @@ pub mod pallet {
 				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE
 			);
 			if need_approval {
-				RequestedRoles::<T>::insert(&account, account_type);
+
 				//Create proposal
-				let proposal = Self::create_proposal_hash(
+				let proposal = Self::create_proposal(
 					Call::<T>::account_approval{
 						account: account.clone()
 					}.into()
 				);
+				let proposal_hash =  T::Hashing::hash_of(&proposal);
+
+				let proposal_all = Proposal::<T>::new(account.clone(), Some(account_type),proposal_hash);
+				RequestedRoles::<T>::insert(&account, proposal_all);				
 				let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
+				
 				let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
 				let root:OriginFor<T> = RawOrigin::Signed(council_member).into();
 
 				//Start Collective refererendum
-				Coll::Pallet::<T,Instance2>::propose(
+				let _result = Coll::Pallet::<T,Instance2>::propose(
 					root,
 					2,
 					proposal,
 					proposal_len,
-				).ok();
-				
+				);
+								
 				
 			} else {
 				Self::increase_total_members().ok();
@@ -405,7 +410,7 @@ pub mod pallet {
 			let _sender = ensure_signed(origin.clone())?;
 			ensure_root(origin)?;
 
-			let role = Self::get_requested_role(&account);
+			let role = Self::get_requested_role(&account).unwrap().role;
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 
 			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
@@ -423,7 +428,7 @@ pub mod pallet {
 			let _sender = ensure_signed(origin.clone())?;
 			ensure_root(origin)?;
 
-			let role = Self::get_requested_role(&account);
+			let role = Self::get_requested_role(&account).unwrap().role;
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 
 			// We can't reject a representive role request

@@ -39,6 +39,23 @@ pub enum Accounts {
 	REPRESENTATIVE,
 }
 
+#[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct Proposal<T: Config>{
+	pub account_id: T::AccountId,
+	pub role: Option<Accounts>,
+	pub block: BlockNumberOf<T>,
+	pub proposal_hash: T::Hash,
+}
+impl<T: Config> Proposal<T>{
+	pub fn new(acc:T::AccountId, role: Option<Accounts>,proposal_hash: T::Hash) -> Self{
+		let now = <frame_system::Pallet<T>>::block_number();
+		let proposal = Proposal {account_id: acc,role,block: now,proposal_hash};
+		proposal
+	}
+}
+
 //-------------------------------------------------------------------------------------
 //-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 #[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
@@ -101,7 +118,6 @@ where
 		SellerApprovalList::<T>::mutate(|list| {
 			list.push(hw.clone());
 		});
-		RequestedRoles::<T>::insert(caller, Accounts::SELLER);
 
         hw
 	}
@@ -168,7 +184,6 @@ impl<T: Config> Servicer<T> {
 		ServicerApprovalList::<T>::mutate(|list| {
 			list.push(sv.clone());
 		});
-		RequestedRoles::<T>::insert(caller, Accounts::SERVICER);
 		sv
 
 	}
@@ -246,7 +261,6 @@ where
 		NotaryApprovalList::<T>::mutate(|list| {
 			list.push(notary.clone());
 		});
-		RequestedRoles::<T>::insert(caller, Accounts::NOTARY);
 
         notary
 
