@@ -279,8 +279,39 @@ impl<T: Config> Pallet<T> {
 			proposal_len as u32,
 		).ok();
 
+		RequestedRoles::<T>::mutate(&candidate_account,|val|{
+			let mut proposal = val.clone().unwrap();
+			proposal.session_closed = true;
+			*val = Some(proposal);
+			});
+
 		Ok(())
 
+	}
+
+	pub fn begin_block(now: T::BlockNumber) -> Weight{
+		let max_block_weight = Weight::from_parts(1000_u64,0);
+		if (now % T::CheckPeriod::get()).is_zero(){
+			let proposal_iter = RequestedRoles::<T>::iter();
+			for proposal_all in proposal_iter{
+				let test = (proposal_all.1.session_closed,proposal_all.1.approved); 
+				let prop = match test{
+					(true,false) => 0,
+					_ => 1,
+				};
+				if prop == 0 {
+					let proposal = Call::<T>::account_rejection
+					{
+						account: proposal_all.0
+					};
+
+					let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
+					proposal.dispatch_bypass_filter(frame_system::RawOrigin::Signed(council_member).into()).ok();
+				}
+			}
+			
+		}
+		max_block_weight
 	}
 
 	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> Option<<T as Coll::Config<Instance2>>::Proposal> {

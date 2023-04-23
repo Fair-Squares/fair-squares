@@ -281,12 +281,14 @@ impl pallet_sudo::Config for Runtime {
 
 parameter_types! {
 	pub const MaxMembers:u32 =200;
+	pub const CheckPeriod: BlockNumber = MINUTES;
 }
 impl pallet_roles::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type Currency = Balances;
 	type MaxMembers = MaxMembers;
+	type CheckPeriod = CheckPeriod;
 	type BackgroundCouncilOrigin =
 		pallet_collective::EnsureProportionAtLeast<AccountId, BackgroundCollective, 1, 2>;
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;

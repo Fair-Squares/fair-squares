@@ -67,12 +67,14 @@ impl frame_system::Config for Test {
 
 parameter_types! {
 	pub const MaxMembers:u32 = 5;
+	pub const CheckPeriod: BlockNumber = 5;
 }
 impl pallet_roles::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
 	type Currency = Balances;
 	type MaxMembers = MaxMembers;
+	type CheckPeriod = CheckPeriod;
 	type BackgroundCouncilOrigin =
 		pallet_collective::EnsureProportionAtLeast<Self::AccountId, BackgroundCollective, 1, 2>;
 }

@@ -42,6 +42,10 @@ pub mod pallet {
 			+ GetDispatchInfo;
 		#[pallet::constant]
 		type MaxMembers: Get<u32>;
+		
+		#[pallet::constant]
+		type CheckPeriod: Get<Self::BlockNumber>;
+
 		type BackgroundCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 	}
 
@@ -390,7 +394,7 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let _sender = ensure_signed(origin.clone())?;
-			ensure_root(origin)?;
+			//ensure_root(origin)?;
 
 			let role = Self::get_requested_role(&account).unwrap().role;
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
@@ -399,7 +403,13 @@ pub mod pallet {
 
 			Self::approve_account(account.clone())?;
 			let now = <frame_system::Pallet<T>>::block_number();
-			Self::deposit_event(Event::AccountCreationApproved(now, account));
+			Self::deposit_event(Event::AccountCreationApproved(now, account.clone()));
+
+			RequestedRoles::<T>::mutate(&account,|val|{
+			let mut proposal = val.clone().unwrap();
+			proposal.approved = true;
+			*val = Some(proposal);
+			});
 			Ok(())
 		}
 
@@ -408,7 +418,7 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
 			let _sender = ensure_signed(origin.clone())?;
-			ensure_root(origin)?;
+			//ensure_root(origin)?;
 
 			let role = Self::get_requested_role(&account).unwrap().role;
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);

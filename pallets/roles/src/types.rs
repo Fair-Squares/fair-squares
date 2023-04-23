@@ -24,7 +24,6 @@ pub type BalanceOf<T> =
 	<<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
-pub type Idle<T> = (Vec<HouseSeller<T>>, Vec<Servicer<T>>);
 
 ///This enum contains the roles selectable at account creation
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy)]
@@ -48,11 +47,14 @@ pub struct Proposal<T: Config>{
 	pub block: BlockNumberOf<T>,
 	pub proposal_hash: T::Hash,
 	pub proposal_index: u32,
+	pub session_closed: bool, 
+	pub approved: bool,
 }
 impl<T: Config> Proposal<T>{
-	pub fn new(acc:T::AccountId, role: Option<Accounts>,proposal_hash: T::Hash) -> Self{
+	pub fn new(acc:T::AccountId, role: Option<Accounts>,proposal: T::Hash) -> Self{
 		let now = <frame_system::Pallet<T>>::block_number();
-		let proposal = Proposal {account_id: acc,role,block: now,proposal_hash,proposal_index:0};
+		let proposal_hash =  T::Hashing::hash_of(&proposal);
+		let proposal = Proposal {account_id: acc,role,block: now,proposal_hash,proposal_index:0,session_closed:false,approved:false};
 		proposal
 	}
 }
