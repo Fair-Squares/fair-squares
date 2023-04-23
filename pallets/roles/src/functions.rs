@@ -252,6 +252,37 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
+	pub fn closing_vote(caller: T::AccountId,candidate_account: T::AccountId) -> DispatchResult{
+
+		// Check that the caller is a backgroundcouncil member
+		ensure!(
+			Coll::Pallet::<T, Instance2>::members().contains(&caller),
+			Error::<T>::NotACouncilMember
+		);
+		// Check that the proposal exists
+		ensure!(
+			RequestedRoles::<T>::contains_key(&candidate_account),
+			Error::<T>::ProposalDoesNotExist
+		);
+		let proposal_all = Self::get_requested_role(candidate_account.clone()).unwrap();
+		let proposal_hash = proposal_all.proposal_hash;
+		let proposal = Coll::Pallet::<T,Instance2>::proposal_of(proposal_hash.clone()).unwrap();
+		let proposal_len = proposal.clone().encoded_size();
+		let index = proposal_all.proposal_index;
+		let proposal_weight = proposal.get_dispatch_info().weight;
+		let origin = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone()));
+		Coll::Pallet::<T,Instance2>::close(
+			origin,
+			proposal_hash,
+			index,
+			proposal_weight,
+			proposal_len as u32,
+		).ok();
+
+		Ok(())
+
+	}
+
 	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> Option<<T as Coll::Config<Instance2>>::Proposal> {
 		let call_encoded: Vec<u8> = call.encode();
 		let ref_call_encoded = &call_encoded;

@@ -224,7 +224,7 @@ pub mod pallet {
 		/// A proposal has been added by a Background Council member
 		BackgroundCouncilAddedProposal{for_who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
 		/// A proposal has been closed by a Background Council member
-		BackgroundCouncilClosedProposal{who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
+		BackgroundCouncilSessionClosed{who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
 		/// A member of the Background Council has voted
 		BackgroundCouncilVoted{who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
 
@@ -456,7 +456,7 @@ pub mod pallet {
 
 		/// Background council member vote for a proposal
 		/// The origin must be signed and member of the Background Council
-		/// - proposal_hash : hash of the dispatch to be executed
+		/// - candidate : account requesting the role
 		/// - approve : value of the vote (true or false)
 		#[pallet::call_index(6)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
@@ -477,11 +477,30 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Build the call to be executed when the proposal pass the democracy vote
-		/// The origin must but root
-		/// - account_id : the virtual account of the asset of the proposal
-		/// - proposal : call encapsulating the inital proposal
+		/// Background council member close the vote session for a proposal
+		/// The origin must be signed and member of the Background Council
+		/// - candidate : account requesting the role
 		#[pallet::call_index(7)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn council_close(origin:OriginFor<T>,candidate:T::AccountId) -> DispatchResult{
+			let caller = ensure_signed(origin)?;
+			let proposal_all = Self::get_requested_role(&candidate).unwrap();
+			let index = proposal_all.proposal_index;
+			Self::closing_vote(caller.clone(),candidate).ok();
+			let now = <frame_system::Pallet<T>>::block_number();
+
+			Self::deposit_event(Event::BackgroundCouncilSessionClosed{
+				who: caller,
+				proposal_index: index,
+				when: now,
+			});
+			Ok(())
+		}
+
+		/// Build the call to be executed when the proposal pass the council vote
+		/// The origin must but root
+		/// - proposal : call encapsulating the inital proposal
+		#[pallet::call_index(8)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn execute_call_dispatch(
 			origin: OriginFor<T>,
