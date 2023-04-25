@@ -171,8 +171,8 @@ fn testnet_genesis(
 		background_council: BackgroundCouncilConfig {
 			members: vec![
 				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
-				hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
-				hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"].into(),
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
 			],
 			phantom: Default::default(),
 		},

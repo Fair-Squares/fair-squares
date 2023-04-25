@@ -266,6 +266,13 @@ pub mod pallet {
 		ProposalDoesNotExist
 	}
 
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(n: T::BlockNumber) -> Weight {
+			Self::begin_block(n)
+		}
+	}
+
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
 	// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
@@ -376,9 +383,10 @@ pub mod pallet {
 				Self::start_council_session(account.clone(),account_type).ok();	
 			
 			// deposit event
+			let index:u32 = Coll::Pallet::<T,Instance2>::proposal_count();
 			Self::deposit_event(Event::BackgroundCouncilAddedProposal{
 				for_who: account,
-				proposal_index: Coll::Pallet::<T,Instance2>::proposal_count().into(),
+				proposal_index: index-1,
 				when: now,
 			});						
 				
@@ -507,24 +515,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Build the call to be executed when the proposal pass the council vote
-		/// The origin must but root
-		/// - proposal : call encapsulating the inital proposal
-		#[pallet::call_index(8)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn execute_call_dispatch(
-			origin: OriginFor<T>,
-			proposal: Box<<T as Config>::RuntimeCall>,
-		) -> DispatchResultWithPostInfo {
-			ensure_root(origin.clone())?;
-			ensure_signed(origin.clone())?;
 
-			proposal
-				.dispatch_bypass_filter(origin)
-				.ok();
-
-			Ok(().into())
-		}
 
 	}
 }

@@ -181,29 +181,16 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	//Proposal creation for collective pallet
-	pub fn build_proposal(
-		proposal_call: <T as Config>::RuntimeCall,
-	) -> Box<<T as Coll::Config<Instance2>>::Proposal>{
-		let proposal = Box::new(proposal_call);
-
-		let call = Call::<T>::execute_call_dispatch { proposal };
-		let call_formatted = Self::get_formatted_call(call.into()).unwrap();
-		let call_dispatch = Box::new(call_formatted);
-
-		call_dispatch
-	}
 
 	pub fn start_council_session(account: T::AccountId,account_type: Accounts) -> DispatchResult{
 		//Create proposal
-		let proposal = Self::build_proposal(
+		let proposal0 = 
 			Call::<T>::account_approval{
 				account: account.clone()
-			}.into()
-		);
-		let proposal_hash =  T::Hashing::hash_of(&proposal);
+			};
+		let proposal = Self::get_formatted_call(proposal0.into()).unwrap();
 
-		let mut proposal_all = Proposal::<T>::new(account.clone(), Some(account_type),proposal_hash);
+		
 						
 		let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
 		
@@ -214,13 +201,25 @@ impl<T: Config> Pallet<T> {
 		Coll::Pallet::<T,Instance2>::propose(
 			root,
 			2,
-			proposal,
+			Box::new(proposal.clone()),
 			proposal_len,
 		).ok();
+		let mut index:u32 = Coll::Pallet::<T,Instance2>::proposal_count();
+		index = index as u32 -1;
 
-		//Update proposal index
-		proposal_all.proposal_index = Coll::Pallet::<T,Instance2>::proposal_count();
-		RequestedRoles::<T>::insert(&account, proposal_all);
+		//Update proposal index and hash
+		let proposal_hashes =  Coll::Pallet::<T,Instance2>::proposals().into_iter();
+		for proposal_hash in proposal_hashes{
+			let prop0 = Coll::Pallet::<T,Instance2>::proposal_of(proposal_hash.clone()).unwrap();
+			if proposal == prop0{
+				let mut proposal_all = Proposal::<T>::new(account.clone(), Some(account_type),proposal_hash.clone());
+				proposal_all.proposal_index = index;
+				proposal_all.proposal_hash = proposal_hash;
+				RequestedRoles::<T>::insert(&account, proposal_all);
+			}
+			
+		}
+
 		
 		Ok(())
 	}
