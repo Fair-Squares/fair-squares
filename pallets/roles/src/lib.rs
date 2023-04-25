@@ -300,7 +300,7 @@ pub mod pallet {
 		/// An example dispatchable that may throw a custom error.
 		#[pallet::call_index(1)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
+		pub fn cause_error(origin: OriginFor<T>) -> DispatchResultWithPostInfo {
 			let _who = ensure_signed(origin)?;
 
 			// Read a value from storage.
@@ -312,7 +312,7 @@ pub mod pallet {
 					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
 					// Update the value in storage with the incremented result.
 					<Something<T>>::put(new);
-					Ok(())
+					Ok(().into())
 				},
 			}
 		}
@@ -400,46 +400,60 @@ pub mod pallet {
 		///Approval function for Sellers, Servicers, and Notary. Only for admin level.
 		#[pallet::call_index(3)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
-			let _sender = ensure_signed(origin.clone())?;
-			//ensure_root(origin)?;
+		pub fn account_approval(origin: OriginFor<T>, account: T::AccountId) -> DispatchResultWithPostInfo {
+			let _sender = T::BackgroundCouncilOrigin::ensure_origin(origin.clone())?;
 
 			let role = Self::get_requested_role(&account).unwrap().role;
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 
 			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
 
-			Self::approve_account(account.clone())?;
-			let now = <frame_system::Pallet<T>>::block_number();
-			Self::deposit_event(Event::AccountCreationApproved(now, account.clone()));
+			let result = Self::approve_account(account.clone());
+			match result{
+				Ok(_) => {
+					let now = <frame_system::Pallet<T>>::block_number();
+					// deposit event
+					Self::deposit_event(Event::AccountCreationApproved(now, account.clone()));
+					RequestedRoles::<T>::mutate(&account,|val|{
+						let mut proposal = val.clone().unwrap();
+						proposal.approved = true;
+						*val = Some(proposal);
+						});
 
-			RequestedRoles::<T>::mutate(&account,|val|{
-			let mut proposal = val.clone().unwrap();
-			proposal.approved = true;
-			*val = Some(proposal);
-			});
-			Ok(())
+					},
+				Err(e) => return Err(e),
+			}
+			
+
+			
+			Ok(().into())
 		}
 
 		///Creation Refusal function for Sellers and Servicers. Only for admin level.
 		#[pallet::call_index(4)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResult {
+		pub fn account_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResultWithPostInfo {
 			let _sender = ensure_signed(origin.clone())?;
-			//ensure_root(origin)?;
 
 			let role = Self::get_requested_role(&account).unwrap().role;
 			ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 
 			// We can't reject a representive role request
 			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
-			Self::reject_account(account.clone())?;
+			let result = Self::reject_account(account.clone());
 
 			RequestedRoles::<T>::remove(&account);
 
-			let now = <frame_system::Pallet<T>>::block_number();
-			Self::deposit_event(Event::AccountCreationRejected(now, account));
-			Ok(())
+			match result{
+				Ok(_) => {
+					let now = <frame_system::Pallet<T>>::block_number();
+					Self::deposit_event(Event::AccountCreationRejected(now, account));
+				},
+				Err(e) => return Err(e),
+			}
+			
+			
+			Ok(().into())
 		}
 
 		
@@ -478,21 +492,32 @@ pub mod pallet {
 		/// - approve : value of the vote (true or false)
 		#[pallet::call_index(6)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn council_vote(origin:OriginFor<T>,candidate:T::AccountId,approve:bool) -> DispatchResult{
+		pub fn council_vote(origin:OriginFor<T>,candidate:T::AccountId,approve:bool) -> DispatchResultWithPostInfo {
 			let caller = ensure_signed(origin)?;
+			ensure!(
+				Coll::Pallet::<T, Instance2>::members().contains(&caller),
+				Error::<T>::NotACouncilMember
+			);
 			let proposal_all = Self::get_requested_role(&candidate).unwrap();
 			let index = proposal_all.proposal_index;
-			Self::vote_action(caller.clone(),candidate,approve).ok();
-			let now = <frame_system::Pallet<T>>::block_number();
+			let result = Self::vote_action(caller.clone(),candidate,approve);
+			
 
-			// deposit event
-			Self::deposit_event(Event::BackgroundCouncilVoted{
-				who: caller,
-				proposal_index: index,
-				when: now,
-			});	
+			match result{
+				Ok(_) => {
+					let now = <frame_system::Pallet<T>>::block_number();
+					// deposit event
+					Self::deposit_event(Event::BackgroundCouncilVoted{
+						who: caller,
+						proposal_index: index,
+						when: now,
+						});
+					},
+				Err(e) => return Err(e),
+				}
+			
 
-			Ok(())
+			Ok(().into())
 		}
 
 		/// Background council member close the vote session for a proposal
@@ -500,19 +525,26 @@ pub mod pallet {
 		/// - candidate : account requesting the role
 		#[pallet::call_index(7)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn council_close(origin:OriginFor<T>,candidate:T::AccountId) -> DispatchResult{
+		pub fn council_close(origin:OriginFor<T>,candidate:T::AccountId) -> DispatchResultWithPostInfo{
 			let caller = ensure_signed(origin)?;
 			let proposal_all = Self::get_requested_role(&candidate).unwrap();
 			let index = proposal_all.proposal_index;
-			Self::closing_vote(caller.clone(),candidate).ok();
-			let now = <frame_system::Pallet<T>>::block_number();
+			let result = Self::closing_vote(caller.clone(),candidate);
+
+			match result{
+				Ok(_) => {
+					let now = <frame_system::Pallet<T>>::block_number();
 
 			Self::deposit_event(Event::BackgroundCouncilSessionClosed{
 				who: caller,
 				proposal_index: index,
 				when: now,
 			});
-			Ok(())
+				},
+				Err(e) => return Err(e),
+			}
+			
+			Ok(().into())
 		}
 
 

@@ -75,7 +75,7 @@ impl<T: Config> Pallet<T> {
 	}
 
     //Helper function for account creation approval by admin only
-	pub fn approve_account(who: T::AccountId) -> DispatchResult {
+	pub fn approve_account(who: T::AccountId) -> DispatchResultWithPostInfo{
 		let role = Self::get_requested_role(who.clone()).unwrap().role;
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
@@ -86,7 +86,8 @@ impl<T: Config> Pallet<T> {
 			_ => false,
 		};
 		ensure!(success, Error::<T>::NotInWaitingList);
-		Self::increase_total_members()
+		Self::increase_total_members().ok();
+		Ok(().into())
 	}
 
     // TODO: This function can be updated
@@ -97,7 +98,7 @@ impl<T: Config> Pallet<T> {
 		//ensure!(!TenantLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
 		//ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::OneRoleAllowed);
 		ensure!(Self::total_members() < <T as Config>::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
-		Ok(())
+		Ok(().into())
 	}
 
     pub fn reject_seller(who: T::AccountId) -> bool {
@@ -155,7 +156,7 @@ impl<T: Config> Pallet<T> {
 	}
 
     // Helper function for account creation rejection by admin only
-	pub fn reject_account(who: T::AccountId) -> DispatchResult {
+	pub fn reject_account(who: T::AccountId) -> DispatchResultWithPostInfo {
 		let role = Self::get_requested_role(who.clone()).unwrap().role;
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
@@ -166,7 +167,7 @@ impl<T: Config> Pallet<T> {
 			_ => false,
 		};
 		ensure!(success, Error::<T>::NotInWaitingList);
-		Ok(())
+		Ok(().into())
 	}
 
 	pub fn tenant_list() -> Box<dyn Iterator<Item = T::AccountId>> {
@@ -178,11 +179,11 @@ impl<T: Config> Pallet<T> {
 		ensure!(members < <T as Config>::MaxMembers::get(), Error::<T>::TotalMembersExceeded);
 		TotalMembers::<T>::put(members.saturating_add(1));
 
-		Ok(())
+		Ok(().into())
 	}
 
 
-	pub fn start_council_session(account: T::AccountId,account_type: Accounts) -> DispatchResult{
+	pub fn start_council_session(account: T::AccountId,account_type: Accounts) -> DispatchResultWithPostInfo{
 		//Create proposal
 		let proposal0 = 
 			Call::<T>::account_approval{
@@ -195,11 +196,11 @@ impl<T: Config> Pallet<T> {
 		let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
 		
 		let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
-		let root:OriginFor<T> = RawOrigin::Signed(council_member).into();
+		let council_origin= Self::get_origin(council_member);
 
 		//Start Collective refererendum
 		Coll::Pallet::<T,Instance2>::propose(
-			root,
+			council_origin,
 			2,
 			Box::new(proposal.clone()),
 			proposal_len,
@@ -221,10 +222,10 @@ impl<T: Config> Pallet<T> {
 		}
 
 		
-		Ok(())
+		Ok(().into())
 	}
 
-	pub fn vote_action(caller: T::AccountId,candidate_account: T::AccountId,approve:bool) -> DispatchResult{
+	pub fn vote_action(caller: T::AccountId,candidate_account: T::AccountId,approve:bool) -> DispatchResultWithPostInfo{
 		
 		// Check that the caller is a backgroundcouncil member
 		ensure!(
@@ -239,7 +240,7 @@ impl<T: Config> Pallet<T> {
 		let proposal_all = Self::get_requested_role(candidate_account.clone()).unwrap();
 		let proposal_hash = proposal_all.proposal_hash;
 		let proposal_index = proposal_all.proposal_index;
-		let origin = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone())); 
+		let origin = Self::get_origin(caller.clone());
 		// Execute the council vote
 		Coll::Pallet::<T, Instance2>::vote(
 			origin,
@@ -248,10 +249,10 @@ impl<T: Config> Pallet<T> {
 			approve,
 		).ok();
 
-		Ok(())
+		Ok(().into())
 	}
 
-	pub fn closing_vote(caller: T::AccountId,candidate_account: T::AccountId) -> DispatchResult{
+	pub fn closing_vote(caller: T::AccountId,candidate_account: T::AccountId) -> DispatchResultWithPostInfo{
 
 		// Check that the caller is a backgroundcouncil member
 		ensure!(
@@ -269,7 +270,7 @@ impl<T: Config> Pallet<T> {
 		let proposal_len = proposal.clone().encoded_size();
 		let index = proposal_all.proposal_index;
 		let proposal_weight = proposal.get_dispatch_info().weight;
-		let origin = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(caller.clone()));
+		let origin = Self::get_origin(caller.clone());
 		Coll::Pallet::<T,Instance2>::close(
 			origin,
 			proposal_hash,
@@ -284,7 +285,7 @@ impl<T: Config> Pallet<T> {
 			*val = Some(proposal);
 			});
 
-		Ok(())
+		Ok(().into())
 
 	}
 
@@ -324,5 +325,9 @@ impl<T: Config> Pallet<T> {
 		} else {
 			None
 		}
+	}
+
+	pub fn get_origin(account_id: AccountIdOf<T>) -> <T as frame_system::Config>::RuntimeOrigin {
+		frame_system::RawOrigin::Signed(account_id).into()
 	}
 }
