@@ -1,5 +1,6 @@
 use crate::{mock::*, Error, Event};
 use frame_support::{assert_noop, assert_ok};
+use super::*;
 
 #[test]
 fn it_works_for_default_value() {
@@ -24,4 +25,15 @@ fn correct_error_for_none_value() {
 			Error::<Test>::NoneValue
 		);
 	});
+}
+
+#[test]
+fn set_investor_role(){
+	new_test_ext().execute_with(||{
+
+		assert_eq!(RolesModule::get_pending_servicers().len(), 0);
+		assert_eq!(RolesModule::get_pending_house_sellers().len(), 0);
+		assert_eq!(RolesModule::get_pending_notaries().len(), 0);
+		 
+	})
 }
