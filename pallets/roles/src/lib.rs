@@ -336,7 +336,7 @@ pub mod pallet {
 			match account_type {
 				Accounts::INVESTOR => {					
 					Ok(Investor::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
-					if !AccountsRolesLog::<T>::contains_key(account){
+					if !AccountsRolesLog::<T>::contains_key(account.clone()){
 						Self::increase_total_members().ok();
 					}
 					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);				
@@ -350,7 +350,7 @@ pub mod pallet {
 				Accounts::TENANT => {
 					
 					Ok(Tenant::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
-					if !AccountsRolesLog::<T>::contains_key(account){
+					if !AccountsRolesLog::<T>::contains_key(account.clone()){
 						Self::increase_total_members().ok();
 					}
 					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
