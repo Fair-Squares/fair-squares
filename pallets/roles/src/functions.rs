@@ -79,14 +79,17 @@ impl<T: Config> Pallet<T> {
 		let role = Self::get_requested_role(who.clone()).unwrap().role;
 		ensure!(role.is_some(), Error::<T>::NotInWaitingList);
 		let role = role.unwrap();
+		if !AccountsRolesLog::<T>::contains_key(who){
+			Self::increase_total_members().ok();
+		}
 		let success = match role {
-			Accounts::SELLER => Self::approve_seller( who),
-			Accounts::SERVICER => Self::approve_servicer(who),
-			Accounts::NOTARY => Self::approve_notary(who),
+			Accounts::SELLER => Self::approve_seller( who.clone()),
+			Accounts::SERVICER => Self::approve_servicer(who.clone()),
+			Accounts::NOTARY => Self::approve_notary(who.clone()),
 			_ => false,
 		};
 		ensure!(success, Error::<T>::NotInWaitingList);
-		Self::increase_total_members().ok();
+		
 		Ok(().into())
 	}
 
