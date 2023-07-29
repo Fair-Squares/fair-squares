@@ -3,3 +3,6 @@ The offchain worker pallet is crafted to pull verified data from Re-check and st
 The data we are injecting on-chain acts as a verified source that takes what Re-check is presenting as a source of truth this is only for demo-ing purposes and for production ready software regarding real world assets and data we would still have to have something much more robust. 
 
 
+1. Goal was to get the from the recheck-API the data. 
+2. Develop the offchain-worker-recheck pallet to pull the data from the recheck-API and store it on-chain.
+3. Develop the front-end to display the data on-chain.
