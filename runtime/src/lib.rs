@@ -64,6 +64,7 @@ pub use pallet_voting;
 pub use pallet_finalizer;
 pub use pallet_tenancy;
 pub use pallet_payment;
+pub use pallet_offchain_worker_recheck;
 // flag add pallet use
 
 /// An index to a block.
@@ -174,7 +175,7 @@ parameter_types! {
 
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = DontAllowCollectiveAndDemocracy;
+	type BaseCallFilter = ();
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = RuntimeBlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -581,22 +582,22 @@ impl pallet_democracy::Config for Runtime {
 	type MaxProposals = MaxProposals;
 }
 
-pub struct DontAllowCollectiveAndDemocracy;
-impl Contains<Call> for DontAllowCollectiveAndDemocracy {
-	fn contains(c: &Call) -> bool {
-		match c {
-			//Call::Democracy(_) => false,
-			Call::AssetManagementModule(pallet_asset_management::Call::execute_call_dispatch { .. }) => false,
-			//Call::Council(_) => false,
-			Call::NftModule(_) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
-			// Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::reject_edit { .. }) => false,
-			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy { .. }) => false,
-			_ => true,
-		}
-	}
-}
+// pub struct DontAllowCollectiveAndDemocracy;
+// impl Contains<Call> for DontAllowCollectiveAndDemocracy {
+// 	fn contains(c: &Call) -> bool {
+// 		match c {
+// 			//Call::Democracy(_) => false,
+// 			Call::AssetManagementModule(pallet_asset_management::Call::execute_call_dispatch { .. }) => false,
+// 			//Call::Council(_) => false,
+// 			Call::NftModule(_) => false,
+// 			Call::OnboardingModule(pallet_onboarding::Call::do_something { .. }) => false,
+// 			// Call::OnboardingModule(pallet_onboarding::Call::change_status { .. }) => false,
+// 			Call::OnboardingModule(pallet_onboarding::Call::reject_edit { .. }) => false,
+// 			Call::OnboardingModule(pallet_onboarding::Call::reject_destroy { .. }) => false,
+// 			_ => true,
+// 		}
+// 	}
+// }
 
 parameter_types! {
 	pub const ProposalFee: Percent= Percent::from_percent(15);
@@ -758,7 +759,77 @@ impl pallet_payment::Config for Runtime {
 	type WeightInfo = pallet_payment::weights::SubstrateWeight<Runtime>;
 }
 
-// flag add pallet config
+
+parameter_types! {
+    pub const GracePeriod: BlockNumber = 3;
+    pub const UnsignedInterval: BlockNumber = 3;
+    pub const UnsignedPriority: BlockNumber = 3;
+}
+impl pallet_offchain_worker_recheck::Config for Runtime {
+    type AuthorityId = pallet_offchain_worker_recheck::crypto::TestAuthId;
+    type Call = Call;
+    type Event = Event;
+    type GracePeriod = GracePeriod;
+    type UnsignedInterval = UnsignedInterval;
+    type UnsignedPriority = UnsignedPriority;
+}
+
+impl<LocalCall> frame_system::offchain::CreateSignedTransaction<LocalCall> for Runtime
+where
+	Call: From<LocalCall>,
+{
+	fn create_transaction<C: frame_system::offchain::AppCrypto<Self::Public, Self::Signature>>(
+		call: Call,
+		public: <Signature as traits::Verify>::Signer,
+		account: AccountId,
+		nonce: Index,
+	) -> Option<(Call, <UncheckedExtrinsic as traits::Extrinsic>::SignaturePayload)> {
+		let tip = 0;
+		// take the biggest period possible.
+		let period =
+			BlockHashCount::get().checked_next_power_of_two().map(|c| c / 2).unwrap_or(2) as u64;
+		let current_block = System::block_number()
+			.saturated_into::<u64>()
+			// The `System::block_number` is initialized with `n+1`,
+			// so the actual block number is `n`.
+			.saturating_sub(1);
+		let era = Era::mortal(period, current_block);
+		let extra = (
+			frame_system::CheckNonZeroSender::<Runtime>::new(),
+			frame_system::CheckSpecVersion::<Runtime>::new(),
+			frame_system::CheckTxVersion::<Runtime>::new(),
+			frame_system::CheckGenesis::<Runtime>::new(),
+			frame_system::CheckEra::<Runtime>::from(era),
+			frame_system::CheckNonce::<Runtime>::from(nonce),
+			frame_system::CheckWeight::<Runtime>::new(),
+			pallet_asset_tx_payment::ChargeAssetTxPayment::<Runtime>::from(tip, None),
+		);
+		let raw_payload = SignedPayload::new(call, extra)
+			.map_err(|e| {
+				log::warn!("Unable to create signed payload: {:?}", e);
+			})
+			.ok()?;
+		let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
+		let address = Indices::unlookup(account);
+		let (call, extra, _) = raw_payload.deconstruct();
+		Some((call, (address, signature, extra)))
+	}
+}
+
+impl frame_system::offchain::SigningTypes for Runtime {
+	type Public = <Signature as traits::Verify>::Signer;
+	type Signature = Signature;
+}
+
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+where
+	Call: From<C>,
+{
+	type Extrinsic = UncheckedExtrinsic;
+	type OverarchingCall = Call;
+}
+
+
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -796,6 +867,7 @@ construct_runtime!(
 		FinalizerModule: pallet_finalizer,
 		TenancyModule: pallet_tenancy,
 		PaymentModule: pallet_payment,
+		OffchainWorker: pallet_offchain_worker_recheck,
 		// flag add pallet runtime
 	}
 );
