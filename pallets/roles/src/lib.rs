@@ -42,10 +42,16 @@ pub mod pallet {
 			+ GetDispatchInfo;
 		#[pallet::constant]
 		type MaxMembers: Get<u32>;
+
+		/// The maximum number of named reserves that can exist on an account.
+		#[pallet::constant]
+		type MaxRoles: Get<u32>;
+
 		
 		#[pallet::constant]
 		type CheckPeriod: Get<BlockNumberFor<Self>>;
 
+		
 		type BackgroundCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 	}
 
@@ -141,7 +147,7 @@ pub mod pallet {
 	#[pallet::getter(fn get_roles)]
 	///Registry of Roles by AccountId
 	pub type AccountsRolesLog<T: Config> =
-		StorageMap<_, Twox64Concat, AccountIdOf<T>, Accounts, OptionQuery>;
+		StorageMap<_, Twox64Concat, AccountIdOf<T>, BoundedVec<Accounts,T::MaxRoles>, ValueQuery>;
 
 	//This storage should not be necessary, as we already have approval waiting list
 	#[pallet::storage]
@@ -264,7 +270,11 @@ pub mod pallet {
 		/// This is not the accont of a council member
 		NotACouncilMember,
 		/// This proposal does not exists
-		ProposalDoesNotExist
+		ProposalDoesNotExist,
+		/// Maximum number of roles Exceeded
+		MaximumRolesExceeded
+
+
 	}
 
 	#[pallet::hooks]
@@ -337,34 +347,55 @@ pub mod pallet {
 			match account_type {
 				Accounts::INVESTOR => {					
 					Ok(Investor::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
+					let val0 = Self::get_roles(&account);
+					let size = <T as Config>::MaxRoles::get() as usize;
+					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);
 					if !AccountsRolesLog::<T>::contains_key(account.clone()){
 						Self::increase_total_members().ok();
 					}
-					AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);				
+					AccountsRolesLog::<T>::mutate(&account,|val|{
+						val.try_push(Accounts::INVESTOR).ok();
+					});
+					//AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);				
 					Self::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER => {
-					ensure!(!requested, <Error<T>>::AlreadyWaiting);					
+					ensure!(!requested, <Error<T>>::AlreadyWaiting);
+					let val0 = Self::get_roles(&account);
+					let size = <T as Config>::MaxRoles::get() as usize;
+					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);					
 					Ok(HouseSeller::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::TENANT => {
 					
 					Ok(Tenant::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
+					let val0 = Self::get_roles(&account);
+					let size = <T as Config>::MaxRoles::get() as usize;
+					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);
 					if !AccountsRolesLog::<T>::contains_key(account.clone()){
 						Self::increase_total_members().ok();
 					}
-					AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
+					AccountsRolesLog::<T>::mutate(&account,|val|{
+						val.try_push(Accounts::TENANT).ok();
+					});
+					//AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					Self::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					
 					Ok(Servicer::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
+					let val0 = Self::get_roles(&account);
+					let size = <T as Config>::MaxRoles::get() as usize;
+					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::NOTARY => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
+					let val0 = Self::get_roles(&account);
+					let size = <T as Config>::MaxRoles::get() as usize;
+					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);
 					let notary = <T as frame_system::Config>::RuntimeOrigin::from(RawOrigin::Signed(
 						account.clone(),
 					));
@@ -373,7 +404,9 @@ pub mod pallet {
 				},
 				Accounts::REPRESENTATIVE => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					
+					let val0 = Self::get_roles(&account);
+					let size = <T as Config>::MaxRoles::get() as usize;
+					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);
 					Ok(Representative::<T>::new(account.clone()))
 						.map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));

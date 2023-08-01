@@ -7,6 +7,7 @@ impl<T: Config> Pallet<T> {
 	pub fn approve_seller(who: T::AccountId) -> bool {
 		let sellers = Self::get_pending_house_sellers();
 		let mut exist = false;
+		
 
 		for (index, sell) in sellers.iter().enumerate() {
 			if sell.account_id == who.clone() {
@@ -16,7 +17,11 @@ impl<T: Config> Pallet<T> {
 				SellerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
 				});
-				AccountsRolesLog::<T>::insert(&who, Accounts::SELLER);
+				
+				AccountsRolesLog::<T>::mutate(&who,|val|{					
+					val.try_push(Accounts::SELLER).ok();					
+				});
+				//AccountsRolesLog::<T>::insert(&who, Accounts::SELLER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::SellerCreated(now, who));
 				exist = true;
@@ -41,7 +46,10 @@ impl<T: Config> Pallet<T> {
 				ServicerApprovalList::<T>::mutate(|list| {
 					list.remove(index);
 				});
-				AccountsRolesLog::<T>::insert(&who, Accounts::SERVICER);
+				AccountsRolesLog::<T>::mutate(&who,|val|{
+					val.try_push(Accounts::SERVICER).ok();
+				});
+				//AccountsRolesLog::<T>::insert(&who, Accounts::SERVICER);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::ServicerCreated(now, who));
 				exist = true;
@@ -64,7 +72,11 @@ impl<T: Config> Pallet<T> {
 				NotaryApprovalList::<T>::mutate(|list| {
 					list.remove(index);
 				});
-				AccountsRolesLog::<T>::insert(&who, Accounts::NOTARY);
+
+				AccountsRolesLog::<T>::mutate(&who,|val|{
+					val.try_push(Accounts::NOTARY).ok();
+				});
+				//AccountsRolesLog::<T>::insert(&who, Accounts::NOTARY);
 				let now = <frame_system::Pallet<T>>::block_number();
 				Self::deposit_event(Event::NotaryCreated(now, who));
 				exist = true;
