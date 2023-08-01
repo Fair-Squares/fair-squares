@@ -44,7 +44,7 @@ pub mod pallet {
 		type MaxMembers: Get<u32>;
 		
 		#[pallet::constant]
-		type CheckPeriod: Get<Self::BlockNumber>;
+		type CheckPeriod: Get<BlockNumberFor<Self>>;
 
 		type BackgroundCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 	}
@@ -170,20 +170,21 @@ pub mod pallet {
 	///Number of active Representative
 	pub type RepNumber<T: Config> = StorageValue<_, u32, ValueQuery, InitRepMembers<T>>;
 
+	#[derive(frame_support::DefaultNoBound)]
 	#[pallet::genesis_config]
 	pub struct GenesisConfig<T: Config> {
 		pub new_admin: Option<T::AccountId>,
 		pub representatives: Vec<T::AccountId>,
 	}
-	#[cfg(feature = "std")]
-	impl<T: Config> Default for GenesisConfig<T> {
-		fn default() -> Self {
-			Self { new_admin: Default::default(), representatives: vec![] }
-		}
-	}
+	//#[cfg(feature = "std")]
+	//impl<T: Config> Default for GenesisConfig<T> {
+	//	fn default() -> Self {
+	//		Self { new_admin: Default::default(), representatives: vec![] }
+	//	}
+	//}
 
 	#[pallet::genesis_build]
-	impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			if self.new_admin.is_some() {
 				let servicer0 = self.new_admin.clone().unwrap(); // AccountId
@@ -204,27 +205,27 @@ pub mod pallet {
 		/// parameters. [something, who]
 		SomethingStored { something: u32, who: T::AccountId },
 		/// Investor role successfully attributed
-		InvestorCreated(T::BlockNumber, T::AccountId),
+		InvestorCreated(BlockNumberOf<T>, T::AccountId),
 		/// Tenant role successfully attributed
-		TenantCreated(T::BlockNumber, T::AccountId),
+		TenantCreated(BlockNumberOf<T>, T::AccountId),
 		/// Seller role successfully attributed
-		SellerCreated(T::BlockNumber, T::AccountId),
+		SellerCreated(BlockNumberOf<T>, T::AccountId),
 		/// Servicer role successfully attributed
-		ServicerCreated(T::BlockNumber, T::AccountId),
+		ServicerCreated(BlockNumberOf<T>, T::AccountId),
 		/// Notary role successfully attributed
-		NotaryCreated(T::BlockNumber, T::AccountId),
+		NotaryCreated(BlockNumberOf<T>, T::AccountId),
 		/// Request for new role accepted
-		AccountCreationApproved(T::BlockNumber, T::AccountId),
+		AccountCreationApproved(BlockNumberOf<T>, T::AccountId),
 		/// Request for new role Rejected
-		AccountCreationRejected(T::BlockNumber, T::AccountId),
+		AccountCreationRejected(BlockNumberOf<T>, T::AccountId),
 		/// Seller role request rejected
-		SellerAccountCreationRejected(T::BlockNumber, T::AccountId),
+		SellerAccountCreationRejected(BlockNumberOf<T>, T::AccountId),
 		/// Servicer role request rejected
-		ServicerAccountCreationRejected(T::BlockNumber, T::AccountId),
+		ServicerAccountCreationRejected(BlockNumberOf<T>, T::AccountId),
 		/// Notary role request rejected
-		NotaryAccountCreationRejected(T::BlockNumber, T::AccountId),
+		NotaryAccountCreationRejected(BlockNumberOf<T>, T::AccountId),
 		/// Role request added to the role approval waiting list
-		CreationRequestCreated(T::BlockNumber, T::AccountId),
+		CreationRequestCreated(BlockNumberOf<T>, T::AccountId),
 		/// A proposal has been added by a Background Council member
 		BackgroundCouncilAddedProposal{for_who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
 		/// A proposal has been closed by a Background Council member
@@ -268,7 +269,7 @@ pub mod pallet {
 
 	#[pallet::hooks]
 	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-		fn on_initialize(n: T::BlockNumber) -> Weight {
+		fn on_initialize(n: BlockNumberOf<T>) -> Weight {
 			Self::begin_block(n)
 		}
 	}

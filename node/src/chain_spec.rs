@@ -1,5 +1,5 @@
 use fs_node_runtime::{
-	RolesModuleConfig,AccountId, AuraConfig, BalancesConfig, CouncilConfig,BackgroundCouncilConfig,GenesisConfig, GrandpaConfig, Signature, SudoConfig,
+	RolesModuleConfig,AccountId, AuraConfig, BalancesConfig, CouncilConfig,BackgroundCouncilConfig,RuntimeGenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };
 use sc_service::{ChainType, Properties};
@@ -14,7 +14,7 @@ use hex_literal::hex;
  const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
-pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
+pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig>;
 
 /// Generate a crypto pair from seed.
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -228,11 +228,11 @@ fn square_one(
 	root_key: AccountId,
 	endowed_accounts: Vec<(AccountId, u128)>,
 	_enable_println: bool,
-) -> GenesisConfig {
-	GenesisConfig {
+) -> RuntimeGenesisConfig {
+	RuntimeGenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
-			code: wasm_binary.to_vec(),
+			code: wasm_binary.to_vec(), ..Default::default()
 		},
 		balances: BalancesConfig {
 			// Configure endowed accounts with initial balance of 1 << 60.
@@ -242,7 +242,7 @@ fn square_one(
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
 		},
 		grandpa: GrandpaConfig {
-			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
+			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(), ..Default::default()
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
@@ -284,21 +284,23 @@ fn testnet_genesis(
 	root_key: AccountId,
 	endowed_accounts: Vec<(AccountId, u128)>,
 	_enable_println: bool,
-) -> GenesisConfig {
-	GenesisConfig {
+) -> RuntimeGenesisConfig {
+	RuntimeGenesisConfig {
 		system: SystemConfig {
 			// Add Wasm runtime to storage.
-			code: wasm_binary.to_vec(),
+			code: wasm_binary.to_vec(), ..Default::default()
 		},
 		balances: BalancesConfig {
 			// Configure endowed accounts with initial balance of 1 << 60.
 			balances: endowed_accounts,
+			..Default::default()
 		},
 		aura: AuraConfig {
 			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
 		},
 		grandpa: GrandpaConfig {
 			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
+			..Default::default()
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.

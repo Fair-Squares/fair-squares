@@ -292,7 +292,7 @@ impl<T: Config> Pallet<T> {
 
 	}
 
-	pub fn begin_block(now: T::BlockNumber) -> Weight{
+	pub fn begin_block(now: BlockNumberOf<T>) -> Weight{
 		let max_block_weight = Weight::from_parts(1000_u64,0);
 		if (now % T::CheckPeriod::get()).is_zero(){
 			let proposal_iter = RequestedRoles::<T>::iter();
