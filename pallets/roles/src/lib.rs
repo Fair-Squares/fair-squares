@@ -564,7 +564,7 @@ pub mod pallet {
 			let caller = ensure_signed(origin)?;
 			let proposal_all = Self::get_requested_role(&candidate).unwrap();
 			let index = proposal_all.proposal_index;
-			let result = Self::closing_vote(caller.clone(),candidate);
+			let result = Self::closing_vote(caller.clone(),candidate.clone());
 			if proposal_all.approved==true{
 				RequestedRoles::<T>::remove(&candidate);
 			}
