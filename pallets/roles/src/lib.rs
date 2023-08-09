@@ -252,7 +252,7 @@ pub mod pallet {
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 		///One role is allowed
-		OneRoleAllowed,
+		RoleAlreadyGranted,
 		///Invalid Operation
 		InvalidOperation,
 		///Require Sudo
@@ -345,7 +345,9 @@ pub mod pallet {
 			let now = <frame_system::Pallet<T>>::block_number();
 			let requested = Self::get_requested_role(&account).is_some();
 			match account_type {
-				Accounts::INVESTOR => {					
+				Accounts::INVESTOR => {				
+					
+					ensure!(!InvestorLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);	
 					Ok(Investor::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
@@ -361,6 +363,7 @@ pub mod pallet {
 				},
 				Accounts::SELLER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
+					ensure!(!HouseSellerLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
 					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);					
@@ -368,7 +371,7 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::TENANT => {
-					
+					ensure!(!TenantLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
 					Ok(Tenant::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
@@ -384,7 +387,7 @@ pub mod pallet {
 				},
 				Accounts::SERVICER => {
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
-					
+					ensure!(!ServicerLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
 					Ok(Servicer::<T>::new(account.clone())).map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
@@ -392,6 +395,7 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::NOTARY => {
+					ensure!(!NotaryLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
@@ -403,6 +407,7 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::REPRESENTATIVE => {
+					ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
