@@ -357,8 +357,7 @@ pub mod pallet {
 					}
 					AccountsRolesLog::<T>::mutate(&account,|val|{
 						val.try_push(Accounts::INVESTOR).ok();
-					});
-					//AccountsRolesLog::<T>::insert(&account, Accounts::INVESTOR);				
+					});			
 					Self::deposit_event(Event::InvestorCreated(now, account.clone()));
 				},
 				Accounts::SELLER => {
@@ -382,7 +381,6 @@ pub mod pallet {
 					AccountsRolesLog::<T>::mutate(&account,|val|{
 						val.try_push(Accounts::TENANT).ok();
 					});
-					//AccountsRolesLog::<T>::insert(&account, Accounts::TENANT);
 					Self::deposit_event(Event::TenantCreated(now, account.clone()));
 				},
 				Accounts::SERVICER => {
@@ -395,8 +393,9 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::NOTARY => {
-					ensure!(!NotaryLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
+					ensure!(!NotaryLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
+					
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
 					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);
@@ -407,8 +406,9 @@ pub mod pallet {
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
 				Accounts::REPRESENTATIVE => {
-					ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
 					ensure!(!requested, <Error<T>>::AlreadyWaiting);
+					ensure!(!RepresentativeLog::<T>::contains_key(&caller), Error::<T>::RoleAlreadyGranted);
+					
 					let val0 = Self::get_roles(&account);
 					let size = <T as Config>::MaxRoles::get() as usize;
 					ensure!(val0.len() < size, Error::<T>::MaximumRolesExceeded);
