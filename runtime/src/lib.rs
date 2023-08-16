@@ -51,6 +51,8 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 pub use pallet_roles;
+use pallet_nft::NftPermissions;
+pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
 
 /// An index to a block.
@@ -275,6 +277,20 @@ impl pallet_roles::Config for Runtime {
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
 }
+
+parameter_types! {
+	pub ReserveCollectionIdUpTo: u32 = 500;
+}
+impl pallet_nft::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	//type WeightInfo = pallet_nft::weights::SubstrateWeight<Runtime>;
+	type NftCollectionId = CollectionId;
+	type NftItemId = ItemId;
+	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type Permissions = NftPermissions;
+	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
+}
+
 
 parameter_types! {
 	pub const CollectionDeposit: Balance = 100 * DOLLARS;
@@ -563,6 +579,7 @@ construct_runtime!(
 		Aura: pallet_aura,
 		Grandpa: pallet_grandpa,
 		Balances: pallet_balances,
+		NftModule: pallet_nft,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		RolesModule: pallet_roles,
@@ -622,6 +639,7 @@ mod benches {
 		[frame_benchmarking, BaselineBench::<Runtime>]
 		[frame_system, SystemBench::<Runtime>]
 		[pallet_balances, Balances]
+		[pallet_nft, NftModule]
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RolesModule]
 		[pallet_uniques, Uniques]
@@ -840,6 +858,7 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 			add_benchmarks!(params, batches);
+			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_roles, RolesModule);
 			// flag add pallet benchmark
 

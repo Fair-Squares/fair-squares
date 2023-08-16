@@ -61,6 +61,7 @@ frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, g
 
 # Local Dependencies
 pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
+pallet-nft = { version = "4.0.0-dev", default-features = false, path = "../pallets/nft" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", optional = true , branch = "polkadot-v1.0.0" }
@@ -91,6 +92,7 @@ std = [
 	"sp-consensus-grandpa/std",
 	"sp-core/std",
 	"sp-inherents/std",
+	"pallet-nft/std",
 	"sp-offchain/std",
 	"sp-runtime/std",
 	"sp-session/std",
@@ -117,6 +119,7 @@ runtime-benchmarks = [
 	"frame-system/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
+	"pallet-nft/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",

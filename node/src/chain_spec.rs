@@ -1,5 +1,5 @@
 use fs_node_runtime::{
-	RolesModuleConfig,AccountId, AuraConfig, BalancesConfig, CouncilConfig,BackgroundCouncilConfig,RuntimeGenesisConfig, GrandpaConfig, Signature, SudoConfig,
+	pallet_roles,RolesModuleConfig,AccountId, AuraConfig, BalancesConfig, NftModuleConfig,CouncilConfig,BackgroundCouncilConfig,RuntimeGenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };
 use sc_service::{ChainType, Properties};
@@ -255,6 +255,12 @@ fn square_one(
 			representatives: vec![
 			],
 		},
+		nft_module: NftModuleConfig {
+			owner: Some(root_key),
+			collection_id: Some(3),
+			created_by: Some(pallet_roles::Accounts::SERVICER),
+			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
+		},
 		democracy: Default::default(),
 		treasury: Default::default(),
 		council: CouncilConfig {
@@ -304,13 +310,19 @@ fn testnet_genesis(
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(root_key),
+			key: Some(root_key.clone()),
 		},
 		transaction_payment: Default::default(),
 
 		roles_module: RolesModuleConfig {
 			new_admin: Some(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into()),
 			representatives: vec![],
+		},
+		nft_module: NftModuleConfig {
+			owner: Some(root_key),
+			collection_id: Some(3),
+			created_by: Some(pallet_roles::Accounts::SERVICER),
+			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
 		},
 		democracy: Default::default(),
 		treasury: Default::default(),

@@ -24,8 +24,8 @@ pub type BalanceOf<T> =
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 ///This enum contains the roles selectable at account creation
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy)]
-#[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "std", derive(Debug))]
 pub enum Accounts {
 	INVESTOR,
 	#[default]
