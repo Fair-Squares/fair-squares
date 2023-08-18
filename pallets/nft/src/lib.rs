@@ -153,18 +153,7 @@ pub mod pallet {
 		pub created_by: Option<Acc>,
 		pub metadata: Option<BoundedVecOfUnq<T>>,
 	}
-	//#[cfg(feature = "std")]
-	//impl<T: Config> Default for GenesisConfig<T> {
-	//	fn default() -> Self {
-	//		Self {
-	//			owner: Default::default(),
-	//			collection_id: Default::default(),
-	//			created_by: Default::default(),
-	//			metadata: Default::default(),
-	//		}
-	//	}
-	//}
-
+	
 	#[pallet::genesis_build]
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {

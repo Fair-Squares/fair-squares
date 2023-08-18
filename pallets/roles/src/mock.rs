@@ -4,7 +4,7 @@ use frame_support::{
 	traits::{ConstU16,ConstU64},
 	weights::Weight,
 };
-use sp_core::H256;
+use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage,	
@@ -12,7 +12,8 @@ use sp_runtime::{
 use frame_system::{EnsureRoot,};
 
 type Block = frame_system::mocking::MockBlock<Test>;
-
+type AccountId = AccountId32;
+type Balance = u128;
 pub type BlockNumber = u64;
 
 // Configure a mock runtime to test the pallet.
@@ -26,6 +27,9 @@ frame_support::construct_runtime!(
 		Collective: pallet_collective::<Instance2>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
 	}
 );
+
+//helper types
+pub type Acc = pallet_roles::Accounts;
 
 
 parameter_types! {
@@ -42,14 +46,14 @@ impl frame_system::Config for Test {
 	type Nonce = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Block = Block;
 	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u64>;
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -74,15 +78,20 @@ impl pallet_roles::Config for Test {
 		pallet_collective::EnsureProportionAtLeast<Self::AccountId, BackgroundCollective, 1, 2>;
 }
 
+parameter_types! {
+	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
+}
+
 impl pallet_balances::Config for Test {
-	type Balance = u64;
+	type Balance = Balance;
 	type DustRemoval = ();
 	type RuntimeEvent = RuntimeEvent;
-	type ExistentialDeposit = ConstU64<1>;
-	type AccountStore = System;
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = frame_system::Pallet<Test>;
 	type WeightInfo = ();
 	type MaxLocks = ();
-	type MaxReserves = ();
+	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeHoldReason = ();
 	type FreezeIdentifier = ();
@@ -121,7 +130,35 @@ impl pallet_collective::Config<BackgroundCollective> for Test {
 	type MaxProposalWeight =();
 }
 
+pub const ALICE: AccountId = AccountId::new([1u8; 32]);
+pub const BOB: AccountId = AccountId::new([2u8; 32]);
+pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
+pub const DAVE: AccountId = AccountId::new([6u8; 32]);
+pub const EVE: AccountId = AccountId::new([5u8; 32]);
+pub const BSX: Balance = 100_000_000_000;
+
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
+	let mut t= frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into();
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![
+			(ALICE, 200_000 * BSX),
+			(BOB, 200_000 * BSX),
+			(CHARLIE, 200_000 * BSX),
+			(DAVE, 150_000 * BSX),
+			(EVE, 150_000 * BSX),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	pallet_collective::GenesisConfig::<Test, pallet_collective::Instance2> {
+		members: vec![ALICE, BOB, CHARLIE],
+		phantom: Default::default(),
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+	let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
 }

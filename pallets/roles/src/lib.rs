@@ -429,7 +429,7 @@ pub mod pallet {
 			let index:u32 = Coll::Pallet::<T,Instance2>::proposal_count();
 			Self::deposit_event(Event::BackgroundCouncilAddedProposal{
 				for_who: account,
-				proposal_index: index-1,
+				proposal_index: index.saturating_sub(1),
 				when: now,
 			});						
 				
