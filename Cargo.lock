@@ -2455,6 +2455,7 @@ dependencies = [
  "pallet-collective",
  "pallet-democracy",
  "pallet-grandpa",
+ "pallet-housing_fund",
  "pallet-identity",
  "pallet-nft",
  "pallet-preimage",
@@ -4879,6 +4880,28 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-housing_fund"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-nft",
+ "pallet-roles",
+ "pallet-sudo",
+ "pallet-treasury",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 

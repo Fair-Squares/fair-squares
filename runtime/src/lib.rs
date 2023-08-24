@@ -51,6 +51,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 pub use pallet_roles;
+pub use pallet_housing_fund;
 use pallet_nft::NftPermissions;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
@@ -279,6 +280,26 @@ impl pallet_roles::Config for Runtime {
 }
 
 parameter_types! {
+	pub const MinContribution: u128 = 5000 * DOLLARS;
+	pub const FundThreshold: u128 = 100_000 * DOLLARS;
+	pub const MaxFundContribution: u128 = 20_000 * DOLLARS;
+	pub const MaxInvestorPerHouse: u32 = 10;
+	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
+}
+
+/// Configure the pallet-housing_fund in pallets/housing_fund.
+impl pallet_housing_fund::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type LocalCurrency = Balances;
+	type MinContribution = MinContribution;
+	type FundThreshold = FundThreshold;
+	type MaxFundContribution = MaxFundContribution;
+	//type WeightInfo = pallet_housing_fund::weights::SubstrateWeight<Runtime>;
+	type PalletId = HousingFundPalletId;
+	type MaxInvestorPerHouse = MaxInvestorPerHouse;
+}
+
+parameter_types! {
 	pub ReserveCollectionIdUpTo: u32 = 500;
 }
 impl pallet_nft::Config for Runtime {
@@ -408,7 +429,7 @@ parameter_types! {
 	pub const TipFindersFee: Percent = Percent::from_percent(20);
 	pub const TipReportDepositBase: Balance = 1 * DOLLARS;
 	pub const DataDepositPerByte: Balance = 1 * CENTS;
-	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+	pub const TreasuryPalletId: PalletId = PalletId(*b"housfund");
 	pub const MaximumReasonLength: u32 = 300;
 	pub const MaxApprovals: u32 = 100;
 	pub const MaxBalance: Balance = Balance::max_value();
@@ -583,6 +604,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		RolesModule: pallet_roles,
+		HousingFundModule: pallet_housing_fund,
 		Uniques: pallet_uniques,
 		Identity: pallet_identity,
 		Utility: pallet_utility,
@@ -642,6 +664,7 @@ mod benches {
 		[pallet_nft, NftModule]
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RolesModule]
+		[pallet_housing_fund, HousingFundModule]
 		[pallet_uniques, Uniques]
 		[pallet_identity, Identity]
 		[pallet_utility, Utility]
@@ -860,6 +883,7 @@ impl_runtime_apis! {
 			add_benchmarks!(params, batches);
 			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_roles, RolesModule);
+			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

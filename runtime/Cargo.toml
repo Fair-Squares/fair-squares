@@ -61,6 +61,7 @@ frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, g
 
 # Local Dependencies
 pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
+pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
 pallet-nft = { version = "4.0.0-dev", default-features = false, path = "../pallets/nft" }
 
 [build-dependencies]
