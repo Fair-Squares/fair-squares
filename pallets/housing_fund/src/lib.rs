@@ -224,5 +224,86 @@ pub mod pallet {
 		}
 
 
+
+		/// Withdraw the account contribution from the fund
+		/// The origin must be signed
+		/// - amount : the amount to be withdrawn from the fund
+		/// Emits WithdrawalSucceeded event when successful
+		#[pallet::call_index(1)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		#[transactional]
+		pub fn withdraw_fund(
+			origin: OriginFor<T>,
+			amount: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			// Check that the extrinsic was signed and get the signer.
+			let who = ensure_signed(origin)?;
+
+			// Check that the account has the investor role
+			ensure!(
+				ROLES::Pallet::<T>::investors(who.clone()).is_some(),
+				Error::<T>::NotAnInvestor
+			);
+
+			// Check if the account has contributed to the fund
+			ensure!(Contributions::<T>::contains_key(&who), Error::<T>::NotAContributor);
+
+			// Get the contribution's account
+			let contribution = Contributions::<T>::get(who.clone()).unwrap();
+
+			// Retrieve the balance of the account
+			let contribution_amount = contribution.get_total_user_balance();
+
+			// Check that the amount is not superior to the total balance of the contributor
+			ensure!(amount <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
+
+			// Get the fund balance
+			let fund_account = Self::fund_account_id();
+			let fund = T::LocalCurrency::free_balance(&fund_account);
+
+			// Check that the fund has enough transferable for the withdraw
+			ensure!(fund>amount, Error::<T>::NotEnoughInTransferableForWithdraw);
+
+			// Get the block number for timestamp
+			let block_number = <frame_system::Pallet<T>>::block_number();
+
+			let withdraw_log = UserOperationsLog { amount, block_number };
+
+			Contributions::<T>::mutate(&who, |val| {
+				let old_contrib = val.clone().unwrap();
+				let mut withdraw_logs = old_contrib.withdraws.clone();
+				// update the withdraws history
+				withdraw_logs.push(withdraw_log.clone());
+
+				let new_contrib = UserFundStatus {
+					available_balance: old_contrib.available_balance - amount,
+					has_withdrawn: true,
+					block_number,
+					withdraws: withdraw_logs.clone(),
+					..old_contrib
+				};
+				*val = Some(new_contrib);
+			});
+
+			
+			// The amount is transferred from the treasury to the account
+			T::LocalCurrency::transfer(
+				&Pallet::<T>::fund_account_id(),
+				&who,
+				amount,
+				ExistenceRequirement::AllowDeath,
+			)?;
+
+			// Emit an event.
+			Self::deposit_event(Event::WithdrawalSucceeded(
+				who,
+				amount,
+				types::WithdrawalReason::NotDefined,
+				block_number,
+			));
+
+			Ok(().into())
+		}
+
 	}
 }

@@ -61,7 +61,7 @@ pub struct UserFundStatus<T: Config> {
 }
 impl<T: Config> UserFundStatus<T> {
 	pub fn get_total_user_balance(&self) -> BalanceOf<T> {
-		self.available_balance + self.reserved_balance
+		self.available_balance.saturating_add(self.reserved_balance)
 	}
 
 	pub fn can_reserve(&self, amount: BalanceOf<T>) -> bool {
@@ -106,6 +106,6 @@ pub struct ContributionShare<T: Config> {
 	// Account of the contributor
 	pub account_id: AccountIdOf<T>,
 	// Share of the fund
-	pub share: u32,
+	pub share: Percent,
 }
 
