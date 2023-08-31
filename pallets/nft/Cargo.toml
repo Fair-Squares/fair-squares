@@ -24,6 +24,7 @@ frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "h
 pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
+pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-roles = { default-features = false, path="../roles" }
 sp-std = { default-features = false, version = "8.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-runtime = { default-features = false, version = "24.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
@@ -48,6 +49,7 @@ std = [
     "pallet-uniques/std",
 	"sp-std/std",
 	"pallet-roles/std",
+	"pallet-collective/std",
 ]
 
 runtime-benchmarks = [

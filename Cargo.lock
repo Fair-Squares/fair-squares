@@ -4930,6 +4930,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-balances",
+ "pallet-collective",
  "pallet-roles",
  "pallet-sudo",
  "pallet-uniques",

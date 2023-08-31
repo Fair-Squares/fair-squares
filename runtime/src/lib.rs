@@ -664,7 +664,7 @@ mod benches {
 		[pallet_nft, NftModule]
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RolesModule]
-		[pallet_housing_fund, HousingFundModule]
+		//[pallet_housing_fund, HousingFundModule]
 		[pallet_uniques, Uniques]
 		[pallet_identity, Identity]
 		[pallet_utility, Utility]
@@ -881,9 +881,9 @@ impl_runtime_apis! {
 			let mut batches = Vec::<BenchmarkBatch>::new();
 			let params = (&config, &whitelist);
 			add_benchmarks!(params, batches);
-			//add_benchmark!(params, batches, pallet_nft, NftModule);
+			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_roles, RolesModule);
-			add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
+			//add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 			// flag add pallet benchmark
 
 			Ok(batches)

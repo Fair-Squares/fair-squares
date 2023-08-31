@@ -1,7 +1,8 @@
+use super::*;
 use crate as pallet_nft;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16,ConstU64,AsEnsureOriginWithArg, Everything},
+	traits::{ConstU16,ConstU64,AsEnsureOriginWithArg},
 	weights::Weight,
 };
 use sp_core::{crypto::AccountId32, H256};
@@ -12,7 +13,8 @@ use sp_runtime::{
 use frame_system::{EnsureRoot,};
 
 type Block = frame_system::mocking::MockBlock<Test>;
-
+type AccountId = AccountId32;
+type Balance = u128;
 pub type BlockNumber = u64;
 
 // Configure a mock runtime to test the pallet.
@@ -22,11 +24,15 @@ frame_support::construct_runtime!(
 		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
         Uniques: pallet_uniques::{Pallet, Storage, Event<T>},
 		RolesModule: pallet_roles::{Pallet, Call, Storage, Event<T>, Config<T>},
-        NFT: pallet_nft::{Pallet, Call, Storage, Event<T>, Config<T>},
+        Nft: pallet_nft::{Pallet, Call, Storage, Event<T>, Config<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Collective: pallet_collective::<Instance2>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
 	}
 );
+
+//helper types
+pub type Acc = pallet_roles::Accounts;
 
 parameter_types! {
 	pub ReserveCollectionIdUpTo: u32 = 45;
@@ -58,11 +64,11 @@ impl NftPermission<Acc> for NftTestPermissions {
 }
 
 impl Config for Test {
-	type Event = Event;
-	type WeightInfo = ();
+	type RuntimeEvent = RuntimeEvent;
+	//type WeightInfo = ();
 	type NftCollectionId = CollectionId;
 	type NftItemId = ItemId;
-	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type ProtocolOrigin = EnsureRoot<Self::AccountId>;
 	type Permissions = NftTestPermissions;
 	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
 }
@@ -79,11 +85,11 @@ parameter_types! {
 }
 
 impl pallet_uniques::Config for Test {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type CollectionId = CollectionId;
 	type ItemId = ItemId;
 	type Currency = Balances;
-	type ForceOrigin = EnsureRoot<AccountId>;
+	type ForceOrigin = EnsureRoot<Self::AccountId>;
 	type Locker = ();
 	type CollectionDeposit = CollectionDeposit;
 	type ItemDeposit = ItemDeposit;
@@ -94,7 +100,9 @@ impl pallet_uniques::Config for Test {
 	type KeyLimit = KeyLimit;
 	type ValueLimit = ValueLimit;
 	type WeightInfo = ();
-	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<Self::AccountId>>;
 }
 
 parameter_types! {
@@ -111,14 +119,14 @@ impl frame_system::Config for Test {
 	type Nonce = u64;
 	type Hash = H256;
 	type Hashing = BlakeTwo256;
-	type AccountId = u64;
+	type AccountId = AccountId;
 	type Lookup = IdentityLookup<Self::AccountId>;
 	type Block = Block;
 	type RuntimeEvent = RuntimeEvent;
 	type BlockHashCount = ConstU64<250>;
 	type Version = ();
 	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<u64>;
+	type AccountData = pallet_balances::AccountData<Balance>;
 	type OnNewAccount = ();
 	type OnKilledAccount = ();
 	type SystemWeightInfo = ();
@@ -143,15 +151,19 @@ impl pallet_roles::Config for Test {
 		pallet_collective::EnsureProportionAtLeast<Self::AccountId, BackgroundCollective, 1, 2>;
 }
 
+parameter_types! {
+	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
+}
 impl pallet_balances::Config for Test {
-	type Balance = u64;
+	type Balance = Balance;
 	type DustRemoval = ();
 	type RuntimeEvent = RuntimeEvent;
-	type ExistentialDeposit = ConstU64<1>;
+	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = ();
 	type MaxLocks = ();
-	type MaxReserves = ();
+	type MaxReserves = MaxReserves;
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeHoldReason = ();
 	type FreezeIdentifier = ();
@@ -190,7 +202,47 @@ impl pallet_collective::Config<BackgroundCollective> for Test {
 	type MaxProposalWeight =();
 }
 
+
+pub const ALICE: AccountId = AccountId::new([1u8; 32]);
+pub const BOB: AccountId = AccountId::new([2u8; 32]);
+pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
+pub const DAVE: AccountId = AccountId::new([6u8; 32]);
+pub const EVE: AccountId = AccountId::new([5u8; 32]);
+pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
+pub const ACCOUNT_WITH_NO_BALANCE1: AccountId = AccountId::new([7u8; 32]);
+pub const BSX: Balance = 100_000_000_000;
+pub const HOUSES: <Test as pallet_uniques::Config>::CollectionId = 0;
+pub const HOUSESTEST: <Test as pallet_uniques::Config>::CollectionId = 4;
+pub const HOUSESRES: <Test as pallet_uniques::Config>::CollectionId = 3;
+pub const COLLECTION_ID_RESERVED: <Test as pallet_uniques::Config>::CollectionId = 42;
+pub const ITEM_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
+pub const ITEM_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
+pub const ITEM_ID_2: <Test as pallet_uniques::Config>::ItemId = 2;
+pub const NON_EXISTING_COLLECTION_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
+
+
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into()
+	let mut t= frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into();
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![
+			(ALICE, 200_000 * BSX),
+			(BOB, 200_000 * BSX),
+			(CHARLIE, 200_000 * BSX),
+			(DAVE, 150_000 * BSX),
+			(EVE, 150_000 * BSX),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	pallet_collective::GenesisConfig::<Test, pallet_collective::Instance2> {
+		members: vec![ALICE, BOB, CHARLIE],
+		phantom: Default::default(),
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+	let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
 }

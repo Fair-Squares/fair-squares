@@ -57,13 +57,13 @@ use sp_std::boxed::Box;
 pub use types::*;
 //use weights::WeightInfo;
 
-//mod benchmarking;
+mod benchmarking;
 pub mod functions;
 pub mod types;
 //pub mod weights;
 
-//#[cfg(test)]
-//pub mod mock;
+#[cfg(test)]
+pub mod mock;
 
 //#[cfg(test)]
 //mod tests;

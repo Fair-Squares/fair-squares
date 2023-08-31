@@ -20,10 +20,8 @@
 pub use pallet::*;
 
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-
-
+/*#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;*/
 mod functions;
 mod types;
 pub use crate::types::*;

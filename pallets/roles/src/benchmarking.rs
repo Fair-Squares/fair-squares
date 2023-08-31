@@ -1,4 +1,4 @@
-//! Benchmarking setup for pallet-template
+//! Benchmarking setup for pallet-roles
 #![cfg(feature = "runtime-benchmarks")]
 use super::*;
 
@@ -23,16 +23,7 @@ mod benchmarks {
 		assert_eq!(Something::<T>::get(), Some(value));
 	}
 
-	#[benchmark]
-	fn cause_error() {
-		Something::<T>::put(100u32);
-		let caller: T::AccountId = whitelisted_caller();
-		#[extrinsic_call]
-		cause_error(RawOrigin::Signed(caller));
-
-		assert_eq!(Something::<T>::get(), Some(101u32));
-	}
-
-	impl_benchmark_test_suite!(Template, crate::mock::new_test_ext(), crate::mock::Test);
+	
+	impl_benchmark_test_suite!(Roles, crate::mock::new_test_ext(), crate::mock::Test);
 }
 
