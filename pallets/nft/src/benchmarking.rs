@@ -22,7 +22,7 @@ use frame_system::RawOrigin;
 
 fn create_account<T: Config>(name: &'static str, index: u32) -> T::AccountId {
 	let caller: T::AccountId = account(name, index, SEED);
-	<T as pallet_uniques::Config>::Currency::deposit_creating(
+	<T as nfts::Config>::Currency::deposit_creating(
 		&caller,
 		ENDOWMENT.unique_saturated_into(),
 	);
