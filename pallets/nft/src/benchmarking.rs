@@ -8,7 +8,7 @@ use super::*;
 use crate::Pallet as NFT;
 use frame_support::{traits::{tokens::nonfungibles::InspectEnumerable, Currency, Get},assert_noop};
 use pallet_sudo as SUDO;
-use pallet_uniques as UNQ;
+use pallet_nfts as NFTs;
 use pallet_roles as Roles;
 use sp_runtime::traits::UniqueSaturatedInto;
 use sp_std::convert::TryInto;
@@ -49,7 +49,7 @@ mod benchmarks {
         create_collection(
             RawOrigin::Signed(caller),
             coll_id,
-            vec![0; <T as UNQ::Config>::StringLimit::get() as usize].try_into().unwrap()
+            vec![0; <T as NFTs::Config>::StringLimit::get() as usize].try_into().unwrap()
         );
         
     }
