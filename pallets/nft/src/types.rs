@@ -10,6 +10,9 @@ pub use scale_info::{prelude::vec, TypeInfo};
 
 /// NFT Collection ID
 pub type CollectionId = u32;
+/// NFT Item ID
+pub type ItemId = u32;
+
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, Sequence)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum PossibleCollections {
@@ -23,7 +26,7 @@ pub enum PossibleCollections {
 }
 
 impl PossibleCollections {
-	pub fn value(&self) -> CollectionId {
+	pub fn value(&self) ->u32 {
 		match *self {
 			PossibleCollections::HOUSES => 0,
 			PossibleCollections::OFFICES => 1,
@@ -37,8 +40,6 @@ impl PossibleCollections {
 }
 
 /// NFT Item ID
-pub type ItemId = u32;
-
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct CollectionInfo<BoundedVec> {

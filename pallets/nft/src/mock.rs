@@ -2,18 +2,21 @@ use super::*;
 use crate as pallet_nft;
 use frame_support::{
 	parameter_types,
-	traits::{ConstU16,ConstU64,AsEnsureOriginWithArg},
+	traits::{ConstU16,ConstU32,ConstU64,AsEnsureOriginWithArg},
 	weights::Weight,
 };
-use sp_core::{crypto::AccountId32, H256};
+use sp_core:: H256;
 use sp_runtime::{
-	traits::{BlakeTwo256, IdentityLookup},
-	BuildStorage,	
+	traits::{BlakeTwo256, IdentityLookup,IdentifyAccount,Verify},
+	BuildStorage, MultiSignature,
 };
 use frame_system::{EnsureRoot,};
+use pallet_nfts::PalletFeatures;
 
 type Block = frame_system::mocking::MockBlock<Test>;
-type AccountId = AccountId32;
+pub type Signature = MultiSignature;
+pub type AccountPublic = <Signature as Verify>::Signer;
+pub type AccountId = <AccountPublic as IdentifyAccount>::AccountId;
 type Balance = u128;
 pub type BlockNumber = u64;
 
@@ -22,9 +25,9 @@ frame_support::construct_runtime!(
 	pub enum Test 
 	{
 		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
-        Uniques: pallet_uniques::{Pallet, Storage, Event<T>},
 		RolesModule: pallet_roles::{Pallet, Call, Storage, Event<T>, Config<T>},
         Nft: pallet_nft::{Pallet, Call, Storage, Event<T>, Config<T>},
+		Nfts: pallet_nfts::{Pallet, Call, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Collective: pallet_collective::<Instance2>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
@@ -70,7 +73,42 @@ impl Config for Test {
 	type NftItemId = ItemId;
 	type ProtocolOrigin = EnsureRoot<Self::AccountId>;
 	type Permissions = NftTestPermissions;
-	type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
+}
+
+parameter_types! {
+	pub storage Features: PalletFeatures = PalletFeatures::all_enabled();
+}
+
+impl pallet_nfts::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
+	type CollectionId = u32;
+	type ItemId = u32;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<Self::AccountId>>;
+	type ForceOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type Locker = ();
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = AttributeDepositBase;
+	type AttributeDepositBase = AttributeDepositBase;
+	type DepositPerByte = AttributeDepositBase;
+	type StringLimit = ConstU32<50>;
+	type KeyLimit = ConstU32<50>;
+	type ValueLimit = ConstU32<50>;
+	type ApprovalsLimit = ConstU32<10>;
+	type ItemAttributesApprovalsLimit = ConstU32<2>;
+	type MaxTips = ConstU32<10>;
+	type MaxDeadlineDuration = ConstU64<10000>;
+	type MaxAttributesPerCall = ConstU32<2>;
+	type Features = Features;
+	/// Off-chain = signature On-chain - therefore no conversion needed.
+	/// It needs to be From<MultiSignature> for benchmarking.
+	type OffchainSignature = Signature;
+	/// Using `AccountPublic` here makes it trivial to convert to `AccountId` via `into_account()`.
+	type OffchainPublic = AccountPublic;
+	type WeightInfo = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = ();
 }
 
 parameter_types! {
@@ -84,26 +122,7 @@ parameter_types! {
 	pub const UniquesStringLimit: u32 = 32;
 }
 
-impl pallet_uniques::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-	type CollectionId = CollectionId;
-	type ItemId = ItemId;
-	type Currency = Balances;
-	type ForceOrigin = EnsureRoot<Self::AccountId>;
-	type Locker = ();
-	type CollectionDeposit = CollectionDeposit;
-	type ItemDeposit = ItemDeposit;
-	type MetadataDepositBase = UniquesMetadataDepositBase;
-	type AttributeDepositBase = AttributeDepositBase;
-	type DepositPerByte = DepositPerByte;
-	type StringLimit = UniquesStringLimit;
-	type KeyLimit = KeyLimit;
-	type ValueLimit = ValueLimit;
-	type WeightInfo = ();
-	#[cfg(feature = "runtime-benchmarks")]
-	type Helper = ();
-	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<Self::AccountId>>;
-}
+
 
 parameter_types! {
 	pub BlockWeights: frame_system::limits::BlockWeights =
@@ -211,14 +230,14 @@ pub const EVE: AccountId = AccountId::new([5u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
 pub const ACCOUNT_WITH_NO_BALANCE1: AccountId = AccountId::new([7u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
-pub const HOUSES: <Test as pallet_uniques::Config>::CollectionId = 0;
-pub const HOUSESTEST: <Test as pallet_uniques::Config>::CollectionId = 4;
-pub const HOUSESRES: <Test as pallet_uniques::Config>::CollectionId = 3;
-pub const COLLECTION_ID_RESERVED: <Test as pallet_uniques::Config>::CollectionId = 42;
-pub const ITEM_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
-pub const ITEM_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
-pub const ITEM_ID_2: <Test as pallet_uniques::Config>::ItemId = 2;
-pub const NON_EXISTING_COLLECTION_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
+pub const HOUSES: <Test as pallet_nfts::Config>::CollectionId = 0;
+pub const HOUSESTEST: <Test as pallet_nfts::Config>::CollectionId = 4;
+pub const HOUSESRES: <Test as pallet_nfts::Config>::CollectionId = 3;
+pub const COLLECTION_ID_RESERVED: <Test as pallet_nfts::Config>::CollectionId = 42;
+pub const ITEM_ID_0: <Test as pallet_nfts::Config>::ItemId = 0;
+pub const ITEM_ID_1: <Test as pallet_nfts::Config>::ItemId = 1;
+pub const ITEM_ID_2: <Test as pallet_nfts::Config>::ItemId = 2;
+pub const NON_EXISTING_COLLECTION_ID: <Test as pallet_nfts::Config>::CollectionId = 999;
 
 
 // Build genesis storage according to the mock runtime.

@@ -2458,6 +2458,8 @@ dependencies = [
  "pallet-housing_fund",
  "pallet-identity",
  "pallet-nft",
+ "pallet-nfts",
+ "pallet-nfts-runtime-api",
  "pallet-preimage",
  "pallet-roles",
  "pallet-scheduler",
@@ -4892,10 +4894,10 @@ dependencies = [
  "frame-system",
  "pallet-balances",
  "pallet-nft",
+ "pallet-nfts",
  "pallet-roles",
  "pallet-sudo",
  "pallet-treasury",
- "pallet-uniques",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -4931,9 +4933,9 @@ dependencies = [
  "frame-system",
  "pallet-balances",
  "pallet-collective",
+ "pallet-nfts",
  "pallet-roles",
  "pallet-sudo",
- "pallet-uniques",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -4941,6 +4943,35 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-nfts"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v1.0.0#948fbd2fd1233dc26dbb9f9bbc1d2cca2c03945d"
+dependencies = [
+ "enumflags2",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-nfts-runtime-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v1.0.0#948fbd2fd1233dc26dbb9f9bbc1d2cca2c03945d"
+dependencies = [
+ "frame-support",
+ "pallet-nfts",
+ "parity-scale-codec",
+ "sp-api",
 ]
 
 [[package]]
