@@ -329,11 +329,11 @@ impl<T: Config> Pallet<T> {
 		max_block_weight
 	}
 
-	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> Option<<T as Coll::Config<Instance2>>::Proposal> {
+	pub fn get_formatted_call(call: <T as Config>::RuntimeCall) -> Option<Coll2Proposal<T>> {
 		let call_encoded: Vec<u8> = call.encode();
 		let ref_call_encoded = &call_encoded;
 
-		if let Ok(call_formatted) = <T as pallet_collective::Config<Instance2>>::Proposal::decode(
+		if let Ok(call_formatted) = Coll2Proposal::<T>::decode(
 			&mut &ref_call_encoded[..],
 		) {
 			Some(call_formatted)

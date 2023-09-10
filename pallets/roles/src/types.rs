@@ -23,6 +23,7 @@ pub type BalanceOf<T> =
 	<<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
+pub type Coll2Proposal<T> = <T as pallet_collective::Config<Instance2>>::Proposal;
 ///This enum contains the roles selectable at account creation
 #[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "std", derive(Debug))]

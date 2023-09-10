@@ -40,7 +40,7 @@ pub use frame_support::{
 		IdentityFee,  Weight,
 	},
 	dispatch::DispatchClass,
-	PalletId,StorageValue,
+	PalletId,StorageValue,RuntimeCall
 };
 pub mod constants;
 use constants::{currency::*, time::*};
@@ -55,6 +55,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 pub use pallet_roles;
+pub use pallet_voting;
 pub use pallet_housing_fund;
 use pallet_nft::NftPermissions;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
@@ -281,6 +282,28 @@ impl pallet_roles::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, BackgroundCollective, 1, 2>;
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+	pub const Delay: BlockNumber = MINUTES;//3 * MINUTES;
+	pub const CheckDelay: BlockNumber = MINUTES;//3 * MINUTES;
+	pub const InvestorVoteAmount: Balance = 10 * DOLLARS;
+	pub const CheckPeriod2: BlockNumber = MINUTES;
+}
+
+impl pallet_voting::Config for Runtime {
+	type Event = Event;
+	type WeightInfo = ();
+	type RuntimeCallv = RuntimeCall;
+	type Delay = Delay;
+	type CheckDelay = CheckDelay;
+	type InvestorVoteAmount = InvestorVoteAmount;
+	type LocalCurrency = Balances;
+	type HouseCouncilOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	type CheckPeriod2 = CheckPeriod2;
+	type MinimumDepositVote = MinimumDeposit;
+	type PreimageProvider = Preimage;
 }
 
 parameter_types! {
@@ -623,6 +646,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		RolesModule: pallet_roles,
+		VotingModule: pallet_voting,
 		HousingFundModule: pallet_housing_fund,
 		Identity: pallet_identity,
 		Utility: pallet_utility,
