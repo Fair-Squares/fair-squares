@@ -40,7 +40,7 @@ pub use frame_support::{
 		IdentityFee,  Weight,
 	},
 	dispatch::DispatchClass,
-	PalletId,StorageValue,RuntimeCall
+	PalletId,StorageValue
 };
 pub mod constants;
 use constants::{currency::*, time::*};
@@ -292,9 +292,9 @@ parameter_types! {
 }
 
 impl pallet_voting::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 	type WeightInfo = ();
-	type RuntimeCallv = RuntimeCall;
 	type Delay = Delay;
 	type CheckDelay = CheckDelay;
 	type InvestorVoteAmount = InvestorVoteAmount;
@@ -302,7 +302,6 @@ impl pallet_voting::Config for Runtime {
 	type HouseCouncilOrigin =
 		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 	type CheckPeriod2 = CheckPeriod2;
-	type MinimumDepositVote = MinimumDeposit;
 	type PreimageProvider = Preimage;
 }
 

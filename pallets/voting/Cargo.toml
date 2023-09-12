@@ -28,6 +28,7 @@ pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://
 pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
+pallet-utility = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v1.0.0", default-features = false }
 pallet-roles = { default-features = false, path="../roles" }
 
 [dev-dependencies]
@@ -51,6 +52,7 @@ std = [
     "pallet-democracy/std",
 	"pallet-scheduler/std",
 	"pallet-roles/std",
+	"pallet-utility/std"
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

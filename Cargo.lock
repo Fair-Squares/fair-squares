@@ -5201,6 +5201,7 @@ dependencies = [
  "pallet-roles",
  "pallet-scheduler",
  "pallet-sudo",
+ "pallet-utility",
  "parity-scale-codec",
  "scale-info",
  "serde",

@@ -22,7 +22,7 @@ impl<T: Config> Pallet<T> {
 
 
 
-    pub fn get_coll_formatted_call(call: T::RuntimeCallv) -> Option<Coll1Proposal<T>> {
+    pub fn get_coll_formatted_call(call: <T as Config>::RuntimeCall) -> Option<Coll1Proposal<T>> {
 		let call_encoded: Vec<u8> = call.encode();
 		let ref_call_encoded = &call_encoded;
 
@@ -36,14 +36,13 @@ impl<T: Config> Pallet<T> {
 	}
 
 	// Democracy Referendum functions
-	pub fn make_proposal(call: CallOf<T>) -> BoundedCallOf<T> {
-		<T as DEM::Config>::Preimages::bound(call).unwrap()
-	}
 
-    pub fn start_dem_referendum(proposal:BoundedCallOf<T> ,delay:BlockNumberFor<T>) -> DEM::ReferendumIndex{
+    pub fn start_dem_referendum(proposal0:<T as Config>::RuntimeCall ,delay:BlockNumberFor<T>) -> DEM::ReferendumIndex{
+		let proposal:<T as frame_system::Config>::RuntimeCall = proposal0.into();
+		let bounded_proposal = <T as DEM::Config>::Preimages::bound(proposal).unwrap();
 		let threshold = DEM::VoteThreshold::SimpleMajority;    
 		let referendum_index =
-				DEM::Pallet::<T>::internal_start_referendum(proposal, threshold, delay);
+				DEM::Pallet::<T>::internal_start_referendum(bounded_proposal, threshold, delay);
 		referendum_index
 	}
 
@@ -61,9 +60,12 @@ impl<T: Config> Pallet<T> {
 		DEM::AccountVote::Standard { vote: v, balance: b }
 	}
 
-	pub fn get_dem_formatted_call(call: T::RuntimeCallv) -> T::RuntimeCallv {
-		call
+	pub fn get_dem_formatted_call(call: <T as Config>::RuntimeCall) -> UtilCall<T>{
+		let call0:<T as frame_system::Config>::RuntimeCall= call.into();
+		let call1:UtilCall<T>=call0.into();
+		call1
 	}
+	
 
    
 }

@@ -25,6 +25,7 @@ pub use pallet::*;
 pub use pallet_collective as COLL;
 pub use pallet_democracy as DEM;
 pub use pallet_roles as ROLES;
+pub use pallet_utility as UTIL;
 use COLL::Instance1;
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -48,15 +49,17 @@ pub mod pallet {
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config:
-		frame_system::Config + COLL::Config<Instance1> + DEM::Config + ROLES::Config
+		frame_system::Config + COLL::Config<Instance1> + DEM::Config + ROLES::Config+UTIL::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type RuntimeCallv: Parameter
-			+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
-			+ From<Call<Self>>
-			+ Into<<Self as frame_system::Config>::RuntimeCall>
-			+ GetDispatchInfo;
+		type RuntimeCall: Parameter
+		+ Dispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin, PostInfo = PostDispatchInfo>
+		+ GetDispatchInfo
+		+ From<frame_system::Call<Self>>
+		+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
+		+ IsSubType<Call<Self>>
+		+ IsType<<Self as frame_system::Config>::RuntimeCall>;
 		type WeightInfo: WeightInfo;
 		type Delay: Get<BlockNumberOf<Self>>;
 		type CheckDelay: Get<BlockNumberOf<Self>>;
@@ -155,9 +158,9 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			account_id: AccountIdOf<T>,
 			proposal_id: u32,
-			proposal: Box<T::RuntimeCallv>,
+			proposal: <T as Config>::RuntimeCall,
 		) -> DispatchResultWithPostInfo {
-			ensure_root(origin)?;
+			ensure_root(origin.clone())?;
 
 			// We set the flag making the democracy pass vote
 			let mut vote_proposal = VotingProposals::<T>::get(proposal_id).unwrap();
@@ -166,11 +169,10 @@ pub mod pallet {
 			VotingProposals::<T>::mutate(proposal_id, |val| {
 				*val = Some(vote_proposal);
 			});
-
+			let dispatch_prop = vec!(Self::get_dem_formatted_call(proposal)); 
 			// The proposal is executed
-			proposal
-				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id).into())
-				.ok();
+			UTIL::Pallet::<T>::batch(origin.clone(),dispatch_prop).ok();
+			
 			Ok(().into())
 		}
 
@@ -187,10 +189,10 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn submit_proposal(
 			origin: OriginFor<T>,
-			proposal: T::RuntimeCallv,
-			collective_passed_call: Box<T::RuntimeCallv>,
-			collective_failed_call: Box<T::RuntimeCallv>,
-			democracy_failed_call: Box<T::RuntimeCallv>,
+			proposal: <T as Config>::RuntimeCall,
+			collective_passed_call: Box<<T as Config>::RuntimeCall>,
+			collective_failed_call: Box<<T as Config>::RuntimeCall>,
+			democracy_failed_call: Box<<T as Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer
 			let who = ensure_signed(origin)?;
@@ -205,18 +207,9 @@ pub mod pallet {
 			let call = Call::<T>::call_dispatch {
 				account_id: council_member.clone(),
 				proposal_id,
-				proposal: Box::new(proposal),
+				proposal: proposal,
 			};
-
-			let call_formatted = Self::get_dem_formatted_call(call.into());
-			let call_dispatch = Box::new(call_formatted.clone());
-			// create the democracy call to be proposed in collective
 			
-			let democracy_call = Call::<T>::call_democracy_proposal {
-				account_id: who.clone(),
-				proposal_id: proposal_id,
-				call: call_formatted.clone(),
-			};
 
 			
 			
@@ -234,7 +227,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			account_id: AccountIdOf<T>,
 			proposal_id: u32,
-			call: T::RuntimeCallv,
+			call: <T as Config>::RuntimeCall,
 		) -> DispatchResultWithPostInfo {
 			T::HouseCouncilOrigin::ensure_origin(origin)?;
 
@@ -243,9 +236,8 @@ pub mod pallet {
 				Error::<T>::ProposalDoesNotExist
 			);
             let delay = <T as Config>::Delay::get();
-			let proposal = Self::make_proposal(call.clone().into());
 			// Start Democracy referendum
-			let referendum_index = Self::start_dem_referendum(proposal,delay.clone());
+			let referendum_index = Self::start_dem_referendum(call,delay.clone());
 			
             // Update the voting
 			let mut proposal = VotingProposals::<T>::get(proposal_id).unwrap();
@@ -263,13 +255,11 @@ pub mod pallet {
 
 			// Set the the storage to be watched for the democracy process
 			DemocracyProposals::<T>::insert(proposal_id, democratie_motion_duration);
+			let origin_account= frame_system::RawOrigin::Signed(account_id);
 
 			// Execute the dispatch for collective vote passed
-			proposal
-				.collective_passed_call
-				.dispatch_bypass_filter(frame_system::RawOrigin::Signed(account_id).into())
-				.ok();
-
+			let dispatch_proposal = vec!(Self::get_dem_formatted_call(proposal.collective_passed_call));
+			UTIL::Pallet::<T>::batch(origin_account.into(),dispatch_proposal).ok();
 			Self::deposit_event(Event::InvestorVoteSessionStarted(proposal_id, block_number));
 
 			Ok(().into())
