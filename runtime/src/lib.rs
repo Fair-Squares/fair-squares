@@ -293,7 +293,6 @@ parameter_types! {
 
 impl pallet_voting::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type RuntimeCall = RuntimeCall;
 	type WeightInfo = ();
 	type Delay = Delay;
 	type CheckDelay = CheckDelay;
@@ -645,7 +644,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		RolesModule: pallet_roles,
-		VotingModule: pallet_voting,
+		VotingModule: pallet_voting  exclude_parts { Call },
 		HousingFundModule: pallet_housing_fund,
 		Identity: pallet_identity,
 		Utility: pallet_utility,

@@ -22,7 +22,7 @@ impl<T: Config> Pallet<T> {
 
 
 
-    pub fn get_coll_formatted_call(call: <T as Config>::RuntimeCall) -> Option<Coll1Proposal<T>> {
+    pub fn get_coll_formatted_call(call: <T as frame_system::Config>::RuntimeCall) -> Option<Coll1Proposal<T>> {
 		let call_encoded: Vec<u8> = call.encode();
 		let ref_call_encoded = &call_encoded;
 
@@ -37,15 +37,36 @@ impl<T: Config> Pallet<T> {
 
 	// Democracy Referendum functions
 
-    pub fn start_dem_referendum(proposal0:<T as Config>::RuntimeCall ,delay:BlockNumberFor<T>) -> DEM::ReferendumIndex{
-		let proposal:<T as frame_system::Config>::RuntimeCall = proposal0.into();
-		let bounded_proposal = <T as DEM::Config>::Preimages::bound(proposal).unwrap();
+    pub fn start_dem_referendum(proposal0:<T as frame_system::Config>::RuntimeCall ,delay:BlockNumberFor<T>) -> DEM::ReferendumIndex{
+		//let proposal:<T as frame_system::Config>::RuntimeCall = proposal0.into();
+		let bounded_proposal = <T as DEM::Config>::Preimages::bound(proposal0).unwrap();
 		let threshold = DEM::VoteThreshold::SimpleMajority;    
 		let referendum_index =
 				DEM::Pallet::<T>::internal_start_referendum(bounded_proposal, threshold, delay);
 		referendum_index
 	}
 
+	pub fn call_dispatch(
+		account_id: AccountIdOf<T>,
+		proposal_id: u32,
+		proposal: UtilCall<T>,
+	) -> UtilCall<T> {
+		let origin = Self::get_origin(account_id);
+		ensure_root(origin.clone()).ok();
+
+		// We set the flag making the democracy pass vote
+		let mut vote_proposal = VotingProposals::<T>::get(proposal_id).unwrap();
+		vote_proposal.proposal_executed = true;
+
+		VotingProposals::<T>::mutate(proposal_id, |val| {
+			*val = Some(vote_proposal);
+		});
+		let dispatch_prop = vec!(proposal.clone()); 
+		// The proposal is executed
+		UTIL::Pallet::<T>::batch(origin.clone(),dispatch_prop).ok();
+		
+		proposal
+	}
 
 
   
@@ -60,9 +81,8 @@ impl<T: Config> Pallet<T> {
 		DEM::AccountVote::Standard { vote: v, balance: b }
 	}
 
-	pub fn get_dem_formatted_call(call: <T as Config>::RuntimeCall) -> UtilCall<T>{
-		let call0:<T as frame_system::Config>::RuntimeCall= call.into();
-		let call1:UtilCall<T>=call0.into();
+	pub fn get_dem_formatted_call(call: <T as frame_system::Config>::RuntimeCall) -> UtilCall<T>{
+		let call1:UtilCall<T>=call.into();
 		call1
 	}
 	

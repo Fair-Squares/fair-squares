@@ -53,13 +53,6 @@ pub mod pallet {
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type RuntimeCall: Parameter
-		+ Dispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin, PostInfo = PostDispatchInfo>
-		+ GetDispatchInfo
-		+ From<frame_system::Call<Self>>
-		+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
-		+ IsSubType<Call<Self>>
-		+ IsType<<Self as frame_system::Config>::RuntimeCall>;
 		type WeightInfo: WeightInfo;
 		type Delay: Get<BlockNumberOf<Self>>;
 		type CheckDelay: Get<BlockNumberOf<Self>>;
@@ -147,34 +140,7 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// Build the call to be executed when the proposal pass the democracy vote
-		/// The origin must come from the collective palllet
-		/// - account_id : the account of a member of the House Council
-		/// - proposal_hash : hash of the initial proposal call
-		/// - proposal : call encapsulating the inital proposal
-		#[pallet::call_index(0)]
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
-		pub fn call_dispatch(
-			origin: OriginFor<T>,
-			account_id: AccountIdOf<T>,
-			proposal_id: u32,
-			proposal: <T as Config>::RuntimeCall,
-		) -> DispatchResultWithPostInfo {
-			ensure_root(origin.clone())?;
-
-			// We set the flag making the democracy pass vote
-			let mut vote_proposal = VotingProposals::<T>::get(proposal_id).unwrap();
-			vote_proposal.proposal_executed = true;
-
-			VotingProposals::<T>::mutate(proposal_id, |val| {
-				*val = Some(vote_proposal);
-			});
-			let dispatch_prop = vec!(Self::get_dem_formatted_call(proposal)); 
-			// The proposal is executed
-			UTIL::Pallet::<T>::batch(origin.clone(),dispatch_prop).ok();
-			
-			Ok(().into())
-		}
+		
 
 		/// Submit a proposal through the voting process
 		/// The origin must be signed and have the Seller role
@@ -185,17 +151,17 @@ pub mod pallet {
 		///   vote
 		/// - democracy_failed_call : action to be executed when the proposal fail the democracy
 		///   vote
-		#[pallet::call_index(1)]
+		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn submit_proposal(
 			origin: OriginFor<T>,
-			proposal: <T as Config>::RuntimeCall,
-			collective_passed_call: Box<<T as Config>::RuntimeCall>,
-			collective_failed_call: Box<<T as Config>::RuntimeCall>,
-			democracy_failed_call: Box<<T as Config>::RuntimeCall>,
+			proposal:  UtilCall<T>,
+			collective_passed_call: Box<<T as frame_system::Config>::RuntimeCall>,
+			collective_failed_call: Box<<T as frame_system::Config>::RuntimeCall>,
+			democracy_failed_call: Box<<T as frame_system::Config>::RuntimeCall>,
 		) -> DispatchResultWithPostInfo {
 			// Check that the extrinsic was signed and get the signer
-			let who = ensure_signed(origin)?;
+			let who = ensure_signed(origin.clone())?;
 
 			// Check that the account has the seller role
 			ensure!(ROLES::Pallet::<T>::sellers(who.clone()).is_some(), Error::<T>::NotASeller);
@@ -204,11 +170,13 @@ pub mod pallet {
 
 			let council_member = COLL::Pallet::<T, Instance1>::members()[0].clone();
 			// create the final dispatch call of the proposal in democracy
-			let call = Call::<T>::call_dispatch {
-				account_id: council_member.clone(),
+			let call_ini = vec!(Self::call_dispatch 
+				( council_member.clone(),
 				proposal_id,
-				proposal: proposal,
-			};
+				proposal)
+			);
+			let call = Box::new(UTIL::Call::<T>::batch{calls:call_ini});
+
 			
 
 			
@@ -221,13 +189,13 @@ pub mod pallet {
 		/// - account_id : the account of the issuer of the proposal
 		/// - proposal_id : hash of the initial proposal call
 		/// - proposal : call encapsulating the inital proposal
-		#[pallet::call_index(2)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		pub fn call_democracy_proposal(
 			origin: OriginFor<T>,
 			account_id: AccountIdOf<T>,
 			proposal_id: u32,
-			call: <T as Config>::RuntimeCall,
+			call: <T as frame_system::Config>::RuntimeCall,
 		) -> DispatchResultWithPostInfo {
 			T::HouseCouncilOrigin::ensure_origin(origin)?;
 
@@ -264,7 +232,7 @@ pub mod pallet {
 
 			Ok(().into())
 		}
-
+/*
 
 		/// House council member vote for a proposal
 		/// The origin must be signed and member of the House Council
@@ -420,7 +388,7 @@ pub mod pallet {
 			}
 
 			Ok(().into())
-		}
+		}*/
 	}
 }
 

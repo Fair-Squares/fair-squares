@@ -35,15 +35,15 @@ pub type BalanceOf<T> =
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct ProposalParams<T: Config> {
-	pub call: Box<<T as Config>::RuntimeCall>,
+	pub call: Box<<T as frame_system::Config>::RuntimeCall>,
 	pub hash: T::Hash,
 }
 
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct CollectiveParams<T: Config, U> {
-	pub call_pass: <T as Config>::RuntimeCall,
-	pub call_fail: Box<<T as Config>::RuntimeCall>,
+	pub call_pass: <T as frame_system::Config>::RuntimeCall,
+	pub call_fail: Box<<T as frame_system::Config>::RuntimeCall>,
 	pub index: u32,
 	pub call: U,
 	pub hash: T::Hash,
@@ -52,7 +52,7 @@ pub struct CollectiveParams<T: Config, U> {
 #[derive(Clone, Encode, Decode, PartialEq, RuntimeDebug, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct DemocracyParams<T: Config> {
-	pub call_fail: Box<<T as Config>::RuntimeCall>,
+	pub call_fail: Box<<T as frame_system::Config>::RuntimeCall>,
 	pub hash: T::Hash,
 }
 
@@ -60,16 +60,16 @@ pub struct DemocracyParams<T: Config> {
 #[scale_info(skip_type_params(T))]
 pub struct VotingProposal<T: Config, U> {
 	pub account_id: AccountIdOf<T>,
-	pub proposal_call: Box<<T as Config>::RuntimeCall>,
+	pub proposal_call: Box<<T as frame_system::Config>::RuntimeCall>,
 	pub proposal_hash: T::Hash,
 	pub collective_call: U,
-	pub collective_passed_call: <T as Config>::RuntimeCall,
-	pub collective_failed_call: Box<<T as Config>::RuntimeCall>,
+	pub collective_passed_call: <T as frame_system::Config>::RuntimeCall,
+	pub collective_failed_call: Box<<T as frame_system::Config>::RuntimeCall>,
 	pub collective_index: u32,
 	pub collective_hash: T::Hash,
 	pub collective_step: bool,
 	pub collective_closed: bool,
-	pub democracy_failed_call: Box<<T as Config>::RuntimeCall>,
+	pub democracy_failed_call: Box<<T as frame_system::Config>::RuntimeCall>,
 	pub democracy_referendum_index: u32,
 	pub democracy_hash: T::Hash,
 	pub proposal_executed: bool,
