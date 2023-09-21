@@ -12,7 +12,7 @@ mod tests;
 mod benchmarking;
 mod functions;
 mod types;
-pub use types::*;
+pub use crate::types::*;
 pub use functions::*;
 pub use pallet_sudo as SUDO;
 pub use pallet_collective as Coll;

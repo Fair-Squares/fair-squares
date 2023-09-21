@@ -2470,7 +2470,6 @@ dependencies = [
  "pallet-treasury",
  "pallet-uniques",
  "pallet-utility",
- "pallet-voting",
  "parity-scale-codec",
  "scale-info",
  "sp-api",
@@ -5182,29 +5181,6 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-voting"
-version = "4.0.0-dev"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-collective",
- "pallet-democracy",
- "pallet-roles",
- "pallet-scheduler",
- "pallet-sudo",
- "pallet-utility",
- "parity-scale-codec",
- "scale-info",
- "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",
