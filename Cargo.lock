@@ -2449,6 +2449,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "node-primitives",
+ "pallet-Onboarding",
  "pallet-assets",
  "pallet-aura",
  "pallet-balances",
@@ -4765,6 +4766,31 @@ checksum = "a1914cd452d8fccd6f9db48147b29fd4ae05bea9dc5d9ad578509f72415de282"
 dependencies = [
  "cfg-if",
  "libm",
+]
+
+[[package]]
+name = "pallet-Onboarding"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-collective",
+ "pallet-democracy",
+ "pallet-housing_fund",
+ "pallet-nft",
+ "pallet-nfts",
+ "pallet-roles",
+ "pallet-scheduler",
+ "pallet-sudo",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

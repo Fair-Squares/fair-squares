@@ -65,6 +65,7 @@ frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, g
 pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
 pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
 pallet-nft = { version = "4.0.0-dev", default-features = false, path = "../pallets/nft" }
+pallet-Onboarding = { version = "4.0.0-dev", default-features = false, path = "../pallets/Onboarding" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", optional = true , branch = "polkadot-v1.0.0" }
@@ -104,6 +105,7 @@ std = [
 	"sp-version/std",
 	"substrate-wasm-builder",
 	"pallet-roles/std",
+	"pallet-Onboarding/std",
 	"pallet-collective/std",
 	"pallet-scheduler/std",
 	"pallet-preimage/std",
@@ -128,6 +130,7 @@ runtime-benchmarks = [
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",
+	"pallet-Onboarding/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
@@ -153,6 +156,7 @@ try-runtime = [
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-roles/try-runtime",
+	"pallet-Onboarding/try-runtime",
 	"pallet-utility/try-runtime",
 	"pallet-identity/try-runtime",
 	"pallet-assets/try-runtime",

@@ -56,6 +56,7 @@ pub use sp_runtime::{Perbill, Permill};
 
 pub use pallet_roles;
 pub use pallet_housing_fund;
+pub use pallet_Onboarding;
 use pallet_nft::NftPermissions;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
@@ -281,6 +282,22 @@ impl pallet_roles::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, BackgroundCollective, 1, 2>;
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types! {
+	pub const ProposalFee: Percent= Percent::from_percent(15);
+	pub const SlashedFee: Percent = Percent::from_percent(10);
+	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
+}
+
+impl pallet_Onboarding::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type Prop = RuntimeCall;
+	type ProposalFee = ProposalFee;
+	type Slash = SlashedFee;
+	type WeightInfo = ();
+	type FeesAccount = FeesAccount;
 }
 
 parameter_types! {
@@ -633,6 +650,7 @@ construct_runtime!(
 		Scheduler: pallet_scheduler,
 		Democracy: pallet_democracy,
 		Assets: pallet_assets,
+		OnboardingModule: pallet_Onboarding,
 		// flag add pallet runtime
 	}
 );
@@ -685,6 +703,7 @@ mod benches {
 		[pallet_roles, RolesModule]
 		//[pallet_housing_fund, HousingFundModule]
 		[pallet_identity, Identity]
+		//[pallet_onboarding, OnboardingModule]
 		[pallet_utility, Utility]
 		[pallet_treasury, Treasury]
 		[pallet_preimage, Preimage]
@@ -947,6 +966,7 @@ impl_runtime_apis! {
 			add_benchmarks!(params, batches);
 			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_roles, RolesModule);
+			//add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
 			//add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 			// flag add pallet benchmark
 
