@@ -126,8 +126,30 @@ impl<T: Config> Pallet<T> {
 		}
 	}
 
+	pub fn make_proposal(call: CallOf<T>) -> BoundedCallOf<T> {
+		<T as DEM::Config>::Preimages::bound(call).unwrap()
+	}
+
+	pub fn start_dem_referendum(proposal:BoundedCallOf<T> ,delay:BlockNumberFor<T>) -> DEM::ReferendumIndex{
+		let threshold = DEM::VoteThreshold::SimpleMajority;    
+		let referendum_index =
+				DEM::Pallet::<T>::internal_start_referendum(proposal, threshold, delay);
+		referendum_index
+	}
+
+
 	pub fn account_id() -> T::AccountId {
 		T::FeesAccount::get().into_account_truncating()
+	}
+
+	pub fn account_vote(b: BalanceOf<T>, choice:bool) -> DEM::AccountVote<BalanceOf<T>> {
+		let v = DEM::Vote { aye: choice, conviction: DEM::Conviction::Locked1x };
+	
+		DEM::AccountVote::Standard { vote: v, balance: b }
+	}
+	
+	pub fn get_formatted_call(call: <T as Config>::Prop) -> <T as Config>::Prop {
+		call
 	}
 
 	fn get_houses_by_status(

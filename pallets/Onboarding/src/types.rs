@@ -3,13 +3,17 @@ pub use super::*;
 use serde::{Deserialize, Serialize};
 pub use codec::HasCompact;
 pub use frame_support::{
-    pallet_prelude::*,
+    pallet_prelude::*,PalletId,
 	codec::{Decode, Encode},
-	dispatch::{DispatchResult, Dispatchable, EncodeLike},
+	dispatch::{DispatchResult, Dispatchable, EncodeLike,GetDispatchInfo},
 	ensure,
 	traits::{
-		tokens::nonfungibles::*, BalanceStatus, Currency, ExistenceRequirement, Get,
-		ReservableCurrency,
+		defensive_prelude::*,
+		schedule::{v3::Named as ScheduleNamed, DispatchTime},
+		Bounded, Currency, EnsureOrigin, Get, Hash as PreimageHash, LockIdentifier,
+		LockableCurrency, OnUnbalanced, QueryPreimage, ReservableCurrency, StorePreimage,
+		WithdrawReasons,tokens::nonfungibles::*, BalanceStatus, ExistenceRequirement,
+		UnfilteredDispatchable,
 	},
 	transactional, BoundedVec,
 };
@@ -20,9 +24,16 @@ pub use sp_runtime::{
 	DispatchError, Percent,
 };
 pub use sp_std::boxed::Box;
+pub use sp_std::prelude::*;
 pub use scale_info::prelude::vec::Vec;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 pub type NftCollectionOf = Nft::PossibleCollections;
+pub type BalanceOf<T> =
+	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+pub type CallOf<T> = <T as frame_system::Config>::RuntimeCall;
+pub type BoundedCallOf<T> = Bounded<CallOf<T>>;
+type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
+
 pub use Nft::ItemInfoOf;
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]

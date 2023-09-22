@@ -60,6 +60,8 @@ pub use pallet_housing_fund as HousingFund;
 pub use pallet_nft as Nft;
 pub use pallet_roles as Roles;
 pub use pallet_sudo as Sudo;
+pub use pallet_democracy as DEM;
+pub use pallet_utility as UTIL;
 
 pub use pallet::*;
 
@@ -74,14 +76,10 @@ mod benchmarking;
 //pub mod weights;
 //pub use weights::WeightInfo;
 
-pub type BalanceOf<T> =
-	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{pallet_prelude::*, PalletId};
 	use frame_system::WeightInfo;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -92,13 +90,18 @@ pub mod pallet {
 		+ Nft::Config
 		+ Sudo::Config
 		+ HousingFund::Config
+		+ DEM::Config
+		+ UTIL::Config
+
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type Currency: ReservableCurrency<Self::AccountId>;
 		type Prop: Parameter
-			+ Dispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
-			+ From<Call<Self>>;
+		+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
+		+ From<Call<Self>>
+		+ Into<<Self as frame_system::Config>::RuntimeCall>
+		+ GetDispatchInfo;
 		#[pallet::constant]
 		type ProposalFee: Get<Percent>;
 		type WeightInfo: WeightInfo;
