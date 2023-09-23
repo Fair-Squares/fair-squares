@@ -71,8 +71,8 @@ pub use pallet::*;
 //#[cfg(test)]
 //mod tests;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
+//#[cfg(feature = "runtime-benchmarks")]
+//mod benchmarking;
 //pub mod weights;
 //pub use weights::WeightInfo;
 
@@ -490,7 +490,7 @@ pub mod pallet {
 				*val = Some(v0);
 			});
 
-			//Create Call for proposal reject_edit
+			//Create Call for proposal reject_edit-->hook
 			let call2: T::Prop =
 				Call::<T>::reject_edit { collection, item_id, infos: house.clone() }.into();
 			let call2_wrap = Box::new(call2);
@@ -500,7 +500,7 @@ pub mod pallet {
 				*val = Some(v0);
 			});
 
-			//Create Call for proposal reject_destroy
+			//Create Call for proposal reject_destroy-->hook
 			let call3: T::Prop =
 				Call::<T>::reject_destroy { collection, item_id, infos: house }.into();
 			let call3_wrap = Box::new(call3);
@@ -510,7 +510,7 @@ pub mod pallet {
 				*val = Some(v0);
 			});
 
-			//Create Call for asset status change after Investor's vote
+			//Create Call for asset status change after Investor's vote-->util
 			let call4: T::Prop =
 				Call::<T>::change_status { collection, item_id, status: AssetStatus::ONBOARDED }
 					.into();
