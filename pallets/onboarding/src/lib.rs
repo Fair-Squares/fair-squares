@@ -298,7 +298,7 @@ pub struct GenesisConfig<T: Config> {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://docs.substrate.io/v3/runtime/origins
-			let who = ensure_signed(origin)?;
+			let who = ensure_root(origin)?;
 
 			// Update storage.
 			<Something<T>>::put(something);
@@ -318,7 +318,7 @@ pub struct GenesisConfig<T: Config> {
 			item_id: T::NftItemId,
 			status: AssetStatus,
 		) -> DispatchResult {
-			let _caller = ensure_signed(origin.clone()).unwrap();
+			let _caller = ensure_root(origin.clone()).unwrap();
 			let coll_id: T::NftCollectionId = collection.clone().value().into();
 			Self::status(collection, item_id, status);
 			Self::deposit_event(Event::AssetStatusChanged {
@@ -392,7 +392,7 @@ pub struct GenesisConfig<T: Config> {
 				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(origin, collection, item_id, AssetStatus::REJECTED).ok();
+			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::REJECTED).ok();
 
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -441,7 +441,7 @@ pub struct GenesisConfig<T: Config> {
 				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(origin.clone(), collection, item_id, AssetStatus::SLASH).ok();
+			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::SLASH).ok();
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			Nft::Pallet::<T>::burn(origin, collection, item_id).ok();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -502,18 +502,8 @@ pub struct GenesisConfig<T: Config> {
 
 			let _new_call = VotingCalls::<T>::new(collection_id, item_id).ok();
 
-			//Create Call for collective-to-democracy status change
-			let call1: T::Prop =
-				Call::<T>::change_status { collection, item_id, status: AssetStatus::VOTING }
-					.into();
-			let call1_wrap = call1;
-			Vcalls::<T>::mutate(collection_id, item_id, |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.democracy_status = call1_wrap;
-				*val = Some(v0);
-			});
 
-			//Create Call for proposal reject_edit-->hook
+			/*//Create Call for proposal reject_edit-->hook
 			let call2: T::Prop =
 				Call::<T>::reject_edit { collection, item_id, infos: house.clone() }.into();
 			let call2_wrap = call2;
@@ -531,16 +521,14 @@ pub struct GenesisConfig<T: Config> {
 				let mut v0 = val.clone().unwrap();
 				v0.reject_destroy = call3_wrap;
 				*val = Some(v0);
-			});
+			});*/
 
-			//Create Call for asset status change after Investor's vote-->util
-			let call4: T::Prop =
-				Call::<T>::change_status { collection, item_id, status: AssetStatus::ONBOARDED }
-					.into();
-			let call4_wrap = call4;
+			//Create Call for asset status change after Investor's vote
+			let call4 =
+				Call::<T>::change_status { collection, item_id, status: AssetStatus::ONBOARDED };
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
-				v0.after_vote_status = call4_wrap;
+				v0.after_vote_status = call4.clone().into();
 				*val = Some(v0);
 			});
 
@@ -635,5 +623,17 @@ pub struct GenesisConfig<T: Config> {
 			Ok(())
 			
 	}
+
+		#[pallet::call_index(8)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn vote(origin: OriginFor<T>,index:DEM::ReferendumIndex,vote:bool)-> DispatchResult {
+			let _who = ensure_signed(origin.clone())?;
+			let config = Self::account_vote(<T as DEM::Config>::MinimumDeposit::get(),vote);
+			DEM::Pallet::<T>::vote(origin,index,config).ok();
+			Ok(())
+			
+	}
+
+
 	}
 }

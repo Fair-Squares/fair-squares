@@ -13,11 +13,11 @@ impl<T: Config> Pallet<T> {
 		// Mint nft
 		Nft::Pallet::<T>::mint(origin.clone(), collection.into(), metadata.into()).ok();
 
-		let infos = Nft::Items::<T>::get(coll_id, item_id);
+		let infos = Nft::Items::<T>::get(coll_id, item_id).unwrap();
 		// Set asset price
 		Self::price(origin, collection, item_id, new_price).ok();
 		// Create Asset
-		//Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants).ok();
+		Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants).ok();
 
 		Ok(())
 	}
@@ -108,22 +108,9 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(origin_buyer, collection, item_id, AssetStatus::PURCHASED).ok();
+		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::PURCHASED).ok();
 
 		Ok(())
-	}
-
-	pub fn get_formatted_collective_proposal(
-		call: <T as Config>::Prop,
-	) -> Option<Call<T>> {
-		let call_encoded: Vec<u8> = call.encode();
-		let ref_call_encoded = &call_encoded;
-
-		if let Ok(call_formatted) = pallet::Call::<T>::decode(&mut &ref_call_encoded[..]) {
-			Some(call_formatted)
-		} else {
-			None
-		}
 	}
 
 	pub fn make_proposal(call: CallOf<T>) -> BoundedCallOf<T> {
@@ -148,8 +135,8 @@ impl<T: Config> Pallet<T> {
 		DEM::AccountVote::Standard { vote: v, balance: b }
 	}
 	
-	pub fn get_formatted_call(call: <T as Config>::Prop) -> <T as Config>::Prop {
-		call
+	pub fn get_formatted_call(call: Call<T>) -> <T as Config>::Prop {
+		call.into()
 	}
 
 	fn get_houses_by_status(
@@ -195,26 +182,19 @@ impl<T: Config> Pallet<T> {
 		item_id: T::NftItemId,
 	) {
 		//Change asset status to REVIEWING
-		Self::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING).ok();
+		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::REVIEWING).ok();
 		//Send Proposal struct to voting pallet
 		//get the needed call and convert them to pallet_voting format
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
 		let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
-		let call0: <T as frame_system::Config>::RuntimeCall = out_call.after_vote_status.into();
+		let call0 = Self::get_formatted_call(out_call.after_vote_status) ;
 
 		
-		let proposal = Self::make_proposal(call0);
+		let proposal = Self::make_proposal(call0.into());
 		let delay = T::Delay::get();
 			let _index=Self::start_dem_referendum(proposal,delay);
-
-	
-		/*let proposal_hash = T::Hash::hash_of(&w_status1);
-		Houses::<T>::mutate_exists(collection_id, item_id, |val| {
-			let mut v0 = val.clone().unwrap();
-			v0.proposal_hash = proposal_hash;
-			*val = Some(v0)
-		});*/
-
 		
 	}
+
+	
 }

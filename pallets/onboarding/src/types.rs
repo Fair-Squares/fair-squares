@@ -106,19 +106,19 @@ impl<T: Config> Asset<T> {
 //#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct VotingCalls<T: Config> {
 	/// Asset creation block
-	pub(super) reject_edit: T::Prop,
+	pub(super) reject_edit: Call<T>,
 	/// NFT infos
-	pub(super) reject_destroy: T::Prop,
+	pub(super) reject_destroy: Call<T>,
 	/// NFT Price
-	pub(super) democracy_status: T::Prop,
+	pub(super) democracy_status: Call<T>,
 	///After positive Investor vote status
-	pub(super) after_vote_status: T::Prop,
+	pub(super) after_vote_status: Call<T>,
 }
 
 impl<T: Config> VotingCalls<T> {
 	pub fn new(collection: T::NftCollectionId, item: T::NftItemId) -> DispatchResult {
 		let nbr: u32 = 0;
-		let call: T::Prop = Call::<T>::do_something { something: nbr }.into();
+		let call:Call<T> = Call::<T>::do_something { something: nbr }.into();
 
 		let calls = VotingCalls::<T> {
 			reject_edit: call.clone(),
