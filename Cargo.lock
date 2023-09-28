@@ -2449,7 +2449,6 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "node-primitives",
- "pallet-Onboarding",
  "pallet-assets",
  "pallet-aura",
  "pallet-balances",
@@ -2461,6 +2460,7 @@ dependencies = [
  "pallet-nft",
  "pallet-nfts",
  "pallet-nfts-runtime-api",
+ "pallet-onboarding",
  "pallet-preimage",
  "pallet-roles",
  "pallet-scheduler",
@@ -4769,32 +4769,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-Onboarding"
-version = "4.0.0-dev"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-collective",
- "pallet-democracy",
- "pallet-housing_fund",
- "pallet-nft",
- "pallet-nfts",
- "pallet-roles",
- "pallet-scheduler",
- "pallet-sudo",
- "pallet-utility",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-assets"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v1.0.0#948fbd2fd1233dc26dbb9f9bbc1d2cca2c03945d"
@@ -4999,6 +4973,32 @@ dependencies = [
  "pallet-nfts",
  "parity-scale-codec",
  "sp-api",
+]
+
+[[package]]
+name = "pallet-onboarding"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-collective",
+ "pallet-democracy",
+ "pallet-housing_fund",
+ "pallet-nft",
+ "pallet-nfts",
+ "pallet-roles",
+ "pallet-scheduler",
+ "pallet-sudo",
+ "pallet-utility",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

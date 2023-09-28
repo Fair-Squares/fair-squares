@@ -54,7 +54,7 @@ impl<T: Config> Pallet<T> {
 		metadata: BoundedVecOfNfts<T>,
 	) -> DispatchResult {
 		ensure!(Collections::<T>::contains_key(collection_id), Error::<T>::CollectionUnknown);
-		let origin = RawOrigin::Signed(owner);
+		let origin = RawOrigin::Signed(owner.clone());
 
 		let res0 = pallet_nfts::Pallet::<T>::set_metadata(
 			origin.into(),
@@ -65,36 +65,18 @@ impl<T: Config> Pallet<T> {
 		debug_assert!(res0.is_ok());
 
 		Items::<T>::mutate(collection_id, item_id, |val| {
-			let mut val0 = val.clone().unwrap();
+			if val.is_some(){
+				let mut val0 = val.clone().unwrap();
 			val0.metadata = metadata;
 			*val = Some(val0);
+			}			
 		});
 
-		//Self::deposit_event(Event::ItemMinted { owner, collection_id, item_id });
+		Self::deposit_event(Event::ItemMinted { owner, collection_id, item_id });
 
 		Ok(())
 	}
 
-	pub fn do_transfer(
-		collection_id: T::NftCollectionId,
-		item_id: T::NftItemId ,
-		from: T::AccountId,
-		to: T::AccountId,
-	) -> DispatchResult {
-		if from == to {
-			return Ok(())
-		}
-
-		pallet_nfts::Pallet::<T>::do_transfer(
-			collection_id.into(),
-			item_id.into(),
-			to.clone(),
-			|_collection_details, _item_details| {
-				Self::deposit_event(Event::ItemTransferred { from, to, collection_id, item_id });
-				Ok(())
-			},
-		)
-	}
 
 	
 
@@ -119,6 +101,9 @@ impl<T: Config> Pallet<T> {
 		Self::deposit_event(Event::CollectionDestroyed { owner, collection_id });
 		Ok(())
 	}
+	pub fn get_origin(account_id: T::AccountId) -> <T as frame_system::Config>::RuntimeOrigin {
+		frame_system::RawOrigin::Signed(account_id).into()
+	}
 }
 
 impl<T: Config> Inspect<T::AccountId> for Pallet<T> {
@@ -132,6 +117,7 @@ impl<T: Config> Inspect<T::AccountId> for Pallet<T> {
 	fn collection_owner(collection: &Self::CollectionId) -> Option<T::AccountId> {
 		Self::collection_owner(*collection)
 	}
+	
 }
 
 

@@ -11,13 +11,13 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		let coll_id: T::NftCollectionId = collection.clone().value().into();
 		// Mint nft
-		Nft::Pallet::<T>::mint(origin.clone(), collection, metadata).ok();
+		Nft::Pallet::<T>::mint(origin.clone(), collection.into(), metadata.into()).ok();
 
-		let infos = Nft::Items::<T>::get(coll_id, item_id).unwrap();
+		let infos = Nft::Items::<T>::get(coll_id, item_id);
 		// Set asset price
 		Self::price(origin, collection, item_id, new_price).ok();
 		// Create Asset
-		Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants).ok();
+		//Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants).ok();
 
 		Ok(())
 	}
@@ -142,7 +142,7 @@ impl<T: Config> Pallet<T> {
 		T::FeesAccount::get().into_account_truncating()
 	}
 
-	pub fn account_vote(b: BalanceOf<T>, choice:bool) -> DEM::AccountVote<BalanceOf<T>> {
+	pub fn account_vote(b: BalanceOf1<T>, choice:bool) -> DEM::AccountVote<BalanceOf1<T>> {
 		let v = DEM::Vote { aye: choice, conviction: DEM::Conviction::Locked1x };
 	
 		DEM::AccountVote::Standard { vote: v, balance: b }
@@ -200,17 +200,14 @@ impl<T: Config> Pallet<T> {
 		//get the needed call and convert them to pallet_voting format
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
 		let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
+		let call0: <T as frame_system::Config>::RuntimeCall = out_call.after_vote_status.into();
 
-		let w_status0 =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap());
-		let w_status1 =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
+		
+		let proposal = Self::make_proposal(call0);
+		let delay = T::Delay::get();
+			let _index=Self::start_dem_referendum(proposal,delay);
 
-		let w_r_destroy =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap());
-		let w_r_edit =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap());
-
+	
 		/*let proposal_hash = T::Hash::hash_of(&w_status1);
 		Houses::<T>::mutate_exists(collection_id, item_id, |val| {
 			let mut v0 = val.clone().unwrap();

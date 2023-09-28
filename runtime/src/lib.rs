@@ -56,7 +56,7 @@ pub use sp_runtime::{Perbill, Permill};
 
 pub use pallet_roles;
 pub use pallet_housing_fund;
-pub use pallet_Onboarding;
+pub use pallet_onboarding;
 use pallet_nft::NftPermissions;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
@@ -290,7 +290,7 @@ parameter_types! {
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
 }
 
-impl pallet_Onboarding::Config for Runtime {
+impl pallet_onboarding::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = Balances;
 	type Prop = RuntimeCall;
@@ -298,6 +298,9 @@ impl pallet_Onboarding::Config for Runtime {
 	type Slash = SlashedFee;
 	type WeightInfo = ();
 	type FeesAccount = FeesAccount;
+	type Delay = Delay;
+	type CheckDelay = CheckDelay;
+	type MinimumDeposit = MinimumDeposit;
 }
 
 parameter_types! {
@@ -531,13 +534,15 @@ impl pallet_scheduler::Config for Runtime {
 }
 
 parameter_types! {
-	pub const LaunchPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-	pub const VotingPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
-	pub const FastTrackVotingPeriod: BlockNumber = 3 * 24 * 60 * MINUTES;
+	pub const LaunchPeriod: BlockNumber = 2* MINUTES;
+	pub const VotingPeriod: BlockNumber = 2 * MINUTES;
+	pub const FastTrackVotingPeriod: BlockNumber = 1* MINUTES;
 	pub const MinimumDeposit: Balance = 100 * DOLLARS;
-	pub const EnactmentPeriod: BlockNumber = 30 * 24 * 60 * MINUTES;
-	pub const CooloffPeriod: BlockNumber = 28 * 24 * 60 * MINUTES;
+	pub const EnactmentPeriod: BlockNumber = 1 * MINUTES;
+	pub const CooloffPeriod: BlockNumber = 1 * MINUTES;
 	pub const MaxProposals: u32 = 100;
+	pub const CheckDelay: BlockNumber = 1*MINUTES;
+	pub const Delay: BlockNumber = 1*MINUTES;
 }
 
 impl pallet_democracy::Config for Runtime {
@@ -650,7 +655,7 @@ construct_runtime!(
 		Scheduler: pallet_scheduler,
 		Democracy: pallet_democracy,
 		Assets: pallet_assets,
-		OnboardingModule: pallet_Onboarding,
+		OnboardingModule: pallet_onboarding,
 		// flag add pallet runtime
 	}
 );
@@ -703,7 +708,7 @@ mod benches {
 		[pallet_roles, RolesModule]
 		//[pallet_housing_fund, HousingFundModule]
 		[pallet_identity, Identity]
-		//[pallet_onboarding, OnboardingModule]
+		//[pallet_onboarding, onboardingModule]
 		[pallet_utility, Utility]
 		[pallet_treasury, Treasury]
 		[pallet_preimage, Preimage]
@@ -966,7 +971,7 @@ impl_runtime_apis! {
 			add_benchmarks!(params, batches);
 			add_benchmark!(params, batches, pallet_nft, NftModule);
 			add_benchmark!(params, batches, pallet_roles, RolesModule);
-			//add_benchmark!(params, batches, pallet_onboarding, OnboardingModule);
+			//add_benchmark!(params, batches, pallet_onboarding, onboardingModule);
 			//add_benchmark!(params, batches, pallet_housing_fund, HousingFundModule);
 			// flag add pallet benchmark
 

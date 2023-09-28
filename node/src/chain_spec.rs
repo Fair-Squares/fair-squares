@@ -1,5 +1,5 @@
 use fs_node_runtime::{
-	pallet_roles,RolesModuleConfig,AccountId, AuraConfig, BalancesConfig, NftModuleConfig,CouncilConfig,BackgroundCouncilConfig,RuntimeGenesisConfig, GrandpaConfig, Signature, SudoConfig,
+	pallet_roles,RolesModuleConfig,AccountId, OnboardingModuleConfig,AuraConfig, BalancesConfig, NftModuleConfig,CouncilConfig,BackgroundCouncilConfig,RuntimeGenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };
 use sc_service::{ChainType, Properties};
@@ -256,10 +256,13 @@ fn square_one(
 			],
 		},
 		nft_module: NftModuleConfig {
-			owner: Some(root_key),
+			owner: Some(root_key.clone()),
 			collection_id: Some(3),
 			created_by: Some(pallet_roles::Accounts::SERVICER),
 			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
+		},
+		onboarding_module:OnboardingModuleConfig{
+			root:Some(root_key),
 		},
 		democracy: Default::default(),
 		treasury: Default::default(),
@@ -319,10 +322,13 @@ fn testnet_genesis(
 			representatives: vec![],
 		},
 		nft_module: NftModuleConfig {
-			owner: Some(root_key),
-			collection_id: Some(3),
+			owner: Some(root_key.clone()),
+			collection_id: Some(0),
 			created_by: Some(pallet_roles::Accounts::SERVICER),
 			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
+		},
+		onboarding_module:OnboardingModuleConfig{
+			root:Some(root_key),
 		},
 		democracy: Default::default(),
 		treasury: Default::default(),

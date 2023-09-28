@@ -65,11 +65,11 @@ pub use pallet_utility as UTIL;
 
 pub use pallet::*;
 
-//#[cfg(test)]
-//mod mock;
+#[cfg(test)]
+mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 //#[cfg(feature = "runtime-benchmarks")]
 //mod benchmarking;
@@ -111,6 +111,15 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type Slash: Get<Percent>;
+
+		#[pallet::constant]
+		type Delay: Get<BlockNumberFor<Self>>;
+
+		#[pallet::constant]
+		type CheckDelay: Get<BlockNumberFor<Self>>;
+
+		#[pallet::constant]
+		type MinimumDeposit: Get<BalanceOf<Self>>;
 	}
 
 	#[pallet::pallet]
@@ -164,6 +173,19 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
+
+	// Test Genesis Configuration
+	#[derive(frame_support::DefaultNoBound)]
+	#[pallet::genesis_config]
+pub struct GenesisConfig<T: Config> {
+	pub root: Option<T::AccountId>,
+}
+
+#[pallet::genesis_build]
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
+		fn build(&self){}
+	}
+
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
 	#[pallet::event]
@@ -171,7 +193,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		SomethingStored(u32),
 
 		/// The price for a token was updated
 		TokenPriceUpdated {
@@ -282,7 +304,7 @@ pub mod pallet {
 			<Something<T>>::put(something);
 
 			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
+			Self::deposit_event(Event::SomethingStored(something));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
@@ -459,18 +481,19 @@ pub mod pallet {
 			max_tenants:u8,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
-			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(), Error::<T>::ReservedToSeller);
+			//ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(), Error::<T>::ReservedToSeller);
 			let idx = collection.clone().value() as usize;
 
 			// Get itemId and infos from minted nft
 			let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
-
+			
 			//Create asset
 			let balance1 = <T as Config>::Currency::free_balance(&caller);
 			let balance0 = T::ProposalFee::get().mul_floor(price.unwrap());
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
 
 			<T as Config>::Currency::reserve(&caller, balance0).ok();
+			
 			Self::create_asset(origin.clone(), collection, metadata, price, item_id,max_tenants).ok();
 
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
@@ -483,7 +506,7 @@ pub mod pallet {
 			let call1: T::Prop =
 				Call::<T>::change_status { collection, item_id, status: AssetStatus::VOTING }
 					.into();
-			let call1_wrap = Box::new(call1);
+			let call1_wrap = call1;
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.democracy_status = call1_wrap;
@@ -493,7 +516,7 @@ pub mod pallet {
 			//Create Call for proposal reject_edit-->hook
 			let call2: T::Prop =
 				Call::<T>::reject_edit { collection, item_id, infos: house.clone() }.into();
-			let call2_wrap = Box::new(call2);
+			let call2_wrap = call2;
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.reject_edit = call2_wrap;
@@ -503,7 +526,7 @@ pub mod pallet {
 			//Create Call for proposal reject_destroy-->hook
 			let call3: T::Prop =
 				Call::<T>::reject_destroy { collection, item_id, infos: house }.into();
-			let call3_wrap = Box::new(call3);
+			let call3_wrap = call3;
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.reject_destroy = call3_wrap;
@@ -514,7 +537,7 @@ pub mod pallet {
 			let call4: T::Prop =
 				Call::<T>::change_status { collection, item_id, status: AssetStatus::ONBOARDED }
 					.into();
-			let call4_wrap = Box::new(call4);
+			let call4_wrap = call4;
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.after_vote_status = call4_wrap;
@@ -602,5 +625,15 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		#[pallet::call_index(7)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn investor_vote(origin: OriginFor<T>,index:DEM::ReferendumIndex,vote:bool)-> DispatchResult {
+			let _who = ensure_signed(origin.clone())?;
+			let config = Self::account_vote(<T as DEM::Config>::MinimumDeposit::get(),vote);
+			DEM::Pallet::<T>::vote(origin,index,config).ok();
+			Ok(())
+			
+	}
 	}
 }

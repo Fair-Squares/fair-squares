@@ -66,7 +66,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn investors)]
 	///Registry of Investors organized by AccountId
-	pub(super) type InvestorLog<T: Config> =
+	pub type InvestorLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor<T>, OptionQuery>;
 
 	#[pallet::storage]
@@ -95,7 +95,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn servicers)]
 	///Registry of Servicers organized by AccountId
-	pub(super) type ServicerLog<T: Config> =
+	pub type ServicerLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer<T>, OptionQuery>;
 
 	#[pallet::type_value]

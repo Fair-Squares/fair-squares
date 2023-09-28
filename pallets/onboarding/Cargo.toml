@@ -1,5 +1,5 @@
 [package]
-name = "pallet-Onboarding"
+name = "pallet-onboarding"
 version = "4.0.0-dev"
 description = "Roles management Pallet"
 authors = ["Fair Squares"]

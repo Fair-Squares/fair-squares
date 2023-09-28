@@ -30,6 +30,8 @@ pub type BlockNumberOf<T> = BlockNumberFor<T>;
 pub type NftCollectionOf = Nft::PossibleCollections;
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	pub type BalanceOf1<T> =
+	<<T as DEM::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type CallOf<T> = <T as frame_system::Config>::RuntimeCall;
 pub type BoundedCallOf<T> = Bounded<CallOf<T>>;
 type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
@@ -104,13 +106,13 @@ impl<T: Config> Asset<T> {
 //#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct VotingCalls<T: Config> {
 	/// Asset creation block
-	pub(super) reject_edit: Box<T::Prop>,
+	pub(super) reject_edit: T::Prop,
 	/// NFT infos
-	pub(super) reject_destroy: Box<T::Prop>,
+	pub(super) reject_destroy: T::Prop,
 	/// NFT Price
-	pub(super) democracy_status: Box<T::Prop>,
+	pub(super) democracy_status: T::Prop,
 	///After positive Investor vote status
-	pub(super) after_vote_status: Box<T::Prop>,
+	pub(super) after_vote_status: T::Prop,
 }
 
 impl<T: Config> VotingCalls<T> {
@@ -119,10 +121,10 @@ impl<T: Config> VotingCalls<T> {
 		let call: T::Prop = Call::<T>::do_something { something: nbr }.into();
 
 		let calls = VotingCalls::<T> {
-			reject_edit: Box::new(call.clone()),
-			reject_destroy: Box::new(call.clone()),
-			democracy_status: Box::new(call.clone()),
-			after_vote_status: Box::new(call),
+			reject_edit: call.clone(),
+			reject_destroy: call.clone(),
+			democracy_status: call.clone(),
+			after_vote_status: call,
 		};
 		Vcalls::<T>::insert(collection, item, calls);
 		Ok(())
