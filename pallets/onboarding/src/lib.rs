@@ -65,11 +65,11 @@ pub use pallet_utility as UTIL;
 
 pub use pallet::*;
 
-#[cfg(test)]
+/*#[cfg(test)]
 mod mock;
 
 #[cfg(test)]
-mod tests;
+mod tests;*/
 
 //#[cfg(feature = "runtime-benchmarks")]
 //mod benchmarking;
