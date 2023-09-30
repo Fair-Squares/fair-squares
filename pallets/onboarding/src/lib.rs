@@ -279,6 +279,8 @@ pub struct GenesisConfig<T: Config> {
 		InsufficientBalance,
 		/// Action reserved to Seller role
 		ReservedToSeller,
+		/// Action reserved to Investors role
+		ReservedToInvestors,
 		/// Failed to unreserved fund in Housing fund
 		HousingFundUnreserveFundFailed,
 	}
@@ -298,7 +300,7 @@ pub struct GenesisConfig<T: Config> {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://docs.substrate.io/v3/runtime/origins
-			let who = ensure_root(origin)?;
+			let _who = ensure_root(origin)?;
 
 			// Update storage.
 			<Something<T>>::put(something);
@@ -481,7 +483,7 @@ pub struct GenesisConfig<T: Config> {
 			max_tenants:u8,
 		) -> DispatchResult {
 			let caller = ensure_signed(origin.clone()).unwrap();
-			//ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(), Error::<T>::ReservedToSeller);
+			ensure!(Roles::Pallet::<T>::sellers(&caller).is_some(), Error::<T>::ReservedToSeller);
 			let idx = collection.clone().value() as usize;
 
 			// Get itemId and infos from minted nft
@@ -617,23 +619,13 @@ pub struct GenesisConfig<T: Config> {
 		#[pallet::call_index(7)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn investor_vote(origin: OriginFor<T>,index:DEM::ReferendumIndex,vote:bool)-> DispatchResult {
-			let _who = ensure_signed(origin.clone())?;
+			let who = ensure_signed(origin.clone())?;
+			ensure!(Roles::Pallet::<T>::investors(&who).is_some(), Error::<T>::ReservedToInvestors);
 			let config = Self::account_vote(<T as DEM::Config>::MinimumDeposit::get(),vote);
 			DEM::Pallet::<T>::vote(origin,index,config).ok();
 			Ok(())
 			
 	}
-
-		#[pallet::call_index(8)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
-		pub fn vote(origin: OriginFor<T>,index:DEM::ReferendumIndex,vote:bool)-> DispatchResult {
-			let _who = ensure_signed(origin.clone())?;
-			let config = Self::account_vote(<T as DEM::Config>::MinimumDeposit::get(),vote);
-			DEM::Pallet::<T>::vote(origin,index,config).ok();
-			Ok(())
-			
-	}
-
 
 	}
 }
