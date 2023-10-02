@@ -38,29 +38,16 @@ type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup
 
 pub use Nft::ItemInfoOf;
 
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
-#[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
-pub enum AssetStatus {
-	EDITING,
-	REVIEWING,
-	VOTING,
-	ONBOARDED,
-	FINALISING,
-	FINALISED,
-	PURCHASED,
-	REJECTED,
-	SLASH,
-	CANCELLED,
-}
+pub type Status = pallet_roles::AssetStatus;
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebugNoBound, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct Asset<T: Config> {
 	/// Asset status
-	pub status: AssetStatus,
+	pub status: Status,
 	/// Asset creation block
-	pub(super) created: BlockNumberOf<T> ,
+	pub created: BlockNumberOf<T> ,
 	/// NFT infos
 	pub(super) infos: ItemInfoOf<T>,
 	/// NFT Price
@@ -82,8 +69,8 @@ impl<T: Config> Asset<T> {
 		infos: ItemInfoOf<T>,
 		price: Option<BalanceOf<T>>,
 		max_tenants: u8
-	) -> DispatchResult {
-		let status = AssetStatus::EDITING;
+	) -> Self {
+		let status = Status::EDITING;
 		let created = <frame_system::Pallet<T>>::block_number();
 		let house = Asset::<T> {
 			status,
@@ -95,9 +82,9 @@ impl<T: Config> Asset<T> {
 			proposal_hash: Default::default(),
 			max_tenants,
 		};
-		Houses::<T>::insert(collection, item, house);
-
-		Ok(())
+		Houses::<T>::insert(collection, item, house.clone());
+		house
+		//Ok(())
 	}
 }
 

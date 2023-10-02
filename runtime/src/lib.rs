@@ -57,6 +57,7 @@ pub use sp_runtime::{Perbill, Permill};
 pub use pallet_roles;
 pub use pallet_housing_fund;
 pub use pallet_onboarding;
+//pub use pallet_council
 use pallet_nft::NftPermissions;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
@@ -283,7 +284,18 @@ impl pallet_roles::Config for Runtime {
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
 }
-
+/*
+impl pallet_council::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type CheckPeriod = CheckPeriod;
+	type HousingCouncilOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	
+	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+*/
 parameter_types! {
 	pub const ProposalFee: Percent= Percent::from_percent(15);
 	pub const SlashedFee: Percent = Percent::from_percent(10);
@@ -656,6 +668,7 @@ construct_runtime!(
 		Democracy: pallet_democracy,
 		Assets: pallet_assets,
 		OnboardingModule: pallet_onboarding,
+		//CouncilModule: pallet_council,
 		// flag add pallet runtime
 	}
 );
@@ -706,6 +719,7 @@ mod benches {
 		[pallet_nfts, Nfts]
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RolesModule]
+		//[pallet_council, CouncilModule]
 		//[pallet_housing_fund, HousingFundModule]
 		[pallet_identity, Identity]
 		//[pallet_onboarding, onboardingModule]

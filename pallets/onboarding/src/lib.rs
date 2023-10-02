@@ -244,7 +244,7 @@ pub struct GenesisConfig<T: Config> {
 		SlashedFunds { from_who: T::AccountId, amount: Option<BalanceOf<T>> },
 		///StatusChanged
 		AssetStatusChanged {
-			changed_to: AssetStatus,
+			changed_to: Status,
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
 		},
@@ -318,7 +318,7 @@ pub struct GenesisConfig<T: Config> {
 			origin: OriginFor<T>,
 			collection: NftCollectionOf,
 			item_id: T::NftItemId,
-			status: AssetStatus,
+			status: Status,
 		) -> DispatchResult {
 			let _caller = ensure_root(origin.clone()).unwrap();
 			let coll_id: T::NftCollectionId = collection.clone().value().into();
@@ -358,7 +358,7 @@ pub struct GenesisConfig<T: Config> {
 			let asset = Self::houses(collection_id, item_id).unwrap();
 			let status = asset.status;
 			ensure!(
-				status == AssetStatus::EDITING || status == AssetStatus::REJECTED,
+				status == Status::EDITING || status == Status::REJECTED,
 				Error::<T>::CannotEditItem
 			);
 
@@ -391,10 +391,10 @@ pub struct GenesisConfig<T: Config> {
 			);
 			let house = Self::houses(collection_id, item_id).unwrap();
 			ensure!(
-				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
+				house.status == Status::REVIEWING || house.status == Status::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::REJECTED).ok();
+			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, Status::REJECTED).ok();
 
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -440,10 +440,10 @@ pub struct GenesisConfig<T: Config> {
 			);
 			let house = Self::houses(collection_id, item_id).unwrap();
 			ensure!(
-				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
+				house.status == Status::REVIEWING || house.status == Status::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::SLASH).ok();
+			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, Status::SLASH).ok();
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			Nft::Pallet::<T>::burn(origin, collection, item_id).ok();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -527,7 +527,7 @@ pub struct GenesisConfig<T: Config> {
 
 			//Create Call for asset status change after Investor's vote
 			let call4 =
-				Call::<T>::change_status { collection, item_id, status: AssetStatus::ONBOARDED };
+				Call::<T>::change_status { collection, item_id, status: Status::ONBOARDED };
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.after_vote_status = call4.clone().into();
@@ -581,7 +581,7 @@ pub struct GenesisConfig<T: Config> {
 			);
 			let house = Self::houses(collection_id, item_id).unwrap();
 			ensure!(
-				house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTED,
+				house.status == Status::EDITING || house.status == Status::REJECTED,
 				Error::<T>::CannotSubmitItem
 			);
 

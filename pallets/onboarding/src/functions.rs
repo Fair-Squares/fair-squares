@@ -17,18 +17,28 @@ impl<T: Config> Pallet<T> {
 		// Set asset price
 		Self::price(origin, collection, item_id, new_price).ok();
 		// Create Asset
-		Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants).ok();
+		let asset=Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants);
+		let owner = pallet_nft::Pallet::<T>::owner(coll_id,item_id).unwrap();
+		pallet_roles::Asset::<T>::insert(owner,asset.created,asset.status);
 
 		Ok(())
 	}
 
-	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: AssetStatus) {
+	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: pallet_roles::AssetStatus) {
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
+		let owner = pallet_nft::Pallet::<T>::owner(collection_id,item_id).unwrap();
+
+		
 		Houses::<T>::mutate(collection_id, item_id, |val| {
 			let mut asset = val.clone().unwrap();
-			asset.status = status;
+			asset.status = status.clone();
 			*val = Some(asset);
 		});
+		let asset = Self::houses(collection_id, item_id).unwrap();
+		pallet_roles::Asset::<T>::mutate(owner,asset.created,|val|{
+			*val=Some(status);
+		})
+
 	}
 
 	pub fn price(
@@ -75,7 +85,7 @@ impl<T: Config> Pallet<T> {
 		);
 		let asset = Self::houses(collection_id, item_id).unwrap();
 		let status = asset.status;
-		ensure!(status == AssetStatus::FINALISED, Error::<T>::VoteNedeed);
+		ensure!(status == pallet_roles::AssetStatus::FINALISED, Error::<T>::VoteNedeed);
 
 		//Check that the owner is not the buyer
 		let owner = Nft::Pallet::<T>::owner(collection_id, item_id)
@@ -108,7 +118,7 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::PURCHASED).ok();
+		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, pallet_roles::AssetStatus::PURCHASED).ok();
 
 		Ok(())
 	}
@@ -140,7 +150,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	fn get_houses_by_status(
-		status: types::AssetStatus,
+		status: pallet_roles::AssetStatus,
 	) -> Vec<(
 		<T as pallet_nft::Config>::NftCollectionId,
 		<T as pallet_nft::Config>::NftItemId,
@@ -157,7 +167,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(types::AssetStatus::ONBOARDED)
+		Self::get_houses_by_status(pallet_roles::AssetStatus::ONBOARDED)
 	}
 
 	pub fn get_finalised_houses() -> Vec<(
@@ -165,7 +175,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(types::AssetStatus::FINALISED)
+		Self::get_houses_by_status(pallet_roles::AssetStatus::FINALISED)
 	}
 
 	pub fn get_finalising_houses() -> Vec<(
@@ -173,7 +183,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(types::AssetStatus::FINALISING)
+		Self::get_houses_by_status(pallet_roles::AssetStatus::FINALISING)
 	}
 
 	pub fn do_submit_proposal(
@@ -182,7 +192,7 @@ impl<T: Config> Pallet<T> {
 		item_id: T::NftItemId,
 	) {
 		//Change asset status to REVIEWING
-		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, AssetStatus::REVIEWING).ok();
+		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, pallet_roles::AssetStatus::REVIEWING).ok();
 		//Send Proposal struct to voting pallet
 		//get the needed call and convert them to pallet_voting format
 		let collection_id: T::NftCollectionId = collection.clone().value().into();

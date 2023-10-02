@@ -2453,6 +2453,7 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-collective",
+ "pallet-council",
  "pallet-democracy",
  "pallet-grandpa",
  "pallet-housing_fund",
@@ -4839,6 +4840,27 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-council"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-collective",
+ "pallet-onboarding",
+ "pallet-roles",
+ "pallet-sudo",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
  "sp-core",
  "sp-io",
  "sp-runtime",
