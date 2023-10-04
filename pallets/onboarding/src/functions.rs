@@ -118,7 +118,7 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, pallet_roles::AssetStatus::PURCHASED).ok();
+		Self::change_status(origin_buyer, collection, item_id, pallet_roles::AssetStatus::PURCHASED).ok();
 
 		Ok(())
 	}
@@ -187,7 +187,6 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn do_submit_proposal(
-		origin: OriginFor<T>,
 		collection: NftCollectionOf,
 		item_id: T::NftItemId,
 	) {
@@ -202,8 +201,62 @@ impl<T: Config> Pallet<T> {
 		
 		let proposal = Self::make_proposal(call0.into());
 		let delay = T::Delay::get();
-			let _index=Self::start_dem_referendum(proposal,delay);
+			let index=Self::start_dem_referendum(proposal,delay);
+		Houses::<T>::mutate_exists(collection_id,item_id,|val|{
+			let mut v0 = val.clone().unwrap();
+			v0.ref_index=index;
+			*val = Some(v0);
+		});
 		
+	}
+
+	pub fn collection_name(index:u32)-> Nft::PossibleCollections{
+
+		match index {
+			0 => Nft::PossibleCollections::HOUSES,
+			1 => Nft::PossibleCollections::OFFICES,
+			2 => Nft::PossibleCollections::APPARTMENTS,
+			3 => Nft::PossibleCollections::HOUSESTEST,
+			4 => Nft::PossibleCollections::OFFICESTEST,
+			5 => Nft::PossibleCollections::APPARTMENTSTEST,
+			6 => Nft::PossibleCollections::NONEXISTING,
+			_ => Nft::PossibleCollections::NONEXISTING,
+		}
+	}
+
+	pub fn begin_block(now: BlockNumberOf<T>) -> Weight{
+		let max_block_weight = Weight::from_parts(1000_u64,0);
+		if(now % T::CheckDelay::get()).is_zero(){
+			//get existing assets
+			let assets_iter = Houses::<T>::iter();
+			for asset in assets_iter{
+				let coll_id = asset.0;
+				let item_id = asset.1;
+				let status = asset.2.status;
+				let index = asset.2.ref_index;
+
+				//Use index to get referendum infos
+				let infos = DEM::Pallet::<T>::referendum_info(index).unwrap();
+				let b = match infos {
+					pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => {
+						(1, approved)
+					},
+					_ => (0, false),
+				};
+				if b.0 == 1{
+					let coll = Self::collection_name(coll_id.into());
+					//Prepare & execute rejection call
+					let call2: T::Prop =
+				Call::<T>::reject_edit { collection:coll, item_id, infos: asset.2.clone() }.into();
+				call2.dispatch_bypass_filter(frame_system::RawOrigin::Root.into()).ok();
+				}
+
+			}
+
+
+		}
+		
+		max_block_weight
 	}
 
 	

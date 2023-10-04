@@ -352,7 +352,7 @@ pub struct GenesisConfig<T: Config> {
 			Houses::<T>::mutate_exists(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.price = new_price;
-				*val = Some(v0)
+				*val = Some(v0);
 			});
 
 			let asset = Self::houses(collection_id, item_id).unwrap();
@@ -547,7 +547,7 @@ pub struct GenesisConfig<T: Config> {
 			});
 
 			if submit {
-				Self::do_submit_proposal(origin, collection, item_id);
+				Self::do_submit_proposal(collection, item_id);
 
 				Self::deposit_event(Event::ProposalSubmitted {
 					who: caller,
@@ -604,7 +604,7 @@ pub struct GenesisConfig<T: Config> {
 				Self::set_price(origin.clone(), collection, item_id, Some(b)).ok();
 			}
 
-			Self::do_submit_proposal(origin, collection, item_id);
+			Self::do_submit_proposal(collection, item_id);
 
 			Self::deposit_event(Event::ProposalSubmitted {
 				who: caller,

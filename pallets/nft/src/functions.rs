@@ -84,7 +84,8 @@ impl<T: Config> Pallet<T> {
 		owner: T::AccountId,
 		collection_id: T::NftCollectionId,
 	) -> DispatchResult {
-		let collection_details = pallet_nfts::Collection::<T>::get(collection_id.into()).unwrap();
+		let coll_id0:<T as Nfts>::CollectionId=collection_id.into();
+		let collection_details = pallet_nfts::Collection::<T>::get(coll_id0).unwrap();
 		let witness = collection_details.destroy_witness();
 
 		// witness struct is empty because we don't allow destroying a Collection with existing

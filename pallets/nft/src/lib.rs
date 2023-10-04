@@ -107,6 +107,7 @@ pub mod pallet {
 			+ HasCompact
 			+ AtLeast32BitUnsigned
 			+ Into<Self::CollectionId>
+			+ Into<u32>
 			+ From<Self::CollectionId>;
 		type NftItemId: Member
 			+ Parameter
@@ -241,8 +242,8 @@ pub mod pallet {
 				
 
 			}
-			
-			ensure!(pallet_nfts::CollectionAccount::<T>::contains_key(sender.clone(),coll_id.into()), Error::<T>::CollectionUnknown);
+			let coll_id0:<T as Nfts>::CollectionId = coll_id.into();
+			ensure!(pallet_nfts::CollectionAccount::<T>::contains_key(sender.clone(),coll_id0), Error::<T>::CollectionUnknown);
 
 
 

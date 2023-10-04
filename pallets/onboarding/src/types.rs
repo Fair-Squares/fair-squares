@@ -57,7 +57,7 @@ pub struct Asset<T: Config> {
 	/// Tenants
 	pub tenants: Vec<T::AccountId>,
 	/// Proposal hash
-	pub proposal_hash: T::Hash,
+	pub ref_index: u32,
 	/// Maximum number of tenants for this asset
 	pub max_tenants: u8,
 }
@@ -79,7 +79,7 @@ impl<T: Config> Asset<T> {
 			price,
 			representative: None,
 			tenants: Default::default(),
-			proposal_hash: Default::default(),
+			ref_index: 0,
 			max_tenants,
 		};
 		Houses::<T>::insert(collection, item, house.clone());
