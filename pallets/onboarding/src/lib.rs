@@ -505,26 +505,6 @@ pub struct GenesisConfig<T: Config> {
 			let _new_call = VotingCalls::<T>::new(collection_id, item_id).ok();
 
 
-			/*//Create Call for proposal reject_edit-->hook
-			let call2: T::Prop =
-				Call::<T>::reject_edit { collection, item_id, infos: house.clone() }.into();
-			let call2_wrap = call2;
-			Vcalls::<T>::mutate(collection_id, item_id, |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.reject_edit = call2_wrap;
-				*val = Some(v0);
-			});
-
-			//Create Call for proposal reject_destroy-->hook
-			let call3: T::Prop =
-				Call::<T>::reject_destroy { collection, item_id, infos: house }.into();
-			let call3_wrap = call3;
-			Vcalls::<T>::mutate(collection_id, item_id, |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.reject_destroy = call3_wrap;
-				*val = Some(v0);
-			});*/
-
 			//Create Call for asset status change after Investor's vote
 			let call4 =
 				Call::<T>::change_status { collection, item_id, status: Status::ONBOARDED };
