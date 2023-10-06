@@ -55,18 +55,21 @@ pub mod pallet {
 		type BackgroundCouncilOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 	}
 
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/main-docs/build/runtime-storage/
+
 	#[pallet::storage]
 	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn status)]
+	//Asset's item ID and asset status
+	pub type Asset<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, AccountIdOf<T>,Twox64Concat,BlockNumberFor<T>, AssetStatus, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn investors)]
 	///Registry of Investors organized by AccountId
-	pub(super) type InvestorLog<T: Config> =
+	pub type InvestorLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Investor<T>, OptionQuery>;
 
 	#[pallet::storage]
@@ -95,7 +98,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn servicers)]
 	///Registry of Servicers organized by AccountId
-	pub(super) type ServicerLog<T: Config> =
+	pub type ServicerLog<T: Config> =
 		StorageMap<_, Twox64Concat, AccountIdOf<T>, Servicer<T>, OptionQuery>;
 
 	#[pallet::type_value]

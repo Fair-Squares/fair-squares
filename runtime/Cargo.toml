@@ -62,10 +62,11 @@ frame-benchmarking = {   default-features = false, git = "https://github.com/par
 frame-system-benchmarking = {   default-features = false, git = "https://github.com/paritytech/polkadot-sdk", optional = true ,  tag = "polkadot-v1.1.0" }
 
 # Local Dependencies
-pallet-roles = {   default-features = false, path = "../pallets/roles" }
-pallet-housing_fund = {   default-features = false, path = "../pallets/housing_fund" }
-pallet-nft = {   default-features = false, path = "../pallets/nft" }
-pallet-Onboarding = {   default-features = false, path = "../pallets/Onboarding" }
+pallet-roles = { version = "4.0.0-dev", default-features = false, path = "../pallets/roles" }
+pallet-housing_fund = { version = "4.0.0-dev", default-features = false, path = "../pallets/housing_fund" }
+pallet-nft = { version = "4.0.0-dev", default-features = false, path = "../pallets/nft" }
+pallet-onboarding = { version = "4.0.0-dev", default-features = false, path = "../pallets/onboarding" }
+pallet-council = { version = "4.0.0-dev", default-features = false, path = "../pallets/council" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk", optional = true ,  tag = "polkadot-v1.1.0" }
@@ -105,7 +106,7 @@ std = [
 	"sp-version/std",
 	"substrate-wasm-builder",
 	"pallet-roles/std",
-	"pallet-Onboarding/std",
+	"pallet-onboarding/std",
 	"pallet-collective/std",
 	"pallet-scheduler/std",
 	"pallet-preimage/std",
@@ -130,7 +131,7 @@ runtime-benchmarks = [
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-roles/runtime-benchmarks",
-	"pallet-Onboarding/runtime-benchmarks",
+	"pallet-onboarding/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
 	"pallet-assets/runtime-benchmarks",
 	"pallet-treasury/runtime-benchmarks",
@@ -156,7 +157,7 @@ try-runtime = [
 	"pallet-timestamp/try-runtime",
 	"pallet-transaction-payment/try-runtime",
 	"pallet-roles/try-runtime",
-	"pallet-Onboarding/try-runtime",
+	"pallet-onboarding/try-runtime",
 	"pallet-utility/try-runtime",
 	"pallet-identity/try-runtime",
 	"pallet-assets/try-runtime",

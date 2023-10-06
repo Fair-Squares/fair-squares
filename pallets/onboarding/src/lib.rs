@@ -65,11 +65,11 @@ pub use pallet_utility as UTIL;
 
 pub use pallet::*;
 
-//#[cfg(test)]
-//mod mock;
+/*#[cfg(test)]
+mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;*/
 
 //#[cfg(feature = "runtime-benchmarks")]
 //mod benchmarking;
@@ -111,6 +111,15 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type Slash: Get<Percent>;
+
+		#[pallet::constant]
+		type Delay: Get<BlockNumberFor<Self>>;
+
+		#[pallet::constant]
+		type CheckDelay: Get<BlockNumberFor<Self>>;
+
+		#[pallet::constant]
+		type MinimumDeposit: Get<BalanceOf<Self>>;
 	}
 
 	#[pallet::pallet]
@@ -164,6 +173,19 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
+
+	// Test Genesis Configuration
+	#[derive(frame_support::DefaultNoBound)]
+	#[pallet::genesis_config]
+pub struct GenesisConfig<T: Config> {
+	pub root: Option<T::AccountId>,
+}
+
+#[pallet::genesis_build]
+	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
+		fn build(&self){}
+	}
+
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/v3/runtime/events-and-errors
 	#[pallet::event]
@@ -171,7 +193,7 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		SomethingStored(u32, T::AccountId),
+		SomethingStored(u32),
 
 		/// The price for a token was updated
 		TokenPriceUpdated {
@@ -222,7 +244,7 @@ pub mod pallet {
 		SlashedFunds { from_who: T::AccountId, amount: Option<BalanceOf<T>> },
 		///StatusChanged
 		AssetStatusChanged {
-			changed_to: AssetStatus,
+			changed_to: Status,
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
 		},
@@ -257,6 +279,8 @@ pub mod pallet {
 		InsufficientBalance,
 		/// Action reserved to Seller role
 		ReservedToSeller,
+		/// Action reserved to Investors role
+		ReservedToInvestors,
 		/// Failed to unreserved fund in Housing fund
 		HousingFundUnreserveFundFailed,
 	}
@@ -276,13 +300,13 @@ pub mod pallet {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://docs.substrate.io/v3/runtime/origins
-			let who = ensure_signed(origin)?;
+			let _who = ensure_root(origin)?;
 
 			// Update storage.
 			<Something<T>>::put(something);
 
 			// Emit an event.
-			Self::deposit_event(Event::SomethingStored(something, who));
+			Self::deposit_event(Event::SomethingStored(something));
 			// Return a successful DispatchResultWithPostInfo
 			Ok(())
 		}
@@ -294,9 +318,9 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: NftCollectionOf,
 			item_id: T::NftItemId,
-			status: AssetStatus,
+			status: Status,
 		) -> DispatchResult {
-			let _caller = ensure_signed(origin.clone()).unwrap();
+			let _caller = ensure_root(origin.clone()).unwrap();
 			let coll_id: T::NftCollectionId = collection.clone().value().into();
 			Self::status(collection, item_id, status);
 			Self::deposit_event(Event::AssetStatusChanged {
@@ -328,13 +352,13 @@ pub mod pallet {
 			Houses::<T>::mutate_exists(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
 				v0.price = new_price;
-				*val = Some(v0)
+				*val = Some(v0);
 			});
 
 			let asset = Self::houses(collection_id, item_id).unwrap();
 			let status = asset.status;
 			ensure!(
-				status == AssetStatus::EDITING || status == AssetStatus::REJECTED,
+				status == Status::EDITING || status == Status::REJECTED,
 				Error::<T>::CannotEditItem
 			);
 
@@ -367,10 +391,10 @@ pub mod pallet {
 			);
 			let house = Self::houses(collection_id, item_id).unwrap();
 			ensure!(
-				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
+				house.status == Status::REVIEWING || house.status == Status::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(origin, collection, item_id, AssetStatus::REJECTED).ok();
+			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, Status::REJECTED).ok();
 
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -416,10 +440,10 @@ pub mod pallet {
 			);
 			let house = Self::houses(collection_id, item_id).unwrap();
 			ensure!(
-				house.status == AssetStatus::REVIEWING || house.status == AssetStatus::VOTING,
+				house.status == Status::REVIEWING || house.status == Status::VOTING,
 				Error::<T>::CannotSubmitItem
 			);
-			Self::change_status(origin.clone(), collection, item_id, AssetStatus::SLASH).ok();
+			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, Status::SLASH).ok();
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			Nft::Pallet::<T>::burn(origin, collection, item_id).ok();
 			let balance = <T as Config>::Currency::reserved_balance(&owner);
@@ -464,13 +488,14 @@ pub mod pallet {
 
 			// Get itemId and infos from minted nft
 			let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
-
+			
 			//Create asset
 			let balance1 = <T as Config>::Currency::free_balance(&caller);
 			let balance0 = T::ProposalFee::get().mul_floor(price.unwrap());
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
 
 			<T as Config>::Currency::reserve(&caller, balance0).ok();
+			
 			Self::create_asset(origin.clone(), collection, metadata, price, item_id,max_tenants).ok();
 
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
@@ -479,45 +504,13 @@ pub mod pallet {
 
 			let _new_call = VotingCalls::<T>::new(collection_id, item_id).ok();
 
-			//Create Call for collective-to-democracy status change
-			let call1: T::Prop =
-				Call::<T>::change_status { collection, item_id, status: AssetStatus::VOTING }
-					.into();
-			let call1_wrap = Box::new(call1);
-			Vcalls::<T>::mutate(collection_id, item_id, |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.democracy_status = call1_wrap;
-				*val = Some(v0);
-			});
 
-			//Create Call for proposal reject_edit-->hook
-			let call2: T::Prop =
-				Call::<T>::reject_edit { collection, item_id, infos: house.clone() }.into();
-			let call2_wrap = Box::new(call2);
+			//Create Call for asset status change after Investor's vote
+			let call4 =
+				Call::<T>::change_status { collection, item_id, status: Status::ONBOARDED };
 			Vcalls::<T>::mutate(collection_id, item_id, |val| {
 				let mut v0 = val.clone().unwrap();
-				v0.reject_edit = call2_wrap;
-				*val = Some(v0);
-			});
-
-			//Create Call for proposal reject_destroy-->hook
-			let call3: T::Prop =
-				Call::<T>::reject_destroy { collection, item_id, infos: house }.into();
-			let call3_wrap = Box::new(call3);
-			Vcalls::<T>::mutate(collection_id, item_id, |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.reject_destroy = call3_wrap;
-				*val = Some(v0);
-			});
-
-			//Create Call for asset status change after Investor's vote-->util
-			let call4: T::Prop =
-				Call::<T>::change_status { collection, item_id, status: AssetStatus::ONBOARDED }
-					.into();
-			let call4_wrap = Box::new(call4);
-			Vcalls::<T>::mutate(collection_id, item_id, |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.after_vote_status = call4_wrap;
+				v0.after_vote_status = call4.clone().into();
 				*val = Some(v0);
 			});
 
@@ -534,7 +527,7 @@ pub mod pallet {
 			});
 
 			if submit {
-				Self::do_submit_proposal(origin, collection, item_id);
+				Self::do_submit_proposal(collection, item_id);
 
 				Self::deposit_event(Event::ProposalSubmitted {
 					who: caller,
@@ -568,7 +561,7 @@ pub mod pallet {
 			);
 			let house = Self::houses(collection_id, item_id).unwrap();
 			ensure!(
-				house.status == AssetStatus::EDITING || house.status == AssetStatus::REJECTED,
+				house.status == Status::EDITING || house.status == Status::REJECTED,
 				Error::<T>::CannotSubmitItem
 			);
 
@@ -591,7 +584,7 @@ pub mod pallet {
 				Self::set_price(origin.clone(), collection, item_id, Some(b)).ok();
 			}
 
-			Self::do_submit_proposal(origin, collection, item_id);
+			Self::do_submit_proposal(collection, item_id);
 
 			Self::deposit_event(Event::ProposalSubmitted {
 				who: caller,
@@ -602,5 +595,17 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		#[pallet::call_index(7)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn investor_vote(origin: OriginFor<T>,index:DEM::ReferendumIndex,vote:bool)-> DispatchResult {
+			let who = ensure_signed(origin.clone())?;
+			ensure!(Roles::Pallet::<T>::investors(&who).is_some(), Error::<T>::ReservedToInvestors);
+			let config = Self::account_vote(<T as DEM::Config>::MinimumDeposit::get(),vote);
+			DEM::Pallet::<T>::vote(origin,index,config).ok();
+			Ok(())
+			
+	}
+
 	}
 }

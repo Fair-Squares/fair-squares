@@ -11,24 +11,34 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		let coll_id: T::NftCollectionId = collection.clone().value().into();
 		// Mint nft
-		Nft::Pallet::<T>::mint(origin.clone(), collection, metadata).ok();
+		Nft::Pallet::<T>::mint(origin.clone(), collection.into(), metadata.into()).ok();
 
 		let infos = Nft::Items::<T>::get(coll_id, item_id).unwrap();
 		// Set asset price
 		Self::price(origin, collection, item_id, new_price).ok();
 		// Create Asset
-		Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants).ok();
+		let asset=Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants);
+		let owner = pallet_nft::Pallet::<T>::owner(coll_id,item_id).unwrap();
+		pallet_roles::Asset::<T>::insert(owner,asset.created,asset.status);
 
 		Ok(())
 	}
 
-	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: AssetStatus) {
+	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: pallet_roles::AssetStatus) {
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
+		let owner = pallet_nft::Pallet::<T>::owner(collection_id,item_id).unwrap();
+
+		
 		Houses::<T>::mutate(collection_id, item_id, |val| {
 			let mut asset = val.clone().unwrap();
-			asset.status = status;
+			asset.status = status.clone();
 			*val = Some(asset);
 		});
+		let asset = Self::houses(collection_id, item_id).unwrap();
+		pallet_roles::Asset::<T>::mutate(owner,asset.created,|val|{
+			*val=Some(status);
+		})
+
 	}
 
 	pub fn price(
@@ -75,7 +85,7 @@ impl<T: Config> Pallet<T> {
 		);
 		let asset = Self::houses(collection_id, item_id).unwrap();
 		let status = asset.status;
-		ensure!(status == AssetStatus::FINALISED, Error::<T>::VoteNedeed);
+		ensure!(status == pallet_roles::AssetStatus::FINALISED, Error::<T>::VoteNedeed);
 
 		//Check that the owner is not the buyer
 		let owner = Nft::Pallet::<T>::owner(collection_id, item_id)
@@ -108,22 +118,9 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(origin_buyer, collection, item_id, AssetStatus::PURCHASED).ok();
+		Self::change_status(origin_buyer, collection, item_id, pallet_roles::AssetStatus::PURCHASED).ok();
 
 		Ok(())
-	}
-
-	pub fn get_formatted_collective_proposal(
-		call: <T as Config>::Prop,
-	) -> Option<Call<T>> {
-		let call_encoded: Vec<u8> = call.encode();
-		let ref_call_encoded = &call_encoded;
-
-		if let Ok(call_formatted) = pallet::Call::<T>::decode(&mut &ref_call_encoded[..]) {
-			Some(call_formatted)
-		} else {
-			None
-		}
 	}
 
 	pub fn make_proposal(call: CallOf<T>) -> BoundedCallOf<T> {
@@ -142,18 +139,18 @@ impl<T: Config> Pallet<T> {
 		T::FeesAccount::get().into_account_truncating()
 	}
 
-	pub fn account_vote(b: BalanceOf<T>, choice:bool) -> DEM::AccountVote<BalanceOf<T>> {
+	pub fn account_vote(b: BalanceOf1<T>, choice:bool) -> DEM::AccountVote<BalanceOf1<T>> {
 		let v = DEM::Vote { aye: choice, conviction: DEM::Conviction::Locked1x };
 	
 		DEM::AccountVote::Standard { vote: v, balance: b }
 	}
 	
-	pub fn get_formatted_call(call: <T as Config>::Prop) -> <T as Config>::Prop {
-		call
+	pub fn get_formatted_call(call: Call<T>) -> <T as Config>::Prop {
+		call.into()
 	}
 
 	fn get_houses_by_status(
-		status: types::AssetStatus,
+		status: pallet_roles::AssetStatus,
 	) -> Vec<(
 		<T as pallet_nft::Config>::NftCollectionId,
 		<T as pallet_nft::Config>::NftItemId,
@@ -170,7 +167,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(types::AssetStatus::ONBOARDED)
+		Self::get_houses_by_status(pallet_roles::AssetStatus::ONBOARDED)
 	}
 
 	pub fn get_finalised_houses() -> Vec<(
@@ -178,7 +175,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(types::AssetStatus::FINALISED)
+		Self::get_houses_by_status(pallet_roles::AssetStatus::FINALISED)
 	}
 
 	pub fn get_finalising_houses() -> Vec<(
@@ -186,38 +183,81 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(types::AssetStatus::FINALISING)
+		Self::get_houses_by_status(pallet_roles::AssetStatus::FINALISING)
 	}
 
 	pub fn do_submit_proposal(
-		origin: OriginFor<T>,
 		collection: NftCollectionOf,
 		item_id: T::NftItemId,
 	) {
 		//Change asset status to REVIEWING
-		Self::change_status(origin.clone(), collection, item_id, AssetStatus::REVIEWING).ok();
+		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, pallet_roles::AssetStatus::REVIEWING).ok();
 		//Send Proposal struct to voting pallet
 		//get the needed call and convert them to pallet_voting format
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
 		let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
-
-		let w_status0 =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.democracy_status).unwrap());
-		let w_status1 =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.after_vote_status).unwrap());
-
-		let w_r_destroy =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.reject_destroy).unwrap());
-		let w_r_edit =
-			Box::new(Self::get_formatted_collective_proposal(*out_call.reject_edit).unwrap());
-
-		/*let proposal_hash = T::Hash::hash_of(&w_status1);
-		Houses::<T>::mutate_exists(collection_id, item_id, |val| {
-			let mut v0 = val.clone().unwrap();
-			v0.proposal_hash = proposal_hash;
-			*val = Some(v0)
-		});*/
+		let call0 = Self::get_formatted_call(out_call.after_vote_status) ;
 
 		
+		let proposal = Self::make_proposal(call0.into());
+		let delay = T::Delay::get();
+			let index=Self::start_dem_referendum(proposal,delay);
+		Houses::<T>::mutate_exists(collection_id,item_id,|val|{
+			let mut v0 = val.clone().unwrap();
+			v0.ref_index=index;
+			*val = Some(v0);
+		});
+		
 	}
+
+	pub fn collection_name(index:u32)-> Nft::PossibleCollections{
+
+		match index {
+			0 => Nft::PossibleCollections::HOUSES,
+			1 => Nft::PossibleCollections::OFFICES,
+			2 => Nft::PossibleCollections::APPARTMENTS,
+			3 => Nft::PossibleCollections::HOUSESTEST,
+			4 => Nft::PossibleCollections::OFFICESTEST,
+			5 => Nft::PossibleCollections::APPARTMENTSTEST,
+			6 => Nft::PossibleCollections::NONEXISTING,
+			_ => Nft::PossibleCollections::NONEXISTING,
+		}
+	}
+
+	pub fn begin_block(now: BlockNumberOf<T>) -> Weight{
+		let max_block_weight = Weight::from_parts(1000_u64,0);
+		if(now % T::CheckDelay::get()).is_zero(){
+			//get existing assets
+			let assets_iter = Houses::<T>::iter();
+			for asset in assets_iter{
+				let coll_id = asset.0;
+				let item_id = asset.1;
+				let status = asset.2.status;
+				let index = asset.2.ref_index;
+
+				//Use index to get referendum infos
+				let infos = DEM::Pallet::<T>::referendum_info(index).unwrap();
+				let b = match infos {
+					pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => {
+						(1, approved)
+					},
+					_ => (0, false),
+				};
+				if b.0 == 1{
+					let coll = Self::collection_name(coll_id.into());
+					//Prepare & execute rejection call
+					let call2: T::Prop =
+				Call::<T>::reject_edit { collection:coll, item_id, infos: asset.2.clone() }.into();
+				call2.dispatch_bypass_filter(frame_system::RawOrigin::Root.into()).ok();
+				}
+
+			}
+
+
+		}
+		
+		max_block_weight
+	}
+
+	
 }

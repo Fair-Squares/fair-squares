@@ -25,7 +25,7 @@ fn setting_roles(){
 		assert_eq!(council.len(),3);
 
 
-		//Investor & Renant roles
+		//Investor & Tenant roles
 		assert_ok!(RolesModule::set_role(RuntimeOrigin::signed(DAVE), DAVE, Acc::INVESTOR));
 		assert_ok!(RolesModule::set_role(RuntimeOrigin::signed(EVE), EVE, Acc::TENANT));
 		assert!(InvestorLog::<Test>::contains_key(DAVE));

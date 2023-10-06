@@ -2787,11 +2787,11 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "node-primitives",
- "pallet-Onboarding",
  "pallet-assets",
  "pallet-aura",
  "pallet-balances",
  "pallet-collective",
+ "pallet-council",
  "pallet-democracy",
  "pallet-grandpa",
  "pallet-housing_fund",
@@ -2799,6 +2799,7 @@ dependencies = [
  "pallet-nft",
  "pallet-nfts",
  "pallet-nfts-runtime-api",
+ "pallet-onboarding",
  "pallet-preimage",
  "pallet-roles",
  "pallet-scheduler",
@@ -5227,6 +5228,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-council"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-collective",
+ "pallet-onboarding",
+ "pallet-roles",
+ "pallet-sudo",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-democracy"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/polkadot-sdk?tag=polkadot-v1.1.0#f60318f68687e601c47de5ad5ca88e2c3f8139a7"
@@ -5353,6 +5375,32 @@ dependencies = [
  "pallet-nfts",
  "parity-scale-codec",
  "sp-api",
+]
+
+[[package]]
+name = "pallet-onboarding"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-collective",
+ "pallet-democracy",
+ "pallet-housing_fund",
+ "pallet-nft",
+ "pallet-nfts",
+ "pallet-roles",
+ "pallet-scheduler",
+ "pallet-sudo",
+ "pallet-utility",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

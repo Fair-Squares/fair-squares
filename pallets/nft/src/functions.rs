@@ -54,7 +54,7 @@ impl<T: Config> Pallet<T> {
 		metadata: BoundedVecOfNfts<T>,
 	) -> DispatchResult {
 		ensure!(Collections::<T>::contains_key(collection_id), Error::<T>::CollectionUnknown);
-		let origin = RawOrigin::Signed(owner);
+		let origin = RawOrigin::Signed(owner.clone());
 
 		let res0 = pallet_nfts::Pallet::<T>::set_metadata(
 			origin.into(),
@@ -73,31 +73,11 @@ impl<T: Config> Pallet<T> {
 			
 		});
 
-		//Self::deposit_event(Event::ItemMinted { owner, collection_id, item_id });
+		Self::deposit_event(Event::ItemMinted { owner, collection_id, item_id });
 
 		Ok(())
 	}
 
-	pub fn do_transfer(
-		collection_id: T::NftCollectionId,
-		item_id: T::NftItemId ,
-		from: T::AccountId,
-		to: T::AccountId,
-	) -> DispatchResult {
-		if from == to {
-			return Ok(())
-		}
-
-		pallet_nfts::Pallet::<T>::do_transfer(
-			collection_id.into(),
-			item_id.into(),
-			to.clone(),
-			|_collection_details, _item_details| {
-				Self::deposit_event(Event::ItemTransferred { from, to, collection_id, item_id });
-				Ok(())
-			},
-		)
-	}
 
 	
 
@@ -105,7 +85,8 @@ impl<T: Config> Pallet<T> {
 		owner: T::AccountId,
 		collection_id: T::NftCollectionId,
 	) -> DispatchResult {
-		let collection_details = pallet_nfts::Collection::<T>::get(collection_id.into()).unwrap();
+		let coll_id0:<T as Nfts>::CollectionId=collection_id.into();
+		let collection_details = pallet_nfts::Collection::<T>::get(coll_id0).unwrap();
 		let witness = collection_details.destroy_witness();
 
 		// witness struct is empty because we don't allow destroying a Collection with existing
@@ -122,6 +103,9 @@ impl<T: Config> Pallet<T> {
 		Self::deposit_event(Event::CollectionDestroyed { owner, collection_id });
 		Ok(())
 	}
+	pub fn get_origin(account_id: T::AccountId) -> <T as frame_system::Config>::RuntimeOrigin {
+		frame_system::RawOrigin::Signed(account_id).into()
+	}
 }
 
 impl<T: Config> Inspect<T::AccountId> for Pallet<T> {
@@ -135,6 +119,7 @@ impl<T: Config> Inspect<T::AccountId> for Pallet<T> {
 	fn collection_owner(collection: &Self::CollectionId) -> Option<T::AccountId> {
 		Self::collection_owner(*collection)
 	}
+	
 }
 
 

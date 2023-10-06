@@ -107,6 +107,7 @@ pub mod pallet {
 			+ HasCompact
 			+ AtLeast32BitUnsigned
 			+ Into<Self::CollectionId>
+			+ Into<u32>
 			+ From<Self::CollectionId>;
 		type NftItemId: Member
 			+ Parameter
@@ -161,16 +162,19 @@ pub mod pallet {
 	impl<T: Config> BuildGenesisConfig for GenesisConfig<T> {
 		fn build(&self) {
 			let index = self.collection_id.unwrap();
-			for n in 0..index {
-				let n0:T::NftCollectionId=n.into();
-				crate::Pallet::<T>::do_create_collection(
-					self.owner.clone().unwrap(),
-					n0,
-					self.created_by.unwrap(),
-					self.metadata.clone().unwrap(),
-				)
-				.ok();
+			if index>0{
+				for n in 0..index {
+					let n0:T::NftCollectionId=n.into();
+					crate::Pallet::<T>::do_create_collection(
+						self.owner.clone().unwrap(),
+						n0,
+						self.created_by.unwrap(),
+						self.metadata.clone().unwrap(),
+					)
+					.ok();
+				}
 			}
+			
 		}
 	}
 
@@ -219,29 +223,37 @@ pub mod pallet {
 			collection_id: PossibleCollections,
 			metadata: BoundedVecOfNfts<T>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
-			let mut sender0 = sender.clone();
+			let sender0 = ensure_signed(origin.clone())?;
+			let mut sender = sender0.clone(); 
+			let coll_owners =pallet_nfts::CollectionAccount::<T>::iter_keys();
 			let coll_id: T::NftCollectionId = collection_id.clone().value().into();
-			let coll_owners = pallet_nfts::CollectionAccount::<T>::iter_keys();
-			let idx = collection_id.value() as usize;
-			//let created_by = pallet_roles::Pallet::<T>::get_roles(&sender)[0];
+			let created_by = pallet_roles::Pallet::<T>::get_roles(&sender0)[0];
+			let idx = collection_id.value() as usize;			
 			let item_id:T::NftItemId = Self::itemid()[idx].into();
-			let dest =  T::Lookup::unlookup(sender.clone());
+			let dest =  T::Lookup::unlookup(sender0.clone());
 			let item_config= pallet_nfts::ItemConfig{
 				settings: pallet_nfts::ItemSettings::default()
 			};
-
-			for i in coll_owners{
-				if i.1==coll_id.into(){
-					sender0=i.0;
+			ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
+			for val in coll_owners{
+				if val.1==coll_id.into(){
+					sender = val.0;
 				}
+				
+
 			}
-			//ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
-			let origin0= RawOrigin::Signed(sender0.clone());
+			let coll_id0:<T as Nfts>::CollectionId = coll_id.into();
+			ensure!(pallet_nfts::CollectionAccount::<T>::contains_key(sender.clone(),coll_id0), Error::<T>::CollectionUnknown);
 
-			pallet_nfts::Pallet::<T>::force_mint(origin0.into(), coll_id.clone().into(), item_id.clone().into(), dest,item_config)?;
 
-			Self::set_metadata(sender0,coll_id.clone(), item_id.clone(),metadata.into()).ok();
+
+			let origin_collection= RawOrigin::Signed(sender.clone());
+			
+			pallet_nfts::Pallet::<T>::force_mint(origin_collection.into(), coll_id.clone().into(), item_id.clone().into(), dest.clone().into(),item_config)?;
+
+			Items::<T>::set(coll_id,item_id,Some(ItemInfo{metadata:metadata.clone()}));
+			Self::set_metadata(sender,coll_id.clone(), item_id.clone(),metadata.clone()).ok();
+			debug_assert!(Items::<T>::get(coll_id,item_id).is_some());
 			ItemsCount::<T>::mutate(|x| {
 				x[idx] += 1;
 			});
@@ -265,14 +277,15 @@ pub mod pallet {
 			dest: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			//the transaction is triggered by Root
-			ensure_root(origin)?;
+			let sender = ensure_signed(origin)?;
 
 			//Nft transfered from old to new owner
 			let coll_id: T::NftCollectionId = collection_id.value().into();
-			let dest = T::Lookup::lookup(dest)?;
 			let owner = Self::owner(coll_id, item_id).ok_or(Error::<T>::ItemUnknown)?;
+			ensure!(sender==owner,Error::<T>::NotPermitted);
+			let origin0 = RawOrigin::Signed(owner);
 
-			Self::do_transfer(coll_id, item_id, owner, dest)?;
+			pallet_nfts::Pallet::<T>::transfer(origin0.into(),coll_id.into(), item_id.into(), dest)?;
 
 			Ok(())
 		}
@@ -297,9 +310,11 @@ pub mod pallet {
 			let coll_id: T::NftCollectionId = collection_id.value().into();
 			let owner = Self::owner(coll_id, item_id).ok_or(Error::<T>::ItemUnknown)?;
 			let origin0 = RawOrigin::Signed(owner);
-
+			let idx = collection_id.value() as usize;
 			pallet_nfts::Pallet::<T>::burn(origin0.into(), coll_id.into(), item_id.into())?;
-
+			ItemsCount::<T>::mutate(|x| {
+				x[idx] -= 1;
+			});
 			Ok(())
 		}
 
@@ -333,6 +348,7 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(crate) fn deposit_event)]
 	pub enum Event<T: Config> {
+		SomethingStored(T::AccountId),
 		/// A Collection was created
 		CollectionCreated {
 			owner: T::AccountId,
