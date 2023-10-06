@@ -1,11 +1,11 @@
 pub use super::*;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-pub use codec::HasCompact;
+pub use parity_scale_codec::{Encode,Decode,HasCompact};
 pub use frame_support::{
     pallet_prelude::*,PalletId,
-	codec::{Decode, Encode},
-	dispatch::{DispatchResult, Dispatchable, EncodeLike,GetDispatchInfo},
+	/*codec::{Decode, Encode},*/
+	dispatch::{DispatchResult,GetDispatchInfo},
 	ensure,
 	traits::{
 		defensive_prelude::*,
@@ -25,7 +25,7 @@ pub use sp_runtime::{
 };
 pub use sp_std::boxed::Box;
 pub use sp_std::prelude::*;
-pub use scale_info::prelude::vec::Vec;
+pub use sp_std::vec::Vec;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 pub type NftCollectionOf = Nft::PossibleCollections;
 pub type BalanceOf<T> =

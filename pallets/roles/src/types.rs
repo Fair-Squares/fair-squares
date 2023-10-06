@@ -5,7 +5,7 @@
 pub use super::*;
 pub use frame_support::{
 	assert_ok,
-	dispatch::{DispatchResult, EncodeLike,Vec},
+	dispatch::{DispatchResult},
 	pallet_prelude::*,
 	sp_runtime::traits::{AccountIdConversion, Hash, Saturating, StaticLookup, Zero},
 	storage::{child,bounded_vec::BoundedVec},
@@ -15,6 +15,7 @@ pub use frame_support::{
 	dispatch::GetDispatchInfo,
 	PalletId,
 };
+pub use sp_std::vec::Vec;
 pub use frame_system::{ensure_signed, ensure_root, pallet_prelude::*, RawOrigin};
 pub use scale_info::{prelude::vec, TypeInfo};
 pub use serde::{Deserialize, Serialize};
@@ -70,8 +71,8 @@ pub struct Investor<T: Config> {
 }
 
 impl<T: Config> Investor<T>
-where
-	types::Investor<T>: EncodeLike<types::Investor<T>>,
+/*where
+	types::Investor<T>: EncodeLike<types::Investor<T>>,*/
 {
 	//-------------------------------------------------------------------
 	//-------------NEW INVESTOR CREATION METHOD_BEGIN--------------------
@@ -102,8 +103,8 @@ pub struct HouseSeller<T: Config> {
 	pub activated: bool,
 }
 impl<T: Config> HouseSeller<T>
-where
-	types::HouseSeller<T>: EncodeLike<types::HouseSeller<T>>,
+/*where
+	types::HouseSeller<T>: EncodeLike<types::HouseSeller<T>>,*/
 {
 	//--------------------------------------------------------------------
 	//-------------HOUSE SELLER CREATION METHOD_BEGIN----------------------
@@ -202,8 +203,8 @@ pub struct Representative<T: Config> {
 	pub index: u32,
 }
 impl<T: Config> Representative<T>
-where
-	types::Representative<T>: EncodeLike<types::Representative<T>>,
+/*where
+	types::Representative<T>: EncodeLike<types::Representative<T>>,*/
 {
 	//--------------------------------------------------------------------
 	//-------------REPRESENTATIVE CREATION METHOD_BEGIN----------------------
@@ -246,8 +247,8 @@ pub struct Notary<T: Config> {
 	pub activated: bool,
 }
 impl<T: Config> Notary<T>
-where
-	types::Notary<T>: EncodeLike<types::Notary<T>>,
+/*where
+	types::Notary<T>: EncodeLike<types::Notary<T>>,*/
 {
 	pub fn new(acc: OriginFor<T>) -> Self {
 		let caller = ensure_signed(acc).unwrap();

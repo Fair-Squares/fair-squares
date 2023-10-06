@@ -66,8 +66,8 @@ pub mod types;
 #[cfg(test)]
 pub mod mock;
 
-//#[cfg(test)]
-//mod tests;
+#[cfg(test)]
+mod tests;
 
 /*pub type BoundedVecOfNfts<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 type CollectionInfoOf<T> = CollectionInfo<BoundedVecOfNfts<T>>;
@@ -196,7 +196,7 @@ pub mod pallet {
 			let coll_id: T::NftCollectionId = collection_id.value().into();
 
 			let created_by = pallet_roles::Pallet::<T>::get_roles(&sender)[0];
-			ensure!(T::Permissions::can_create(&created_by), Error::<T>::NotPermitted);
+			//ensure!(T::Permissions::can_create(&created_by), Error::<T>::NotPermitted);
 
 			Self::do_create_collection(sender, coll_id.clone(), created_by, metadata.clone())?;
 			
@@ -220,20 +220,28 @@ pub mod pallet {
 			metadata: BoundedVecOfNfts<T>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			let mut sender0 = sender.clone();
 			let coll_id: T::NftCollectionId = collection_id.clone().value().into();
+			let coll_owners = pallet_nfts::CollectionAccount::<T>::iter_keys();
 			let idx = collection_id.value() as usize;
-			let created_by = pallet_roles::Pallet::<T>::get_roles(&sender)[0];
+			//let created_by = pallet_roles::Pallet::<T>::get_roles(&sender)[0];
 			let item_id:T::NftItemId = Self::itemid()[idx].into();
 			let dest =  T::Lookup::unlookup(sender.clone());
 			let item_config= pallet_nfts::ItemConfig{
 				settings: pallet_nfts::ItemSettings::default()
 			};
 
-			ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
+			for i in coll_owners{
+				if i.1==coll_id.into(){
+					sender0=i.0;
+				}
+			}
+			//ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
+			let origin0= RawOrigin::Signed(sender0.clone());
 
-			pallet_nfts::Pallet::<T>::force_mint(origin, coll_id.clone().into(), item_id.clone().into(), dest,item_config)?;
+			pallet_nfts::Pallet::<T>::force_mint(origin0.into(), coll_id.clone().into(), item_id.clone().into(), dest,item_config)?;
 
-			Self::set_metadata(sender,coll_id.clone(), item_id.clone(),metadata).ok();
+			Self::set_metadata(sender0,coll_id.clone(), item_id.clone(),metadata.into()).ok();
 			ItemsCount::<T>::mutate(|x| {
 				x[idx] += 1;
 			});

@@ -134,6 +134,7 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 parameter_types! {
 	pub const BlockHashCount: BlockNumber = 2400;
+	pub const MaxNominatorRewardedPerValidator: u32 = 256;
 	pub const Version: RuntimeVersion = VERSION;
 	/// We allow for 2 seconds of compute with a 6 second average block time.
 	pub BlockWeights: frame_system::limits::BlockWeights =
@@ -208,11 +209,10 @@ impl pallet_aura::Config for Runtime {
 
 impl pallet_grandpa::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-
 	type WeightInfo = ();
 	type MaxAuthorities = ConstU32<32>;
 	type MaxSetIdSessionEntries = ConstU64<0>;
-
+	type MaxNominators = MaxNominatorRewardedPerValidator;
 	type KeyOwnerProof = sp_core::Void;
 	type EquivocationReportSystem = ();
 }

@@ -1,6 +1,6 @@
 pub use super::*;
 use enum_iterator::Sequence;
-pub use frame_support::dispatch::Vec;
+pub use sp_std::vec::Vec;
 use frame_support::pallet_prelude::*;
 pub use frame_system::{ensure_signed, ensure_root, pallet_prelude::*, RawOrigin};
 #[cfg(feature = "std")]

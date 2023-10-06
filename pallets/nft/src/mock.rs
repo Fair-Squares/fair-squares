@@ -241,7 +241,7 @@ pub const NON_EXISTING_COLLECTION_ID: <Test as pallet_nfts::Config>::CollectionI
 
 
 // Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
+pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t= frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into();
 	pallet_balances::GenesisConfig::<Test> {
 		balances: vec![

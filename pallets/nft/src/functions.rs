@@ -60,14 +60,17 @@ impl<T: Config> Pallet<T> {
 			origin.into(),
 			collection_id.into(),
 			item_id.into(),
-			metadata.clone(),
+			metadata.clone().into(),
 		);
 		debug_assert!(res0.is_ok());
 
 		Items::<T>::mutate(collection_id, item_id, |val| {
-			let mut val0 = val.clone().unwrap();
+			if val.is_some(){
+				let mut val0 = val.clone().unwrap();
 			val0.metadata = metadata;
 			*val = Some(val0);
+			}
+			
 		});
 
 		//Self::deposit_event(Event::ItemMinted { owner, collection_id, item_id });
