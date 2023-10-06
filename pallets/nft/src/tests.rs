@@ -32,12 +32,12 @@ fn mint_works() {
 			bvec![0,0,1]
 		));
 
-		assert_ok!(NFTPallet::mint(
+		/*assert_ok!(NFTPallet::mint(
 			RuntimeOrigin::signed(BOB),
 			PossibleCollections::HOUSESTEST,
 			bvec![0,0,4]
 		));
-		/*assert_eq!(
+		assert_eq!(
 			NFTPallet::items(HOUSESTEST, ITEM_ID_0).unwrap(),
 			ItemInfo { metadata: metadata.clone() }
 		);

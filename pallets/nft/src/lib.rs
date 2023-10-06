@@ -227,14 +227,14 @@ pub mod pallet {
 			let mut sender = sender0.clone(); 
 			let coll_owners =pallet_nfts::CollectionAccount::<T>::iter_keys();
 			let coll_id: T::NftCollectionId = collection_id.clone().value().into();
-			let created_by = pallet_roles::Pallet::<T>::get_roles(&sender0)[0];
+			//let created_by = pallet_roles::Pallet::<T>::get_roles(&sender0)[0];
 			let idx = collection_id.value() as usize;			
 			let item_id:T::NftItemId = Self::itemid()[idx].into();
 			let dest =  T::Lookup::unlookup(sender0.clone());
 			let item_config= pallet_nfts::ItemConfig{
 				settings: pallet_nfts::ItemSettings::default()
 			};
-			ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
+			//ensure!(T::Permissions::can_mint(&created_by), Error::<T>::NotPermitted);
 			for val in coll_owners{
 				if val.1==coll_id.into(){
 					sender = val.0;

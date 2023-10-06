@@ -51,6 +51,7 @@ pallet-assets = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "po
 pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
 pallet-nfts = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
 pallet-nfts-runtime-api = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
+sp-storage = { version = "13.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
 
 
 # Used for the node template's RPCs
