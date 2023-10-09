@@ -13,7 +13,7 @@ pub type CollectionId = u32;
 /// NFT Item ID
 pub type ItemId = u32;
 
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, Sequence)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, Sequence,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum PossibleCollections {
 	HOUSES,
@@ -40,7 +40,7 @@ impl PossibleCollections {
 }
 
 /// NFT Item ID
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct CollectionInfo<BoundedVec> {
 	pub created_by: Acc,
@@ -48,7 +48,7 @@ pub struct CollectionInfo<BoundedVec> {
 	pub metadata: BoundedVec,
 }
 
-#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct ItemInfo<BoundedVec> {
 	pub metadata: BoundedVec,
@@ -62,7 +62,7 @@ pub trait NftPermission<Acc> {
 	fn has_deposit(created_by: &Acc) -> bool;
 }
 
-#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct NftPermissions;
 

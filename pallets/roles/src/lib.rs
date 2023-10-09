@@ -23,8 +23,11 @@ use sp_std::prelude::*;
 pub mod pallet {
 	pub use super::*;
 
+	/// The current storage version.
+	const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
+
 	#[pallet::pallet]
-	#[pallet::without_storage_info]
+	#[pallet::storage_version(STORAGE_VERSION)]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -45,7 +48,7 @@ pub mod pallet {
 
 		/// The maximum number of named reserves that can exist on an account.
 		#[pallet::constant]
-		type MaxRoles: Get<u32>;
+		type MaxRoles: Get<u32>+Clone;
 
 		
 		#[pallet::constant]
@@ -103,42 +106,46 @@ pub mod pallet {
 
 	#[pallet::type_value]
 	/// Initializer for the approval list of house sellers
-	pub(super) fn InitPendingSellerList<T: Config>() -> Vec<HouseSeller<T>> {
-		Vec::new()
+	pub(super) fn InitPendingSellerList<T: Config>() -> BoundedVec<HouseSeller<T>,T::MaxRoles> {
+		let v0 = Vec::new();
+		BoundedVec::truncate_from(v0)
 	}
 
 	#[pallet::type_value]
 	/// Initializer for the approval list of servicers
-	pub(super) fn InitPendingServicerList<T: Config>() -> Vec<Servicer<T>> {
-		Vec::new()
+	pub(super) fn InitPendingServicerList<T: Config>() -> BoundedVec<Servicer<T>,T::MaxRoles> {
+		let v0 = Vec::new();
+		BoundedVec::truncate_from(v0)
 	}
 
 	#[pallet::type_value]
 	/// Initializer for the approval list of notaries
-	pub(super) fn InitPendingNotaryList<T: Config>() -> Vec<Notary<T>> {
-		Vec::new()
+	pub(super) fn InitPendingNotaryList<T: Config>() -> BoundedVec<Notary<T>,T::MaxRoles> {
+		let v0 = Vec::new();
+		BoundedVec::truncate_from(v0)
 	}
 
 	#[pallet::type_value]
 	/// Initializer for the approval list of representatives
-	pub(super) fn InitRepApprovalList<T: Config>() -> Vec<Representative<T>> {
-		Vec::new()
+	pub(super) fn InitRepApprovalList<T: Config>() -> BoundedVec<Representative<T>,T::MaxRoles> {
+		let v0 = Vec::new();
+		BoundedVec::truncate_from(v0)
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_house_sellers)]
 	pub(super) type SellerApprovalList<T: Config> =
-		StorageValue<_, Vec<HouseSeller<T>>, ValueQuery, InitPendingSellerList<T>>;
+		StorageValue<_, BoundedVec<HouseSeller<T>,T::MaxRoles>, ValueQuery,InitPendingSellerList<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_servicers)]
 	pub(super) type ServicerApprovalList<T: Config> =
-		StorageValue<_, Vec<Servicer<T>>, ValueQuery, InitPendingServicerList<T>>;
+		StorageValue<_, BoundedVec<Servicer<T>,T::MaxRoles>, ValueQuery,InitPendingServicerList<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_notaries)]
 	pub(super) type NotaryApprovalList<T: Config> =
-		StorageValue<_, Vec<Notary<T>>, ValueQuery, InitPendingNotaryList<T>>;
+		StorageValue<_, BoundedVec<Notary<T>,T::MaxRoles>, ValueQuery,InitPendingNotaryList<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_pending_representatives)]

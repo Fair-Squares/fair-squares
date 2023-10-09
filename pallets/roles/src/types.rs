@@ -26,7 +26,7 @@ pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 
 
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum AssetStatus {
     EDITING,
@@ -42,7 +42,7 @@ pub enum AssetStatus {
 }
 
 ///This enum contains the roles selectable at account creation
-#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy, Serialize, Deserialize)]
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy, Serialize, Deserialize, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub enum Accounts {
 	INVESTOR,
@@ -54,7 +54,7 @@ pub enum Accounts {
 	REPRESENTATIVE,
 }
 
-#[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Proposal<T: Config>{
@@ -77,7 +77,7 @@ impl<T: Config> Proposal<T>{
 
 //-------------------------------------------------------------------------------------
 //-------------INVESTOR STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
-#[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Investor<T: Config> {
@@ -111,7 +111,7 @@ impl<T: Config> Investor<T>
 
 //--------------------------------------------------------------------------------------
 //-------------HOUSE SELLER STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
-#[derive(Clone,Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct HouseSeller<T: Config> {
@@ -133,7 +133,7 @@ impl<T: Config> HouseSeller<T>
         };
 
 		SellerApprovalList::<T>::mutate(|list| {
-			list.push(hw.clone());
+			let check=list.force_push(hw.clone());
 		});
 
         hw
@@ -147,7 +147,7 @@ impl<T: Config> HouseSeller<T>
 
 //--------------------------------------------------------------------------------------
 //-------------TENANT STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
-#[derive(Clone, Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Tenant<T: Config> {
@@ -182,7 +182,7 @@ impl<T: Config> Tenant<T> {
 
 //--------------------------------------------------------------------------------------
 //-------------Servicer STRUCT DECLARATION & IMPLEMENTATION_BEGIN---------------------------
-#[derive(Clone, Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Servicer<T: Config> {
@@ -197,7 +197,7 @@ impl<T: Config> Servicer<T> {
 			Servicer { account_id: acc.clone(), age: now, activated: false};
 
 		ServicerApprovalList::<T>::mutate(|list| {
-			list.push(sv.clone());
+			list.force_push(sv.clone());
 		});
 		sv
 
@@ -209,14 +209,14 @@ impl<T: Config> Servicer<T> {
 //-------------------------------------------------------------------------------------
 //-------------REPRESENTATIVE STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
 
-#[derive(Clone,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Representative<T: Config> {
 	pub account_id: T::AccountId,
 	pub age: BlockNumberOf<T>,
 	pub activated: bool,
-	pub assets_accounts: Vec<T::AccountId>,
+	pub assets_accounts: BoundedVec<T::AccountId,T::MaxRoles>,
 	pub index: u32,
 }
 impl<T: Config> Representative<T>
@@ -233,7 +233,7 @@ impl<T: Config> Representative<T>
 				account_id: acc.clone(),
 				age: now,
 				activated: false,
-				assets_accounts: Vec::new(),
+				assets_accounts: BoundedVec::new(),
 				index: Default::default(),
 			};
 			RepApprovalList::<T>::insert(acc.clone(), rep.clone());
@@ -255,7 +255,7 @@ impl<T: Config> Representative<T>
 
 //-------------------------------------------------------------------------------------
 //-------------NOTARY STRUCT DECLARATION & IMPLEMENTATION_BEGIN----------------------
-#[derive(Clone,Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo)]
+#[derive(Clone,Copy,Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Notary<T: Config> {
@@ -273,7 +273,7 @@ impl<T: Config> Notary<T>
 		let notary =
 			Notary { account_id: caller.clone(), age: now, activated: false};
 		NotaryApprovalList::<T>::mutate(|list| {
-			list.push(notary.clone());
+			list.force_push(notary.clone());
 		});
 
         notary

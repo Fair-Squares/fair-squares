@@ -64,6 +64,7 @@ impl frame_system::Config for Test {
 
 parameter_types! {
 	pub const MaxMembers:u32 = 5;
+	#[derive(Clone)]
 	pub const MaxRoles:u32 = 3;
 	pub const CheckPeriod: BlockNumber = 5;
 }

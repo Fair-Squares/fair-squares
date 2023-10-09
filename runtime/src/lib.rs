@@ -57,7 +57,7 @@ pub use sp_runtime::{Perbill, Permill};
 pub use pallet_roles;
 pub use pallet_housing_fund;
 pub use pallet_onboarding;
-//pub use pallet_council
+pub use pallet_council;
 use pallet_nft::NftPermissions;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
@@ -269,6 +269,7 @@ impl pallet_sudo::Config for Runtime {
 
 parameter_types! {
 	pub const MaxMembers:u32 =200;
+	#[derive(Clone)]
 	pub const MaxRoles:u32 =3;
 	pub const CheckPeriod: BlockNumber = MINUTES;
 }
@@ -284,7 +285,7 @@ impl pallet_roles::Config for Runtime {
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
 }
-/*
+
 impl pallet_council::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -295,7 +296,7 @@ impl pallet_council::Config for Runtime {
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
 }
-*/
+
 parameter_types! {
 	pub const ProposalFee: Percent= Percent::from_percent(15);
 	pub const SlashedFee: Percent = Percent::from_percent(10);
@@ -345,6 +346,7 @@ impl pallet_nft::Config for Runtime {
 	type NftItemId = ItemId;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type Permissions = NftPermissions;
+	type MaxItems = ConstU32<7>;
 	//type ReserveCollectionIdUpTo = ReserveCollectionIdUpTo;
 }
 
@@ -668,7 +670,7 @@ construct_runtime!(
 		Democracy: pallet_democracy,
 		Assets: pallet_assets,
 		OnboardingModule: pallet_onboarding,
-		//CouncilModule: pallet_council,
+		CouncilModule: pallet_council,
 		// flag add pallet runtime
 	}
 );

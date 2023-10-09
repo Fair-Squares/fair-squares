@@ -69,9 +69,6 @@ pub mod mock;
 #[cfg(test)]
 mod tests;
 
-/*pub type BoundedVecOfNfts<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
-type CollectionInfoOf<T> = CollectionInfo<BoundedVecOfNfts<T>>;
-pub type ItemInfoOf<T> = ItemInfo<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;*/
 
 pub type BoundedVecOfNfts<T> = BoundedVec<u8, <T as pallet_nfts::Config>::StringLimit>;
 type CollectionInfoOf<T> = CollectionInfo<BoundedVecOfNfts<T>>;
@@ -92,7 +89,6 @@ pub mod pallet {
 
 
 	#[pallet::pallet]
-	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
 	#[pallet::config]
@@ -108,7 +104,9 @@ pub mod pallet {
 			+ AtLeast32BitUnsigned
 			+ Into<Self::CollectionId>
 			+ Into<u32>
+			+MaxEncodedLen
 			+ From<Self::CollectionId>;
+			
 		type NftItemId: Member
 			+ Parameter
 			+ Default
@@ -116,7 +114,10 @@ pub mod pallet {
 			+ HasCompact
 			+ AtLeast32BitUnsigned
 			+ Into<Self::ItemId>
+			+MaxEncodedLen
 			+ From<Self::ItemId>;
+
+		type MaxItems: Get<u32>;
 
 		}
 
@@ -140,14 +141,15 @@ pub mod pallet {
 
 	#[pallet::type_value]
 	///Initializing function for the approval waiting list
-	pub fn InitDefault<T: Config>() -> Vec<u32> {
-		vec![0, 0, 0, 0, 0, 0, 0]
+	pub fn InitDefault<T: Config>() -> BoundedVec<u32,T::MaxItems> {
+		let v0=vec![0, 0, 0, 0, 0, 0, 0];
+		BoundedVec::try_from(v0).unwrap()
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn itemid)]
 	/// Update Item ID
-	pub type ItemsCount<T: Config> = StorageValue<_, Vec<u32>, ValueQuery, InitDefault<T>>;
+	pub type ItemsCount<T: Config> = StorageValue<_, BoundedVec<u32,T::MaxItems >, ValueQuery, InitDefault<T>>;
 
 	#[derive(frame_support::DefaultNoBound)]
 	#[pallet::genesis_config]
