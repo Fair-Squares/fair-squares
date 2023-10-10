@@ -19,12 +19,12 @@ impl<T: Config> Pallet<T> {
 		// Create Asset
 		let asset=Asset::<T>::new(coll_id, item_id, infos, new_price,max_tenants);
 		let owner = pallet_nft::Pallet::<T>::owner(coll_id,item_id).unwrap();
-		pallet_roles::Asset::<T>::insert(owner,asset.created,asset.status);
+		Roles::Asset::<T>::insert(owner,asset.created,asset.status);
 
 		Ok(())
 	}
 
-	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: pallet_roles::AssetStatus) {
+	pub fn status(collection: NftCollectionOf, item_id: T::NftItemId, status: Roles::AssetStatus) {
 		let collection_id: T::NftCollectionId = collection.clone().value().into();
 		let owner = pallet_nft::Pallet::<T>::owner(collection_id,item_id).unwrap();
 
@@ -35,7 +35,7 @@ impl<T: Config> Pallet<T> {
 			*val = Some(asset);
 		});
 		let asset = Self::houses(collection_id, item_id).unwrap();
-		pallet_roles::Asset::<T>::mutate(owner,asset.created,|val|{
+		Roles::Asset::<T>::mutate(owner,asset.created,|val|{
 			*val=Some(status);
 		})
 
@@ -85,7 +85,7 @@ impl<T: Config> Pallet<T> {
 		);
 		let asset = Self::houses(collection_id, item_id).unwrap();
 		let status = asset.status;
-		ensure!(status == pallet_roles::AssetStatus::FINALISED, Error::<T>::VoteNedeed);
+		ensure!(status == Roles::AssetStatus::FINALISED, Error::<T>::VoteNedeed);
 
 		//Check that the owner is not the buyer
 		let owner = Nft::Pallet::<T>::owner(collection_id, item_id)
@@ -118,7 +118,7 @@ impl<T: Config> Pallet<T> {
 		});
 
 		//change status
-		Self::change_status(origin_buyer, collection, item_id, pallet_roles::AssetStatus::PURCHASED).ok();
+		Self::change_status(origin_buyer, collection, item_id, Roles::AssetStatus::PURCHASED).ok();
 
 		Ok(())
 	}
@@ -150,7 +150,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	fn get_houses_by_status(
-		status: pallet_roles::AssetStatus,
+		status: Roles::AssetStatus,
 	) -> Vec<(
 		<T as pallet_nft::Config>::NftCollectionId,
 		<T as pallet_nft::Config>::NftItemId,
@@ -167,7 +167,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(pallet_roles::AssetStatus::ONBOARDED)
+		Self::get_houses_by_status(Roles::AssetStatus::ONBOARDED)
 	}
 
 	pub fn get_finalised_houses() -> Vec<(
@@ -175,7 +175,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(pallet_roles::AssetStatus::FINALISED)
+		Self::get_houses_by_status(Roles::AssetStatus::FINALISED)
 	}
 
 	pub fn get_finalising_houses() -> Vec<(
@@ -183,7 +183,7 @@ impl<T: Config> Pallet<T> {
 		<T as pallet_nft::Config>::NftItemId,
 		types::Asset<T>,
 	)> {
-		Self::get_houses_by_status(pallet_roles::AssetStatus::FINALISING)
+		Self::get_houses_by_status(Roles::AssetStatus::FINALISING)
 	}
 
 	pub fn do_submit_proposal(
@@ -191,22 +191,8 @@ impl<T: Config> Pallet<T> {
 		item_id: T::NftItemId,
 	) {
 		//Change asset status to REVIEWING
-		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, pallet_roles::AssetStatus::REVIEWING).ok();
-		//Send Proposal struct to voting pallet
-		//get the needed call and convert them to pallet_voting format
-		let collection_id: T::NftCollectionId = collection.clone().value().into();
-		let out_call = Vcalls::<T>::get(collection_id, item_id).unwrap();
-		let call0 = Self::get_formatted_call(out_call.after_vote_status) ;
-
+		Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, Roles::AssetStatus::REVIEWING).ok();
 		
-		let proposal = Self::make_proposal(call0.into());
-		let delay = T::Delay::get();
-			let index=Self::start_dem_referendum(proposal,delay);
-		Houses::<T>::mutate_exists(collection_id,item_id,|val|{
-			let mut v0 = val.clone().unwrap();
-			v0.ref_index=index;
-			*val = Some(v0);
-		});
 		
 	}
 
@@ -229,27 +215,53 @@ impl<T: Config> Pallet<T> {
 		if(now % T::CheckDelay::get()).is_zero(){
 			//get existing assets
 			let assets_iter = Houses::<T>::iter();
+			
+
+		
 			for asset in assets_iter{
 				let coll_id = asset.0;
 				let item_id = asset.1;
 				let status = asset.2.status;
 				let index = asset.2.ref_index;
+				let items = Roles::Asset::<T>::iter();
+
+				//Start awaiting referendums
+				for item in items {
+					if item.2 == Status::VOTING && item.1 == asset.2.created && status == Status::REVIEWING{
+						//start Democracy referendum
+						//Send Proposal struct to voting pallet
+						//get the needed call and convert them to pallet_voting format
+						let out_call = Vcalls::<T>::get(coll_id, item_id).unwrap();
+						let call0 = Self::get_formatted_call(out_call.after_vote_status) ;
+						let proposal = Self::make_proposal(call0.into());
+						let delay = T::Delay::get();
+						let index=Self::start_dem_referendum(proposal,delay);
+		                Houses::<T>::mutate_exists(coll_id,item_id,|val|{
+		                	let mut v0 = val.clone().unwrap();
+		                	v0.ref_index=index;
+							v0.status=Status::VOTING;
+		                	*val = Some(v0);
+		                });
+					}
+				}
 
 				//Use index to get referendum infos
 				let infos = DEM::Pallet::<T>::referendum_info(index).unwrap();
 				let b = match infos {
-					pallet_democracy::ReferendumInfo::Finished { approved, end: _ } => {
+					DEM::ReferendumInfo::Finished { approved, end: _ } => {
 						(1, approved)
 					},
-					_ => (0, false),
+					DEM::ReferendumInfo::Ongoing(_) => (2,false),
+					
 				};
 				if b.0 == 1{
+					if b.1 == false {
 					let coll = Self::collection_name(coll_id.into());
 					//Prepare & execute rejection call
 					let call2: T::Prop =
 				Call::<T>::reject_edit { collection:coll, item_id, infos: asset.2.clone() }.into();
-				call2.dispatch_bypass_filter(frame_system::RawOrigin::Root.into()).ok();
-				}
+				call2.dispatch_bypass_filter(frame_system::RawOrigin::Root.into()).ok();}
+				} 
 
 			}
 

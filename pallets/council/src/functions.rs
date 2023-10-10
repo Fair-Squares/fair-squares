@@ -17,6 +17,27 @@ impl<T: Config> Pallet<T> {
 		frame_system::RawOrigin::Signed(account_id).into()
 	}
 
+	pub fn status(owner: AccountIdOf<T>)->DispatchResult {
+		let items = Roles::Asset::<T>::iter();
+		let mut status = vec![];
+		for item in items{
+			if item.0 == owner && item.2==Roles::AssetStatus::REVIEWING{
+				status.push(item);
+				break;
+			}
+		}
+		let init = status.len() as u32;
+		ensure!(init>0, Error::<T>::NoPendingRequest);
+		let item0= &status[0];
+		Roles::Asset::<T>::mutate(&item0.0,item0.1,|val|{			
+			*val = Some(Roles::AssetStatus::VOTING); 
+		});
+
+		Ok(())
+
+
+	}
+
    /* pub fn start_house_council_session(account: T::AccountId,account_type: Accounts) -> DispatchResultWithPostInfo{
 		//Create proposal
 		let proposal0 = 

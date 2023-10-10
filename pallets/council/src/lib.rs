@@ -14,6 +14,7 @@ pub use types::*;
 //pub use weights::*;
 pub use pallet_roles as Roles;
 pub use pallet_collective as Coll;
+pub use pallet_nft as Nft;
 use Coll::Instance1;
 
 // All pallet logic is defined in its own module and must be annotated by the `pallet` attribute.
@@ -21,9 +22,6 @@ use Coll::Instance1;
 pub mod pallet {
 	// Import various useful types required by all FRAME pallets.
 	use super::*;
-	use frame_support::pallet_prelude::*;
-	use frame_system::pallet_prelude::*;
-	use frame_system::WeightInfo;
 
 	// The `Pallet` struct serves as a placeholder to implement traits, methods and dispatchables
 	// (`Call`s) in this pallet.
@@ -36,7 +34,7 @@ pub mod pallet {
 	/// These types are defined generically and made concrete when the pallet is declared in the
 	/// `runtime/src/lib.rs` file of your chain.
 	#[pallet::config]
-	pub trait Config: frame_system::Config+Roles::Config+Coll::Config<Instance1> {
+	pub trait Config: frame_system::Config+Roles::Config+Coll::Config<Instance1>+Nft::Config {
 		/// The overarching runtime event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type Currency: ReservableCurrency<Self::AccountId>;
@@ -87,6 +85,8 @@ pub mod pallet {
 		NoneValue,
 		/// There was an attempt to increment the value in storage over `u32::MAX`.
 		StorageOverflow,
+		/// No Pending Request from this Seller
+		NoPendingRequest
 	}
 
 	
@@ -143,7 +143,20 @@ pub mod pallet {
 					Something::<T>::put(new);
 					Ok(())
 				},
-			}
+			}		
+		
+		}
+
+		#[pallet::call_index(2)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn collective_approval(
+			origin: OriginFor<T>,
+			collection: Nft::PossibleCollections,
+			item_id: T::NftItemId,
+			status: Roles::AssetStatus,
+		) -> DispatchResult{
+
+			Ok(())
 		}
 	}
 }

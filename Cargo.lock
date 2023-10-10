@@ -5211,6 +5211,7 @@ dependencies = [
  "frame-system",
  "pallet-balances",
  "pallet-collective",
+ "pallet-nft",
  "pallet-onboarding",
  "pallet-roles",
  "pallet-sudo",

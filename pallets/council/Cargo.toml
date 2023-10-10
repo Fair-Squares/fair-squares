@@ -28,6 +28,7 @@ pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://
 pallet-collective = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
 pallet-roles = { default-features = false, path="../roles" }
 pallet-onboarding = { default-features = false, path="../onboarding" }
+pallet-nft = { default-features = false, path="../nft" }
 
 [dev-dependencies]
 sp-core = { version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
@@ -49,6 +50,7 @@ std = [
 	"pallet-collective/std",
     "pallet-roles/std",
     "pallet-onboarding/std",
+	"pallet-nft/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
