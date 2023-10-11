@@ -78,4 +78,94 @@ impl<T: Config> Pallet<T> {
 		
 		Ok(().into())
 	}
+
+	pub fn vote_action(caller: T::AccountId,seller_account: T::AccountId,approve:bool) -> DispatchResultWithPostInfo{
+		
+		// Check that the caller is a backgroundcouncil member
+		ensure!(
+			Coll::Pallet::<T, Instance1>::members().contains(&caller),
+			Error::<T>::NotACouncilMember
+		);
+		// Check that the proposal exists
+		ensure!(
+			SellerProposal::<T>::contains_key(&seller_account),
+			Error::<T>::ProposalDoesNotExist
+		);
+		let proposal_all = Self::get_submitted_proposal(seller_account.clone()).unwrap();
+		let proposal_hash = proposal_all.proposal_hash;
+		let proposal_index = proposal_all.proposal_index;
+		let origin = Self::get_origin(caller.clone());
+		// Execute the council vote
+		Coll::Pallet::<T, Instance1>::vote(
+			origin,
+			proposal_hash,
+			proposal_index,
+			approve,
+		).ok();
+
+		Ok(().into())
+	}
+	
+
+	pub fn closing_vote(caller: T::AccountId,seller_account: T::AccountId) -> DispatchResultWithPostInfo{
+
+		// Check that the caller is a backgroundcouncil member
+		ensure!(
+			Coll::Pallet::<T, Instance1>::members().contains(&caller),
+			Error::<T>::NotACouncilMember
+		);
+		// Check that the proposal exists
+		ensure!(
+			SellerProposal::<T>::contains_key(&seller_account),
+			Error::<T>::ProposalDoesNotExist
+		);
+		let proposal_all = Self::get_submitted_proposal(seller_account.clone()).unwrap();
+		let proposal_hash = proposal_all.proposal_hash;
+		let proposal = Coll::Pallet::<T,Instance1>::proposal_of(proposal_hash.clone()).unwrap();
+		let proposal_len = proposal.clone().encoded_size();
+		let index = proposal_all.proposal_index;
+		let proposal_weight = proposal.get_dispatch_info().weight;
+		let origin = Self::get_origin(caller.clone());
+		Coll::Pallet::<T,Instance1>::close(
+			origin,
+			proposal_hash,
+			index,
+			proposal_weight,
+			proposal_len as u32,
+		).ok();
+
+		SellerProposal::<T>::mutate(&seller_account,|val|{
+			let mut proposal = val.clone().unwrap();
+			proposal.session_closed = true;
+			*val = Some(proposal);
+			});
+
+		Ok(().into())
+
+	}
+
+	pub fn begin_block(now: BlockNumberFor<T>) -> Weight{
+		let max_block_weight = Weight::from_parts(1000_u64,0);
+		if (now % <T as Config>::CheckPeriod::get()).is_zero(){
+			let proposal_iter = SellerProposal::<T>::iter();
+			for proposal_all in proposal_iter{
+				let test = (proposal_all.1.session_closed,proposal_all.1.approved); 
+				let prop = match test{
+					(true,false) => 0,
+					_ => 1,
+				};
+				if prop == 0 {
+					let proposal = Call::<T>::proposal_rejection
+					{
+						account: proposal_all.0
+					};
+
+					let council_member = Coll::Pallet::<T,Instance1>::members()[0].clone();
+					proposal.dispatch_bypass_filter(frame_system::RawOrigin::Signed(council_member).into()).ok();
+				}
+			}
+			
+		}
+		max_block_weight
+	}
 }

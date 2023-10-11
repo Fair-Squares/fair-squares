@@ -76,6 +76,16 @@ pub mod pallet {
 			/// The account who set the new value.
 			who: T::AccountId,
 		},
+		/// Request for new role accepted
+		ProposalApproved(BlockNumberFor<T>, T::AccountId),
+		/// Request for new role Rejected
+		ProposalRejected(BlockNumberFor<T>, T::AccountId),
+		/// A proposal has been added by a Background Council member
+		HousingCouncilAddedProposal{for_who: T::AccountId, proposal_index: u32, when: BlockNumberFor<T>},
+		/// A proposal has been closed by a Background Council member
+		HousingCouncilSessionClosed{who: T::AccountId, proposal_index: u32, when: BlockNumberFor<T>},
+		/// A member of the Background Council has voted
+		HousingCouncilVoted{who: T::AccountId, proposal_index: u32, when: BlockNumberFor<T>},
 	}
 
 	
@@ -88,7 +98,9 @@ pub mod pallet {
 		/// No Pending Request from this Seller
 		NoPendingRequest,
 		/// This is not a Council Member
-		NotACouncilMember
+		NotACouncilMember,
+		/// This proposal does not exist
+		ProposalDoesNotExist,
 	}
 
 	
@@ -160,9 +172,11 @@ pub mod pallet {
 			let _caller = T::HousingCouncilOrigin::ensure_origin(origin.clone())?;
 			let collection_id:T::NftCollectionId = collection.value().into();
 			//get owner
-			let owner = Nft::Pallet::<T>::owner(collection_id,item_id);
+			let owner = Nft::Pallet::<T>::owner(collection_id,item_id).unwrap();
 			//Change status
-			Self::status(owner.unwrap()).ok();
+			Self::status(owner.clone()).ok();
+			let now = <frame_system::Pallet<T>>::block_number();
+			Self::deposit_event(Event::ProposalApproved(now, owner));
 
 			Ok(())
 		}
@@ -184,6 +198,91 @@ pub mod pallet {
 			
 			Ok(().into())
 		}
+
+		/// Housing council member vote for a proposal
+		/// The origin must be signed and member of the Background Council
+		/// - candidate : account requesting the role
+		/// - approve : value of the vote (true or false)
+		#[pallet::call_index(4)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn housing_council_vote(origin:OriginFor<T>,seller:T::AccountId,approve:bool) -> DispatchResultWithPostInfo {
+			let caller = ensure_signed(origin)?;
+			ensure!(
+				Coll::Pallet::<T, Instance1>::members().contains(&caller),
+				Error::<T>::NotACouncilMember
+			);
+			let proposal_all = Self::get_submitted_proposal(&seller).unwrap();
+			let index = proposal_all.proposal_index;
+			let result = Self::vote_action(caller.clone(),seller,approve);
+			
+
+			match result{
+				Ok(_) => {
+					let now = <frame_system::Pallet<T>>::block_number();
+					// deposit event
+					Self::deposit_event(Event::HousingCouncilVoted{
+						who: caller,
+						proposal_index: index,
+						when: now,
+						});
+					},
+				Err(e) => return Err(e),
+				}
+			
+
+			Ok(().into())
+		}
+
+		/// Housing council member close the vote session for a proposal
+		/// The origin must be signed and member of the Background Council
+		/// - seller : account submitting the proposal
+		#[pallet::call_index(5)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn housing_council_close(origin:OriginFor<T>,seller:T::AccountId) -> DispatchResultWithPostInfo{
+			let caller = ensure_signed(origin)?;
+			let mut proposal_all = Self::get_submitted_proposal(&seller).unwrap();
+			let index = proposal_all.proposal_index;
+			let result = Self::closing_vote(caller.clone(),seller.clone());
+			
+
+			match result{
+				Ok(_) => {
+					let now = <frame_system::Pallet<T>>::block_number();
+
+			Self::deposit_event(Event::HousingCouncilSessionClosed{
+				who: caller,
+				proposal_index: index,
+				when: now,
+			});
+				},
+				Err(e) => return Err(e),
+			}
+			proposal_all = Self::get_submitted_proposal(&seller).unwrap();
+			if proposal_all.approved==true{
+				SellerProposal::<T>::remove(&seller);
+			}
+			
+			Ok(().into())
+		}
+
+		///Creation Refusal function for Sellers and Servicers. Only for admin level.
+		#[pallet::call_index(6)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn proposal_rejection(origin: OriginFor<T>, account: T::AccountId) -> DispatchResultWithPostInfo {
+			let _sender = ensure_signed(origin.clone())?;
+
+			let proposal = Self::get_submitted_proposal(&account);
+			ensure!(proposal.is_some(), Error::<T>::ProposalDoesNotExist);
+
+			SellerProposal::<T>::remove(&account);
+
+			let now = <frame_system::Pallet<T>>::block_number();
+					Self::deposit_event(Event::ProposalRejected(now, account));
+			
+			
+			Ok(().into())
+		}
+
 
 	}
 }
