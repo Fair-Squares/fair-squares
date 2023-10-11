@@ -11,7 +11,7 @@ pub use frame_support::{
 	dispatch::GetDispatchInfo,
 	PalletId,
 };
-pub use sp_std::vec::Vec;
+pub use sp_std::{vec::Vec,boxed::Box};
 pub use frame_system::{ensure_signed, ensure_root, pallet_prelude::*, RawOrigin};
 pub use scale_info::{prelude::vec, TypeInfo};
 pub use serde::{Deserialize, Serialize};

@@ -52,6 +52,7 @@ pub enum Accounts {
 	SERVICER,
 	NOTARY,
 	REPRESENTATIVE,
+	None,
 }
 
 #[derive(Clone,Copy, Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]

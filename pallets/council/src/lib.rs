@@ -86,7 +86,9 @@ pub mod pallet {
 		/// There was an attempt to increment the value in storage over `u32::MAX`.
 		StorageOverflow,
 		/// No Pending Request from this Seller
-		NoPendingRequest
+		NoPendingRequest,
+		/// This is not a Council Member
+		NotACouncilMember
 	}
 
 	
@@ -153,10 +155,35 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection: Nft::PossibleCollections,
 			item_id: T::NftItemId,
-			status: Roles::AssetStatus,
 		) -> DispatchResult{
+			
+			let _caller = T::HousingCouncilOrigin::ensure_origin(origin.clone())?;
+			let collection_id:T::NftCollectionId = collection.value().into();
+			//get owner
+			let owner = Nft::Pallet::<T>::owner(collection_id,item_id);
+			//Change status
+			Self::status(owner.unwrap()).ok();
 
 			Ok(())
 		}
+
+		#[pallet::call_index(3)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn seller_proposal_evaluation(origin: OriginFor<T>, collection: Nft::PossibleCollections,item_id: T::NftItemId) -> DispatchResultWithPostInfo {
+			let caller = ensure_signed(origin)?;
+
+			ensure!(
+				Coll::Pallet::<T, Instance1>::members().contains(&caller),
+				Error::<T>::NotACouncilMember
+			);
+
+			//get asset owner
+			let collection_id:T::NftCollectionId = collection.value().into();
+			let owner = Nft::Pallet::<T>::owner(collection_id,item_id).unwrap();
+			Self::start_house_council_session(owner,collection,item_id).ok();
+			
+			Ok(().into())
+		}
+
 	}
 }

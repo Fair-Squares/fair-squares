@@ -242,6 +242,8 @@ pub mod pallet {
 		NotaryAccountCreationRejected(BlockNumberOf<T>, T::AccountId),
 		/// Role request added to the role approval waiting list
 		CreationRequestCreated(BlockNumberOf<T>, T::AccountId),
+		/// No Role request added to the role approval waiting list
+		NoCreationRequestCreated(BlockNumberOf<T>, T::AccountId),
 		/// A proposal has been added by a Background Council member
 		BackgroundCouncilAddedProposal{for_who: T::AccountId, proposal_index: u32, when: BlockNumberOf<T>},
 		/// A proposal has been closed by a Background Council member
@@ -426,11 +428,12 @@ pub mod pallet {
 						.map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
+				Accounts::None => {Self::deposit_event(Event::NoCreationRequestCreated(now, account.clone()));}
 			}
 
 			let need_approval = !matches!(
 				account_type,
-				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE
+				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE | Accounts::None
 			);
 			if need_approval {
 				Self::start_council_session(account.clone(),account_type).ok();	

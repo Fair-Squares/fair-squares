@@ -38,15 +38,14 @@ impl<T: Config> Pallet<T> {
 
 	}
 
-   /* pub fn start_house_council_session(account: T::AccountId,account_type: Accounts) -> DispatchResultWithPostInfo{
+    pub fn start_house_council_session(account: T::AccountId,collection: Nft::PossibleCollections,item_id: T::NftItemId) -> DispatchResultWithPostInfo{
 		//Create proposal
 		let proposal0 = 
-			Call::<T>::account_approval{
-				account: account.clone()
+			Call::<T>::collective_approval{
+				collection,
+				item_id
 			};
-		let proposal = Self::get_formatted_call(proposal0.into()).unwrap();
-
-		
+		let proposal = Self::get_formatted_call(proposal0.into()).unwrap();		
 						
 		let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
 		
@@ -68,7 +67,7 @@ impl<T: Config> Pallet<T> {
 		for proposal_hash in proposal_hashes{
 			let prop0 = Coll::Pallet::<T,Instance1>::proposal_of(proposal_hash.clone()).unwrap();
 			if proposal == prop0{
-				let mut proposal_all = ProposalOf::<T>::new(account.clone(), Some(account_type),proposal_hash.clone());
+				let mut proposal_all = ProposalOf::<T>::new(account.clone(), Some(Roles::Accounts::None),proposal_hash.clone());
 				proposal_all.proposal_index = index;
 				proposal_all.proposal_hash = proposal_hash;
 				SellerProposal::<T>::insert(&account, proposal_all);
@@ -78,5 +77,5 @@ impl<T: Config> Pallet<T> {
 
 		
 		Ok(().into())
-	}*/
+	}
 }
