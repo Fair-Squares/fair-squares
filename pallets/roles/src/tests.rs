@@ -36,9 +36,12 @@ fn setting_roles(){
 		assert_eq!(RolesModule::get_pending_house_sellers().len(),1);
 		let account =RolesModule::get_pending_house_sellers()[0].account_id.clone();
 		assert_eq!(account,BOB);
+
 		
+		//Check that collective referendum started
+		//assert_eq!(Collective::proposal_count(),1); 
 		
-		/*assert_eq!(RolesModule::get_pending_house_sellers().len(), 1);
+		/*
 
 		assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[0].clone()),BOB,true));
 		assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[1].clone()),BOB,true));

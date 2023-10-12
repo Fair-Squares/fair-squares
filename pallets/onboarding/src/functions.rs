@@ -127,6 +127,14 @@ impl<T: Config> Pallet<T> {
 		<T as DEM::Config>::Preimages::bound(call).unwrap()
 	}
 
+	pub fn add_proposal(who:T::AccountId,call: CallOf<T>) -> DispatchResult {
+	
+		let value = <T as DEM::Config>::MinimumDeposit::get();
+		let proposal = Self::make_proposal(call);
+		DEM::Pallet::<T>::propose(RawOrigin::Signed(who).into(), proposal.clone(), value)?;
+		Ok(())
+	}
+
 	pub fn start_dem_referendum(proposal:BoundedCallOf<T> ,delay:BlockNumberFor<T>) -> DEM::ReferendumIndex{
 		let threshold = DEM::VoteThreshold::SimpleMajority;    
 		let referendum_index =
@@ -222,7 +230,6 @@ impl<T: Config> Pallet<T> {
 				let coll_id = asset.0;
 				let item_id = asset.1;
 				let status = asset.2.status;
-				let index = asset.2.ref_index;
 				let items = Roles::Asset::<T>::iter();
 
 				//Start awaiting referendums
@@ -231,22 +238,17 @@ impl<T: Config> Pallet<T> {
 						//start Democracy referendum
 						//Send Proposal struct to voting pallet
 						//get the needed call and convert them to pallet_voting format
-						let out_call = Vcalls::<T>::get(coll_id, item_id).unwrap();
-						let call0 = Self::get_formatted_call(out_call.after_vote_status) ;
-						let proposal = Self::make_proposal(call0.into());
-						let delay = T::Delay::get();
-						let index=Self::start_dem_referendum(proposal,delay);
-		                Houses::<T>::mutate_exists(coll_id,item_id,|val|{
-		                	let mut v0 = val.clone().unwrap();
-		                	v0.ref_index=index;
-							v0.status=Status::VOTING;
-		                	*val = Some(v0);
-		                });
-					}
-				}
-
+						let owner_origin= RawOrigin::Signed(item.0);
+						Self::investor_referendum(owner_origin.into(),coll_id, item_id).ok();
+						let asset0 = Self::houses(coll_id,item_id).unwrap();
+				let index0 = asset0.ref_index; 
+				//Event referendum started
+				Self::deposit_event(Event::ReferendumStarted{
+					index:index0
+				});
+				
 				//Use index to get referendum infos
-				let infos = DEM::Pallet::<T>::referendum_info(index).unwrap();
+				let infos = DEM::Pallet::<T>::referendum_info(index0).unwrap();
 				let b = match infos {
 					DEM::ReferendumInfo::Finished { approved, end: _ } => {
 						(1, approved)
@@ -262,6 +264,11 @@ impl<T: Config> Pallet<T> {
 				Call::<T>::reject_edit { collection:coll, item_id, infos: asset.2.clone() }.into();
 				call2.dispatch_bypass_filter(frame_system::RawOrigin::Root.into()).ok();}
 				} 
+						
+					}
+				}
+
+				
 
 			}
 

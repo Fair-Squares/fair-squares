@@ -428,12 +428,12 @@ pub mod pallet {
 						.map_err(|_:Error<T>| <Error<T>>::InitializationError)?;
 					Self::deposit_event(Event::CreationRequestCreated(now, account.clone()));
 				},
-				Accounts::None => {Self::deposit_event(Event::NoCreationRequestCreated(now, account.clone()));}
+				Accounts::NONE => {Self::deposit_event(Event::NoCreationRequestCreated(now, account.clone()));}
 			}
 
 			let need_approval = !matches!(
 				account_type,
-				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE | Accounts::None
+				Accounts::INVESTOR | Accounts::TENANT | Accounts::REPRESENTATIVE | Accounts::NONE
 			);
 			if need_approval {
 				Self::start_council_session(account.clone(),account_type).ok();	

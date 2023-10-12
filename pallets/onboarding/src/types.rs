@@ -102,18 +102,3 @@ pub struct VotingCalls<T: Config> {
 	pub(super) after_vote_status: Call<T>,
 }
 
-impl<T: Config> VotingCalls<T> {
-	pub fn new(collection: T::NftCollectionId, item: T::NftItemId) -> DispatchResult {
-		let nbr: u32 = 0;
-		let call:Call<T> = Call::<T>::do_something { something: nbr }.into();
-
-		let calls = VotingCalls::<T> {
-			reject_edit: call.clone(),
-			reject_destroy: call.clone(),
-			democracy_status: call.clone(),
-			after_vote_status: call,
-		};
-		Vcalls::<T>::insert(collection, item, calls);
-		Ok(())
-	}
-}

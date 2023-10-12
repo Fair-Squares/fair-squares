@@ -160,20 +160,6 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
-	#[pallet::storage]
-	#[pallet::getter(fn voting_calls)]
-	/// Stores Calls
-	pub(super) type Vcalls<T: Config> = StorageDoubleMap<
-		_,
-		Blake2_128Concat,
-		T::NftCollectionId,
-		Blake2_128Concat,
-		T::NftItemId,
-		VotingCalls<T>,
-		OptionQuery,
-	>;
-
-
 	// Test Genesis Configuration
 	#[derive(frame_support::DefaultNoBound)]
 	#[pallet::genesis_config]
@@ -248,6 +234,9 @@ pub struct GenesisConfig<T: Config> {
 			collection: T::NftCollectionId,
 			item: T::NftItemId,
 		},
+		ReferendumStarted{
+			index:u32
+		}
 	}
 
 	// Errors inform users that something went wrong.
@@ -283,6 +272,15 @@ pub struct GenesisConfig<T: Config> {
 		ReservedToInvestors,
 		/// Failed to unreserved fund in Housing fund
 		HousingFundUnreserveFundFailed,
+		///ReferendumFailed
+		FailedReferendum,
+	}
+
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(n: BlockNumberOf<T>) -> Weight {
+			Self::begin_block(n)
+		}
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -500,20 +498,6 @@ pub struct GenesisConfig<T: Config> {
 
 			let collection_id: T::NftCollectionId = collection.clone().value().into();
 
-			let house = Self::houses(collection_id, item_id).unwrap();
-
-			let _new_call = VotingCalls::<T>::new(collection_id, item_id).ok();
-
-
-			//Create Call for asset status change after Investor's vote
-			let call4 =
-				Call::<T>::change_status { collection, item_id, status: Status::ONBOARDED };
-			Vcalls::<T>::mutate(collection_id, item_id, |val| {
-				let mut v0 = val.clone().unwrap();
-				v0.after_vote_status = call4.clone().into();
-				*val = Some(v0);
-			});
-
 			Self::deposit_event(Event::ProposalCreated {
 				who: caller.clone(),
 				collection: collection_id,
@@ -603,6 +587,25 @@ pub struct GenesisConfig<T: Config> {
 			ensure!(Roles::Pallet::<T>::investors(&who).is_some(), Error::<T>::ReservedToInvestors);
 			let config = Self::account_vote(<T as DEM::Config>::MinimumDeposit::get(),vote);
 			DEM::Pallet::<T>::vote(origin,index,config).ok();
+			Ok(())
+			
+	}
+
+		#[pallet::call_index(8)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn investor_referendum(origin: OriginFor<T>,coll_id:T::NftCollectionId,item_id: T::NftItemId )-> DispatchResult {
+			let _who = ensure_signed(origin.clone())?;
+			let out_call = Call::<T>::change_status { collection:Self::collection_name(coll_id.into()), item_id, status: Status::ONBOARDED };
+			let call0 = Self::get_formatted_call(out_call) ;
+			let proposal = Self::make_proposal(call0.into());
+			let delay = T::Delay::get();
+			let index=Self::start_dem_referendum(proposal,delay);
+		    Houses::<T>::mutate_exists(coll_id,item_id,|val|{
+				let mut v0 = val.clone().unwrap();
+		        v0.ref_index=index;
+				v0.status=Status::VOTING;
+		        *val = Some(v0);
+		        });
 			Ok(())
 			
 	}

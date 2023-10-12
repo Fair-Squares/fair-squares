@@ -67,7 +67,7 @@ impl<T: Config> Pallet<T> {
 		for proposal_hash in proposal_hashes{
 			let prop0 = Coll::Pallet::<T,Instance1>::proposal_of(proposal_hash.clone()).unwrap();
 			if proposal == prop0{
-				let mut proposal_all = ProposalOf::<T>::new(account.clone(), Some(Roles::Accounts::None),proposal_hash.clone());
+				let mut proposal_all = ProposalOf::<T>::new(account.clone(), Some(Roles::Accounts::NONE),proposal_hash.clone());
 				proposal_all.proposal_index = index;
 				proposal_all.proposal_hash = proposal_hash;
 				SellerProposal::<T>::insert(&account, proposal_all);

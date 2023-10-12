@@ -103,6 +103,13 @@ pub mod pallet {
 		ProposalDoesNotExist,
 	}
 
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+			Self::begin_block(n)
+		}
+	}
+
 	
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
