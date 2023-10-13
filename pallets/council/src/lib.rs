@@ -101,6 +101,8 @@ pub mod pallet {
 		NotACouncilMember,
 		/// This proposal does not exist
 		ProposalDoesNotExist,
+		/// Only one proposal submission is allowed per governance round
+		OnlyOneSubmissionPerRound
 	}
 
 	#[pallet::hooks]
@@ -183,6 +185,11 @@ pub mod pallet {
 			//Change status
 			Self::status(owner.clone()).ok();
 			let now = <frame_system::Pallet<T>>::block_number();
+			let mut proposal0=Self::get_submitted_proposal(owner.clone()).unwrap();
+			proposal0.approved=true;
+			SellerProposal::<T>::mutate(owner.clone(),|val|{
+				*val=Some(proposal0);
+			});
 			Self::deposit_event(Event::ProposalApproved(now, owner));
 
 			Ok(())
@@ -197,10 +204,12 @@ pub mod pallet {
 				Coll::Pallet::<T, Instance1>::members().contains(&caller),
 				Error::<T>::NotACouncilMember
 			);
-
 			//get asset owner
 			let collection_id:T::NftCollectionId = collection.value().into();
 			let owner = Nft::Pallet::<T>::owner(collection_id,item_id).unwrap();
+			ensure!(
+				!SellerProposal::<T>::contains_key(&owner),Error::<T>::OnlyOneSubmissionPerRound
+			);
 			Self::start_house_council_session(owner,collection,item_id).ok();
 			
 			Ok(().into())
