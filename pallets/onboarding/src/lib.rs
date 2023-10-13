@@ -416,7 +416,7 @@ pub struct GenesisConfig<T: Config> {
 				item: item_id,
 			});
 
-			Self::deposit_event(Event::SlashedFunds { from_who: caller, amount: Some(fees) });
+			Self::deposit_event(Event::SlashedFunds { from_who: owner, amount: Some(fees) });
 
 			Ok(())
 		}

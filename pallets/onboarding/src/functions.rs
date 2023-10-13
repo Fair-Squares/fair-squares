@@ -231,41 +231,52 @@ impl<T: Config> Pallet<T> {
 				let item_id = asset.1;
 				let status = asset.2.status;
 				let items = Roles::Asset::<T>::iter();
+				let coll_owner = Nft::Pallet::<T>::collection_owner(coll_id).unwrap();
 
 				//Start awaiting referendums
 				for item in items {
+					let owner_origin= RawOrigin::Signed(item.0);
+					let mut asset0 = Self::houses(coll_id,item_id).unwrap();
+					let mut  index0 = asset0.ref_index; 
 					if item.2 == Status::VOTING && item.1 == asset.2.created && status == Status::REVIEWING{
 						//start Democracy referendum
 						//Send Proposal struct to voting pallet
 						//get the needed call and convert them to pallet_voting format
-						let owner_origin= RawOrigin::Signed(item.0);
+						
 						Self::investor_referendum(owner_origin.into(),coll_id, item_id).ok();
-						let asset0 = Self::houses(coll_id,item_id).unwrap();
-				let index0 = asset0.ref_index; 
+						asset0 = Self::houses(coll_id,item_id).unwrap();
+						index0 = asset0.ref_index; 
 				//Event referendum started
 				Self::deposit_event(Event::ReferendumStarted{
 					index:index0
 				});
 				
-				//Use index to get referendum infos
-				let infos = DEM::Pallet::<T>::referendum_info(index0).unwrap();
-				let b = match infos {
-					DEM::ReferendumInfo::Finished { approved, end: _ } => {
-						(1, approved)
-					},
-					DEM::ReferendumInfo::Ongoing(_) => (2,false),
-					
-				};
-				if b.0 == 1{
-					if b.1 == false {
-					let coll = Self::collection_name(coll_id.into());
-					//Prepare & execute rejection call
-					let call2: T::Prop =
-				Call::<T>::reject_edit { collection:coll, item_id, infos: asset.2.clone() }.into();
-				call2.dispatch_bypass_filter(frame_system::RawOrigin::Root.into()).ok();}
-				} 
+				
 						
 					}
+
+					//Use index to get referendum infos
+				let infos = DEM::Pallet::<T>::referendum_info(index0);
+
+				if infos.is_some(){
+					let b = match infos.unwrap() {
+						DEM::ReferendumInfo::Finished { approved, end: _ } => {
+							(1, approved)
+						},
+						DEM::ReferendumInfo::Ongoing(_) => (2,false),
+						
+					};
+					if b.0 == 1{
+						if b.1 == false {
+						let coll = Self::collection_name(coll_id.into());
+						//Prepare & execute rejection call
+						let call2: T::Prop =
+					Call::<T>::reject_edit { collection:coll, item_id, infos: asset.2.clone() }.into();
+					call2.dispatch_bypass_filter(frame_system::RawOrigin::Signed(coll_owner.clone()).into()).ok();}
+					} 
+				}
+				
+
 				}
 
 				
