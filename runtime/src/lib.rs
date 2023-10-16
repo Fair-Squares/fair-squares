@@ -55,6 +55,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 pub use pallet_roles;
+pub use pallet_finalizer;
 pub use pallet_housing_fund;
 pub use pallet_onboarding;
 pub use pallet_council;
@@ -284,6 +285,11 @@ impl pallet_roles::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, BackgroundCollective, 1, 2>;
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_finalizer::Config for Runtime{
+	type RuntimeEvent = RuntimeEvent;
+	//type WeightInfo = 
 }
 
 impl pallet_council::Config for Runtime {
@@ -671,6 +677,7 @@ construct_runtime!(
 		Assets: pallet_assets,
 		OnboardingModule: pallet_onboarding,
 		CouncilModule: pallet_council,
+		FinalizerModule: pallet_finalizer,
 		// flag add pallet runtime
 	}
 );

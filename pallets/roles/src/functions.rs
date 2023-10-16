@@ -221,7 +221,6 @@ impl<T: Config> Pallet<T> {
 			proposal_len,
 		).ok();
 		let mut index:u32 = Coll::Pallet::<T,Instance2>::proposal_count();
-		debug_assert!(index>0);
 		index = index.saturating_sub(1);
 
 		//Update proposal index and hash
