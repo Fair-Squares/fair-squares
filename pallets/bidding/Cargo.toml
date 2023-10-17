@@ -1,0 +1,67 @@
+[package]
+name = "pallet-bidding"
+version = "4.0.0-dev"
+description = "Investors selection process"
+authors = ["Fair Squares"]
+homepage = "https://fair-squares.nl"
+edition = "2021"
+license = "Apache 2.0"
+publish = false
+repository = "https://github.com/Fair-Squares/fair-squares"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+enum-iterator = "1.4.1"
+num-traits = {version="0.2.17",default-features = false}
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = [
+	"derive",
+] }
+sp-runtime = { version = "24.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
+frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+sp-std = { default-features = false, version = "8.0.0", git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+serde = { version = "1.0.183", default-features = false, features = ["derive"] }
+pallet-roles = { default-features = false, path="../roles" }
+pallet-onboarding = { default-features = false, path="../onboarding" }
+pallet-housing_fund = { default-features = false, path="../housing_fund" }
+pallet-nft = { default-features = false, path="../nft" }
+pallet-finalizer = { default-features = false, path="../finalizer" }
+rand = "0.8.5"
+
+[dev-dependencies]
+sp-core = { version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+sp-io = { version = "23.0.0", git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+sp-runtime = { version = "24.0.0", git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
+
+[features]
+default = ["std"]
+std = [
+	"codec/std",
+	"frame-benchmarking/std",
+    "sp-std/std",
+	"frame-support/std",
+	"frame-system/std",
+	"scale-info/std",
+	"serde/std",
+	"sp-std/std",
+	"pallet-balances/std",
+	"pallet-sudo/std",
+    "pallet-roles/std",
+    "pallet-onboarding/std",
+	"pallet-nft/std",
+    "pallet-housing_fund/std",
+    "pallet-finalizer/std"
+]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	]
+
+try-runtime = [
+	"frame-support/try-runtime",
+	]

@@ -237,20 +237,3 @@ pub mod pallet {
 		}
 	}
 }
-
-/*use enum_iterator::all;
-pub use frame_support::inherent::Vec;
-impl<T: Config> Pallet<T> {
-	fn get_possible_collection(collection_id: T::NftCollectionId) -> Nft::PossibleCollections {
-		let collections = all::<Nft::PossibleCollections>().collect::<Vec<_>>();
-		let mut possible_collection = Nft::PossibleCollections::HOUSES;
-		for item in collections.iter() {
-			let value: T::NftCollectionId = item.value().into();
-			if value == collection_id {
-				possible_collection = *item;
-				break
-			}
-		}
-		possible_collection
-	}
-}*/
