@@ -34,7 +34,6 @@ pub type BalanceOf<T> =
 	<<T as DEM::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type CallOf<T> = <T as frame_system::Config>::RuntimeCall;
 pub type BoundedCallOf<T> = Bounded<CallOf<T>>;
-type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
 
 pub use Nft::ItemInfoOf;
 

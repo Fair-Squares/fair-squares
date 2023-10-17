@@ -96,7 +96,8 @@ pub mod pallet {
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type Currency: ReservableCurrency<Self::AccountId>;
+		type Currency: ReservableCurrency<Self::AccountId>
+		+ IsType<<Self as HousingFund::Config>::LocalCurrency>;
 		type Prop: Parameter
 		+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
 		+ From<Call<Self>>

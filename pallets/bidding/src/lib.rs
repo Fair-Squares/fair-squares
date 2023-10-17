@@ -19,6 +19,7 @@ pub use pallet_onboarding as Onboarding;
 pub use pallet_roles as Roles;
 pub use pallet_housing_fund as Houses;
 pub use pallet_finalizer as Finalizer;
+pub use pallet_nft as Nft;
 
 
 // All pallet logic is defined in its own module and must be annotated by the `pallet` attribute.
@@ -43,7 +44,8 @@ pub mod pallet {
 	pub trait Config: frame_system::Config 
 	+ Roles::Config 
 	+ Onboarding::Config 
-	+ Houses::Config {
+	+ Houses::Config
+	+ Nft::Config {
 		/// The overarching runtime event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		
