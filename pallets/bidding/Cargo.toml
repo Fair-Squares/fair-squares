@@ -32,7 +32,7 @@ pallet-onboarding = { default-features = false, path="../onboarding" }
 pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-nft = { default-features = false, path="../nft" }
 pallet-finalizer = { default-features = false, path="../finalizer" }
-rand = "0.8.5"
+rand = {version = "0.8.5", features=["alloc"]}
 
 [dev-dependencies]
 sp-core = { version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
