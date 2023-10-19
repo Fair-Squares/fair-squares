@@ -311,7 +311,6 @@ parameter_types! {
 
 impl pallet_onboarding::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type Currency = Balances;
 	type Prop = RuntimeCall;
 	type ProposalFee = ProposalFee;
 	type Slash = SlashedFee;
@@ -333,7 +332,6 @@ parameter_types! {
 /// Configure the pallet-housing_fund in pallets/housing_fund.
 impl pallet_housing_fund::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type LocalCurrency = Balances;
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
 	type MaxFundContribution = MaxFundContribution;
