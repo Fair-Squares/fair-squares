@@ -60,6 +60,7 @@ pub use pallet_housing_fund;
 pub use pallet_onboarding;
 pub use pallet_council;
 use pallet_nft::NftPermissions;
+pub use pallet_share_distributor;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
 
@@ -301,6 +302,18 @@ impl pallet_council::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+
+parameter_types!{
+	pub const AssetsFees: Balance = 25 * DOLLARS;
+	pub const MaxOwners:u32 = 20; 
+}
+
+impl pallet_share_distributor::Config for Runtime{
+	type RuntimeEvent = RuntimeEvent;
+	type AssetId = codec::Compact<u32>;
+	type Fees = AssetsFees;
+	type MaxOwners = MaxOwners;
 }
 
 parameter_types! {
@@ -676,6 +689,7 @@ construct_runtime!(
 		OnboardingModule: pallet_onboarding,
 		CouncilModule: pallet_council,
 		FinalizerModule: pallet_finalizer,
+		ShareDistributorModule: pallet_share_distributor,
 		// flag add pallet runtime
 	}
 );
@@ -727,6 +741,7 @@ mod benches {
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RolesModule]
 		//[pallet_council, CouncilModule]
+		//[pallet_share_distributor,ShareDistributorModule]
 		//[pallet_housing_fund, HousingFundModule]
 		[pallet_identity, Identity]
 		//[pallet_onboarding, onboardingModule]
