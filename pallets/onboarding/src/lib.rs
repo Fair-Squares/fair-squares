@@ -96,8 +96,6 @@ pub mod pallet {
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type Currency: ReservableCurrency<Self::AccountId>
-		+ IsType<<Self as HousingFund::Config>::LocalCurrency>;
 		type Prop: Parameter
 		+ UnfilteredDispatchable<RuntimeOrigin = <Self as frame_system::Config>::RuntimeOrigin>
 		+ From<Call<Self>>
@@ -396,11 +394,11 @@ pub struct GenesisConfig<T: Config> {
 			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, Status::REJECTED).ok();
 
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
-			let balance = <T as Config>::Currency::reserved_balance(&owner);
+			let balance = <T as Roles::Config>::Currency::reserved_balance(&owner);
 			let fees = <T as Config>::Slash::get().mul_floor(balance);
 			let remain = balance.saturating_sub(fees);
-			<T as pallet::Config>::Currency::unreserve(&owner, fees);
-			let res = <T as pallet::Config>::Currency::transfer(
+			<T as Roles::Config>::Currency::unreserve(&owner, fees);
+			let res = <T as Roles::Config>::Currency::transfer(
 				&owner,
 				&Self::account_id(),
 				fees,
@@ -408,7 +406,7 @@ pub struct GenesisConfig<T: Config> {
 			);
 			debug_assert!(res.is_ok());
 
-			let res1 = <T as pallet::Config>::Currency::reserve(&owner, remain);
+			let res1 = <T as Roles::Config>::Currency::reserve(&owner, remain);
 			debug_assert!(res1.is_ok());
 
 			Self::deposit_event(Event::RejectedForEditing {
@@ -445,10 +443,10 @@ pub struct GenesisConfig<T: Config> {
 			Self::change_status(frame_system::RawOrigin::Root.into(), collection, item_id, Status::SLASH).ok();
 			let owner = Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
 			Nft::Pallet::<T>::burn(origin, collection, item_id).ok();
-			let balance = <T as Config>::Currency::reserved_balance(&owner);
+			let balance = <T as Roles::Config>::Currency::reserved_balance(&owner);
 			ensure!(balance > Zero::zero(), Error::<T>::NoneValue);
-			<T as pallet::Config>::Currency::unreserve(&owner, balance);
-			let res = <T as pallet::Config>::Currency::transfer(
+			<T as Roles::Config>::Currency::unreserve(&owner, balance);
+			let res = <T as Roles::Config>::Currency::transfer(
 				&owner,
 				&Self::account_id(),
 				balance,
@@ -489,11 +487,11 @@ pub struct GenesisConfig<T: Config> {
 			let item_id: T::NftItemId = Nft::ItemsCount::<T>::get()[idx].into();
 			
 			//Create asset
-			let balance1 = <T as Config>::Currency::free_balance(&caller);
+			let balance1 = <T as Roles::Config>::Currency::free_balance(&caller);
 			let balance0 = T::ProposalFee::get().mul_floor(price.unwrap());
 			ensure!(balance1 > balance0, Error::<T>::InsufficientBalance);
 
-			<T as Config>::Currency::reserve(&caller, balance0).ok();
+			<T as Roles::Config>::Currency::reserve(&caller, balance0).ok();
 			
 			Self::create_asset(origin.clone(), collection, metadata, price, item_id,max_tenants).ok();
 

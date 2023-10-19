@@ -91,8 +91,8 @@ impl<T: Config> Pallet<T> {
 		let owner = Nft::Pallet::<T>::owner(collection_id, item_id)
 			.ok_or(Error::<T>::CollectionOrItemUnknown)?;
 		ensure!(buyer != owner, Error::<T>::BuyFromSelf);
-		let balance = <T as Config>::Currency::reserved_balance(&owner);
-		let _returned = <T as Config>::Currency::unreserve(&owner, balance);
+		let balance = <T as Roles::Config>::Currency::reserved_balance(&owner);
+		let _returned = <T as Roles::Config>::Currency::unreserve(&owner, balance);
 
 		// The reserved funds in Housing Fund from the house bidding are unreserved for the transfer
 		// transaction
@@ -101,7 +101,7 @@ impl<T: Config> Pallet<T> {
 		//Transfer funds from HousingFund to owner
 		let price = Prices::<T>::get(collection_id, item_id).unwrap();
 		let fund_id = T::PalletId::get().into_account_truncating();
-		<T as Config>::Currency::transfer(
+		<T as Roles::Config>::Currency::transfer(
 			&fund_id,
 			&owner,
 			price,

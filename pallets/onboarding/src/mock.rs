@@ -138,7 +138,6 @@ parameter_types! {
 
 impl pallet_onboarding::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type Currency = Balances;
 	type Prop = RuntimeCall;
 	type ProposalFee = ProposalFee;
 	type Slash = SlashedFee;
@@ -159,7 +158,6 @@ parameter_types! {
 
 impl pallet_housing_fund::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type LocalCurrency = Balances;
 	type MinContribution = MinContribution;
 	type FundThreshold = FundThreshold;
 	type MaxFundContribution = MaxFundContribution;

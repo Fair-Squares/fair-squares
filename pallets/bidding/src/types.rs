@@ -17,8 +17,6 @@ pub use scale_info::{prelude::vec, TypeInfo};
 pub use serde::{Deserialize, Serialize};
 
 pub type BalanceOf<T> =
-	<<T as Onboarding::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-pub type 	BalanceOf0<T> =
-<<T as Houses::Config>::LocalCurrency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as Roles::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;

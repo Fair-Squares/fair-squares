@@ -29,7 +29,7 @@ pub use sp_std::vec::Vec;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 pub type NftCollectionOf = Nft::PossibleCollections;
 pub type BalanceOf<T> =
-	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	<<T as Roles::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 	pub type BalanceOf1<T> =
 	<<T as DEM::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type CallOf<T> = <T as frame_system::Config>::RuntimeCall;

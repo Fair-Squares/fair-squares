@@ -12,7 +12,7 @@ impl<T: Config> Pallet<T> {
 	/// Check that the fund can afford the amount
 	pub fn check_available_fund(value: BalanceOf<T>) -> bool {
 		let fund_account = Self::fund_account_id();
-		let amount = T::LocalCurrency::free_balance(&fund_account);
+		let amount = <T as ROLES::Config>::Currency::free_balance(&fund_account);
 
 		amount>value
 	}
@@ -26,7 +26,7 @@ impl<T: Config> Pallet<T> {
 	pub fn get_contribution_share() -> Vec<ContributionShare<T>> {
 		let mut contribution_shares = Vec::<ContributionShare<T>>::new();
 		let fund_account = Self::fund_account_id();
-		let total = T::LocalCurrency::free_balance(&fund_account);
+		let total = <T as ROLES::Config>::Currency::free_balance(&fund_account);
 		
 
 		for (account_id, contribution) in Contributions::<T>::iter() {
@@ -55,7 +55,7 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResultWithPostInfo {
 		// Check that the fund can afford the bid
 		let fund_account = Self::fund_account_id();
-		let fund = T::LocalCurrency::free_balance(&fund_account);
+		let fund = <T as ROLES::Config>::Currency::free_balance(&fund_account);
 
 		ensure!(fund>amount, Error::<T>::NotEnoughFundForHouse);
 
@@ -83,7 +83,7 @@ impl<T: Config> Pallet<T> {
 		}
 
 		// The amount is tagged as reserved in the fund for the account_id
-		T::LocalCurrency::reserve(&Self::fund_account_id(), amount)?;
+		<T as ROLES::Config>::Currency::reserve(&Self::fund_account_id(), amount)?;
 				
 		// Get the block number for timestamp
 		let block_number = <frame_system::Pallet<T>>::block_number();
@@ -132,7 +132,7 @@ impl<T: Config> Pallet<T> {
 			});
 		}
 
-		T::LocalCurrency::unreserve(&Self::fund_account_id(), reservation.amount);		
+		<T as ROLES::Config>::Currency::unreserve(&Self::fund_account_id(), reservation.amount);		
 		Reservations::<T>::remove((nft_collection_id, nft_item_id));
 
 		// Get the block number for timestamp
@@ -161,7 +161,7 @@ impl<T: Config> Pallet<T> {
 		let reservation = reservation_wrap.unwrap();
 
 		// The amount is unreserved in the currency pallet
-		T::LocalCurrency::unreserve(&Self::fund_account_id(), reservation.amount);
+		<T as ROLES::Config>::Currency::unreserve(&Self::fund_account_id(), reservation.amount);
 
 		// Get the block number for timestamp
 		let block_number = <frame_system::Pallet<T>>::block_number();

@@ -45,8 +45,6 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + NFT::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type LocalCurrency: frame_support::traits::Currency<Self::AccountId>
-			+ frame_support::traits::ReservableCurrency<Self::AccountId>;
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
@@ -164,7 +162,7 @@ pub mod pallet {
 
 			// Check if account has enough to contribute
 			ensure!(
-				T::LocalCurrency::free_balance(&who) >= amount,
+				<T as ROLES::Config>::Currency::free_balance(&who) >= amount,
 				Error::<T>::NotEnoughToContribute
 			);
 
@@ -208,7 +206,7 @@ pub mod pallet {
 			
 
 			// The amount is transferred to the treasurery
-			T::LocalCurrency::transfer(
+			<T as ROLES::Config>::Currency::transfer(
 				&who,
 				&Pallet::<T>::fund_account_id(),
 				amount,
@@ -257,7 +255,7 @@ pub mod pallet {
 
 			// Get the fund balance
 			let fund_account = Self::fund_account_id();
-			let fund = T::LocalCurrency::free_balance(&fund_account);
+			let fund = <T as ROLES::Config>::Currency::free_balance(&fund_account);
 
 			// Check that the fund has enough transferable for the withdraw
 			ensure!(fund>amount, Error::<T>::NotEnoughInTransferableForWithdraw);
@@ -285,7 +283,7 @@ pub mod pallet {
 
 			
 			// The amount is transferred from the treasury to the account
-			T::LocalCurrency::transfer(
+			<T as ROLES::Config>::Currency::transfer(
 				&Pallet::<T>::fund_account_id(),
 				&who,
 				amount,

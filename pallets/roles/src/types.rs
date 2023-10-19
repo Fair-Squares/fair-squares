@@ -134,7 +134,7 @@ impl<T: Config> HouseSeller<T>
         };
 
 		SellerApprovalList::<T>::mutate(|list| {
-			let check=list.force_push(hw.clone());
+			let _=list.try_push(hw.clone()).map_err(|_| "Max number of requests reached").ok();
 		});
 
         hw
@@ -198,7 +198,7 @@ impl<T: Config> Servicer<T> {
 			Servicer { account_id: acc.clone(), age: now, activated: false};
 
 		ServicerApprovalList::<T>::mutate(|list| {
-			list.force_push(sv.clone());
+			list.try_push(sv.clone()).map_err(|_| "Max number of requests reached").ok();
 		});
 		sv
 
@@ -274,7 +274,7 @@ impl<T: Config> Notary<T>
 		let notary =
 			Notary { account_id: caller.clone(), age: now, activated: false};
 		NotaryApprovalList::<T>::mutate(|list| {
-			list.force_push(notary.clone());
+			list.try_push(notary.clone()).map_err(|_| "Max number of requests reached").ok();
 		});
 
         notary

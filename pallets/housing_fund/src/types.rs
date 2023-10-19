@@ -15,7 +15,7 @@ pub use frame_system::{ensure_signed, ensure_root, pallet_prelude::*, RawOrigin}
 pub use scale_info::{prelude::vec::Vec, TypeInfo};
 pub use serde::{Deserialize, Serialize};
 
-pub type BalanceOf<T> = <<T as Config>::LocalCurrency as Currency<AccountIdOf<T>>>::Balance;
+pub type BalanceOf<T> = <<T as ROLES::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 
