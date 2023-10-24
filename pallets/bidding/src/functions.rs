@@ -1,15 +1,14 @@
 pub use super::*;
-use rand::{Rng, seq::IteratorRandom};
-use rand::seq::SliceRandom;
-use sp_runtime::{BoundedVec,Percent};
-use frame_support::pallet_prelude::ConstU32;
-use Onboarding::Zero;
-
+pub use rand::prelude::*;
+pub use sp_runtime::{BoundedVec,Percent};
+pub use frame_support::pallet_prelude::ConstU32;
+pub use Onboarding::Zero;
+pub use pallet_roles::vec;
 
 
 impl<T: Config> Pallet<T> {
     
-    pub fn process(collection_id: T::NftCollectionId, item_id: T::NftItemId){
+    pub fn initial_investors_list(collection_id: T::NftCollectionId, item_id: T::NftItemId){
         //get asset price
         let asset = Onboarding::Pallet::<T>::houses(collection_id,item_id).unwrap();
         let asset_price = asset.price.unwrap();
@@ -31,7 +30,7 @@ impl<T: Config> Pallet<T> {
         });
         
         //Get a random sample of qualified investors
-        let mut rng = rand::thread_rng();
+        let mut rng = thread_rng();
 
         //Build a sample of 10 investors
         let inv_dist = investors.choose_multiple(&mut rng, 10);        

@@ -61,6 +61,7 @@ pub use pallet_onboarding;
 pub use pallet_council;
 use pallet_nft::NftPermissions;
 pub use pallet_share_distributor;
+pub use pallet_bidding;
 pub use pallet_nft::{self, Acc, CollectionId, ItemId, NftPermission};
 // flag add pallet use
 
@@ -286,6 +287,10 @@ impl pallet_roles::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, BackgroundCollective, 1, 2>;
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_bidding::Config for Runtime{
+	type RuntimeEvent = RuntimeEvent;
 }
 
 impl pallet_finalizer::Config for Runtime{
@@ -690,6 +695,7 @@ construct_runtime!(
 		CouncilModule: pallet_council,
 		FinalizerModule: pallet_finalizer,
 		ShareDistributorModule: pallet_share_distributor,
+		BiddingModule: pallet_bidding,
 		// flag add pallet runtime
 	}
 );
@@ -740,6 +746,7 @@ mod benches {
 		[pallet_nfts, Nfts]
 		[pallet_timestamp, Timestamp]
 		[pallet_roles, RolesModule]
+		//[pallet_bidding,BiddingModule]
 		//[pallet_council, CouncilModule]
 		//[pallet_share_distributor,ShareDistributorModule]
 		//[pallet_housing_fund, HousingFundModule]

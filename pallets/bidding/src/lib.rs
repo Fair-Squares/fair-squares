@@ -20,6 +20,7 @@ pub use pallet_roles as Roles;
 pub use pallet_housing_fund as Houses;
 pub use pallet_finalizer as Finalizer;
 pub use pallet_nft as Nft;
+pub use pallet_share_distributor as Share;
 
 
 // All pallet logic is defined in its own module and must be annotated by the `pallet` attribute.
@@ -45,7 +46,8 @@ pub mod pallet {
 	+ Roles::Config 
 	+ Onboarding::Config 
 	+ Houses::Config
-	+ Nft::Config {
+	+ Nft::Config
+	+ Share::Config {
 		/// The overarching runtime event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		
@@ -59,6 +61,10 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn something)]
 	pub type Something<T> = StorageValue<_, u32>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn round)]
+	pub type InvestmentRound<T> = StorageValue<_, u32>;
 
 	/// Events that functions in this pallet can emit.
 	///
