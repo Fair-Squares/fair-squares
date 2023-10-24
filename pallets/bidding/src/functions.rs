@@ -1,5 +1,4 @@
 pub use super::*;
-pub use rand::prelude::*;
 pub use sp_runtime::{BoundedVec,Percent};
 pub use frame_support::pallet_prelude::ConstU32;
 pub use Onboarding::Zero;
@@ -22,18 +21,16 @@ impl<T: Config> Pallet<T> {
         investors.retain(|x|{
             let status = Houses::Pallet::<T>::contributions(x.clone()).unwrap();
             let contribution = status.contributed_balance;
-            
             //user contributed more than 5% of asset_price
             contribution > Percent::from_percent(5) * asset_price //should be minimun contribution calculated from asset price.
             //ToDo: We also want to only include users that did not contributed to a purchase for y_blocks (to be defined). 
 
         });
         
-        //Get a random sample of qualified investors
-        let mut rng = thread_rng();
 
+        //Get a random sample of qualified investors
         //Build a sample of 10 investors
-        let inv_dist = investors.choose_multiple(&mut rng, 10);        
+
         //let inv:BoundedVec<T,ConstU32<5>> = BoundedVec::truncate_from(inv_dist);
 
     }

@@ -33,8 +33,6 @@ pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-nft = { default-features = false, path="../nft" }
 pallet-finalizer = { default-features = false, path="../finalizer" }
 pallet-share_distributor = { default-features = false, path="../share_distributor" }
-rand = {version = "0.8.5", default-features = false, features=["std_rng","getrandom"]}
-getrandom = { version = "0.2.10", default-features = false, features = ["js"] }
 
 
 [dev-dependencies]
@@ -47,7 +45,6 @@ sp-runtime = { version = "24.0.0", git = "https://github.com/paritytech/polkadot
 default = ["std"]
 std = [
 	"codec/std",
-	"rand/std",
 	"frame-benchmarking/std",
     "sp-std/std",
 	"frame-support/std",
@@ -62,7 +59,6 @@ std = [
 	"pallet-nft/std",
     "pallet-housing_fund/std",
     "pallet-finalizer/std",
-	"getrandom/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
