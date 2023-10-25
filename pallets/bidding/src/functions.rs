@@ -42,9 +42,9 @@ impl<T: Config> Pallet<T> {
     }
 
 
-    /// Randomly choose an investor from among an investors list.
+    /// Randomly choose an investor from among an investors list, & returns investoraccount plus index in the list.
 	/// Returns `None` if there are no investors in the list.
-	fn choose_ticket(mut investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
+	fn choose_investor(mut investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
         let total = investors.len() as u32;
 		if total == 0 {
 			return (None,0)
