@@ -51,6 +51,7 @@ pallet-assets = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "po
 pallet-identity = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
 pallet-nfts = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
 pallet-nfts-runtime-api = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
+pallet-insecure-randomness-collective-flip = { git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0", default-features = false }
 sp-storage = { version = "13.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  tag = "polkadot-v1.1.0" }
 
 
@@ -124,7 +125,8 @@ std = [
 	"pallet-nfts/std",
 	"pallet-nfts-runtime-api/std",
 	"pallet-share_distributor/std",
-	"pallet-bidding/std"
+	"pallet-bidding/std",
+	"pallet-insecure-randomness-collective-flip/std",
 	### add new std
 ]
 runtime-benchmarks = [
@@ -152,7 +154,7 @@ runtime-benchmarks = [
 	"pallet-democracy/runtime-benchmarks",
 	"pallet-nfts/runtime-benchmarks",
 	"pallet-share_distributor/runtime-benchmarks",
-	"pallet-bidding/runtime-benchmarks"
+	"pallet-bidding/runtime-benchmarks",
 	### add new runtime-benchmarks
 ]
 try-runtime = [
@@ -179,7 +181,8 @@ try-runtime = [
 	"pallet-democracy/try-runtime",
 	"pallet-nfts/try-runtime",
 	"pallet-share_distributor/try-runtime",
-	"pallet-bidding/try-runtime"
+	"pallet-bidding/try-runtime",
+	"pallet-insecure-randomness-collective-flip/try-runtime",
 
 	### add new try-runtime
 ]

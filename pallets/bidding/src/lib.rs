@@ -15,6 +15,8 @@ pub use pallet::*;
 //pub use weights::*;
 mod functions;
 mod types;
+pub use functions::*;
+pub use types::*;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_roles as Roles;
 pub use pallet_housing_fund as Houses;
@@ -50,7 +52,10 @@ pub mod pallet {
 	+ Share::Config {
 		/// The overarching runtime event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		
+		/// Something that provides randomness in the runtime.
+		type Randomness: Randomness<Self::Hash, BlockNumberFor<Self>>;
+		#[pallet::constant]
+		type MaxGenerateRandom: Get<u32>;
 	}
 
 	/// A storage item for this pallet.

@@ -289,14 +289,22 @@ impl pallet_roles::Config for Runtime {
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types!{
+	pub const MaxGenerateRandom:u32 =60;
+}
 impl pallet_bidding::Config for Runtime{
 	type RuntimeEvent = RuntimeEvent;
+	type MaxGenerateRandom = MaxGenerateRandom;
+	type Randomness = RandomnessCollectiveFlip;
+	
 }
 
 impl pallet_finalizer::Config for Runtime{
 	type RuntimeEvent = RuntimeEvent;
 	//type WeightInfo = 
 }
+
+impl pallet_insecure_randomness_collective_flip::Config for Runtime {}
 
 impl pallet_council::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -696,6 +704,7 @@ construct_runtime!(
 		FinalizerModule: pallet_finalizer,
 		ShareDistributorModule: pallet_share_distributor,
 		BiddingModule: pallet_bidding,
+		RandomnessCollectiveFlip: pallet_insecure_randomness_collective_flip,
 		// flag add pallet runtime
 	}
 );
