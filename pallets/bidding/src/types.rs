@@ -20,3 +20,38 @@ pub type BalanceOf<T> =
 	<<T as Roles::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
+
+#[derive(Clone,Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
+#[scale_info(skip_type_params(T))]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub struct InvestmentRound<T: Config>{
+	pub round_number:u32,
+	pub investors: BoundedVec<T::AccountId,<T as Houses::Config>::MaxInvestorPerHouse>,
+	pub collection_id: T::NftCollectionId,
+	pub item_id: T::NftItemId,
+	pub when: BlockNumberOf<T>,
+}
+impl<T: Config>InvestmentRound<T>{
+	pub fn new(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> Self{
+		let now = <frame_system::Pallet<T>>::block_number();
+		let round = InvestmentRoundCount::<T>::get().unwrap();
+
+		if !InvestorsList::<T>::contains_key(collection_id,item_id){
+			let list = InvestmentRound::<T>{
+				round_number: round,
+				investors: BoundedVec::new(),
+				collection_id,
+				item_id,
+				when: now
+			};
+			InvestorsList::<T>::insert(collection_id,item_id,list.clone());
+			list
+		} else {
+			let list = InvestorsList::<T>::get(collection_id,item_id).unwrap();
+			list
+		}
+		
+		
+
+	}
+}

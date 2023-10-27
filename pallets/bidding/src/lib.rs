@@ -56,6 +56,10 @@ pub mod pallet {
 		type Randomness: Randomness<Self::Hash, BlockNumberFor<Self>>;
 		#[pallet::constant]
 		type MaxGenerateRandom: Get<u32>;
+		#[pallet::constant]
+		type MaxContribution: Get<Percent>;
+		#[pallet::constant]
+		type MinContribution: Get<Percent>;
 	}
 
 	/// A storage item for this pallet.
@@ -68,8 +72,20 @@ pub mod pallet {
 	pub type Something<T> = StorageValue<_, u32>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn round)]
-	pub type InvestmentRound<T> = StorageValue<_, u32>;
+	#[pallet::getter(fn round_count)]
+	pub type InvestmentRoundCount<T> = StorageValue<_, u32>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn inv_list)]
+	pub type InvestorsList<T:Config> = StorageDoubleMap<
+	_,
+	Blake2_128Concat,
+		T::NftCollectionId,
+		Blake2_128Concat,
+		T::NftItemId,
+		InvestmentRound<T>,
+		OptionQuery,
+	>;
 
 	/// Events that functions in this pallet can emit.
 	///
