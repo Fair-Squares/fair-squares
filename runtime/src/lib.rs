@@ -291,16 +291,16 @@ impl pallet_roles::Config for Runtime {
 
 parameter_types!{
 	pub const MaxGenerateRandom:u32 =60;
-	pub const MinContribution: Percent= Percent::from_percent(5);
-	pub const MaxContribution: Percent= Percent::from_percent(30);
+	pub const MinContributionper: Percent= Percent::from_percent(5);
+	pub const MaxContributionper: Percent= Percent::from_percent(30);
 	
 }
 impl pallet_bidding::Config for Runtime{
 	type RuntimeEvent = RuntimeEvent;
 	type MaxGenerateRandom = MaxGenerateRandom;
 	type Randomness = RandomnessCollectiveFlip;
-	type MinContribution = MinContribution;
-	type MaxContribution = MaxContribution;
+	type MinContributionper = MinContributionper;
+	type MaxContributionper = MaxContributionper;
 	
 }
 

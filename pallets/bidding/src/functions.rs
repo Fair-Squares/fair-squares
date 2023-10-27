@@ -26,9 +26,9 @@ impl<T: Config> Pallet<T> {
 		
         let mut remaining_amount = asset_price.clone();
         //Max contribution from asset Price
-		let max_contribution = T::MaxContribution::get().mul_floor(asset_price.clone());
+		let max_contribution = T::MaxContributionper::get().mul_floor(asset_price.clone());
         //Min contribution from asset price
-		let min_contribution = <T as Config>::MinContribution::get().mul_floor(asset_price);
+		let min_contribution = <T as Config>::MinContributionper::get().mul_floor(asset_price);
         
         //get the list of investors accounts
         let mut investors = vec![];
@@ -65,7 +65,7 @@ impl<T: Config> Pallet<T> {
 
     /// Randomly choose an investor from among an investors list, & returns investoraccount plus index in the list.
 	/// Returns `None` if there are no investors in the list.
-	fn choose_investor(mut investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
+	fn choose_investor(investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
         let total = investors.len() as u32;
 		if total == 0 {
 			return (None,0)

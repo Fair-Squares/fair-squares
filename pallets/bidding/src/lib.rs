@@ -57,9 +57,9 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxGenerateRandom: Get<u32>;
 		#[pallet::constant]
-		type MaxContribution: Get<Percent>;
+		type MaxContributionper: Get<Percent>;
 		#[pallet::constant]
-		type MinContribution: Get<Percent>;
+		type MinContributionper: Get<Percent>;
 	}
 
 	/// A storage item for this pallet.
