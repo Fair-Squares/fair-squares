@@ -314,7 +314,7 @@ pub mod pallet {
 			let origin0 = RawOrigin::Signed(owner);
 			let idx = collection_id.value() as usize;
 			pallet_nfts::Pallet::<T>::burn(origin0.into(), coll_id.into(), item_id.into())?;
-			ItemsCount::<T>::mutate(|x| {
+			ItemsCount::<T>::mutate(|mut x| {
 				x[idx] -= 1;
 			});
 			Ok(())

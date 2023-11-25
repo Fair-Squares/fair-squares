@@ -2,16 +2,19 @@ use fs_node_runtime::{
 	pallet_roles,RolesModuleConfig,AccountId, OnboardingModuleConfig,AuraConfig, BalancesConfig, NftModuleConfig,CouncilConfig,BackgroundCouncilConfig,RuntimeGenesisConfig, GrandpaConfig, Signature, SudoConfig,
 	SystemConfig, WASM_BINARY,
 };
+
 use sc_service::{ChainType, Properties};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_consensus_grandpa::AuthorityId as GrandpaId;
 use sp_core::{sr25519, Pair, Public};
-use sp_runtime::traits::{IdentifyAccount, Verify};
-use sc_telemetry::TelemetryEndpoints;
+use sp_runtime::{traits::{IdentifyAccount, Verify}, AccountId32};
 use hex_literal::hex;
 
 // The URL for the telemetry server.
  const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+ const META: Vec<u8> = vec![];
+ const REP0: Vec<AccountId32> = vec![];
+
 
 /// Specialized `ChainSpec`. This is a specialization of the general Substrate ChainSpec type.
 pub type ChainSpec = sc_service::GenericChainSpec<RuntimeGenesisConfig>;
@@ -115,239 +118,215 @@ pub fn fs_properties() -> Properties {
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
-	Ok(ChainSpec::from_genesis(
-		// Name
-		"Development",
-		// ID
-		"dev",
-		ChainType::Development,
-		move || {
-			testnet_genesis(
-				wasm_binary,
-				// Initial PoA authorities
-				vec![authority_keys_from_seed("Alice")],
-				// Sudo account
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				// Pre-funded accounts
-				get_endowed_accounts_with_balance(),
-				true,
-			)
-		},
-		// Bootnodes
-		vec![],
-		// Telemetry
+	Ok(ChainSpec::builder(
+		WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?,
 		None,
-		// Protocol ID
-		None,
-		None,
-		// Properties
-		Some(fs_properties()),
-		// Extensions
-		None,
+	)
+	.with_name("Development")
+	.with_id("dev")
+	.with_chain_type(ChainType::Development)
+	.with_genesis_config_patch(testnet_genesis(
+		// Initial PoA authorities
+		vec![authority_keys_from_seed("Alice")],
+		// Sudo account
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		// Pre-funded accounts
+		vec![
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+		],
+		true,
 	))
+	.build())
 }
 
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
-	Ok(ChainSpec::from_genesis(
-		// Name
-		"Local Testnet",
-		// ID
-		"local_testnet",
-		ChainType::Local,
-		move || {
-			testnet_genesis(
-				wasm_binary,
-				// Initial PoA authorities
-				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
-				// Sudo account
-				get_account_id_from_seed::<sr25519::Public>("Alice"),
-				// Pre-funded accounts
-				get_endowed_accounts_with_balance(),
-				true,
-			)
-		},
-		// Bootnodes
-		vec![],
-		// Telemetry
+	Ok(ChainSpec::builder(
+		WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?,
 		None,
-		// Protocol ID
-		None,		
-		None,
-		// Properties
-		Some(fs_properties()),
-		// Extensions
-		None,
+	)
+	.with_name("Local Testnet")
+	.with_id("local_testnet")
+	.with_chain_type(ChainType::Local)
+	.with_genesis_config_patch(testnet_genesis(
+		// Initial PoA authorities
+		vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
+		// Sudo account
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		// Pre-funded accounts
+		vec![
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			get_account_id_from_seed::<sr25519::Public>("Dave"),
+			get_account_id_from_seed::<sr25519::Public>("Eve"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+		],
+		true,
 	))
+	.build())
 }
 
 pub fn square_one_testnet() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
-	Ok(ChainSpec::from_genesis(
-		// Name
-		"Fair Squares testnet",
-		// ID
-		"square-one",
-		ChainType::Live,
-		move || {
-			square_one(
-				wasm_binary,
-				// Initial PoA authorities
-				vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
-				// Sudo account
-				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
-				// Pre-funded accounts
-				testnet_endowed_accounts(),
-				true,
-			)
-		},
-		// Bootnodes
-		vec![],
-		// Telemetry
-		Some(
-			TelemetryEndpoints::new(vec![(STAGING_TELEMETRY_URL.to_string(), 0)])
-				.expect("Polkadot telemetry url is valid; qed"),
-		),
+	Ok(ChainSpec::builder(
+		WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?,
 		None,
-		None,
-		// Properties
-		Some(fs_properties()),
-		// Extensions
-		None,
+	)
+	.with_name("Local Testnet")
+	.with_id("local_testnet")
+	.with_chain_type(ChainType::Local)
+	.with_genesis_config_patch(testnet_genesis(
+		// Initial PoA authorities
+		vec![authority_keys_from_seed("Alice"), authority_keys_from_seed("Bob")],
+		// Sudo account
+		get_account_id_from_seed::<sr25519::Public>("Alice"),
+		// Pre-funded accounts
+		vec![
+			get_account_id_from_seed::<sr25519::Public>("Alice"),
+			get_account_id_from_seed::<sr25519::Public>("Bob"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie"),
+			get_account_id_from_seed::<sr25519::Public>("Dave"),
+			get_account_id_from_seed::<sr25519::Public>("Eve"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+			get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+			get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+		],
+		true,
 	))
+	.build())
 }
 
 
 fn square_one(
-	wasm_binary: &[u8],
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<(AccountId, u128)>,
 	_enable_println: bool,
-) -> RuntimeGenesisConfig {
-	RuntimeGenesisConfig {
-		system: SystemConfig {
-			// Add Wasm runtime to storage.
-			code: wasm_binary.to_vec(), ..Default::default()
-		},
-		balances: BalancesConfig {
-			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: endowed_accounts,
-		},
-		aura: AuraConfig {
-			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-		},
-		grandpa: GrandpaConfig {
-			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(), ..Default::default()
-		},
-		sudo: SudoConfig {
-			// Assign network admin rights.
-			key: Some(root_key.clone()),
-		},
-		transaction_payment: Default::default(),
+) -> serde_json::Value {
+	serde_json::json!({
 
-		roles_module: RolesModuleConfig {
-			new_admin: Some(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into()),
-			representatives: vec![
+		"system": {},
+		"balances": {
+			// Configure endowed accounts with initial balance of 1 << 60.
+			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1u64 << 60)).collect::<Vec<_>>(),
+		},
+		"aura": {
+			"authorities": initial_authorities.iter().map(|x| (x.0.clone())).collect::<Vec<_>>(),
+		},
+		"grandpa": {
+			"authorities": initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect::<Vec<_>>(),
+		},
+		"sudo": {
+			// Assign network admin rights.
+			"key": Some(root_key.clone()),
+		},
+		
+
+		"roles_module": {
+			"new_admin": Some(AccountId32::from(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"])),
+			"representatives": REP0,
+		},
+		"nft_module": {
+			"owner": Some(root_key.clone()),
+			"collection_id": Some(0),
+			"created_by": Some(pallet_roles::Accounts::SERVICER),
+			"metadata": META,
+		},
+		"onboarding_module":{
+			"root":Some(root_key),
+		},
+		//"democracy": Default::default(),
+		//"treasury": Default::default(),
+		"council": {
+			"members": vec![
+				AccountId32::from(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"]),
+				AccountId32::from(hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"]),
+				AccountId32::from(hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"]),
 			],
+			//"phantom": Default::default(),
 		},
-		nft_module: NftModuleConfig {
-			owner: Some(root_key.clone()),
-			collection_id: Some(3),
-			created_by: Some(pallet_roles::Accounts::SERVICER),
-			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
-		},
-		onboarding_module:OnboardingModuleConfig{
-			root:Some(root_key),
-		},
-		democracy: Default::default(),
-		treasury: Default::default(),
-		council: CouncilConfig {
-			members: vec![
+		"background_council": {
+			"members": vec![
 				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
-				hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
-				hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"].into(),
+				get_account_id_from_seed::<sr25519::Public>("Alice"),
+				get_account_id_from_seed::<sr25519::Public>("Charlie"),
 			],
-			phantom: Default::default(),
+			//"phantom": Default::default(),
 		},
-		background_council: BackgroundCouncilConfig {
-			members: vec![
-				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
-				hex!["184a89cbb6aa857b41c98841be365ab3947ef1f729aa6fe0f6a1322f6391945b"].into(),
-				hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"].into(),
-			],
-			phantom: Default::default(),
-		},
-		assets: Default::default(),
-	}
+		//"assets": Default::default()
+	})
 }
 
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
-	wasm_binary: &[u8],
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
 	root_key: AccountId,
-	endowed_accounts: Vec<(AccountId, u128)>,
+	endowed_accounts: Vec<AccountId>,
 	_enable_println: bool,
-) -> RuntimeGenesisConfig {
-	RuntimeGenesisConfig {
-		system: SystemConfig {
-			// Add Wasm runtime to storage.
-			code: wasm_binary.to_vec(), ..Default::default()
-		},
-		balances: BalancesConfig {
-			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: endowed_accounts,
-			..Default::default()
-		},
-		aura: AuraConfig {
-			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-		},
-		grandpa: GrandpaConfig {
-			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
-			..Default::default()
-		},
-		sudo: SudoConfig {
-			// Assign network admin rights.
-			key: Some(root_key.clone()),
-		},
-		transaction_payment: Default::default(),
+) -> serde_json::Value {
+	serde_json::json!({
 
-		roles_module: RolesModuleConfig {
-			new_admin: Some(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into()),
-			representatives: vec![],
+		"system": {},
+		"balances": {
+			// Configure endowed accounts with initial balance of 1 << 60.
+			"balances": endowed_accounts.iter().cloned().map(|k| (k, 1u64 << 60)).collect::<Vec<_>>(),
 		},
-		nft_module: NftModuleConfig {
-			owner: Some(root_key.clone()),
-			collection_id: Some(0),
-			created_by: Some(pallet_roles::Accounts::SERVICER),
-			metadata: Some(b"metadata".to_vec().try_into().unwrap()),
+		"aura": {
+			"authorities": initial_authorities.iter().map(|x| (x.0.clone())).collect::<Vec<_>>(),
 		},
-		onboarding_module:OnboardingModuleConfig{
-			root:Some(root_key),
+		"grandpa": {
+			"authorities": initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect::<Vec<_>>(),
 		},
-		democracy: Default::default(),
-		treasury: Default::default(),
-		council: CouncilConfig {
-			members: vec![
+		"sudo": {
+			// Assign network admin rights.
+			"key": Some(root_key.clone()),
+		},
+		
+
+		"roles_module": {
+			"new_admin": Some(AccountId32::from(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"])),
+			"representatives": REP0,
+		},
+		"nft_module": {
+			"owner": Some(root_key.clone()),
+			"collection_id": Some(0),
+			"created_by": Some(pallet_roles::Accounts::SERVICER),
+			"metadata": META,
+		},
+		"onboarding_module":{
+			"root":Some(root_key),
+		},
+		//"democracy": Default::default(),
+		//"treasury": Default::default(),
+		"council": {
+			"members": vec![
 				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Charlie"),
 			],
-			phantom: Default::default(),
+			//"phantom": Default::default(),
 		},
-		background_council: BackgroundCouncilConfig {
-			members: vec![
+		"background_council": {
+			"members": vec![
 				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				get_account_id_from_seed::<sr25519::Public>("Charlie"),
 			],
-			phantom: Default::default(),
+			//"phantom": Default::default(),
 		},
-		assets: Default::default()
-	}
+		//"assets": Default::default()
+	})
 }

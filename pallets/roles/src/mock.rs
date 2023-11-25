@@ -21,7 +21,7 @@ frame_support::construct_runtime!(
 	pub enum Test 
 	{
 		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
-		RolesModule: pallet_roles::{Pallet, Call, Storage, Event<T>, Config<T>},
+		RolesModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
 		Collective: pallet_collective::<Instance2>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
@@ -98,6 +98,7 @@ impl pallet_balances::Config for Test {
 	type FreezeIdentifier = ();
 	type MaxHolds = ();
 	type MaxFreezes = ();
+	type RuntimeFreezeReason = ();
 }
 
 //---implementing pallet sudo---------

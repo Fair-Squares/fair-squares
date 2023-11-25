@@ -10,7 +10,7 @@ pub use frame_support::{
 	traits::{
 		defensive_prelude::*,
 		schedule::{v3::Named as ScheduleNamed, DispatchTime},
-		Bounded, Currency, EnsureOrigin, Get, Hash as PreimageHash, LockIdentifier,
+		Bounded, Currency, EnsureOrigin, Get,LockIdentifier,
 		LockableCurrency, OnUnbalanced, QueryPreimage, ReservableCurrency, StorePreimage,
 		WithdrawReasons,tokens::nonfungibles::*, BalanceStatus, ExistenceRequirement,
 		UnfilteredDispatchable,
@@ -33,7 +33,7 @@ pub type BalanceOf<T> =
 	pub type BalanceOf1<T> =
 	<<T as DEM::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 pub type CallOf<T> = <T as frame_system::Config>::RuntimeCall;
-pub type BoundedCallOf<T> = Bounded<CallOf<T>>;
+pub type BoundedCallOf<T> = Bounded<CallOf<T>,<T as frame_system::Config>::Hashing>;
 
 pub use Nft::ItemInfoOf;
 

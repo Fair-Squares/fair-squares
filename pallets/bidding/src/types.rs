@@ -21,9 +21,9 @@ pub type BalanceOf<T> =
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 
-#[derive(Clone,Encode, Decode, Default, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
+#[derive(Clone,Encode, Decode, Default, RuntimeDebug,PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
-#[cfg_attr(feature = "std", derive(Debug))]
+//#[cfg_attr(feature = "std", derive(Debug))]
 pub struct InvestmentRound<T: Config>{
 	pub round_number:u32,
 	pub investors: BoundedVec<T::AccountId,<T as Houses::Config>::MaxInvestorPerHouse>,
