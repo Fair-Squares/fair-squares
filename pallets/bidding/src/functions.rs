@@ -36,13 +36,13 @@ impl<T: Config> Pallet<T> {
         investors.retain(|x|{
             let status = Houses::Pallet::<T>::contributions(x.clone()).unwrap();
             let contribution = status.contributed_balance;
-            //user contributed more than 5% of asset_price
+            //user contributed more than 5% of asset_price to housing fund
             contribution > min_contribution //should be minimun contribution calculated from asset price.
             //ToDo: We also want to only include users that did not contributed to a purchase for y_blocks (to be defined). 
 
         });
-		//Randomly select 1/3 of max investors per house
-		let init_number = <T as Houses::Config>::MaxInvestorPerHouse::get().saturating_div(3);
+		//Randomly select max number of investors per house
+		let init_number = <T as Houses::Config>::MaxInvestorPerHouse::get();
 		let mut inv_vec = Vec::new();
 		for _i in 0..init_number+1{
 			let iv = Self::choose_investor(investors.clone());
@@ -50,7 +50,24 @@ impl<T: Config> Pallet<T> {
 			inv_vec.push(iv.0.unwrap());
 			
 		}
-		round.investors = BoundedVec::truncate_from(inv_vec);
+		let mut final_list = Vec::new();
+		for investor in inv_vec{
+			//check if investor fund is above max contrib
+			let status = Houses::Pallet::<T>::contributions(investor.clone()).unwrap();
+			let fund = status.contributed_balance;
+			if fund>max_contribution{
+				
+				if remaining_amount>max_contribution{
+				remaining_amount = remaining_amount.saturating_sub(max_contribution);
+				final_list.push((investor,max_contribution));
+			} else {
+				final_list.push((investor,remaining_amount));
+				remaining_amount = Zero::zero();
+				}
+
+			}
+		}
+		//round.investors = BoundedVec::truncate_from(inv_vec);
 
 		
         

@@ -372,7 +372,7 @@ parameter_types! {
 	pub const MinContribution: u128 = 5000 * DOLLARS;
 	pub const FundThreshold: u128 = 100_000 * DOLLARS;
 	pub const MaxFundContribution: u128 = 20_000 * DOLLARS;
-	pub const MaxInvestorPerHouse: u32 = 10;
+	pub const MaxInvestorPerHouse: u32 = 20;
 	pub const HousingFundPalletId: PalletId = PalletId(*b"housfund");
 }
 
