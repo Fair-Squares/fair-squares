@@ -26,7 +26,7 @@ pub type BlockNumberOf<T> = BlockNumberFor<T>;
 //#[cfg_attr(feature = "std", derive(Debug))]
 pub struct InvestmentRound<T: Config>{
 	pub round_number:u32,
-	pub investors: BoundedVec<T::AccountId,<T as Houses::Config>::MaxInvestorPerHouse>,
+	pub investors: BoundedVec<(T::AccountId,BalanceOf<T>),<T as Houses::Config>::MaxInvestorPerHouse>,
 	pub collection_id: T::NftCollectionId,
 	pub item_id: T::NftItemId,
 	pub when: BlockNumberOf<T>,

@@ -13,7 +13,7 @@ pub use pallet_roles::vec;
 
 impl<T: Config> Pallet<T> {
     
-    pub fn initial_investors_list(collection_id: T::NftCollectionId, item_id: T::NftItemId){
+    pub fn investors_list(collection_id: T::NftCollectionId, item_id: T::NftItemId){
 		//Create new round struct/Increase round count  
 		let counter = Self::round_count().unwrap();		
 		InvestmentRoundCount::<T>::put(counter.saturating_add(1));
@@ -26,9 +26,9 @@ impl<T: Config> Pallet<T> {
 		
         let mut remaining_amount = asset_price.clone();
         //Max contribution from asset Price
-		let max_contribution = T::MaxContributionper::get().mul_floor(asset_price.clone());
+		let max_contribution = T::MaxContributionper::get()*asset_price.clone();
         //Min contribution from asset price
-		let min_contribution = <T as Config>::MinContributionper::get().mul_floor(asset_price);
+		let min_contribution = <T as Config>::MinContributionper::get()*asset_price;
         
         //get the list of investors accounts
         let mut investors = vec![];
@@ -51,10 +51,28 @@ impl<T: Config> Pallet<T> {
 			
 		}
 		let mut final_list = Vec::new();
+		let mut shares = Houses::Pallet::<T>::get_contribution_share();
+		//We get users shares
+		shares.retain(|x|{
+			inv_vec.contains(&x.account_id)
+		});
+		
 		for investor in inv_vec{
-			//check if investor fund is above max contrib
 			let status = Houses::Pallet::<T>::contributions(investor.clone()).unwrap();
-			let fund = status.contributed_balance;
+			let mut fund = status.contributed_balance;
+			//check if investor fund is above max contrib
+			for share in shares.clone(){
+				//We get user's share in the fund and recalculate contribution to the asset purchase
+				if investor == share.account_id{
+					if share.share< <T as Config>::MinContributionper::get(){
+						fund = <T as Config>::MinContributionper::get()*fund;
+					} else{
+						fund = share.share*fund;
+					}
+					
+				}
+			}
+			
 			if fund>max_contribution{
 				
 				if remaining_amount>max_contribution{
@@ -65,17 +83,27 @@ impl<T: Config> Pallet<T> {
 				remaining_amount = Zero::zero();
 				}
 
+			}else{
+				if remaining_amount>fund{
+					remaining_amount = remaining_amount.saturating_sub(fund);
+					final_list.push((investor,fund));
+				} else {
+					final_list.push((investor,remaining_amount));
+					remaining_amount = Zero::zero();
+					}
 			}
 		}
-		//round.investors = BoundedVec::truncate_from(inv_vec);
+
+		round.investors = BoundedVec::truncate_from(final_list);
+
+		InvestorsList::<T>::mutate(collection_id,item_id,|val|{
+			*val = Some(round);
+		})
+		
+
 
 		
-        
 
-        //Get a random sample of qualified investors
-        //Build a sample of 10 investors
-
-        //let inv:BoundedVec<T,ConstU32<5>> = BoundedVec::truncate_from(inv_dist);
 
     }
 
