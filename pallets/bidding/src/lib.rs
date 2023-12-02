@@ -60,6 +60,8 @@ pub mod pallet {
 		type MaxContributionper: Get<Percent>;
 		#[pallet::constant]
 		type MinContributionper: Get<Percent>;
+		#[pallet::constant]
+		type NewAssetScanPeriod: Get<BlockNumberFor<Self>>;
 	}
 
 	/// A storage item for this pallet.
@@ -107,6 +109,64 @@ pub mod pallet {
 			/// The account who set the new value.
 			who: T::AccountId,
 		},
+		/// Not enough fund for the house
+		HousingFundNotEnough(
+			T::NftCollectionId,
+			T::NftItemId,
+			BalanceOf<T>,
+			BlockNumberOf<T>,
+		),
+
+		/// Bidding on the house is successful
+		HouseBiddingSucceeded(
+			T::NftCollectionId,
+			T::NftItemId,
+			BalanceOf<T>,
+			BlockNumberOf<T>,
+		),
+
+		/// Bidding on the house failed
+		HouseBiddingFailed(
+			T::NftCollectionId,
+			T::NftItemId,
+			BalanceOf<T>,
+			BlockNumberOf<T>,
+			BoundedVec<UserBalance<T> ,<T as Houses::Config>::MaxInvestorPerHouse>,
+		),
+		/// Failed to assemble a list of investors for an onboarded asset
+		FailedToAssembleInvestors(
+			T::NftCollectionId,
+			T::NftItemId,
+			BalanceOf<T>,
+			BlockNumberOf<T>,
+		),
+		/// No new onboarded houses found
+		NoHousesOnboardedFound(BlockNumberOf<T>),
+		/// Selected investors don't have enough fund to bid for the asset
+		NotEnoughAmongEligibleInvestors(
+			T::NftCollectionId,
+			T::NftItemId,
+			BalanceOf<T>,
+			BlockNumberOf<T>,
+		),
+		/// No new finalised houses found
+		NoHousesFinalisedFound(BlockNumberOf<T>),
+		/// A finalised house has been distributed among investors
+		SellAssetToInvestorsSuccessful(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
+
+		/// A finalised house failed to be distributed among investors
+		SellAssetToInvestorsFailed(T::NftCollectionId, T::NftItemId, BlockNumberOf<T>),
+
+		/// Processing an asset
+		ProcessingAsset(T::NftCollectionId, T::NftItemId, BalanceOf<T>),
+
+		/// Potential owners list successfully created
+		InvestorListCreationSuccessful(
+			T::NftCollectionId,
+			T::NftItemId,
+			BalanceOf<T>,
+			BoundedVec<UserBalance<T> ,<T as Houses::Config>::MaxInvestorPerHouse>,
+		),
 	}
 
 	/// Errors that can be returned by this pallet.
@@ -123,6 +183,14 @@ pub mod pallet {
 		NoneValue,
 		/// There was an attempt to increment the value in storage over `u32::MAX`.
 		StorageOverflow,
+	}
+
+	#[pallet::hooks]
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		/// Weight: see `begin_block`
+		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+			Self::begin_block(n)
+		}
 	}
 
 	/// The pallet's dispatchable functions ([`Call`]s).

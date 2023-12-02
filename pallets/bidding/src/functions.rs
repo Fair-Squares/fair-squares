@@ -9,11 +9,11 @@ pub use frame_support::{
 };
 pub use Onboarding::Zero;
 pub use pallet_roles::vec;
-
+use enum_iterator::all;
 
 impl<T: Config> Pallet<T> {
     
-    pub fn investors_list(collection_id: T::NftCollectionId, item_id: T::NftItemId){
+    pub fn investors_list(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> InvestmentRound<T>{
 		//Create new round struct/Increase round count  
 		let counter = Self::round_count().unwrap();		
 		InvestmentRoundCount::<T>::put(counter.saturating_add(1));
@@ -97,11 +97,11 @@ impl<T: Config> Pallet<T> {
 		round.investors = BoundedVec::truncate_from(final_list);
 
 		InvestorsList::<T>::mutate(collection_id,item_id,|val|{
-			*val = Some(round);
-		})
+			*val = Some(round.clone());
+		});
 		
 
-
+		round
 		
 
 
@@ -143,6 +143,165 @@ impl<T: Config> Pallet<T> {
 			.expect("secure hashes should always be bigger than u32; qed");
 		random_number
 	}
+
+	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
+		let houses = Onboarding::Pallet::<T>::get_onboarded_houses();
+		let block_number = <frame_system::Pallet<T>>::block_number();
+
+		if houses.is_empty() {
+			Self::deposit_event(Event::NoHousesOnboardedFound(block_number));
+			return Ok(().into())
+		}
+
+		for (collection_id, item_id, house) in houses.into_iter() {
+			// Checks on price format
+			if house.price.is_none() {
+				continue
+			}
+			let amount_wrap= house.price;
+			if amount_wrap.is_none() {
+				continue
+			}
+			let amount = amount_wrap.unwrap();
+			Self::deposit_event(Event::ProcessingAsset(collection_id, item_id, amount));
+
+			// Check if Housing Fund has enough fund for the asset
+			if !Houses::Pallet::<T>::check_available_fund(amount) {
+				Self::deposit_event(Event::HousingFundNotEnough(
+					collection_id,
+					item_id,
+					amount,
+					block_number,
+				));
+				continue
+			}
+			let investor_round = Self::investors_list(collection_id,item_id);
+			let investor_shares = investor_round.investors;
+			if investor_shares.is_empty() {
+				Self::deposit_event(Event::FailedToAssembleInvestors(
+					collection_id,
+					item_id,
+					amount,
+					block_number,
+				));
+				continue
+			}
+
+			Self::deposit_event(Event::InvestorListCreationSuccessful(
+				collection_id,
+				item_id,
+				amount,
+				investor_shares.clone(),
+			));
+			let result = Houses::Pallet::<T>::house_bidding(
+				collection_id,
+				item_id,
+				amount,
+				investor_shares.clone().to_vec(),
+			);
+
+			match result {
+				Ok(_) => {
+					Self::deposit_event(Event::HouseBiddingSucceeded(
+						collection_id,
+						item_id,
+						amount,
+						block_number,
+					));
+
+					let collections = all::<Nft::PossibleCollections>().collect::<Vec<_>>();
+					let mut possible_collection = Nft::PossibleCollections::HOUSES;
+					for item in collections.iter() {
+						let value: T::NftCollectionId = item.value().into();
+						if value == collection_id {
+							possible_collection = *item;
+							break
+						}
+					}
+
+					let owner: T::AccountId =
+						Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
+
+					Onboarding::Pallet::<T>::change_status(
+						frame_system::RawOrigin::Signed(owner).into(),
+						possible_collection,
+						item_id,
+						Onboarding::Status::FINALISING,
+					)
+					.ok();
+				},
+				Err(_e) => {
+					Self::deposit_event(Event::HouseBiddingFailed(
+						collection_id,
+						item_id,
+						amount,
+						block_number,
+						investor_shares,
+					));
+					continue
+				},
+			}
+
+		}
+
+		
+		Ok(().into())
+	}
+
+	/// Process finalised assets to distribute tokens among investors for assets
+	pub fn process_finalised_assets() -> DispatchResultWithPostInfo {
+		// We retrieve houses with finalised status
+		let houses = Onboarding::Pallet::<T>::get_finalised_houses();
+
+		if houses.is_empty() {
+			// If no houses are found, an event is raised
+			let block = <frame_system::Pallet<T>>::block_number();
+			Self::deposit_event(Event::NoHousesFinalisedFound(block));
+			return Ok(().into())
+		}
+
+		let houses_iter = houses.iter();
+
+		// For each finalised houses, the ownership transfer is executed
+		for item in houses_iter {
+			let result = Share::Pallet::<T>::create_virtual(
+				frame_system::RawOrigin::Root.into(),
+				item.0,
+				item.1,
+			);
+
+			let block_number = <frame_system::Pallet<T>>::block_number();
+			match result {
+				Ok(_) => {
+					Self::deposit_event(Event::SellAssetToInvestorsSuccessful(
+						item.0,
+						item.1,
+						block_number,
+					));
+				},
+				Err(_e) => {
+					Self::deposit_event(Event::SellAssetToInvestorsFailed(
+						item.0,
+						item.1,
+						block_number,
+					));
+				},
+			}
+		}
+
+		Ok(().into())
+	}
+
+	pub fn begin_block(now: BlockNumberOf<T>) -> Weight {
+		let max_block_weight = T::BlockWeights::get().max_block;
+
+		if (now % T::NewAssetScanPeriod::get()).is_zero() {
+			Self::process_onboarded_assets().ok();
+			Self::process_finalised_assets().ok();
+		}
+
+		max_block_weight
+	} 
 
 
 }
