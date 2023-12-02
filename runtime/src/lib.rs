@@ -309,7 +309,7 @@ parameter_types!{
 	pub const MaxGenerateRandom:u32 =60;
 	pub const MinContributionper: Percent= Percent::from_percent(5);
 	pub const MaxContributionper: Percent= Percent::from_percent(30);
-	
+	pub const NewAssetScanPeriod: u32 = EPOCH_DURATION_IN_BLOCKS;
 }
 impl pallet_bidding::Config for Runtime{
 	type RuntimeEvent = RuntimeEvent;
@@ -317,6 +317,7 @@ impl pallet_bidding::Config for Runtime{
 	type Randomness = RandomnessCollectiveFlip;
 	type MinContributionper = MinContributionper;
 	type MaxContributionper = MaxContributionper;
+	type NewAssetScanPeriod = NewAssetScanPeriod;
 	
 }
 
