@@ -2990,6 +2990,7 @@ dependencies = [
  "pallet-nfts",
  "pallet-nfts-runtime-api",
  "pallet-onboarding",
+ "pallet-payment",
  "pallet-preimage",
  "pallet-roles",
  "pallet-scheduler",
@@ -4682,9 +4683,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.19"
+version = "0.4.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b06a4cde4c0f271a446782e3eff8de789548ce57dbc8eca9292c27f4a42004b4"
+checksum = "b5e6163cb8c49088c2c36f57875e58ccd8c87c7427f7fbd50ea6710b2f3f2e8f"
 
 [[package]]
 name = "lru"
@@ -5729,6 +5730,30 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 8.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=master)",
+]
+
+[[package]]
+name = "pallet-payment"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-housing_fund",
+ "pallet-identity",
+ "pallet-nft",
+ "pallet-nfts",
+ "pallet-roles",
+ "pallet-share_distributor",
+ "parity-scale-codec",
+ "scale-info",
  "sp-core",
  "sp-io",
  "sp-runtime",
