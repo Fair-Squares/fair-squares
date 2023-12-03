@@ -1,5 +1,6 @@
 pub use super::*;
-use codec::{Decode, Encode, HasCompact, MaxEncodedLen};
+use codec::HasCompact;
+pub use sp_std::vec::Vec;
 pub use frame_support::{
 	assert_ok,
 	dispatch::{DispatchResult, DispatchResultWithPostInfo},
