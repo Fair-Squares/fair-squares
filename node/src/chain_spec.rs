@@ -99,6 +99,9 @@ fn testnet_endowed_accounts() -> Vec<(AccountId,u128)> {
 
 		//5Ferj4SHg8mtUGxWHuyjhciTCmh7TAyhw8pSjFtxRAJDynpk 
 		hex!["9ec0e63219270075ffd546e4fa39b4027216a9de5ed16b38bc54d66fe09b8d47"].into(),
+
+		//5CvXpHXyMb1giW8SbzSMbYNRm6AuArXiUyrXc5SoCzYb9sFE 
+		hex!["2600780aeb118662cd50452e2c2d6848e3ebe673a4b76dbac9355b50f11bc716"].into(),
 	];
 	let accounts_with_balance: Vec<(AccountId, u128)> =
 		accounts.iter().cloned().map(|k| (k, 1 << 60)).collect();
