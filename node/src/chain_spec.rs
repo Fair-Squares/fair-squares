@@ -1,6 +1,5 @@
 use fs_node_runtime::{
-	pallet_roles,RolesModuleConfig,AccountId, OnboardingModuleConfig,AuraConfig, BalancesConfig, NftModuleConfig,CouncilConfig,BackgroundCouncilConfig,RuntimeGenesisConfig, GrandpaConfig, Signature, SudoConfig,
-	SystemConfig, WASM_BINARY,
+	pallet_roles,AccountId, RuntimeGenesisConfig, Signature, WASM_BINARY,
 };
 
 use sc_service::{ChainType, Properties};
@@ -11,7 +10,7 @@ use sp_runtime::{traits::{IdentifyAccount, Verify}, AccountId32};
 use hex_literal::hex;
 
 // The URL for the telemetry server.
- const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
+ //const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
  const META: Vec<u8> = vec![];
  const REP0: Vec<AccountId32> = vec![];
 

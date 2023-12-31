@@ -207,11 +207,13 @@ impl<T: Config> Pallet<T> {
 		let proposal = Self::get_formatted_call(proposal0.into()).unwrap();
 
 		
-						
+		let _hash = T::Hashing::hash_of(&proposal);
+
 		let proposal_len:u32 = proposal.using_encoded(|p| p.len() as u32);
 		
 		let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
 		let council_origin= Self::get_origin(council_member);
+		
 
 		//Start Collective refererendum
 		Coll::Pallet::<T,Instance2>::propose(
@@ -222,6 +224,9 @@ impl<T: Config> Pallet<T> {
 		).ok();
 		let mut index:u32 = Coll::Pallet::<T,Instance2>::proposal_count();
 		index = index.saturating_sub(1);
+
+
+		//debug_assert!(Some(proposal.clone())==Coll::Pallet::<T,Instance2>::proposal_of(&hash));
 
 		//Update proposal index and hash
 		let proposal_hashes =  Coll::Pallet::<T,Instance2>::proposals().into_iter();

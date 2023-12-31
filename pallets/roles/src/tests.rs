@@ -40,10 +40,10 @@ fn setting_roles(){
 		
 		//Check that collective referendum started
 		//assert_eq!(Collective::proposal_count(),1); 
+		//assert_eq!(Collective::proposals().len(),1);
 		
-		/*
 
-		assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[0].clone()),BOB,true));
+		/*assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[0].clone()),BOB,true));
 		assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[1].clone()),BOB,true));
 		assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[2].clone()),BOB,true));
 		assert_ok!(RolesModule::council_close(RuntimeOrigin::signed(council[2].clone()),BOB));

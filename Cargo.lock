@@ -2973,6 +2973,7 @@ dependencies = [
  "frame-try-runtime",
  "node-primitives",
  "pallet-asset-rate",
+ "pallet-asset_management",
  "pallet-assets",
  "pallet-aura",
  "pallet-balances",
@@ -5395,6 +5396,22 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-core",
+ "sp-runtime",
+ "sp-std 8.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=master)",
+]
+
+[[package]]
+name = "pallet-asset_management"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "num-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std 8.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=master)",
 ]

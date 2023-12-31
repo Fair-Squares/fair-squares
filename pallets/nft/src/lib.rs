@@ -45,16 +45,11 @@ use frame_support::{
 	transactional, BoundedVec,
 };
 pub use frame_system::{ensure_root, ensure_signed};
-use pallet_nfts::DestroyWitness;
 
 pub use functions::*;
 pub use pallet_roles::Config as Roles;
 pub use pallet_nfts::Config as Nfts;
-use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, StaticLookup, Zero},
-	DispatchError,
-};
-use sp_std::boxed::Box;
+use sp_runtime::traits::{AtLeast32BitUnsigned, StaticLookup, Zero};
 pub use types::*;
 //use weights::WeightInfo;
 
@@ -314,7 +309,7 @@ pub mod pallet {
 			let origin0 = RawOrigin::Signed(owner);
 			let idx = collection_id.value() as usize;
 			pallet_nfts::Pallet::<T>::burn(origin0.into(), coll_id.into(), item_id.into())?;
-			ItemsCount::<T>::mutate(|mut x| {
+			ItemsCount::<T>::mutate(|x| {
 				x[idx] -= 1;
 			});
 			Ok(())

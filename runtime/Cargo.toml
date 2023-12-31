@@ -76,6 +76,7 @@ pallet-finalizer = { version = "4.0.0-dev", default-features = false, path = "..
 pallet-share_distributor = { version = "4.0.0-dev", default-features = false, path = "../pallets/share_distributor" }
 pallet-bidding = { version = "4.0.0-dev", default-features = false, path = "../pallets/bidding" }
 pallet-payment = { version = "4.0.0-dev", default-features = false, path = "../pallets/payment" }
+pallet-asset_management = { version = "4.0.0-dev", default-features = false, path = "../pallets/asset_management" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/polkadot-sdk", optional = true ,  branch = "master" }
@@ -117,6 +118,7 @@ std = [
 	"sp-version/std",
 	"substrate-wasm-builder",
 	"pallet-roles/std",
+	"pallet-asset_management/std",
 	"pallet-payment/std",
 	"pallet-finalizer/std",
 	"pallet-onboarding/std",

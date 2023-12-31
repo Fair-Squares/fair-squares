@@ -36,7 +36,7 @@ mod tests;
 mod benchmarking;*/
 
 //pub mod weights;
-use frame_system::WeightInfo;
+
 
 #[frame_support::pallet]
 pub mod pallet {

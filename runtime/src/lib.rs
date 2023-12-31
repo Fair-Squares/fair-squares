@@ -14,7 +14,7 @@ use pallet_nfts::PalletFeatures;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use frame_support::traits::{fungible::HoldConsideration,LinearStoragePrice};
 
-use node_primitives::{AccountIndex,  Moment};
+use node_primitives::AccountIndex;
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{
@@ -58,6 +58,7 @@ pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
 pub use pallet_roles;
+pub use pallet_asset_management;
 pub use pallet_payment;
 pub use pallet_finalizer;
 pub use pallet_housing_fund;
@@ -304,6 +305,11 @@ impl pallet_roles::Config for Runtime {
 		pallet_collective::EnsureProportionAtLeast<AccountId, BackgroundCollective, 1, 2>;
 	
 	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_asset_management::Config for Runtime{
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = ();
 }
 
 pub struct PaymentsDisputeResolver;
@@ -785,6 +791,7 @@ construct_runtime!(
 		AssetRate: pallet_asset_rate,
 		Sudo: pallet_sudo,
 		RolesModule: pallet_roles,
+		AssetManagementModule: pallet_asset_management,
 		HousingFundModule: pallet_housing_fund,
 		Identity: pallet_identity,
 		Utility: pallet_utility,
