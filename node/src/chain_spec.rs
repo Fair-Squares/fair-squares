@@ -234,17 +234,17 @@ fn square_one(
 		},
 		
 
-		"roles_module": {
-			"new_admin": Some(AccountId32::from(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"])),
+		"rolesModule": {
+			"newAdmin": Some(AccountId32::from(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"])),
 			"representatives": REP0,
 		},
-		"nft_module": {
+		"nftModule": {
 			"owner": Some(root_key.clone()),
-			"collection_id": Some(0),
-			"created_by": Some(pallet_roles::Accounts::SERVICER),
+			"collectionId": Some(0),
+			"createdBy": Some(pallet_roles::Accounts::SERVICER),
 			"metadata": META,
 		},
-		"onboarding_module":{
+		"onboardingModule":{
 			"root":Some(root_key),
 		},
 		//"democracy": Default::default(),
@@ -257,7 +257,7 @@ fn square_one(
 			],
 			//"phantom": Default::default(),
 		},
-		"background_council": {
+		"backgroundCouncil": {
 			"members": vec![
 				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
@@ -295,17 +295,17 @@ fn testnet_genesis(
 		},
 		
 
-		"roles_module": {
-			"new_admin": Some(AccountId32::from(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"])),
+		"rolesModule": {
+			"newAdmin": Some(AccountId32::from(hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"])),
 			"representatives": REP0,
 		},
-		"nft_module": {
+		"nftModule": {
 			"owner": Some(root_key.clone()),
-			"collection_id": Some(0),
-			"created_by": Some(pallet_roles::Accounts::SERVICER),
+			"collectionId": Some(0),
+			"createdBy": Some(pallet_roles::Accounts::SERVICER),
 			"metadata": META,
 		},
-		"onboarding_module":{
+		"onboardingModule":{
 			"root":Some(root_key),
 		},
 		//"democracy": Default::default(),
@@ -318,7 +318,7 @@ fn testnet_genesis(
 			],
 			//"phantom": Default::default(),
 		},
-		"background_council": {
+		"backgroundCouncil": {
 			"members": vec![
 				hex!["2a0170a78af6835dd46753c1857b31903aa125d9c203e05bc7a45b7c3bea702b"].into(),
 				get_account_id_from_seed::<sr25519::Public>("Alice"),

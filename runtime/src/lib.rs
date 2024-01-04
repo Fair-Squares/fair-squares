@@ -13,6 +13,7 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use pallet_nfts::PalletFeatures;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use frame_support::traits::{fungible::HoldConsideration,LinearStoragePrice};
+use frame_support::genesis_builder_helper::{build_config, create_default_config};
 
 use node_primitives::AccountIndex;
 use sp_runtime::{
@@ -1158,6 +1159,16 @@ impl_runtime_apis! {
 			// NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
 			// have a backtrace here.
 			Executive::try_execute_block(block, state_root_check, signature_check, select).expect("execute-block failed")
+		}
+	}
+
+	impl sp_genesis_builder::GenesisBuilder<Block> for Runtime {
+		fn create_default_config() -> Vec<u8> {
+			create_default_config::<RuntimeGenesisConfig>()
+		}
+
+		fn build_config(config: Vec<u8>) -> sp_genesis_builder::Result {
+			build_config::<RuntimeGenesisConfig>(config)
 		}
 	}
 }

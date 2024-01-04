@@ -37,6 +37,7 @@ sp-runtime = { version = "24.0.0", default-features = false, git = "https://gith
 sp-session = { git = "https://github.com/paritytech/polkadot-sdk", branch = "master", default-features = false }
 sp-std = { version = "8.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
 sp-transaction-pool = { git = "https://github.com/paritytech/polkadot-sdk", branch = "master", default-features = false }
+sp-genesis-builder = { git = "https://github.com/paritytech/polkadot-sdk", branch = "master", default-features = false }
 sp-version = { version = "22.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
 
 pallet-utility = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "master", default-features = false }
@@ -115,6 +116,7 @@ std = [
 	"sp-session/std",
 	"sp-std/std",
 	"sp-transaction-pool/std",
+	"sp-genesis-builder/std",
 	"sp-version/std",
 	"substrate-wasm-builder",
 	"pallet-roles/std",
