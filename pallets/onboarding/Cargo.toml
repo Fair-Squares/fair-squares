@@ -13,20 +13,20 @@ repository = "https://github.com/Fair-Squares/fair-squares"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-sp-std = { default-features = false, version = "8.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-sp-runtime = { version = "24.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
+sp-std = { default-features = false, version = "8.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+sp-runtime = { version = "24.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
 scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
-frame-benchmarking = {  default-features = false, optional = true, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-frame-support = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-frame-system = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
+frame-benchmarking = {  default-features = false, optional = true, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+frame-support = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+frame-system = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
 serde = { version = "1.0.183", default-features = false, features = ["derive"] }
-pallet-balances = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-pallet-sudo = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-pallet-collective = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "master", default-features = false }
-pallet-nfts = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-pallet-democracy = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master"}
-pallet-scheduler = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master"}
-pallet-utility = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "master"}
+pallet-balances = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+pallet-sudo = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+pallet-collective = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0", default-features = false }
+pallet-nfts = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+pallet-democracy = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
+pallet-scheduler = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
+pallet-utility = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
 pallet-nft = { default-features = false, path="../nft" }
 pallet-roles = { default-features = false, path="../roles" }
 pallet-housing_fund = { default-features = false, path="../housing_fund" }
@@ -34,9 +34,9 @@ parity-scale-codec = { package = "parity-scale-codec", version = "3.6.5", defaul
 	"derive",
 ] }
 [dev-dependencies]
-sp-core = { version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-sp-io = { version = "23.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
-sp-runtime = { version = "24.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "master" }
+sp-core = { version = "21.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+sp-io = { version = "23.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+sp-runtime = { version = "24.0.0", git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
 
 [features]
 default = ["std"]

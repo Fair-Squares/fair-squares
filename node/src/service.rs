@@ -23,20 +23,29 @@ type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 /// imported and generated.
 const GRANDPA_JUSTIFICATION_PERIOD: u32 = 512;
 
-pub type Service = sc_service::PartialComponents<
-	FullClient,
-	FullBackend,
-	FullSelectChain,
-	sc_consensus::DefaultImportQueue<Block>,
-	sc_transaction_pool::FullPool<Block, FullClient>,
-	(
-		sc_consensus_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
-		sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
-		Option<Telemetry>,
-	),
->;
-
-pub fn new_partial(config: &Configuration) -> Result<Service, ServiceError> {
+#[allow(clippy::type_complexity)]
+pub fn new_partial(
+	config: &Configuration,
+) -> Result<
+	sc_service::PartialComponents<
+		FullClient,
+		FullBackend,
+		FullSelectChain,
+		sc_consensus::DefaultImportQueue<Block>,
+		sc_transaction_pool::FullPool<Block, FullClient>,
+		(
+			sc_consensus_grandpa::GrandpaBlockImport<
+				FullBackend,
+				Block,
+				FullClient,
+				FullSelectChain,
+			>,
+			sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
+			Option<Telemetry>,
+		),
+	>,
+	ServiceError,
+> {
 	let telemetry = config
 		.telemetry_endpoints
 		.clone()
