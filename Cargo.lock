@@ -2657,7 +2657,6 @@ dependencies = [
  "pallet-nfts",
  "pallet-nfts-runtime-api",
  "pallet-onboarding",
- "pallet-payment",
  "pallet-preimage",
  "pallet-roles",
  "pallet-scheduler",
@@ -5279,30 +5278,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 8.0.0 (git+https://github.com/paritytech/polkadot-sdk?branch=master)",
-]
-
-[[package]]
-name = "pallet-payment"
-version = "4.0.0-dev"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "pallet-assets",
- "pallet-balances",
- "pallet-housing_fund",
- "pallet-identity",
- "pallet-nft",
- "pallet-nfts",
- "pallet-roles",
- "pallet-share_distributor",
- "parity-scale-codec",
- "scale-info",
  "sp-core",
  "sp-io",
  "sp-runtime",
