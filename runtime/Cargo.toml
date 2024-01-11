@@ -38,7 +38,7 @@ sp-session = { version = "4.0.0-dev", default-features = false, git = "https://g
 sp-std = { version = "8.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.5.0" }
 sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.5.0" }
 sp-version = { version = "22.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.5.0" }
-sp-genesis-builder = { git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.5.0", default-features = false }
+sp-genesis-builder = { version = "0.1.0",git = "https://github.com/paritytech/polkadot-sdk", branch = "release-polkadot-v1.5.0", default-features = false }
 
 pallet-utility = { version = "4.0.0-dev",git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0", default-features = false }
 node-primitives = { version = "2.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }

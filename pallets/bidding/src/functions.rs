@@ -293,7 +293,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn begin_block(now: BlockNumberOf<T>) -> Weight {
-		let max_block_weight = T::BlockWeights::get().max_block;
+		let max_block_weight = Weight::from_parts(1000_u64,0);
 
 		if (now % T::NewAssetScanPeriod::get()).is_zero() {
 			Self::process_onboarded_assets().ok();
