@@ -181,6 +181,8 @@ pub mod pallet {
 		NoneValue,
 		/// There was an attempt to increment the value in storage over `u32::MAX`.
 		StorageOverflow,
+		/// There are no Investor qualified for this asset
+		NoQualifiedInvestor,
 	}
 
 	#[pallet::hooks]

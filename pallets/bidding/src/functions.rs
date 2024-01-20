@@ -14,8 +14,15 @@ use enum_iterator::all;
 impl<T: Config> Pallet<T> {
     
     pub fn investors_list(collection_id: T::NftCollectionId, item_id: T::NftItemId) -> InvestmentRound<T>{
-		//Create new round struct/Increase round count  
-		let counter = Self::round_count().unwrap();		
+		//Create new round struct/Increase round count 
+		let mut counter=0; 
+		let counter0 = Self::round_count();
+		if counter0.is_none()!=true{
+			counter = counter0.unwrap();
+			
+		}else{
+			InvestmentRoundCount::<T>::set(Some(counter));
+		}
 		InvestmentRoundCount::<T>::put(counter.saturating_add(1));
 		let mut round = InvestmentRound::<T>::new(collection_id,item_id);
 
@@ -41,6 +48,7 @@ impl<T: Config> Pallet<T> {
             //ToDo: We also want to only include users that did not contributed to a purchase for y_blocks (to be defined). 
 
         });
+		debug_assert!(investors.len()>0, "No good investor!!");
 		//Randomly select max number of investors per house
 		let init_number = <T as Houses::Config>::MaxInvestorPerHouse::get();
 		let mut inv_vec = Vec::new();
