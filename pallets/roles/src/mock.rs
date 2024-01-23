@@ -9,7 +9,7 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	BuildStorage,	
 };
-use frame_system::{EnsureRoot,};
+use frame_system::EnsureRoot;
 
 type Block = frame_system::mocking::MockBlock<Test>;
 type AccountId = AccountId32;

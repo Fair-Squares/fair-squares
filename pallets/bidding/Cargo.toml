@@ -19,6 +19,7 @@ codec = { package = "parity-scale-codec", version = "3.6.1", default-features = 
 	"derive",
 ] }
 sp-runtime = { version = "24.0.0", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+pallet-insecure-randomness-collective-flip = { version = "4.0.0-dev",git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0", default-features = false }
 scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
 frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
@@ -27,13 +28,19 @@ sp-std = { default-features = false, version = "8.0.0", git = "https://github.co
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
 pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
 serde = { version = "1.0.183", default-features = false, features = ["derive"] }
+pallet-collective = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0", default-features = false }
 pallet-roles = { default-features = false, path="../roles" }
 pallet-onboarding = { default-features = false, path="../onboarding" }
 pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-nft = { default-features = false, path="../nft" }
 pallet-finalizer = { default-features = false, path="../finalizer" }
 pallet-share_distributor = { default-features = false, path="../share_distributor" }
-
+pallet-nfts = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+pallet-assets = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0" }
+pallet-democracy = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
+pallet-scheduler = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
+pallet-preimage = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
+pallet-utility = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
 
 [dev-dependencies]
 
@@ -51,14 +58,23 @@ std = [
 	"frame-system/std",
 	"scale-info/std",
 	"serde/std",
+	"pallet-insecure-randomness-collective-flip/std",
 	"sp-std/std",
 	"pallet-balances/std",
 	"pallet-sudo/std",
     "pallet-roles/std",
     "pallet-onboarding/std",
 	"pallet-nft/std",
+	"pallet-nfts/std",
     "pallet-housing_fund/std",
     "pallet-finalizer/std",
+	"pallet-collective/std",
+	"pallet-share_distributor/std",
+	"pallet-assets/std",
+	"pallet-democracy/std",
+	"pallet-scheduler/std",
+	"pallet-preimage/std",
+	"pallet-utility/std"
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

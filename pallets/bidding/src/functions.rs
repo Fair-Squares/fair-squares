@@ -48,12 +48,13 @@ impl<T: Config> Pallet<T> {
             //ToDo: We also want to only include users that did not contributed to a purchase for y_blocks (to be defined). 
 
         });
-		debug_assert!(investors.len()>0, "No good investor!!");
+		debug_assert!(investors.len()!=0, "No good investor!!");
 		//Randomly select max number of investors per house
 		let init_number = <T as Houses::Config>::MaxInvestorPerHouse::get();
 		let mut inv_vec = Vec::new();
-		for _i in 0..init_number+1{
+		for _i in 1..init_number+1{
 			let iv = Self::choose_investor(investors.clone());
+			debug_assert!(iv.1!=0, "Not a good investor!!");
 			investors.remove(iv.1);
 			inv_vec.push(iv.0.unwrap());
 			
@@ -118,8 +119,9 @@ impl<T: Config> Pallet<T> {
 
     /// Randomly choose an investor from among an investors list, & returns investoraccount plus index in the list.
 	/// Returns `None` if there are no investors in the list.
-	fn choose_investor(investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
+	pub fn choose_investor(investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
         let total = investors.len() as u32;
+		debug_assert!(total!=0, "No good investor!!");
 		if total == 0 {
 			return (None,0)
 		}
@@ -135,6 +137,7 @@ impl<T: Config> Pallet<T> {
 		}
         let num = random_number % total; 
         let inv = investors[num as usize].clone();
+		debug_assert!(num!=0, "No good investor!!");
 		(Some(inv),num as usize)
 	}
 
