@@ -293,7 +293,7 @@ impl pallet_asset_management::Config for Runtime{
 
 
 parameter_types!{
-	pub const MaxGenerateRandom:u32 =60;
+	pub const MaxGenerateRandom:u32 =100;
 	pub const MinContributionper: Percent= Percent::from_percent(5);
 	pub const MaxContributionper: Percent= Percent::from_percent(30);
 	pub const NewAssetScanPeriod: u32 = EPOCH_DURATION_IN_BLOCKS;
