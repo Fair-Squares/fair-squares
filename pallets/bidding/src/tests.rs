@@ -9,8 +9,9 @@ fn setting_roles(){
 	new_test_ext().execute_with(||{
 
 		let inv_list = vec![ALICE,DAVE,BOB,CHARLIE,EVE];
-		//let selected = BiddingModule::choose_investor(inv_list);
-		//println!("selected is {:?}",selected);
+		let rand_list = BiddingModule::generate_random_number(inv_list);
+		println!("selected indexes: {:?}",rand_list);
+
 
 
 		

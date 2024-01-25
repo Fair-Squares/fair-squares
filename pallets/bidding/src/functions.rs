@@ -10,6 +10,10 @@ pub use frame_support::{
 pub use Onboarding::Zero;
 pub use pallet_roles::vec;
 use enum_iterator::all;
+use adv_random::rules::NumberRange;
+use adv_random::settings::Settings;
+use adv_random::random::random_numbers;
+use adv_random::rules::NoDuplicate;
 
 impl<T: Config> Pallet<T> {
     
@@ -50,20 +54,20 @@ impl<T: Config> Pallet<T> {
         });
 		debug_assert!(investors.len()!=0, "No good investor!!");
 		//Randomly select max number of investors per house
-		let init_number = <T as Houses::Config>::MaxInvestorPerHouse::get();
-		let mut inv_vec = Vec::new();
-		for _i in 1..init_number+1{
-			let iv = Self::choose_investor(investors.clone());
-			debug_assert!(iv.1!=0, "Not a good investor!!");
-			investors.remove(iv.1);
-			inv_vec.push(iv.0.unwrap());
-			
+		let init_number = <T as Houses::Config>::MaxInvestorPerHouse::get() as usize;
+		let rd_res = random_numbers(&Settings::new(&[Box::new(NoDuplicate{}),Box::new(NumberRange::all(0,investors.len()-1))],init_number));
+		let number = rd_res.numbers().unwrap();
+		let it = number.into_iter();
+		let inv_vec:Vec<_>  = it.map(|s| investors[*s as usize].clone()).collect();
+		for j in number{
+
+			investors.remove(*j as usize);
 		}
 		let mut final_list = Vec::new();
 		let mut shares = Houses::Pallet::<T>::get_contribution_share();
 		//We get users shares
 		shares.retain(|x|{
-			inv_vec.contains(&x.account_id)
+			inv_vec.contains(&&x.account_id)
 		});
 		
 		for investor in inv_vec{
@@ -117,29 +121,6 @@ impl<T: Config> Pallet<T> {
     }
 
 
-    /// Randomly choose an investor from among an investors list, & returns investoraccount plus index in the list.
-	/// Returns `None` if there are no investors in the list.
-	pub fn choose_investor(investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
-        let total = investors.len() as u32;
-		debug_assert!(total!=0, "No good investor!!");
-		if total == 0 {
-			return (None,0)
-		}
-		let mut random_number = Self::generate_random_number(0);
-
-		// Best effort attempt to remove bias from modulus operator.
-		for i in 1..T::MaxGenerateRandom::get() {
-			if random_number < u32::MAX - u32::MAX % total && ( 0..total-1).contains(&(random_number%total)) {
-				break
-			}
-
-			random_number = Self::generate_random_number(i);
-		}
-        let num = random_number % total; 
-        let inv = investors[num as usize].clone();
-		debug_assert!(num!=0, "No good investor!!");
-		(Some(inv),num as usize)
-	}
 
 
     	/// Generate a random number from a given seed.
@@ -148,11 +129,12 @@ impl<T: Config> Pallet<T> {
 	/// number lies within `u32::MAX - u32::MAX % n`.
 	/// TODO: deal with randomness freshness
 	/// https://github.com/paritytech/substrate/issues/8311
-	fn generate_random_number(seed: u32) -> u32 {
-		let (random_seed, _) = T::Randomness::random(&(T::PalletId::get(), seed).encode());
-		let random_number = <u32>::decode(&mut random_seed.as_ref())
-			.expect("secure hashes should always be bigger than u32; qed");
-		random_number
+	pub fn generate_random_number(vec:Vec<T::AccountId>) -> Vec<usize> {
+		let init_number = vec.len()-2;
+		let rd_res = random_numbers(&Settings::new(&[Box::new(NoDuplicate{}),Box::new(NumberRange::all(0,vec.len()-1))],init_number));
+		let number = rd_res.numbers().unwrap();
+		
+		number.to_vec()
 	}
 
 	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
