@@ -41,7 +41,6 @@ pallet-democracy = {  default-features = false, git = "https://github.com/parity
 pallet-scheduler = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
 pallet-preimage = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
 pallet-utility = {  default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0"}
-adv_random = "2.0.2"
 
 [dev-dependencies]
 

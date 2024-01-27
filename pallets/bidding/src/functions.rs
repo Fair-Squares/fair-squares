@@ -10,10 +10,6 @@ pub use frame_support::{
 pub use Onboarding::Zero;
 pub use pallet_roles::vec;
 use enum_iterator::all;
-use adv_random::rules::NumberRange;
-use adv_random::settings::Settings;
-use adv_random::random::random_numbers;
-use adv_random::rules::NoDuplicate;
 
 impl<T: Config> Pallet<T> {
     
@@ -54,20 +50,21 @@ impl<T: Config> Pallet<T> {
         });
 		debug_assert!(investors.len()!=0, "No good investor!!");
 		//Randomly select max number of investors per house
-		let init_number = <T as Houses::Config>::MaxInvestorPerHouse::get() as usize;
-		let rd_res = random_numbers(&Settings::new(&[Box::new(NoDuplicate{}),Box::new(NumberRange::all(0,investors.len()-1))],init_number));
-		let number = rd_res.numbers().unwrap();
-		let it = number.into_iter();
-		let inv_vec:Vec<_>  = it.map(|s| investors[*s as usize].clone()).collect();
-		for j in number{
+		let mut init_number = <T as Houses::Config>::MaxInvestorPerHouse::get() as usize;
 
-			investors.remove(*j as usize);
+		let mut inv_vec = Vec::new();
+		if init_number>investors.len(){
+			init_number = investors.len();
 		}
+		for i in 1..init_number{
+			inv_vec.push(investors[i].clone())
+		}
+
 		let mut final_list = Vec::new();
 		let mut shares = Houses::Pallet::<T>::get_contribution_share();
 		//We get users shares
 		shares.retain(|x|{
-			inv_vec.contains(&&x.account_id)
+			inv_vec.contains(&x.account_id)
 		});
 		
 		for investor in inv_vec{
@@ -121,21 +118,6 @@ impl<T: Config> Pallet<T> {
     }
 
 
-
-
-    	/// Generate a random number from a given seed.
-	/// Note that there is potential bias introduced by using modulus operator.
-	/// You should call this function with different seed values until the random
-	/// number lies within `u32::MAX - u32::MAX % n`.
-	/// TODO: deal with randomness freshness
-	/// https://github.com/paritytech/substrate/issues/8311
-	pub fn generate_random_number(vec:Vec<T::AccountId>) -> Vec<usize> {
-		let init_number = vec.len()-2;
-		let rd_res = random_numbers(&Settings::new(&[Box::new(NoDuplicate{}),Box::new(NumberRange::all(0,vec.len()-1))],init_number));
-		let number = rd_res.numbers().unwrap();
-		
-		number.to_vec()
-	}
 
 	pub fn process_onboarded_assets() -> DispatchResultWithPostInfo {
 		let houses = Onboarding::Pallet::<T>::get_onboarded_houses();
