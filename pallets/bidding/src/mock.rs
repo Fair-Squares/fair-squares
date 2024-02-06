@@ -27,22 +27,22 @@ type AssetId = u32;
 frame_support::construct_runtime!(
 	pub enum Test 
 	{
-		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
-		RolesModule: pallet_roles::{Pallet, Call, Storage, Event<T>, Config<T>},
-		BiddingModule: pallet_bidding::{Pallet, Call, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
-		CollectiveFlip: pallet_insecure_randomness_collective_flip::{Pallet, Storage},
-		ShareDistributor: pallet_share_distributor::{Pallet, Call, Storage,  Event<T>},
-		NftModule: pallet_nft::{Pallet, Call, Storage, Event<T>, Config<T>},
-		Nfts: pallet_nfts::{Pallet, Call, Storage, Event<T>},
-		HousingFund: pallet_housing_fund::{Pallet, Call, Storage, Event<T>},
-		Democracy: pallet_democracy::{Pallet, Call, Storage, Config<T>, Event<T>},
-		OnboardingModule: pallet_onboarding::{Pallet, Call, Storage, Event<T>, Config<T>},
-		Scheduler: pallet_scheduler::{Pallet, Call, Storage, Event<T>},
+		System: frame_system,
+		RolesModule: pallet_roles,
+		BiddingModule: pallet_bidding,
+		Balances: pallet_balances,
+		Sudo:pallet_sudo,
+		CollectiveFlip: pallet_insecure_randomness_collective_flip,
+		ShareDistributor: pallet_share_distributor,
+		NftModule: pallet_nft,
+		Nfts: pallet_nfts,
+		HousingFund: pallet_housing_fund,
+		Democracy: pallet_democracy,
+		OnboardingModule: pallet_onboarding,
+		Scheduler: pallet_scheduler,
 		Utility: pallet_utility,
-		Assets: pallet_assets::{Pallet, Storage, Config<T>, Event<T>},
-		Collective: pallet_collective::<Instance2>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
+		Assets: pallet_assets,
+		Collective: pallet_collective::<Instance2>,
 		Preimage: pallet_preimage,
 	}
 );
@@ -52,6 +52,11 @@ pub type Acc = pallet_roles::Accounts;
 #[derive(Eq,Copy,PartialEq,Clone)]
 pub struct NftTestPermissions;
 
+
+
+fn default_max_proposal_weight() -> Weight {
+	sp_runtime::Perbill::from_percent(50) * BlockWeights::get().max_block
+}
 
 impl pallet_nft::NftPermission<Acc> for NftTestPermissions {
 	fn can_create(created_by: &Acc) -> bool {
@@ -279,7 +284,7 @@ parameter_types! {
 
 parameter_types! {
 	pub BlockWeights: frame_system::limits::BlockWeights =
-		frame_system::limits::BlockWeights::simple_max(Weight::from_parts(1024_u64, 0));
+		frame_system::limits::BlockWeights::simple_max(Weight::MAX);
 }
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -308,7 +313,7 @@ impl frame_system::Config for Test {
 }
 
 parameter_types! {
-	pub const MaxMembers:u32 = 5;
+	pub const MaxMembers:u32 = 10;
 	#[derive(Clone)]
 	pub const MaxRoles:u32 = 3;
 	pub const CheckPeriod: BlockNumber = 5;
@@ -448,6 +453,7 @@ parameter_types! {
 	pub const BackgroundMotionDuration: BlockNumber = 5;
 	pub const BackgroundMaxProposals: u32 = 100;
 	pub const BackgroundMaxMembers: u32 = 100;
+	pub static MaxProposalWeight: Weight = default_max_proposal_weight();
 }
 
 type BackgroundCollective = pallet_collective::Instance2;
@@ -461,7 +467,7 @@ impl pallet_collective::Config<BackgroundCollective> for Test {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = ();
 	type SetMembersOrigin = EnsureRoot<Self::AccountId>;
-	type MaxProposalWeight =();
+	type MaxProposalWeight =MaxProposalWeight;
 }
 
 
@@ -470,8 +476,10 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const DAVE: AccountId = AccountId::new([6u8; 32]);
 pub const EVE: AccountId = AccountId::new([5u8; 32]);
-pub const ACCOUNT_WITH_NO_BALANCE0: AccountId = AccountId::new([4u8; 32]);
-pub const ACCOUNT_WITH_NO_BALANCE1: AccountId = AccountId::new([7u8; 32]);
+pub const ACCOUNT_WITH_BALANCE0: AccountId = AccountId::new([4u8; 32]);
+pub const ACCOUNT_WITH_BALANCE1: AccountId = AccountId::new([7u8; 32]);
+pub const ACCOUNT_WITH_BALANCE2: AccountId = AccountId::new([8u8; 32]);
+pub const ACCOUNT_WITH_BALANCE3: AccountId = AccountId::new([9u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
 
 
@@ -481,13 +489,15 @@ pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t= frame_system::GenesisConfig::<Test>::default().build_storage().unwrap().into();
 	pallet_balances::GenesisConfig::<Test> {
 		balances: vec![
-			(ALICE, 300_000 * BSX),
+			(ALICE, 800_000 * BSX),
 			(BOB, 400_000 * BSX),
 			(CHARLIE, 250_000 * BSX),
 			(DAVE, 450_000 * BSX),
 			(EVE, 150_000 * BSX),
-			(ACCOUNT_WITH_NO_BALANCE0, 150_000 * BSX),
-			(ACCOUNT_WITH_NO_BALANCE1, 150_000 * BSX),
+			(ACCOUNT_WITH_BALANCE0, 450_000 * BSX),
+			(ACCOUNT_WITH_BALANCE1, 230_000 * BSX),
+			(ACCOUNT_WITH_BALANCE2, 550_000 * BSX),
+			(ACCOUNT_WITH_BALANCE3, 970_000 * BSX),
 		],
 	}
 	.assimilate_storage(&mut t)

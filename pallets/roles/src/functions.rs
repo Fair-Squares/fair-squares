@@ -204,8 +204,8 @@ impl<T: Config> Pallet<T> {
 			Call::<T>::account_approval{
 				account: account.clone()
 			};
-		let proposal = Self::get_formatted_call(proposal0.into()).unwrap();
-
+		let proposal0 = Self::get_formatted_call(proposal0.into());
+		let proposal = proposal0.unwrap();
 		
 		let _hash = T::Hashing::hash_of(&proposal);
 
@@ -221,7 +221,7 @@ impl<T: Config> Pallet<T> {
 			2,
 			Box::new(proposal.clone()),
 			proposal_len,
-		).ok();
+		)?;
 		let mut index:u32 = Coll::Pallet::<T,Instance2>::proposal_count();
 		index = index.saturating_sub(1);
 

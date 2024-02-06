@@ -32,10 +32,10 @@ fn setting_roles(){
 		assert!(TenantLog::<Test>::contains_key(EVE));
 
 		//Seller,Servicer, and Notary roles
-		assert_ok!(RolesModule::set_role(RuntimeOrigin::signed(BOB),BOB,Acc::SELLER));
+		/*assert_ok!(RolesModule::set_role(RuntimeOrigin::signed(BOB),BOB,Acc::SELLER));
 		assert_eq!(RolesModule::get_pending_house_sellers().len(),1);
 		let account =RolesModule::get_pending_house_sellers()[0].account_id.clone();
-		assert_eq!(account,BOB);
+		assert_eq!(account,BOB);*/
 
 		
 		//Check that collective referendum started

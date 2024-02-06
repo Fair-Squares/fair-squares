@@ -20,18 +20,20 @@ pub type BlockNumber = u64;
 frame_support::construct_runtime!(
 	pub enum Test 
 	{
-		System: frame_system::{Pallet, Call, Config<T>, Storage, Event<T>},
-		RolesModule: pallet_roles::{Pallet, Call, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Sudo:pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Collective: pallet_collective::<Instance2>::{Pallet, Call, Event<T>, Origin<T>, Config<T>},
+		System: frame_system,
+		RolesModule: pallet_roles,
+		Balances: pallet_balances,
+		Sudo:pallet_sudo,
+		Collective: pallet_collective::<Instance2>,
 		
 	}
 );
 
 //helper types
 pub type Acc = pallet_roles::Accounts;
-
+fn default_max_proposal_weight() -> Weight {
+	sp_runtime::Perbill::from_percent(50) * BlockWeights::get().max_block
+}
 
 parameter_types! {
 	pub BlockWeights: frame_system::limits::BlockWeights =
@@ -117,6 +119,7 @@ parameter_types! {
 	pub const BackgroundMotionDuration: BlockNumber = 5;
 	pub const BackgroundMaxProposals: u32 = 100;
 	pub const BackgroundMaxMembers: u32 = 100;
+	pub static MaxProposalWeight: Weight = default_max_proposal_weight();
 }
 
 type BackgroundCollective = pallet_collective::Instance2;
@@ -130,7 +133,7 @@ impl pallet_collective::Config<BackgroundCollective> for Test {
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = ();
 	type SetMembersOrigin = EnsureRoot<Self::AccountId>;
-	type MaxProposalWeight =();
+	type MaxProposalWeight =MaxProposalWeight;
 }
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
