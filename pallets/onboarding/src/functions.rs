@@ -223,19 +223,21 @@ impl<T: Config> Pallet<T> {
 		if(now % T::CheckDelay::get()).is_zero(){
 			//get existing assets
 			let assets_iter = Houses::<T>::iter();
-			
-
 		
 			for asset in assets_iter{
 				let coll_id = asset.0;
 				let item_id = asset.1;
 				let status = asset.2.status;
 				let items = Roles::Asset::<T>::iter();
-				let coll_owner = Nft::Pallet::<T>::collection_owner(coll_id).unwrap();
+				let coll_owner0 = Nft::Pallet::<T>::collection_owner(coll_id);
+				debug_assert!(coll_owner0.is_some(),"problem!No owner!");
+				let coll_owner = coll_owner0.unwrap();
 
 				//Start awaiting referendums
 				for item in items {
 					let owner_origin= RawOrigin::Signed(item.0);
+					let asset1 = Self::houses(coll_id,item_id);
+					debug_assert!(asset1.is_some(),"No asset!");
 					let mut asset0 = Self::houses(coll_id,item_id).unwrap();
 					let mut  index0 = asset0.ref_index; 
 					if item.2 == Status::VOTING && item.1 == asset.2.created && status == Status::REVIEWING{

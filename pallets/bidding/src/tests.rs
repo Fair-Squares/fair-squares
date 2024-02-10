@@ -4,8 +4,10 @@ pub use super::*;
 
 fn next_block() {
 	System::set_block_number(System::block_number() + 1);
-	RolesModule::on_initialize(System::block_number());
-	
+	Scheduler::on_initialize(System::block_number());
+	BiddingModule::begin_block(System::block_number());
+	OnboardingModule::begin_block(System::block_number());
+
 }
 
 macro_rules! bvec {
@@ -128,7 +130,7 @@ fn bidding_roles(){
 	assert_ok!(CouncilModule::housing_council_vote(RuntimeOrigin::signed(council1[2].clone()), BOB, true));	
 	assert_ok!(CouncilModule::housing_council_close(RuntimeOrigin::signed(council1[1].clone()), BOB));
 
-	let now = System::block_number();
+	let mut now = System::block_number();
 	expect_events(vec![
 		RuntimeEvent::CouncilModule(pallet_council::Event::HousingCouncilSessionClosed{ 
 			who: council1[1].clone(), 
@@ -141,38 +143,27 @@ fn bidding_roles(){
 	
 	
 
-	loop{
+
 		let  event_ref = 
-		record(RuntimeEvent::CouncilModule(pallet_council::Event::ProposalApproved(System::block_number(), BOB)))
-		;
-		if System::events().contains(&event_ref){
-			break
-		}
+		record(RuntimeEvent::CouncilModule(pallet_council::Event::ProposalApproved(System::block_number(), BOB)));
+		assert_eq!(true,System::events().contains(&event_ref));
 
-		next_block();
-			
+
+
 		
-	}
-
-
-	let houses = OnboardingModule::houses(coll_id, 0).unwrap();
-	assert_eq!(houses.status,pallet_roles::AssetStatus::REVIEWING);
-	
-
-	/*loop{
-		let  event_ref0 = 
+		now = System::block_number().saturating_mul(<Test as pallet_onboarding::Config>::CheckDelay::get());
+		fast_forward_to(now);
+		next_block();
+		
+		//OnboardingModule::begin_block(now);
+		let houses = OnboardingModule::houses(coll_id, 0).unwrap();
+		assert_eq!(houses.status,pallet_roles::AssetStatus::VOTING);
+		
+		let  event_ref = 
 		record(RuntimeEvent::OnboardingModule(pallet_onboarding::Event::ReferendumStarted { index: 0 }));
-		
-		if System::events().contains(&event_ref0){
-			break
-		}
+		assert_eq!(true,System::events().contains(&event_ref));
 
-		next_block();
-
-	}
-
-	//let status = pallet_roles::AssetStatus::VOTING;
-	//assert_eq!(OnboardingModule::houses(coll_id,0).unwrap().status,status);
+	
 	
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ALICE), 0, true));
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(DAVE), 0, true));
@@ -181,8 +172,22 @@ fn bidding_roles(){
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE2), 0, true));
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE3), 0, true));
 
-*/
+	assert_eq!(Democracy::referendum_count(), 1);
+	println!("the block nbr is:{:?}",now);
+	println!("Referendum status:\n{:?}",Democracy::referendum_info(0));
+	now = System::block_number();
 	
+	fast_forward_to(9);
+	now = System::block_number();
+	println!("the block nbr is:{:?}",now);
+	println!("Referendum status:\n{:?}",Democracy::referendum_info(0));
+
+	/*
+	
+	
+	houses = OnboardingModule::houses(coll_id, 0).unwrap();
+	println!("New Status!: {:?}",houses.status);
+	*/
 
 	})
 
