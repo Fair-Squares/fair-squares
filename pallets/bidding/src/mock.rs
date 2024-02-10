@@ -13,7 +13,7 @@ use sp_runtime::{
 };
 use sp_runtime::Perbill;
 use pallet_nfts::PalletFeatures;
-use frame_system::{EnsureRoot,EnsureSigned,EnsureSignedBy};
+use frame_system::{EnsureRoot,EnsureSigned, EventRecord, Phase};
 use pallet_assets::AssetsCallback;
 type Block = frame_system::mocking::MockBlock<Test>;
 pub type Signature = MultiSignature;
@@ -43,6 +43,8 @@ frame_support::construct_runtime!(
 		Utility: pallet_utility,
 		Assets: pallet_assets,
 		Collective: pallet_collective::<Instance2>,
+		Collective1: pallet_collective::<Instance1>,
+		CouncilModule: pallet_council,
 		Preimage: pallet_preimage,
 	}
 );
@@ -250,7 +252,7 @@ parameter_types! {
 	pub const ProposalFee: Percent= Percent::from_percent(15);
 	pub const SlashedFee: Percent = Percent::from_percent(10);
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
-	pub const Delay: BlockNumber = 0;
+	pub const Delay: BlockNumber = 1;
 	pub const CheckDelay: BlockNumber = 0;
 	pub const MinimumDeposit: Balance = 100; //ok
 }
@@ -470,7 +472,30 @@ impl pallet_collective::Config<BackgroundCollective> for Test {
 	type MaxProposalWeight =MaxProposalWeight;
 }
 
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Test {
+	type RuntimeOrigin = RuntimeOrigin;
+	type Proposal = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type MotionDuration = BackgroundMotionDuration;
+	type MaxProposals = BackgroundMaxProposals;
+	type MaxMembers = BackgroundMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = ();
+	type SetMembersOrigin = EnsureRoot<Self::AccountId>;
+	type MaxProposalWeight =MaxProposalWeight;
+}
 
+impl pallet_council::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type Currency = Balances;
+	type CheckPeriod = CheckPeriod;
+	type HousingCouncilOrigin =
+		pallet_collective::EnsureProportionAtLeast<AccountId, CouncilCollective, 1, 2>;
+	
+	//type WeightInfo = pallet_roles::weights::SubstrateWeight<Runtime>;
+}
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
@@ -483,6 +508,14 @@ pub const ACCOUNT_WITH_BALANCE3: AccountId = AccountId::new([9u8; 32]);
 pub const BSX: Balance = 100_000_000_000;
 
 
+
+pub fn expect_events(e: Vec<RuntimeEvent>) {
+	e.into_iter().for_each(frame_system::Pallet::<Test>::assert_has_event);
+}
+
+pub fn record(event: RuntimeEvent) -> EventRecord<RuntimeEvent, H256> {
+	EventRecord { phase: Phase::Initialization, event, topics: vec![] }
+}
 
 // Build genesis storage according to the mock runtime.
 pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
@@ -504,6 +537,13 @@ pub(crate) fn new_test_ext() -> sp_io::TestExternalities {
 	.unwrap();
 
 	pallet_collective::GenesisConfig::<Test, pallet_collective::Instance2> {
+		members: vec![ALICE, BOB, CHARLIE],
+		phantom: Default::default(),
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
+
+	pallet_collective::GenesisConfig::<Test, pallet_collective::Instance1> {
 		members: vec![ALICE, BOB, CHARLIE],
 		phantom: Default::default(),
 	}

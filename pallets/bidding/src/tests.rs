@@ -1,8 +1,6 @@
-use crate::{mock::*, Error, Event};
+use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok};
 pub use super::*;
-pub use pallet_collective as Coll;
-use crate::tests::Coll::Instance2;
 
 fn next_block() {
 	System::set_block_number(System::block_number() + 1);
@@ -73,19 +71,22 @@ fn bidding_roles(){
 		assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[1].clone()),CHARLIE,true));
 		assert_ok!(RolesModule::council_vote(RuntimeOrigin::signed(council[0].clone()),CHARLIE,true));
 
+		assert_eq!(RolesModule::sellers(BOB).is_some(),false);
+
 		assert_ok!(RolesModule::council_close(RuntimeOrigin::signed(council[2].clone()),BOB));
 		assert_ok!(RolesModule::council_close(RuntimeOrigin::signed(council[2].clone()),EVE));
 		assert_ok!(RolesModule::council_close(RuntimeOrigin::signed(council[2].clone()),CHARLIE));
 
-		let initial_block_number = System::block_number();
-		let end_block_number = initial_block_number.saturating_add(<Test as pallet_roles::Config>::CheckPeriod::get());
-		fast_forward_to(end_block_number);
+		
+
+		
+
 
 		assert_eq!(RolesModule::get_pending_house_sellers().len(), 0);
 
-		assert_eq!(!RolesModule::get_requested_role(BOB).is_some(),true);
-		assert_eq!(!RolesModule::get_requested_role(EVE).is_some(),true);
-		assert_eq!(!RolesModule::get_requested_role(CHARLIE).is_some(),true);
+		assert_eq!(RolesModule::sellers(BOB).is_some(),true);
+		assert_eq!(RolesModule::notaries(CHARLIE).is_some(),true);
+		assert_eq!(RolesModule::servicers(EVE).is_some(),true);
 
 
 		assert_ok!(HousingFund::contribute_to_fund(RuntimeOrigin::signed(ALICE), 350_000*BSX));
@@ -100,11 +101,90 @@ fn bidding_roles(){
 		
 		assert_ok!(OnboardingModule::create_and_submit_proposal(RuntimeOrigin::signed(BOB),
 																pallet_nft::PossibleCollections::HOUSES,
-																 Some(23_000_000_000_000_000),
+																 Some(2_605_000_000_000),
 																 bvec![0u8; 20],
 																   true,
 																    3));
+																	
+	let council1 = Collective1::members();
+	assert_eq!(council1.len(),3);
 
+	assert_ok!(CouncilModule::seller_proposal_evaluation(
+		RuntimeOrigin::signed(council1[0].clone()).into(), 
+		pallet_nft::PossibleCollections::HOUSES, 
+		0));
+
+
+	let proposal = CouncilModule::get_submitted_proposal(BOB);
+	assert_eq!(proposal.is_some(),true);
+
+	let status = pallet_roles::AssetStatus::REVIEWING;
+	let coll_id0 = pallet_nft::PossibleCollections::HOUSES;
+	let coll_id = coll_id0.value();
+	assert_eq!(OnboardingModule::houses(coll_id,0).unwrap().status,status);
+
+	assert_ok!(CouncilModule::housing_council_vote(RuntimeOrigin::signed(council1[0].clone()), BOB, true));
+	assert_ok!(CouncilModule::housing_council_vote(RuntimeOrigin::signed(council1[1].clone()), BOB, true));
+	assert_ok!(CouncilModule::housing_council_vote(RuntimeOrigin::signed(council1[2].clone()), BOB, true));	
+	assert_ok!(CouncilModule::housing_council_close(RuntimeOrigin::signed(council1[1].clone()), BOB));
+
+	let now = System::block_number();
+	expect_events(vec![
+		RuntimeEvent::CouncilModule(pallet_council::Event::HousingCouncilSessionClosed{ 
+			who: council1[1].clone(), 
+			proposal_index: 0, 
+			when: now.clone()
+		})
+	]);
+	//let end_block = now.saturating_add(<Test as pallet_council::Config>::CheckPeriod::get());
+	//fast_forward_to(end_block);
+	
+	
+
+	loop{
+		let  event_ref = 
+		record(RuntimeEvent::CouncilModule(pallet_council::Event::ProposalApproved(System::block_number(), BOB)))
+		;
+		if System::events().contains(&event_ref){
+			break
+		}
+
+		next_block();
+			
 		
+	}
+
+
+	let houses = OnboardingModule::houses(coll_id, 0).unwrap();
+	assert_eq!(houses.status,pallet_roles::AssetStatus::REVIEWING);
+	
+
+	loop{
+		let  event_ref0 = 
+		record(RuntimeEvent::OnboardingModule(pallet_onboarding::Event::ReferendumStarted { index: 0 }));
+		
+		if System::events().contains(&event_ref0){
+			break
+		}
+
+		next_block();
+
+	}
+
+	//let status = pallet_roles::AssetStatus::VOTING;
+	//assert_eq!(OnboardingModule::houses(coll_id,0).unwrap().status,status);
+/*	
+	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ALICE), 0, true));
+	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(DAVE), 0, true));
+	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE0), 0, true));
+	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE1), 0, true));
+	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE2), 0, true));
+	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE3), 0, true));
+
+*/
+	
+
 	})
+
+	
 }

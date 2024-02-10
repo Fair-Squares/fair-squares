@@ -597,16 +597,15 @@ pub struct GenesisConfig<T: Config> {
 			let out_call = Call::<T>::change_status { collection:Self::collection_name(coll_id.into()), item_id, status: Status::ONBOARDED };
 			let call0 = Self::get_formatted_call(out_call) ;
 			let proposal = Self::make_proposal(call0.into());
-			let delay = T::Delay::get();
-			let index=Self::start_dem_referendum(proposal,delay);
+			let delay = T::Delay::get();			
+			let index=Self::start_dem_referendum(proposal,delay);			
 		    Houses::<T>::mutate_exists(coll_id,item_id,|val|{
 				let mut v0 = val.clone().unwrap();
 		        v0.ref_index=index;
 				v0.status=Status::VOTING;
 		        *val = Some(v0);
 		        });
-			Ok(())
-			
+			Ok(())			
 	}
 
 	}

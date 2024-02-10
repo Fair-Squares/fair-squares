@@ -20,18 +20,22 @@ impl<T: Config> Pallet<T> {
 	pub fn status(owner: AccountIdOf<T>)->DispatchResult {
 		let items = Roles::Asset::<T>::iter();
 		let mut status = vec![];
+		let mut block:BlockNumberFor<T>=<frame_system::Pallet<T>>::block_number();
 		for item in items{
 			if item.0 == owner && item.2==Roles::AssetStatus::REVIEWING{
-				status.push(item);
+				status.push(item.clone());
+				block = item.1;
 				break;
 			}
 		}
 		let init = status.len() as u32;
 		ensure!(init>0, Error::<T>::NoPendingRequest);
 		let item0= &status[0];
+
 		Roles::Asset::<T>::mutate(&item0.0,item0.1,|val|{			
 			*val = Some(Roles::AssetStatus::VOTING); 
 		});
+		ensure!(Roles::Pallet::<T>::status(owner,block).unwrap()==Roles::AssetStatus::VOTING,"Operation failed!!");
 
 		Ok(())
 
@@ -151,18 +155,23 @@ impl<T: Config> Pallet<T> {
 			for proposal_all in proposal_iter{
 				let test = (proposal_all.1.session_closed,proposal_all.1.approved); 
 				let prop = match test{
-					(true,false) => 0,
-					_ => 1,
+					(true,Roles::Approvals::NO) => 0,
+					(true,Roles::Approvals::YES) => 1,
+					_ => 2,
 				};
 				if prop == 0 {
 					let proposal = Call::<T>::proposal_rejection
 					{
-						account: proposal_all.0
+						account: proposal_all.0.clone()
 					};
 
 					let council_member = Coll::Pallet::<T,Instance1>::members()[0].clone();
 					proposal.dispatch_bypass_filter(frame_system::RawOrigin::Signed(council_member).into()).ok();
+					SellerProposal::<T>::remove(&proposal_all.0.clone());
+				} else if prop == 1 {
+					SellerProposal::<T>::remove(&proposal_all.0);
 				}
+
 			}
 			
 		}

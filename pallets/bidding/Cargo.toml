@@ -31,6 +31,7 @@ serde = { version = "1.0.183", default-features = false, features = ["derive"] }
 pallet-collective = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.5.0", default-features = false }
 pallet-roles = { default-features = false, path="../roles" }
 pallet-onboarding = { default-features = false, path="../onboarding" }
+pallet-council = { default-features = false, path="../council" }
 pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-nft = { default-features = false, path="../nft" }
 pallet-finalizer = { default-features = false, path="../finalizer" }

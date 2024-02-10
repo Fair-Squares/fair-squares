@@ -469,7 +469,7 @@ pub mod pallet {
 					Self::deposit_event(Event::AccountCreationApproved(now, account.clone()));
 					RequestedRoles::<T>::mutate(&account,|val|{
 						let mut proposal = val.clone().unwrap();
-						proposal.approved = true;
+						proposal.approved = Approvals::YES;
 						*val = Some(proposal);
 						});
 
@@ -493,7 +493,7 @@ pub mod pallet {
 			ensure!(role != Some(Accounts::REPRESENTATIVE), Error::<T>::UnAuthorized);
 			let result = Self::reject_account(account.clone());
 
-			RequestedRoles::<T>::remove(&account);
+			
 
 			match result{
 				Ok(_) => {
@@ -578,7 +578,7 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn council_close(origin:OriginFor<T>,candidate:T::AccountId) -> DispatchResultWithPostInfo{
 			let caller = ensure_signed(origin)?;
-			let mut proposal_all = Self::get_requested_role(&candidate).unwrap();
+			let proposal_all = Self::get_requested_role(&candidate).unwrap();
 			let index = proposal_all.proposal_index;
 			let result = Self::closing_vote(caller.clone(),candidate.clone());
 			
@@ -594,10 +594,6 @@ pub mod pallet {
 			});
 				},
 				Err(e) => return Err(e),
-			}
-			proposal_all = Self::get_requested_role(&candidate).unwrap();
-			if proposal_all.approved==true{
-				RequestedRoles::<T>::remove(&candidate);
 			}
 			
 			Ok(().into())

@@ -185,11 +185,11 @@ pub mod pallet {
 			//Change status
 			Self::status(owner.clone()).ok();
 			let now = <frame_system::Pallet<T>>::block_number();
-			let mut proposal0=Self::get_submitted_proposal(owner.clone()).unwrap();
+			/*let mut proposal0=Self::get_submitted_proposal(owner.clone()).unwrap();
 			proposal0.approved=true;
 			SellerProposal::<T>::mutate(owner.clone(),|val|{
 				*val=Some(proposal0);
-			});
+			});*/
 			Self::deposit_event(Event::ProposalApproved(now, owner));
 
 			Ok(())
@@ -256,7 +256,7 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn housing_council_close(origin:OriginFor<T>,seller:T::AccountId) -> DispatchResultWithPostInfo{
 			let caller = ensure_signed(origin)?;
-			let mut proposal_all = Self::get_submitted_proposal(&seller).unwrap();
+			let proposal_all = Self::get_submitted_proposal(&seller).unwrap();
 			let index = proposal_all.proposal_index;
 			let result = Self::closing_vote(caller.clone(),seller.clone());
 			
@@ -273,10 +273,7 @@ pub mod pallet {
 				},
 				Err(e) => return Err(e),
 			}
-			proposal_all = Self::get_submitted_proposal(&seller).unwrap();
-			if proposal_all.approved==true{
-				SellerProposal::<T>::remove(&seller);
-			}
+		
 			
 			Ok(().into())
 		}
@@ -289,8 +286,6 @@ pub mod pallet {
 
 			let proposal = Self::get_submitted_proposal(&account);
 			ensure!(proposal.is_some(), Error::<T>::ProposalDoesNotExist);
-
-			SellerProposal::<T>::remove(&account);
 
 			let now = <frame_system::Pallet<T>>::block_number();
 					Self::deposit_event(Event::ProposalRejected(now, account));

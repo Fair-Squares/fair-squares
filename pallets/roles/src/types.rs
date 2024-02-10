@@ -25,6 +25,14 @@ pub type BalanceOf<T> =
 pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BlockNumberOf<T> = BlockNumberFor<T>;
 
+#[derive(Clone, Encode, Decode, Default, PartialEq, Eq, TypeInfo, Copy, Serialize, Deserialize, MaxEncodedLen)]
+#[cfg_attr(feature = "std", derive(Debug))]
+pub enum Approvals{
+	YES,
+	NO,
+	#[default]
+	AWAITING,
+}
 
 #[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
@@ -65,13 +73,13 @@ pub struct Proposal<T: Config>{
 	pub proposal_hash: T::Hash,
 	pub proposal_index: u32,
 	pub session_closed: bool, 
-	pub approved: bool,
+	pub approved: Approvals,
 }
 impl<T: Config> Proposal<T>{
 	pub fn new(acc:T::AccountId, role: Option<Accounts>,proposal: T::Hash) -> Self{
 		let now = <frame_system::Pallet<T>>::block_number();
 		let proposal_hash =  T::Hashing::hash_of(&proposal);
-		let proposal = Proposal {account_id: acc,role,block: now,proposal_hash,proposal_index:0,session_closed:false,approved:false};
+		let proposal = Proposal {account_id: acc,role,block: now,proposal_hash,proposal_index:0,session_closed:false,approved:Approvals::AWAITING};
 		proposal
 	}
 }

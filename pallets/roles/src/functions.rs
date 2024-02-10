@@ -316,17 +316,21 @@ impl<T: Config> Pallet<T> {
 			for proposal_all in proposal_iter{
 				let test = (proposal_all.1.session_closed,proposal_all.1.approved); 
 				let prop = match test{
-					(true,false) => 0,
-					_ => 1,
+					(true,Approvals::NO) => 0,
+					(true,Approvals::YES) => 1,
+					_ => 2,
 				};
 				if prop == 0 {
 					let proposal = Call::<T>::account_rejection
 					{
-						account: proposal_all.0
+						account: proposal_all.0.clone()
 					};
 
 					let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
 					proposal.dispatch_bypass_filter(frame_system::RawOrigin::Signed(council_member).into()).ok();
+					RequestedRoles::<T>::remove(&proposal_all.0.clone());
+				} else if prop == 1 {
+					RequestedRoles::<T>::remove(&proposal_all.0);
 				}
 			}
 			
