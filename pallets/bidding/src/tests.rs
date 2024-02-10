@@ -5,8 +5,10 @@ pub use super::*;
 fn next_block() {
 	System::set_block_number(System::block_number() + 1);
 	Scheduler::on_initialize(System::block_number());
-	BiddingModule::begin_block(System::block_number());
+	Democracy::on_initialize(System::block_number());
+	//OnboardingModule::on_initialize(System::block_number());
 	OnboardingModule::begin_block(System::block_number());
+	BiddingModule::begin_block(System::block_number());
 
 }
 
@@ -152,11 +154,11 @@ fn bidding_roles(){
 
 		
 		now = System::block_number().saturating_mul(<Test as pallet_onboarding::Config>::CheckDelay::get());
-		fast_forward_to(now);
-		next_block();
+		fast_forward_to(now+1);
+		//next_block();
 		
 		//OnboardingModule::begin_block(now);
-		let houses = OnboardingModule::houses(coll_id, 0).unwrap();
+		let mut houses = OnboardingModule::houses(coll_id, 0).unwrap();
 		assert_eq!(houses.status,pallet_roles::AssetStatus::VOTING);
 		
 		let  event_ref = 
@@ -173,21 +175,20 @@ fn bidding_roles(){
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE3), 0, true));
 
 	assert_eq!(Democracy::referendum_count(), 1);
-	println!("the block nbr is:{:?}",now);
-	println!("Referendum status:\n{:?}",Democracy::referendum_info(0));
-	now = System::block_number();
-	
-	fast_forward_to(9);
-	now = System::block_number();
-	println!("the block nbr is:{:?}",now);
-	println!("Referendum status:\n{:?}",Democracy::referendum_info(0));
 
-	/*
+	let mut info = Democracy::referendum_info(0);
+
+	println!("ref_info:\n{:?}",info);
+	fast_forward_to(4);
+	info = Democracy::referendum_info(0);
+	println!("ref_info:\n{:?}",info);
 	
-	
+	fast_forward_to(6);
+
 	houses = OnboardingModule::houses(coll_id, 0).unwrap();
-	println!("New Status!: {:?}",houses.status);
-	*/
+	println!("House status:{:?}",houses.status)
+	//assert_eq!(houses.status,pallet_roles::AssetStatus::ONBOARDED);
+
 
 	})
 

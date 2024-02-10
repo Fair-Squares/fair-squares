@@ -252,7 +252,7 @@ parameter_types! {
 	pub const ProposalFee: Percent= Percent::from_percent(15);
 	pub const SlashedFee: Percent = Percent::from_percent(10);
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
-	pub const Delay: BlockNumber = 3;
+	pub const Delay: BlockNumber = 2;
 	pub const CheckDelay: BlockNumber = 1;
 	pub const MinimumDeposit: Balance = 100; //ok
 }
