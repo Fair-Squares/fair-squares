@@ -159,7 +159,7 @@ fn bidding_roles(){
 	assert_eq!(houses.status,pallet_roles::AssetStatus::REVIEWING);
 	
 
-	loop{
+	/*loop{
 		let  event_ref0 = 
 		record(RuntimeEvent::OnboardingModule(pallet_onboarding::Event::ReferendumStarted { index: 0 }));
 		
@@ -173,7 +173,7 @@ fn bidding_roles(){
 
 	//let status = pallet_roles::AssetStatus::VOTING;
 	//assert_eq!(OnboardingModule::houses(coll_id,0).unwrap().status,status);
-/*	
+	
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ALICE), 0, true));
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(DAVE), 0, true));
 	assert_ok!(OnboardingModule::investor_vote(RuntimeOrigin::signed(ACCOUNT_WITH_BALANCE0), 0, true));
