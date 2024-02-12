@@ -174,7 +174,7 @@ impl pallet_democracy::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type Currency = pallet_balances::Pallet<Self>;
 	type EnactmentPeriod = ConstU64<2>;
-	type LaunchPeriod = ConstU64<2>;
+	type LaunchPeriod = ConstU64<8>;
 	type VotingPeriod = ConstU64<2>;
 	type VoteLockingPeriod = ConstU64<3>;
 	type FastTrackVotingPeriod = ConstU64<2>;
@@ -252,8 +252,8 @@ parameter_types! {
 	pub const ProposalFee: Percent= Percent::from_percent(15);
 	pub const SlashedFee: Percent = Percent::from_percent(10);
 	pub const FeesAccount: PalletId = PalletId(*b"feeslash");
-	pub const Delay: BlockNumber = 2;
-	pub const CheckDelay: BlockNumber = 1;
+	pub const Delay: BlockNumber = 0;
+	pub const CheckDelay: BlockNumber = 2;
 	pub const MinimumDeposit: Balance = 100; //ok
 }
 

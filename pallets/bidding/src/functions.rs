@@ -42,7 +42,7 @@ impl<T: Config> Pallet<T> {
         Roles::InvestorLog::<T>::iter().map(|x| x.0).collect_into(&mut investors);
         investors.retain(|x|{
             let status = Houses::Pallet::<T>::contributions(x.clone()).unwrap();
-            let contribution = status.contributed_balance;
+            let contribution = status.contributions[0].amount;
             //user contributed more than 5% of asset_price to housing fund
             contribution > min_contribution //should be minimun contribution calculated from asset price.
             //ToDo: We also want to only include users that did not contributed to a purchase for y_blocks (to be defined). 
@@ -66,10 +66,11 @@ impl<T: Config> Pallet<T> {
 		shares.retain(|x|{
 			inv_vec.contains(&x.account_id)
 		});
-		
+		debug_assert!(shares.len()>0,"Problem with shares");
+
 		for investor in inv_vec{
 			let status = Houses::Pallet::<T>::contributions(investor.clone()).unwrap();
-			let mut fund = status.contributed_balance;
+			let mut fund = status.contributions[0].amount;
 			//check if investor fund is above max contrib
 			for share in shares.clone(){
 				//We get user's share in the fund and recalculate contribution to the asset purchase

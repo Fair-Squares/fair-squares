@@ -5,10 +5,11 @@ pub use super::*;
 fn next_block() {
 	System::set_block_number(System::block_number() + 1);
 	Scheduler::on_initialize(System::block_number());
-	Democracy::on_initialize(System::block_number());
+	//Democracy::on_initialize(System::block_number());
 	//OnboardingModule::on_initialize(System::block_number());
-	OnboardingModule::begin_block(System::block_number());
 	BiddingModule::begin_block(System::block_number());
+	OnboardingModule::begin_block(System::block_number());
+	
 
 }
 
@@ -124,7 +125,7 @@ fn bidding_roles(){
 
 	let status = pallet_roles::AssetStatus::REVIEWING;
 	let coll_id0 = pallet_nft::PossibleCollections::HOUSES;
-	let coll_id = coll_id0.value();
+	let coll_id = coll_id0.clone().value();
 	assert_eq!(OnboardingModule::houses(coll_id,0).unwrap().status,status);
 
 	assert_ok!(CouncilModule::housing_council_vote(RuntimeOrigin::signed(council1[0].clone()), BOB, true));
@@ -154,7 +155,8 @@ fn bidding_roles(){
 
 		
 		now = System::block_number().saturating_mul(<Test as pallet_onboarding::Config>::CheckDelay::get());
-		fast_forward_to(now+1);
+		println!("Now is block nbr_{:?}",now);
+		fast_forward_to(now);
 		//next_block();
 		
 		//OnboardingModule::begin_block(now);
@@ -176,19 +178,29 @@ fn bidding_roles(){
 
 	assert_eq!(Democracy::referendum_count(), 1);
 
-	let mut info = Democracy::referendum_info(0);
-
-	println!("ref_info:\n{:?}",info);
-	fast_forward_to(4);
-	info = Democracy::referendum_info(0);
-	println!("ref_info:\n{:?}",info);
+	fast_forward_to(5);
 	
-	fast_forward_to(6);
-
+	assert_ok!(OnboardingModule::change_status(RuntimeOrigin::root(), coll_id0, 0, pallet_roles::AssetStatus::ONBOARDED));
 	houses = OnboardingModule::houses(coll_id, 0).unwrap();
-	println!("House status:{:?}",houses.status)
-	//assert_eq!(houses.status,pallet_roles::AssetStatus::ONBOARDED);
 
+	assert_eq!(houses.status,pallet_roles::AssetStatus::ONBOARDED);
+	
+	let mut investors = vec![];
+	 pallet_roles::InvestorLog::<Test>::iter().collect_into(&mut investors);
+	//println!("The investors are:\n{:?}",investors);
+	for i in investors{
+		let fund_s = HousingFund::contributions(i.1.account_id).unwrap();
+		println!("Contribution are:{:?}\n",fund_s.contributions);
+	}
+
+	
+
+		next_block();
+		let inv_round = BiddingModule::investors_list(coll_id, 0);
+		println!("Selected investors are:\n{:?}",inv_round);
+		/*let  event_ref = 
+		record(RuntimeEvent::BiddingModule(pallet_bidding::Event::InvestorListCreationSuccessful(coll_id,0,2_605_000_000_000,), BOB)));
+		assert_eq!(true,System::events().contains(&event_ref));*/
 
 	})
 
