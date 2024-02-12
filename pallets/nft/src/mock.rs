@@ -2,6 +2,7 @@ use super::*;
 use crate as pallet_nft;
 use frame_support::{
 	parameter_types,
+	derive_impl,
 	traits::{ConstU16,ConstU32,ConstU64,AsEnsureOriginWithArg},
 	weights::Weight,
 };
@@ -129,6 +130,8 @@ parameter_types! {
 	pub BlockWeights: frame_system::limits::BlockWeights =
 		frame_system::limits::BlockWeights::simple_max(Weight::from_parts(1024_u64, 0));
 }
+
+#[derive_impl(frame_system::config_preludes::TestDefaultConfig as frame_system::DefaultConfig)]
 impl frame_system::Config for Test {
 	type BaseCallFilter = frame_support::traits::Everything;
 	type BlockWeights = ();
@@ -188,7 +191,6 @@ impl pallet_balances::Config for Test {
 	type ReserveIdentifier = [u8; 8];
 	type RuntimeHoldReason = ();
 	type FreezeIdentifier = ();
-	type MaxHolds = ();
 	type MaxFreezes = ();
 	type RuntimeFreezeReason = ();
 }
