@@ -219,10 +219,11 @@ pub mod pallet {
 			let who = ensure_signed(origin)?;
 
 			// Update storage.
-			Something::<T>::put(something);
+			let num = Self::generate_random_number(something);
+			Something::<T>::put(num);
 
 			// Emit an event.
-			Self::deposit_event(Event::SomethingStored { something, who });
+			Self::deposit_event(Event::SomethingStored { something:num, who });
 
 			// Return a successful `DispatchResult`
 			Ok(())

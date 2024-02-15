@@ -49,15 +49,24 @@ impl<T: Config> Pallet<T> {
 
         });
 		debug_assert!(investors.len()!=0, "No good investor!!");
-		//Randomly select max number of investors per house
+		//Select max number of investors per house
 		let mut init_number = <T as Houses::Config>::MaxInvestorPerHouse::get() as usize;
 
 		let mut inv_vec = Vec::new();
 		if init_number>investors.len(){
 			init_number = investors.len();
 		}
-		for i in 1..init_number{
+		
+		/*for i in 1..init_number{
 			inv_vec.push(investors[i].clone())
+		}*/
+
+		for _i in 1..init_number{
+			let iv = Self::choose_investor(investors.clone());
+			//debug_assert!(iv.1!=0, "Not a good investor!!");
+			investors.remove(iv.1);
+			inv_vec.push(iv.0.unwrap());
+			
 		}
 
 		let mut final_list = Vec::new();
@@ -117,6 +126,44 @@ impl<T: Config> Pallet<T> {
 
 
     }
+
+
+	    /// Randomly choose an investor from among an investors list, & returns investoraccount plus index in the list.
+	/// Returns `None` if there are no investors in the list.
+	pub fn choose_investor(investors: Vec<AccountIdOf<T>>) -> (Option<AccountIdOf<T>>,usize) {
+        let total = investors.len() as u32;
+		if total == 0 {
+			return (None,0)
+		}
+		let mut random_number = Self::generate_random_number(0);
+
+		// Best effort attempt to remove bias from modulus operator.
+		for i in 1..T::MaxGenerateRandom::get() {
+			if random_number < u32::MAX - u32::MAX % total {
+				break
+			}
+
+			random_number = Self::generate_random_number(i);
+		}
+        let num = random_number % total; 
+        let inv = investors[num as usize].clone();
+		(Some(inv),num as usize)
+	}
+
+
+    	/// Generate a random number from a given seed.
+	/// Note that there is potential bias introduced by using modulus operator.
+	/// You should call this function with different seed values until the random
+	/// number lies within `u32::MAX - u32::MAX % n`.
+	/// TODO: deal with randomness freshness
+	/// https://github.com/paritytech/substrate/issues/8311
+	pub fn generate_random_number(seed: u32) -> u32 {
+		let (random_seed, _) = T::Randomness::random(&(T::PalletId::get(), seed).encode());
+		let random_number = <u32>::decode(&mut random_seed.as_ref())
+			.expect("secure hashes should always be bigger than u32; qed");
+		random_number
+	}
+
 
 
 

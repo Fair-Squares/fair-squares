@@ -30,6 +30,11 @@ fn bidding_roles(){
 	new_test_ext().execute_with(||{
 
 		//let inv_list = vec![ALICE,DAVE,BOB,CHARLIE,EVE];
+		//let rand_list = BiddingModule::choose_investor(inv_list);
+		assert_ok!(BiddingModule::do_something(RuntimeOrigin::signed(DAVE),0));
+		println!("selected indexes: {:?}",BiddingModule::something());
+
+
 		assert_eq!(RolesModule::get_pending_servicers().len(), 0);
 		assert_eq!(RolesModule::get_pending_house_sellers().len(), 0);
 		assert_eq!(RolesModule::get_pending_notaries().len(), 0);
