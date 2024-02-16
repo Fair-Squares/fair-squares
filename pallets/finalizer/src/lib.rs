@@ -121,7 +121,7 @@ pub mod pallet {
 			let collection = Onboarding::Pallet::<T>::collection_name(collection_id.into());
 
 			Onboarding::Pallet::<T>::change_status(
-				origin,
+				frame_system::RawOrigin::Root.into(),
 				collection,
 				nft_item_id,
 				Roles::AssetStatus::FINALISED,
@@ -166,7 +166,7 @@ pub mod pallet {
 			let collection = Onboarding::Pallet::<T>::collection_name(collection_id.into());
 
 			Onboarding::Pallet::<T>::change_status(
-				origin,
+				frame_system::RawOrigin::Root.into(),
 				collection,
 				nft_item_id,
 				Roles::AssetStatus::REJECTED,
@@ -218,7 +218,7 @@ pub mod pallet {
 			let collection = Onboarding::Pallet::<T>::collection_name(collection_id.into());
 
 			Onboarding::Pallet::<T>::change_status(
-				origin,
+				frame_system::RawOrigin::Root.into(),
 				collection,
 				nft_item_id,
 				Roles::AssetStatus::CANCELLED,
