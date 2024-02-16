@@ -203,9 +203,17 @@ fn bidding_roles(){
 		next_block();
 		let inv_round = BiddingModule::investors_list(coll_id, 0);
 		println!("Selected investors are:\n{:?}",inv_round);
-		/*let  event_ref = 
-		record(RuntimeEvent::BiddingModule(pallet_bidding::Event::InvestorListCreationSuccessful(coll_id,0,2_605_000_000_000,), BOB)));
-		assert_eq!(true,System::events().contains(&event_ref));*/
+
+		loop{
+			next_block();
+			let val = System::block_number()  % <Test as crate::Config>::NewAssetScanPeriod::get() as u64;
+			if val.is_zero(){
+				break;
+			}
+		}
+			for t in System::events(){
+				println!("\n{:?}\n",t);
+			}
 
 	})
 

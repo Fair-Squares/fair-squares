@@ -242,11 +242,10 @@ impl<T: Config> Pallet<T> {
 						}
 					}
 
-					let owner: T::AccountId =
-						Nft::Pallet::<T>::owner(collection_id, item_id).unwrap();
+
 
 					Onboarding::Pallet::<T>::change_status(
-						frame_system::RawOrigin::Signed(owner).into(),
+						frame_system::RawOrigin::Root.into(),
 						possible_collection,
 						item_id,
 						Onboarding::Status::FINALISING,
