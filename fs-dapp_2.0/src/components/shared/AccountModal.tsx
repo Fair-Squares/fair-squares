@@ -29,10 +29,10 @@ function AccountModal() {
     if (allAccounts.length === 1) {
       dispatch({ type: 'SET_SELECTED_ACCOUNT', payload: allAccounts[0] });
     }
-    if (selectedAccount) {
+   /* if (selectedAccount) {
       const webname = await queryAccountWeb3Name(selectedAccount.address);
       dispatch({ type: 'SET_WEB3_NAME', payload: webname });
-    }
+    }*/
   };
 
   const handleConnectionChange = () => {
