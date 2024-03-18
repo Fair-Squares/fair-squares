@@ -9,7 +9,7 @@ import RolesApp from '../shared/modal';
 import Referendum from '../shared/referendum';
 import { Card, Col, Space } from 'antd';
 import Identicon from '@polkadot/react-identicon';
-import { queryPublishedCredentials } from '../shared/Credentials';
+//import { queryPublishedCredentials } from '../shared/Credentials';
 
 export default function Roles() {
   const { api, blocks, selectedAccount, web3Name, credentials, dispatch } = useAppContext();
@@ -21,11 +21,13 @@ export default function Roles() {
     let address0 = selectedAccount.address;
     api.query.rolesModule.requestedRoles(address0, (data: any) => {
       let data0 = data.toHuman();
-      let r_session = data0?.role.toString();
+      if(!data0) return;
+      console.log(`requested roles:${data}`);
+      let r_session = data0.role.toString();
 
       dispatch1({ type: 'SET_ROLE_IN_SESSION', payload: r_session });
     });
-  }, [selectedAccount, blocks, dispatch1, api]);
+  }, [blocks,selectedAccount,  dispatch1, api]);
 
   useEffect(() => {
     if (!api || !selectedAccount) return;
@@ -45,7 +47,7 @@ export default function Roles() {
 
     api.query.council.members((who: any) => {
       dispatch1({ type: 'SET_COUNCIL_MEMBERS', payload: who as InjectedAccountWithMeta[] });
-    });
+    });/*
     if (web3Name) {
       (async () => {
         let data_all = await queryPublishedCredentials(web3Name);
@@ -57,7 +59,7 @@ export default function Roles() {
           dispatch({ type: 'SET_CREDENTIALS', payload: 'NONE' });
         }
       })();
-    }
+    }*/
     api.query.backgroundCouncil.proposals((hash: string[]) => {
       if (hash.length > 0) {
         let hash0 = hash[0];

@@ -4,6 +4,8 @@ import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 
 const initialSession: CouncilSessionContextState = {
   approved: false,
+  selectedProposal: undefined,
+  proposals: [],
   role_in_session: '',
   session_closed: false,
   ayes: 0,
@@ -13,6 +15,8 @@ const initialSession: CouncilSessionContextState = {
 
 type Action =
   | { type: 'SET_APPROVAL'; payload: boolean }
+  | { type: 'SET_SELECTED_PROPOSAL'; payload: InjectedAccountWithMeta }
+  | { type: 'SET_PROPOSALS'; payload: InjectedAccountWithMeta[] }
   | { type: 'SET_ROLE_IN_SESSION'; payload: string }
   | { type: 'SET_SESSION_CLOSE'; payload: boolean }
   | { type: 'SET_AYES'; payload: number }
@@ -23,6 +27,10 @@ function reducer(state: CouncilSessionContextState, action: Action): CouncilSess
   switch (action.type) {
     case 'SET_APPROVAL':
       return { ...state, approved: action.payload };
+    case 'SET_SELECTED_PROPOSAL':
+      return { ...state, selectedProposal: action.payload };
+    case 'SET_PROPOSALS':
+      return{...state,proposals:action.payload};
     case 'SET_SESSION_CLOSE':
       return { ...state, session_closed: action.payload };
     case 'SET_ROLE_IN_SESSION':
@@ -49,12 +57,14 @@ type Props = {
   children: ReactNode;
 };
 export function CouncilSessionProvider({ children }: Props) {
-  const [{ approved, role_in_session, session_closed, ayes, nay, council_members }, dispatch1] =
+  const [{ approved,selectedProposal,proposals, role_in_session, session_closed, ayes, nay, council_members }, dispatch1] =
     useReducer(reducer, initialSession);
   return (
     <CouncilSessionContext.Provider
       value={{
         approved,
+        selectedProposal,
+        proposals,
         role_in_session,
         session_closed,
         ayes,

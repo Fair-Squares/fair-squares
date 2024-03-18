@@ -31,6 +31,8 @@ export interface AccountContextState {
 
 export interface CouncilSessionContextState {
   approved: boolean;
+  selectedProposal: InjectedAccountWithMeta | undefined;
+  proposals:InjectedAccountWithMeta[];
   role_in_session: string;
   session_closed: boolean;
   ayes: number;

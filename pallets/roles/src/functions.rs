@@ -328,7 +328,7 @@ impl<T: Config> Pallet<T> {
 
 					let council_member = Coll::Pallet::<T,Instance2>::members()[0].clone();
 					proposal.dispatch_bypass_filter(frame_system::RawOrigin::Signed(council_member).into()).ok();
-					RequestedRoles::<T>::remove(&proposal_all.0.clone());
+					//RequestedRoles::<T>::remove(&proposal_all.0.clone());
 				} else if prop == 1 {
 					RequestedRoles::<T>::remove(&proposal_all.0);
 				}

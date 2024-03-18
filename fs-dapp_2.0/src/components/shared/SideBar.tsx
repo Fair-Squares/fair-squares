@@ -44,7 +44,9 @@ export default function SideBar() {
             <Sidebar.Item href="#">Tenants</Sidebar.Item>
           </Sidebar.Collapse>
           <Sidebar.Collapse icon={MdRoomService} label="Service Providers" className="p-2">
-            <Sidebar.Item href="#">Councils</Sidebar.Item>
+            <Sidebar.Item href="#">
+            <NavLink to="council">Councils</NavLink>
+            </Sidebar.Item>
             <Sidebar.Item href="#">Notaries</Sidebar.Item>
             <Sidebar.Item href="#">Representatives</Sidebar.Item>
           </Sidebar.Collapse>

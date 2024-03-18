@@ -498,7 +498,12 @@ pub mod pallet {
 			match result{
 				Ok(_) => {
 					let now = <frame_system::Pallet<T>>::block_number();
-					Self::deposit_event(Event::AccountCreationRejected(now, account));
+					Self::deposit_event(Event::AccountCreationRejected(now, account.clone()));
+					RequestedRoles::<T>::mutate(&account,|val|{
+						let mut proposal = val.clone().unwrap();
+						proposal.approved = Approvals::NO;
+						*val = Some(proposal);
+						});
 				},
 				Err(e) => return Err(e),
 			}

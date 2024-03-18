@@ -3,6 +3,7 @@ import App from './App';
 import Dashboard from './components/pages/Dashboard';
 import HomePage from './components/pages/HomePage';
 import Roles from './components/pages/Roles';
+import Council from './components/pages/Council';
 
 const router = createBrowserRouter([
   {
@@ -12,6 +13,7 @@ const router = createBrowserRouter([
       { index: true, element: <HomePage /> },
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'roles', element: <Roles /> },
+      { path: 'council', element: <Council />},
     ],
   },
 ]);

@@ -3,7 +3,7 @@ import { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
 import { ChangeEvent, useEffect } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import Identicon from '@polkadot/react-identicon';
-import { queryAccountWeb3Name } from './Credentials';
+//import { queryAccountWeb3Name } from './Credentials';
 
 const NAME = 'fs-dapp';
 
