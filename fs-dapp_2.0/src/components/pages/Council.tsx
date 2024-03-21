@@ -29,12 +29,22 @@ export default function Council() {
 
     api?.query.backgroundCouncil.proposalOf(
       
-      hash,(data1:any)=>{
-      let data0 = data1.toPrimitive().args.account as InjectedAccountWithMeta;    
-      let data = proposals;
-      if (data0 && !data.includes(data0)){
-        data.push(data0);                    
-        dispatch1({type:`SET_PROPOSALS`,payload:data}); 
+      hash,(data_acc:any)=>{
+      let acc = data_acc.toPrimitive().args.account as InjectedAccountWithMeta;    
+      let acc_list = proposals;
+      if (acc && !acc_list.includes(acc)){
+        acc_list.push(acc);                    
+        dispatch1({type:`SET_PROPOSALS`,payload:acc_list}); 
+        api.query.rolesModule.requestedRoles(acc.address,(Prop_raw:any)=>{
+          let Prop = Prop_raw.toHuman();
+      if(!Prop) return;
+      let r_session = Prop.role.toString();
+      let dtype:DataType={name:acc.meta.toString(),role:r_session,address:acc.address};
+      let tdata=data;
+      tdata.push(dtype);
+      setData(tdata);
+        })
+        
        
       }        
     }
@@ -78,7 +88,7 @@ export default function Council() {
           renderItem={item => (
             <List.Item key={item.address}>
               <List.Item.Meta
-                title={<a href="https://ant.design">{item.name}</a>}
+                title={<p>{item.name}</p>}
                 description={item.role}
               />
               <div>Content</div>
