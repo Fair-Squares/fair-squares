@@ -21,14 +21,18 @@ export default function Roles() {
     let address0 = selectedAccount.address;
     api.query.rolesModule.requestedRoles(address0, (data: any) => {
       let data0 = data.toHuman();
-      if(!data0) return;
-      console.log(`requested roles:${data}`);
+      if(data0) {
+        console.log(`requested roles:${data}`);
       let r_session = data0.role.toString();
 
       dispatch1({ type: 'SET_ROLE_IN_SESSION', payload: r_session });
+      }else{
+        dispatch1({ type: 'SET_ROLE_IN_SESSION', payload: `` });
+      }
+      
     });
     console.log(`role in session:${role_in_session}`)
-  }, [selectedAccount, blocks, dispatch1, api]);
+  }, [role_in_session,selectedAccount, blocks, dispatch1, api]);
 
   useEffect(() => {
     if (!api || !selectedAccount) return;

@@ -41,7 +41,8 @@ export default function Council() {
         
       let acc_list = proposals;
       if (acc && !acc_list.includes(acc1 as InjectedAccountWithMeta) && acc1){
-        acc_list.push(acc1);                    
+        acc_list.push(acc1);
+        dispatch1({type:`SET_PROPOSALS`,payload:[]});                     
         dispatch1({type:`SET_PROPOSALS`,payload:acc_list}); 
         
         
@@ -96,12 +97,14 @@ export default function Council() {
       if (hash.length > 0) {
         setHash0(hash);
         update()
+        console.log(`Number of active proposals: ${proposals.length}`)
         
       }    
     });   
    
 
   }, [hash0,blocks,selectedAccount,api]);
+
   return(<div id="scrollableDiv"
   style={{
     height: 400,
@@ -109,21 +112,14 @@ export default function Council() {
     padding: '0 16px',
     border: '1px solid rgba(140, 140, 140, 0.35)',
   }}>
-    <InfiniteScroll
-     dataLength={proposals.length}
-     next={update}
-     hasMore={proposals.length < 50}
-     loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-     endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
-     scrollableTarget="scrollableDiv"
-    >
+    
        <List
           dataSource={data}
           
           renderItem={item => (
             <Card 
             hoverable
-      style={{ width: 300 }}>
+      style={{ width: 300, height:120}}>
             <List.Item key={item.address}>
               <List.Item.Meta
                 title={<p>{item.name}</p>}
@@ -136,7 +132,7 @@ export default function Council() {
 
         />
 
-    </InfiniteScroll>
+   
     <Button
     type="primary"
     className="bg-blue-600 text-white font-bold py-2 text-xl" 
