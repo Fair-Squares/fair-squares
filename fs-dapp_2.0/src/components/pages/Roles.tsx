@@ -27,7 +27,8 @@ export default function Roles() {
 
       dispatch1({ type: 'SET_ROLE_IN_SESSION', payload: r_session });
     });
-  }, [blocks,selectedAccount,  dispatch1, api]);
+    console.log(`role in session:${role_in_session}`)
+  }, [selectedAccount, blocks, dispatch1, api]);
 
   useEffect(() => {
     if (!api || !selectedAccount) return;

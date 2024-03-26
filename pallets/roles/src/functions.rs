@@ -316,7 +316,7 @@ impl<T: Config> Pallet<T> {
 			for proposal_all in proposal_iter{
 				let test = (proposal_all.1.session_closed,proposal_all.1.approved); 
 				let prop = match test{
-					(true,Approvals::NO) => 0,
+					(true,Approvals::AWAITING) => 0,
 					(true,Approvals::YES) => 1,
 					_ => 2,
 				};

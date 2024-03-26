@@ -1,6 +1,6 @@
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 import { useAccountContext } from '../../contexts/Account_Context';
-import React, { useEffect,useState } from 'react';
+import React, { useEffect,useState,useCallback } from 'react';
 import { useAppContext } from '../../contexts/AppContext';
 import { useConcilSessionContext } from '../../contexts/CouncilSessionContext';
 import BN from 'bn.js';
@@ -26,12 +26,14 @@ export default function Council() {
   
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<DataType[]>([]);
+  const [hash0,setHash0] = useState<string[]>([]);
 
   function querryProposals(hash:string) {
 
     api?.query.backgroundCouncil.proposalOf(
       
       hash,(data_acc:any)=>{
+        if(!data_acc) return;
         let acc = data_acc.toPrimitive().args.account as InjectedAccountWithMeta;
       let acc0 = data_acc.toPrimitive().args.account as string;
       const acc1 = accounts.find((account) => account.address === acc0);
@@ -42,12 +44,14 @@ export default function Council() {
         acc_list.push(acc1);                    
         dispatch1({type:`SET_PROPOSALS`,payload:acc_list}); 
         
+        
+        
         api.query.rolesModule.requestedRoles(acc1.address,(Prop_raw:any)=>{
           let Prop = Prop_raw.toHuman();
+          console.log(`list of props: ${Prop.role.toString()}`)
       if(!Prop) return;
       let r_session = Prop.role.toString();
       let status = Prop.approved.toString();
-      console.log(`infos:${Prop}`)
       let dtype:DataType={name:acc1.meta.name,role:r_session,address:acc.address,status};
       let tdata=data;
       tdata.push(dtype);
@@ -74,24 +78,30 @@ export default function Council() {
       })
     })
   }
-  function updateProposals(){
-    api?.query.backgroundCouncil.proposals((hash: string[]) => {
-      if (hash.length > 0) {
-        hash.map((x)=>querryProposals(x));
-      }    
-    
-    });
-  }
 
-  
+  /*function updateProposals(){
+    let bb =hash0.map((x)=>querryProposals(x));
+    return bb
+  }*/
+
+  //const update = useCallback(() =>updateProposals(),[hash0,updateProposals]);
+  const update = useCallback(() =>{
+    let bb =hash0.map((x)=>querryProposals(x));
+    return bb},[blocks]);
 
    useEffect(() => {
     if (!api || !selectedAccount) return;
 
-    updateProposals()
+    api.query.backgroundCouncil.proposals((hash: string[]) => {
+      if (hash.length > 0) {
+        setHash0(hash);
+        update()
+        
+      }    
+    });   
    
 
-  }, [dispatch1,selectedAccount,updateProposals,api]);
+  }, [hash0,blocks,selectedAccount,api]);
   return(<div id="scrollableDiv"
   style={{
     height: 400,
@@ -101,7 +111,7 @@ export default function Council() {
   }}>
     <InfiniteScroll
      dataLength={proposals.length}
-     next={updateProposals}
+     next={update}
      hasMore={proposals.length < 50}
      loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
      endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
