@@ -38,6 +38,16 @@ export interface CouncilSessionContextState {
   ayes: number;
   nay: number;
   council_members: InjectedAccountWithMeta[];
+  datas:DataType[]
+}
+
+export interface DataType {
+  name: string|undefined;
+  role: string;
+  address:string;
+  status:string;
+  referendum:string;
+  hash:string; 
 }
 
 export const isRoleValid = (_role: string): boolean => {
