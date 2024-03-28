@@ -8,6 +8,7 @@ function Referendum() {
   const { role } = useAccountContext();
 
   const yes = Number(((ayes / council_members.length) * 100).toFixed(1));
+  console.log(`Number of yes:${ayes}`)
 
   return (
     <div>

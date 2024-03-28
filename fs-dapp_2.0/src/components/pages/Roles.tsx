@@ -80,13 +80,13 @@ export default function Roles() {
         });
       }
     });
-  }, [selectedAccount, api, dispatch0, dispatch1, dispatch, web3Name, blocks]);
+  }, [blocks,selectedAccount, api, dispatch0, dispatch1, dispatch]);
 
   return (
     <div className="p-10">
-      <Space direction="horizontal" size={100} style={{ display: 'flex' }} align="center">
-        <Col span={70}>
-          <Card title="Your wallet" size="default">
+      <Space direction="horizontal" style={{ display: 'flex' }} align="center">
+        <Col >
+          <Card title="Your wallet" style={{ width: 320, height:200}}>
             {selectedAccount ? (
               <div>
                 <p className="text-xl">
@@ -116,8 +116,8 @@ export default function Roles() {
           </Card>
         </Col>
 
-        <Col span={50}>
-          <Card title="Status" size="default">
+        <Col >
+          <Card title="Status" style={{ width: 220, height:200}}>
             <h1>
               Your Roles:{' '}
               {!(role.length > 0)
@@ -131,7 +131,7 @@ export default function Roles() {
           </Card>
         </Col>
 
-        <Col span={70}>
+        <Col >
           <Card title="Requests status" size="default">
             <h1 className="flex flex-col px-4 ">
               Last Requested Role:{' '}

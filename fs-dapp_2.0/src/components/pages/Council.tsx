@@ -38,7 +38,7 @@ export default function Council() {
       let acc_list = proposals;
       if (acc && !acc_list.includes(acc1 as InjectedAccountWithMeta) && acc1){
         acc_list.push(acc1);
-        dispatch1({type:`SET_PROPOSALS`,payload:[]});                     
+                             
         dispatch1({type:`SET_PROPOSALS`,payload:acc_list}); 
         
         
@@ -77,19 +77,10 @@ export default function Council() {
       if (hash.length > 0) {
         
         setHash0(hash);
+        dispatch1({type:`SET_PROPOSALS`,payload:[]});
+        dispatch1({type:`SET_DATAS`,payload:[]}); 
+
         update() 
-        let tdata0:DataType[]=[];
-        datas.forEach(elemnt=>{
-          if (hash0.includes(elemnt.hash) && !tdata0.includes(elemnt) && elemnt.status!==`AWAITING`){
-            tdata0.push(elemnt);
-            console.log(`Number of active proposals: ${tdata0.length}`)
-          }
-          if (hash0.includes(elemnt.hash) && !tdata0.includes(elemnt)){
-            tdata0.push(elemnt);
-            console.log(`Number of active proposals: ${tdata0.length}`)
-          }else{tdata0=datas}
-        })
-        dispatch1({type:`SET_DATAS`,payload:tdata0});      
         
         
       }    
@@ -114,11 +105,11 @@ export default function Council() {
           renderItem={item => (
             <Card 
             hoverable
-      style={{ width: 300, height:120}}>
+      style={{ width: 300, height:150}}>
             <List.Item key={item.address}>
               <List.Item.Meta
                 title={<p>{item.name}</p>}
-                description={<div><p>Requested Role: {item.role}</p><p>Request Status: {item.status}</p></div>}
+                description={<div><p>Requested Role: {item.role}</p><p>Request Status: {item.status}</p><p>Session is closed: {item.referendum}</p></div>}
               />
               <div>Content</div>
             </List.Item>

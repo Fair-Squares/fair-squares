@@ -80,7 +80,7 @@ const RolesApp: React.FC = () => {
         <Toast>
           <div
             className={
-              'shadow-md rounded-md flex  text-white text-xl items-center justify-center ' +
+              'shadow-md rounded-md flex  text-white text-base items-center justify-normal ' +
               (warning === true ? ' bg-red-500 animate-bounce ' : ' bg-green-600  animate-pulse')
             }
           >
