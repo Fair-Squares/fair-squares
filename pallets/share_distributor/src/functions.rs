@@ -1,7 +1,3 @@
-//1) create VA from nft collection & item Id's --> Done
-//2) create tokens
-//3) Use onboarding do_buy
-//4) transfer tokens to owners
 use super::*;
 use enum_iterator::all;
 #[allow(unused_imports)]
@@ -9,8 +5,8 @@ use num_traits::float::FloatCore;
 use sp_runtime::{traits::SaturatedConversion, FixedPointNumber, FixedU128};
 
 impl<T: Config> Pallet<T> {
-	///The function below create a virtual account from the NFT collection and item id's
-	pub fn virtual_account(
+
+    pub fn virtual_account(
 		collection_id: T::NftCollectionId,
 		item_id: T::NftItemId,
 	) -> DispatchResult {
@@ -30,10 +26,10 @@ impl<T: Config> Pallet<T> {
 		let fees_account = Onboarding::Pallet::<T>::account_id();
 		let fees = T::Fees::get();
 		//Ensure that we have enough money in the fees_account
-		let balance = <T as pallet::Config>::Currency::free_balance(&fees_account);
+		let balance = <T as Roles::Config>::Currency::free_balance(&fees_account);
 		ensure!(fees < balance, Error::<T>::NotEnoughFees);
 
-		let res = <T as pallet::Config>::Currency::transfer(
+		let res = <T as Roles::Config>::Currency::transfer(
 			&fees_account,
 			&account,
 			fees,
@@ -44,7 +40,7 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	///This function executes all actions relatives to nft transfer from the seller to the virtual
+    ///This function executes all actions relatives to nft transfer from the seller to the virtual
 	/// account
 	pub fn nft_transaction(
 		collection_id: T::NftCollectionId,
@@ -67,7 +63,7 @@ impl<T: Config> Pallet<T> {
 		Ok(())
 	}
 
-	///Collect contributors to the bid, and their shares
+    ///Collect contributors to the bid, and their shares
 	pub fn owner_and_shares(
 		collection_id: T::NftCollectionId,
 		item_id: T::NftItemId,
@@ -101,24 +97,26 @@ impl<T: Config> Pallet<T> {
 
 			vec.push((i.0.clone(), share));
 			//Update Virtual_account storage
+            let mut val0 = Self::virtual_acc(collection_id,item_id).unwrap();
+            let _=val0.owners.try_push(i.0.clone());
 			Virtual::<T>::mutate(collection_id, item_id, |val| {
-				let mut val0 = val.clone().unwrap();
-				val0.owners.push(i.0.clone());
+                
 				*val = Some(val0);
 			});
+            let amount: <T as Assets::Config>::Balance =
+					share.saturated_into::<<T as Assets::Config>::Balance>();
+                    let mut val0 = Self::tokens_infos(virtual_acc.clone()).unwrap();
 			//Update owners in Tokens storage
 			Tokens::<T>::mutate(&virtual_acc, |val| {
-				let amount: <T as Assets::Config>::Balance =
-					share.saturated_into::<<T as Assets::Config>::Balance>();
-				let mut val0 = val.clone().unwrap();
-				val0.owners.push((i.0.clone(), amount));
+			
+				let _=val0.owners.try_push((i.0.clone(), amount));
 				*val = Some(val0);
 			});
 		}
 		vec
 	}
 
-	///Create 1000 Ownership tokens owned by a virtual account
+    ///Create 1000 Ownership tokens owned by a virtual account
 	pub fn create_tokens(
 		origin: OriginFor<T>,
 		collection_id: T::NftCollectionId,
@@ -166,10 +164,10 @@ impl<T: Config> Pallet<T> {
 			Self::u32_to_balance_option(1000).unwrap(),
 		);
 		debug_assert!(res0.is_ok());
-
+        let mut val0 = Self::tokens_infos(account.clone()).unwrap();
 		//Update supply in Tokens storage
 		Tokens::<T>::mutate(account, |val| {
-			let mut val0 = val.clone().unwrap();
+			
 			val0.supply = Assets::Pallet::<T>::total_supply(token_id.into());
 			*val = Some(val0);
 		});
@@ -228,4 +226,5 @@ impl<T: Config> Pallet<T> {
 		let float = integer as f64;
 		Some(float)
 	}
+
 }

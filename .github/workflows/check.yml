@@ -4,9 +4,9 @@ name: Check Set-Up & Build
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -25,8 +25,15 @@ jobs:
       - name: Install linux dependencies
         run: sudo apt-get install -y clang libssl-dev llvm libudev-dev protobuf-compiler
 
+
+      - name: Install Rustup
+        run: |
+          rustup update stable --no-self-update
+          rustup target add wasm32-unknown-unknown
+
       # Rust cache
       - uses: Swatinem/rust-cache@v2
+
 
       - name: Check Build
         run: |

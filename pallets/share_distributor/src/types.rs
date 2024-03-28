@@ -1,14 +1,13 @@
 pub use super::*;
 pub use frame_support::{
 	assert_ok,
-	dispatch::{DispatchResult, EncodeLike},
-	inherent::Vec,
+	dispatch::{DispatchResult},
 	pallet_prelude::*,
 	sp_runtime::{
 		traits::{AccountIdConversion, Hash, One, Saturating, StaticLookup, Zero},
 		PerThing, Percent,
 	},
-	storage::child,
+	storage::{child,bounded_vec::BoundedVec},
 	traits::{
 		Currency, ExistenceRequirement, Get, LockableCurrency, ReservableCurrency, WithdrawReasons,
 	},
@@ -17,19 +16,19 @@ pub use frame_support::{
 
 pub use frame_system::{ensure_signed, pallet_prelude::*, RawOrigin};
 pub use scale_info::{
-	prelude::{format, vec},
-	TypeInfo,
+	prelude::{format, vec::Vec},
+	TypeInfo
 };
 pub use serde::{Deserialize, Serialize};
-pub type BlockNumberOf<T> = <T as frame_system::Config>::BlockNumber;
+pub type BlockNumberOf<T> = BlockNumberFor<T>;
 pub type BalanceOf<T> =
-	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+<<T as Roles::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo,MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Owners<T: Config> {
-	pub owners: Vec<(T::AccountId, <T as Assets::Config>::Balance)>,
+	pub owners: BoundedVec<(T::AccountId, <T as Assets::Config>::Balance),T::MaxOwners>,
 	///Creation Blocknumber
 	pub created_at_block: BlockNumberOf<T>,
 	///TokenId
@@ -40,7 +39,8 @@ pub struct Owners<T: Config> {
 
 impl<T: Config> Owners<T> {
 	pub fn new(virtual_account: T::AccountId) -> DispatchResult {
-		let owners = Vec::new();
+		let own = Vec::new();
+		let owners = BoundedVec::truncate_from(own);
 		let created_at_block = <frame_system::Pallet<T>>::block_number();
 		let token_id: <T as pallet::Config>::AssetId = TokenId::<T>::get().into();
 		let supply = Zero::zero();
@@ -52,14 +52,14 @@ impl<T: Config> Owners<T> {
 	}
 }
 
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo)]
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo,MaxEncodedLen)]
 #[scale_info(skip_type_params(T))]
 #[cfg_attr(feature = "std", derive(Debug))]
 pub struct Ownership<T: Config> {
 	/// Virtual account
 	pub virtual_account: T::AccountId,
 	/// NFT owners accounts list
-	pub owners: Vec<T::AccountId>,
+	pub owners: BoundedVec<T::AccountId,T::MaxOwners>,
 	///Creation Blocknumber
 	pub created: BlockNumberOf<T>,
 	///TokenId
@@ -74,7 +74,8 @@ impl<T: Config> Ownership<T> {
 		item: T::NftItemId,
 		virtual_account: T::AccountId,
 	) -> DispatchResult {
-		let owners = Vec::new();
+		let own = Vec::new();
+		let owners = BoundedVec::truncate_from(own);
 		let created = <frame_system::Pallet<T>>::block_number();
 		let token_id: <T as pallet::Config>::AssetId = TokenId::<T>::get().into();
 		let rent_nbr = 0;

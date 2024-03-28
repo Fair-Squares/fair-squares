@@ -2,79 +2,54 @@
 name = "pallet-asset_management"
 version = "4.0.0-dev"
 description = "This pallet is used for management of an asset by its owners."
-authors = ["Fair Squares"]
+authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
 homepage = "https://fair-squares.nl"
 edition = "2021"
 license = "Apache 2.0"
 publish = false
 repository = "https://github.com/Fair-Squares/fair-squares"
 
+
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = [
 	"derive",
 ] }
-num-traits = {version="0.2.15",default-features = false}
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
-sp-core = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-scale-info = { version = "2.1.1", default-features = false, features = [
-	"derive",
-] }
-frame-benchmarking = { version = "4.0.0-dev", default-features = false, optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-roles = { default-features = false, path = "../roles" }
-pallet-share_distributor = { default-features = false, path = "../share_distributor" }
-pallet-nft = { default-features = false, path = "../nft" }
-pallet-voting = { default-features = false, path = "../voting" }
-pallet-onboarding = { default-features = false, path = "../onboarding" }
-pallet-housing_fund = { default-features = false, path = "../housing_fund" }
-pallet-payment = { default-features = false, path = "../payment" }
-pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-identity = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
+num-traits = {version="0.2.17",default-features = false}
+scale-info = { version = "2.10.0", default-features = false, features = ["derive"] }
+frame-benchmarking = {default-features = false, optional = true, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+frame-system = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
 
 [dev-dependencies]
-sp-core = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-io = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
-
+sp-core = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-runtime = {git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
 
 [features]
 default = ["std"]
 std = [
 	"codec/std",
-	"sp-std/std",
-	"sp-core/std",
-	"sp-runtime/std",
-	"frame-benchmarking/std",
+	"frame-benchmarking?/std",
 	"frame-support/std",
 	"frame-system/std",
 	"scale-info/std",
-	"pallet-sudo/std",
-	"pallet-democracy/std",
-	"pallet-scheduler/std",
-	"pallet-balances/std",
-	"pallet-roles/std",
-	"pallet-share_distributor/std",
-	"pallet-nft/std",
-	"pallet-voting/std",
-	"pallet-onboarding/std",
-	"pallet-housing_fund/std",
-	"pallet-uniques/std",
-	"pallet-collective/std",
-	"pallet-assets/std",
-	"pallet-payment/std",
-
+	"sp-core/std",
+	"sp-io/std",
+	"sp-runtime/std",
+	"sp-std/std",
 ]
-runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
-try-runtime = ["frame-support/try-runtime"]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
+	"sp-runtime/runtime-benchmarks",
+]
+try-runtime = [
+	"frame-support/try-runtime",
+	"frame-system/try-runtime",
+	"sp-runtime/try-runtime",
+]

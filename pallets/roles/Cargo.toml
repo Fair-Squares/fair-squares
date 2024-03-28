@@ -13,42 +13,43 @@ repository = "https://github.com/Fair-Squares/fair-squares"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
+sp-std = { default-features = false,git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = [
 	"derive",
 ] }
-scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29"}
-frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29", optional = true }
-pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-serde = { version = "1.0.136", default-features = false, features = ["derive"] }
+sp-runtime = {default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+scale-info = {version = "2.10.0",default-features = false, features = ["derive"] }
+frame-benchmarking = {   default-features = false, optional = true, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+frame-support = {   default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+frame-system = {   default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+serde = { version = "1.0.183", default-features = false, features = ["derive"] }
+pallet-balances = {   default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+pallet-sudo = {   default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+pallet-collective = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0", default-features = false }
 
 [dev-dependencies]
-sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-
+sp-core = {git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-io = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-runtime = { git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
 
 [features]
 default = ["std"]
 std = [
-	"serde/std",
 	"codec/std",
-	"scale-info/std",
-	"pallet-balances/std",
+	"frame-benchmarking/std",
 	"frame-support/std",
 	"frame-system/std",
-	"frame-benchmarking/std",
-	"pallet-sudo/std",
-	"pallet-balances/std",
+	"scale-info/std",
+	"serde/std",
 	"sp-std/std",
+	"pallet-balances/std",
+	"pallet-sudo/std",
+	"pallet-collective/std",
 ]
-
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
-	"frame-support/runtime-benchmarks",
-	"frame-system/runtime-benchmarks",
 	]
-try-runtime = ["frame-support/try-runtime"]
+
+try-runtime = [
+	"frame-support/try-runtime",
+	]

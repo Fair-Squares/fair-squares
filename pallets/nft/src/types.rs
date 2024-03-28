@@ -1,7 +1,8 @@
 pub use super::*;
 use enum_iterator::Sequence;
-pub use frame_support::inherent::Vec;
+pub use sp_std::vec::Vec;
 use frame_support::pallet_prelude::*;
+pub use frame_system::{ensure_signed, ensure_root, pallet_prelude::*, RawOrigin};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +10,10 @@ pub use scale_info::{prelude::vec, TypeInfo};
 
 /// NFT Collection ID
 pub type CollectionId = u32;
-#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, Sequence)]
+/// NFT Item ID
+pub type ItemId = u32;
+
+#[derive(Clone, Encode, Decode, PartialEq, Eq, TypeInfo, Copy, Sequence,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Debug, Serialize, Deserialize))]
 pub enum PossibleCollections {
 	HOUSES,
@@ -22,7 +26,7 @@ pub enum PossibleCollections {
 }
 
 impl PossibleCollections {
-	pub fn value(&self) -> CollectionId {
+	pub fn value(&self) ->u32 {
 		match *self {
 			PossibleCollections::HOUSES => 0,
 			PossibleCollections::OFFICES => 1,
@@ -36,9 +40,7 @@ impl PossibleCollections {
 }
 
 /// NFT Item ID
-pub type ItemId = u32;
-
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct CollectionInfo<BoundedVec> {
 	pub created_by: Acc,
@@ -46,7 +48,7 @@ pub struct CollectionInfo<BoundedVec> {
 	pub metadata: BoundedVec,
 }
 
-#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct ItemInfo<BoundedVec> {
 	pub metadata: BoundedVec,
@@ -60,7 +62,7 @@ pub trait NftPermission<Acc> {
 	fn has_deposit(created_by: &Acc) -> bool;
 }
 
-#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo,MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct NftPermissions;
 

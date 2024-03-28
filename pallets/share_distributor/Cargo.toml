@@ -7,73 +7,62 @@ homepage = "https://fair-squares.nl"
 edition = "2021"
 license = "Apache 2.0"
 publish = false
-repository = "https://github.com/Fair-Squares/fair-squares/"
+repository = "https://github.com/Fair-Squares/fair-squares"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
 
-[dependencies]
-enum-iterator = "1.2.0"
-num-traits = {version="0.2.15",default-features = false}
-sp-arithmetic = {version="5.0.0",default-features = false}
 
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
+[dependencies]
+enum-iterator = "1.4.1"
+num-traits = {version="0.2.17",default-features = false}
+sp-arithmetic = {version="19.0.0",default-features = false}
+codec = { package = "parity-scale-codec", version = "3.6.1", default-features = false, features = [
 	"derive",
 ] }
-scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29"}
-frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29", optional = true }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
-serde = { version = "1.0.136", default-features = false, features = ["derive"] }
-pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-pallet-collective = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-democracy = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-scheduler = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-assets = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29", default-features = false }
-pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
+sp-runtime = {default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+scale-info = {version = "2.10.0",default-features = false, features = ["derive"]}
+frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+frame-support = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+frame-system = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-std = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+pallet-balances = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+pallet-assets = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+pallet-sudo = { default-features = false, git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+serde = { version = "1.0.183", default-features = false, features = ["derive"] }
 pallet-roles = { default-features = false, path="../roles" }
+pallet-onboarding = { default-features = false, path="../onboarding" }
+pallet-housing_fund = { default-features = false, path="../housing_fund" }
 pallet-nft = { default-features = false, path="../nft" }
-pallet-voting = { default-features = false, path = "../voting" }
-pallet-onboarding = { default-features = false, path = "../onboarding" }
-pallet-housing_fund = { default-features = false, path = "../housing_fund" }
 
 [dev-dependencies]
-sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.29" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.29" }
+sp-core = {git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-io = {git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
+sp-runtime = {git = "https://github.com/paritytech/polkadot-sdk",  branch = "release-polkadot-v1.7.0" }
 
 [features]
 default = ["std"]
 std = [
-	"serde/std",
 	"codec/std",
-	"scale-info/std",
-	"sp-std/std",
-	"frame-support/std",
-	"sp-runtime/std",
-	"frame-system/std",
 	"frame-benchmarking/std",
-	"pallet-housing_fund/std",
-	"pallet-assets/std",
-	"pallet-uniques/std",
+    "sp-std/std",
+	"frame-support/std",
+	"frame-system/std",
+	"scale-info/std",
+	"serde/std",
+	"sp-std/std",
 	"pallet-balances/std",
-	"pallet-voting/std",
-	"pallet-collective/std",
-	"pallet-democracy/std",
-	"pallet-scheduler/std",
 	"pallet-sudo/std",
-	"pallet-roles/std",
+    "pallet-roles/std",
+    "pallet-onboarding/std",
 	"pallet-nft/std",
-	"pallet-onboarding/std",
-	
+    "pallet-housing_fund/std",
+    "pallet-assets/std",
 ]
-
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
-	"frame-support/runtime-benchmarks",
-	"frame-system/runtime-benchmarks",
 	]
-try-runtime = ["frame-support/try-runtime"]
+
+try-runtime = [
+	"frame-support/try-runtime",
+	]

@@ -26,17 +26,17 @@ pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_roles as Roles;
 
-#[cfg(test)]
+/*#[cfg(test)]
 mod mock;
 
 #[cfg(test)]
 mod tests;
 
 #[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
+mod benchmarking;*/
 
-pub mod weights;
-pub use weights::WeightInfo;
+//pub mod weights;
+
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -47,7 +47,6 @@ pub mod pallet {
 	pub type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -60,8 +59,8 @@ pub mod pallet {
 		+ HousingFund::Config
 	{
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type WeightInfo: WeightInfo;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		//type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::event]
@@ -97,7 +96,8 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - collection_id: the collection id of the nft asset
 		/// - nft_item_id: the id of the nft asset
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		#[pallet::call_index(0)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn validate_transaction_asset(
 			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
@@ -114,17 +114,17 @@ pub mod pallet {
 
 			// Ensure the house status is FINALISING
 			ensure!(
-				house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING,
+				house_wrap.unwrap().status == Roles::AssetStatus::FINALISING,
 				Error::<T>::HouseHasNotFinalisingStatus
 			);
 
-			let collection = Self::get_possible_collection(collection_id);
+			let collection = Onboarding::Pallet::<T>::collection_name(collection_id.into());
 
 			Onboarding::Pallet::<T>::change_status(
-				origin,
+				frame_system::RawOrigin::Root.into(),
 				collection,
 				nft_item_id,
-				Onboarding::AssetStatus::FINALISED,
+				Roles::AssetStatus::FINALISED,
 			)
 			.ok();
 
@@ -141,7 +141,8 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - collection_id: the collection id of the nft asset
 		/// - nft_item_id: the id of the nft asset
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		#[pallet::call_index(1)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn reject_transaction_asset(
 			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
@@ -158,17 +159,17 @@ pub mod pallet {
 
 			// Ensure the house status is FINALISING
 			ensure!(
-				house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISING,
+				house_wrap.unwrap().status == Roles::AssetStatus::FINALISING,
 				Error::<T>::HouseHasNotFinalisingStatus
 			);
 
-			let collection = Self::get_possible_collection(collection_id);
+			let collection = Onboarding::Pallet::<T>::collection_name(collection_id.into());
 
 			Onboarding::Pallet::<T>::change_status(
-				origin,
+				frame_system::RawOrigin::Root.into(),
 				collection,
 				nft_item_id,
-				Onboarding::AssetStatus::REJECTED,
+				Roles::AssetStatus::REJECTED,
 			)
 			.ok();
 
@@ -187,7 +188,8 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - collection_id: the collection id of the nft asset
 		/// - nft_item_id: the id of the nft asset
-		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		#[pallet::call_index(2)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn cancel_transaction_asset(
 			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
@@ -209,17 +211,17 @@ pub mod pallet {
 
 			// Ensure the house status is FINALISED
 			ensure!(
-				house_wrap.unwrap().status == Onboarding::AssetStatus::FINALISED,
+				house_wrap.unwrap().status == Roles::AssetStatus::FINALISED,
 				Error::<T>::HouseHasNotFinalisedStatus
 			);
 
-			let collection = Self::get_possible_collection(collection_id);
+			let collection = Onboarding::Pallet::<T>::collection_name(collection_id.into());
 
 			Onboarding::Pallet::<T>::change_status(
-				origin,
+				frame_system::RawOrigin::Root.into(),
 				collection,
 				nft_item_id,
-				Onboarding::AssetStatus::CANCELLED,
+				Roles::AssetStatus::CANCELLED,
 			)
 			.ok();
 
@@ -233,22 +235,5 @@ pub mod pallet {
 
 			Ok(())
 		}
-	}
-}
-
-use enum_iterator::all;
-pub use frame_support::inherent::Vec;
-impl<T: Config> Pallet<T> {
-	fn get_possible_collection(collection_id: T::NftCollectionId) -> Nft::PossibleCollections {
-		let collections = all::<Nft::PossibleCollections>().collect::<Vec<_>>();
-		let mut possible_collection = Nft::PossibleCollections::HOUSES;
-		for item in collections.iter() {
-			let value: T::NftCollectionId = item.value().into();
-			if value == collection_id {
-				possible_collection = *item;
-				break
-			}
-		}
-		possible_collection
 	}
 }

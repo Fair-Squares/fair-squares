@@ -1,41 +1,43 @@
-pub use crate::structs::*;
+pub use super::*;
 
 impl<T: Config> Pallet<T> {
-	// Conversion of u64 to BalanxceOf<T>
-	pub fn u64_to_balance_option(input: u64) -> Option<BalanceOf<T>> {
-		input.try_into().ok()
-	}
-
-	// Conversion of BalanceOf<T> to u32
-	pub fn balance_to_u32_option(input: BalanceOf<T>) -> Option<u32> {
-		input.try_into().ok()
-	}
+	
 
 	pub fn fund_account_id() -> T::AccountId {
 		T::PalletId::get().into_account_truncating()
 	}
 
-	pub fn get_contribution_share() -> Vec<ContributionShare<T>> {
-		let mut contribution_shares = Vec::<ContributionShare<T>>::new();
-		let amount = FundBalance::<T>::get().total;
-		let factor = Self::u64_to_balance_option(PERCENT_FACTOR);
-
-		for (account_id, contribution) in Contributions::<T>::iter() {
-			let share = factor.unwrap() * (contribution.clone().get_total_balance()) / amount;
-			contribution_shares.push(ContributionShare {
-				account_id,
-				share: Self::balance_to_u32_option(share).unwrap(),
-			});
-		}
-
-		contribution_shares
-	}
+	
 
 	/// Check that the fund can afford the amount
 	pub fn check_available_fund(value: BalanceOf<T>) -> bool {
-		let fund = FundBalance::<T>::get();
+		let fund_account = Self::fund_account_id();
+		let amount = <T as ROLES::Config>::Currency::free_balance(&fund_account);
 
-		fund.can_take_off(value)
+		amount>value
+	}
+
+	pub fn get_contributions() -> Vec<(AccountIdOf<T>, UserFundStatus<T>)> {
+		Contributions::<T>::iter()
+			.map(|(account_id, contribution)| (account_id, contribution))
+			.collect()
+	}
+
+	pub fn get_contribution_share() -> Vec<ContributionShare<T>> {
+		let mut contribution_shares = Vec::<ContributionShare<T>>::new();
+		let fund_account = Self::fund_account_id();
+		let total = <T as ROLES::Config>::Currency::free_balance(&fund_account);
+		
+
+		for (account_id, contribution) in Contributions::<T>::iter() {
+			let contributed_balance = contribution.clone().get_total_user_balance();
+			let share = Percent::from_rational(contributed_balance,total);
+			contribution_shares.push(ContributionShare {
+				account_id,
+				share,
+			});
+		}
+		contribution_shares
 	}
 
 	/// Execute a bid on a house, funds are reserve for the bid before the transfer
@@ -52,9 +54,10 @@ impl<T: Config> Pallet<T> {
 		contributions: Vec<(AccountIdOf<T>, BalanceOf<T>)>,
 	) -> DispatchResultWithPostInfo {
 		// Check that the fund can afford the bid
-		let mut fund = FundBalance::<T>::get();
+		let fund_account = Self::fund_account_id();
+		let fund = <T as ROLES::Config>::Currency::free_balance(&fund_account);
 
-		ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughFundForHouse);
+		ensure!(fund>amount, Error::<T>::NotEnoughFundForHouse);
 
 		// Check the number of investors
 		ensure!(
@@ -80,18 +83,12 @@ impl<T: Config> Pallet<T> {
 		}
 
 		// The amount is tagged as reserved in the fund for the account_id
-		T::LocalCurrency::reserve(&Self::fund_account_id(), amount)?;
-		fund.reserve(amount);
-
-		// The amount is reserved in the pot
-		FundBalance::<T>::mutate(|val| {
-			*val = fund.clone();
-		});
-
+		<T as ROLES::Config>::Currency::reserve(&Self::fund_account_id(), amount)?;
+				
 		// Get the block number for timestamp
 		let block_number = <frame_system::Pallet<T>>::block_number();
 
-		let reservation = FundOperation {
+		let reservation = HousingFundOperation {
 			nft_collection_id,
 			nft_item_id,
 			amount,
@@ -111,12 +108,6 @@ impl<T: Config> Pallet<T> {
 		));
 
 		Ok(().into())
-	}
-
-	pub fn get_contributions() -> Vec<(AccountIdOf<T>, Contribution<T>)> {
-		Contributions::<T>::iter()
-			.map(|(account_id, contribution)| (account_id, contribution))
-			.collect()
 	}
 
 	/// Cancel a house bidding
@@ -141,16 +132,8 @@ impl<T: Config> Pallet<T> {
 			});
 		}
 
-		let mut fund = FundBalance::<T>::get();
-		T::LocalCurrency::unreserve(&Self::fund_account_id(), reservation.amount);
-		fund.unreserve(reservation.amount);
-
+		<T as ROLES::Config>::Currency::unreserve(&Self::fund_account_id(), reservation.amount);		
 		Reservations::<T>::remove((nft_collection_id, nft_item_id));
-
-		// The amount is unreserved in the pot
-		FundBalance::<T>::mutate(|val| {
-			*val = fund.clone();
-		});
 
 		// Get the block number for timestamp
 		let block_number = <frame_system::Pallet<T>>::block_number();
@@ -177,9 +160,8 @@ impl<T: Config> Pallet<T> {
 
 		let reservation = reservation_wrap.unwrap();
 
-		let _fund = FundBalance::<T>::get();
 		// The amount is unreserved in the currency pallet
-		T::LocalCurrency::unreserve(&Self::fund_account_id(), reservation.amount);
+		<T as ROLES::Config>::Currency::unreserve(&Self::fund_account_id(), reservation.amount);
 
 		// Get the block number for timestamp
 		let block_number = <frame_system::Pallet<T>>::block_number();
@@ -218,19 +200,12 @@ impl<T: Config> Pallet<T> {
 			});
 		}
 
-		let mut fund = FundBalance::<T>::get();
-		// The amount is tagged as used for history
-		fund.use_reserved(reservation.amount);
 
 		// Delete from reservation
 		Reservations::<T>::remove((nft_collection_id, nft_item_id));
 		// Add to purchased operations
 		Purchases::<T>::insert((nft_collection_id, nft_item_id), reservation.clone());
 
-		// The amount is updated in the pot
-		FundBalance::<T>::mutate(|val| {
-			*val = fund.clone();
-		});
 
 		// Get the block number for timestamp
 		let block_number = <frame_system::Pallet<T>>::block_number();
@@ -245,4 +220,8 @@ impl<T: Config> Pallet<T> {
 
 		Ok(().into())
 	}
+
+
 }
+
+	

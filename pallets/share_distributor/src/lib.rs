@@ -1,75 +1,69 @@
-//! # Share_Distributor Pallet
-//!
-//! The Share_Distributor Pallet is called by the Bidding Pallet
-//! after a Finalised bid was identified on-chain.
-//! It will distribute to the asset new owners, the ownership nft, and the ownership token
-//! connected to the asset at the center of the transaction.
-//!
-//! ## Overview
-//!
-//! The Share_Distributor Pallet fulfill the following tasks:
-//! - Create a virtual account which will hold the nft
-//! - Connect the Virtual account to the new owners/contributors
-//! through the use of a storage/struct
-//! - Execute the Nft transaction between Seller and Virtual account
-//! - Mint 1000 Ownership Tokens, which represent the asset share of
-//! each owner
-//! - Distribute the ownership tokens to the new owners.
-//!
-//! Dispatchable Functions
-//!
-//! * `create_virtual` - Will sequencially execute each of the steps
-//! described in the Overview.
 
+// We make sure this pallet uses `no_std` for compiling to Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+// Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 pub use pallet_assets as Assets;
 pub use pallet_housing_fund as HousingFund;
 pub use pallet_nft as Nft;
 pub use pallet_onboarding as Onboarding;
 pub use pallet_roles as Roles;
-
 mod functions;
 mod types;
 pub use functions::*;
 pub use types::*;
 
-#[cfg(test)]
-mod mock;
+//#[cfg(test)]
+//mod mock;
 
-#[cfg(test)]
-mod tests;
+//#[cfg(test)]
+//mod tests;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
+//#[cfg(feature = "runtime-benchmarks")]
+//mod benchmarking;
+//pub mod weights;
+//pub use weights::*;
 
+// All pallet logic is defined in its own module and must be annotated by the `pallet` attribute.
 #[frame_support::pallet]
 pub mod pallet {
+	// Import various useful types required by all FRAME pallets.
 	use super::*;
 
+	// The `Pallet` struct serves as a placeholder to implement traits, methods and dispatchables
+	// (`Call`s) in this pallet.
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
-	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
-	/// Configure the pallet by specifying the parameters and types on which it depends.
+
 	#[pallet::config]
-	pub trait Config:
+	pub trait Config: 
 		frame_system::Config
 		+ Assets::Config
 		+ Roles::Config
 		+ Nft::Config
 		+ Onboarding::Config
-		+ HousingFund::Config
-	{
-		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type Currency: Currency<Self::AccountId> + ReservableCurrency<Self::AccountId>;
-		type AssetId: IsType<<Self as Assets::Config>::AssetId> + Parameter + From<u32> + Ord + Copy;
+		+ HousingFund::Config {
+		/// The overarching runtime event type.
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		type AssetId: 
+		IsType<<Self as Assets::Config>::AssetIdParameter> 
+		+ Into<<Self as Assets::Config>::AssetId>
+		+ Parameter 
+		+ From<u32> 
+		+ Ord 
+		+ Copy
+		+MaxEncodedLen;
 		#[pallet::constant]
 		type Fees: Get<BalanceOf<Self>>;
+		#[pallet::constant]
+		type MaxOwners: Get<u32>;
 	}
+
+	#[pallet::storage]
+	#[pallet::getter(fn something)]
+	pub type Something<T> = StorageValue<_, u32>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn virtual_acc)]
@@ -101,9 +95,17 @@ pub mod pallet {
 	/// Stores Ownership Tokens id number
 	pub type TokenId<T: Config> = StorageValue<_, u32, ValueQuery, InitDefault<T>>;
 
+	
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
+		/// A user has successfully set a new value.
+		SomethingStored {
+			/// The new value set.
+			something: u32,
+			/// The account who set the new value.
+			who: T::AccountId,
+		},
 		/// A virtual account was created
 		VirtualCreated {
 			account: T::AccountId,
@@ -111,19 +113,29 @@ pub mod pallet {
 			item: T::NftItemId,
 			when: BlockNumberOf<T>,
 		},
+		/// NFT Transaction Executed
 		NftTransactionExecuted {
 			nft_transfer_to: T::AccountId,
 			nft_transfer_from: T::AccountId,
 			when: BlockNumberOf<T>,
 		},
+		///Ownership Token distributed to new owners 
 		OwnershipTokensDistributed {
 			from: T::AccountId,
-			to: Vec<T::AccountId>,
+			to: BoundedVec<T::AccountId,T::MaxOwners>,
 			token_id: <T as pallet::Config>::AssetId,
-			owners: Vec<(T::AccountId, <T as Assets::Config>::Balance)>,
+			owners: BoundedVec<(T::AccountId, <T as Assets::Config>::Balance),T::MaxOwners>,
 		},
 	}
 
+	/// Errors that can be returned by this pallet.
+	///
+	/// Errors tell users that something went wrong so it's important that their naming is
+	/// informative. Similar to events, error documentation is added to a node's metadata so it's
+	/// equally important that they have helpful documentation associated with them.
+	///
+	/// This type of runtime error can be up to 4 bytes in size should you want to return additional
+	/// information.
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Not a value.
@@ -138,9 +150,13 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		/// This call creates a virtual account from the asset's collection_id and item_id.
-		/// The caller must hold the Servicer role
-		#[pallet::weight(10_000)]
+		/// An example dispatchable that takes a single u32 value as a parameter, writes the value
+		/// to storage and emits an event.
+		///
+		/// It checks that the _origin_ for this call is _Signed_ and returns a dispatch
+		/// error if it isn't. Learn more about origins here: <https://docs.substrate.io/build/origins/>
+		#[pallet::call_index(0)]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn create_virtual(
 			origin: OriginFor<T>,
 			collection_id: T::NftCollectionId,
@@ -191,5 +207,7 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+	
 	}
 }

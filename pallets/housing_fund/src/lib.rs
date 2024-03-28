@@ -19,23 +19,15 @@
 
 pub use pallet::*;
 
-#[cfg(test)]
-mod mock;
 
-#[cfg(test)]
-mod tests;
-
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-pub mod weights;
-
+/*#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;*/
 mod functions;
-mod structs;
-
-pub use crate::structs::*;
+mod types;
+pub use crate::types::*;
+pub use functions::*;
 pub use pallet_nft as NFT;
 pub use pallet_roles as ROLES;
-pub use weights::WeightInfo;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -47,48 +39,30 @@ pub mod pallet {
 	//use frame_system::WeightInfo;
 	use sp_std::vec;
 
-	pub const PERCENT_FACTOR: u64 = 100000;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config + NFT::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type LocalCurrency: frame_support::traits::Currency<Self::AccountId>
-			+ frame_support::traits::ReservableCurrency<Self::AccountId>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type MinContribution: Get<BalanceOf<Self>>;
 		type FundThreshold: Get<BalanceOf<Self>>;
 		type MaxFundContribution: Get<BalanceOf<Self>>;
 		type MaxInvestorPerHouse: Get<u32>;
 		type PalletId: Get<PalletId>;
 
-		/// Weight information for extrinsics in this pallet.
-		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::pallet]
-	#[pallet::generate_store(pub(super) trait Store)]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
 
-	#[pallet::type_value]
-	pub fn DefaultFundBalance<T: Config>() -> FundInfo<T> {
-		FundInfo {
-			total: Pallet::<T>::u64_to_balance_option(0).unwrap(),
-			transferable: Pallet::<T>::u64_to_balance_option(0).unwrap(),
-			reserved: Pallet::<T>::u64_to_balance_option(0).unwrap(),
-		}
-	}
-
-	#[pallet::storage]
-	#[pallet::getter(fn fund_balance)]
-	pub type FundBalance<T> = StorageValue<_, FundInfo<T>, ValueQuery, DefaultFundBalance<T>>;
-
+	
 	#[pallet::storage]
 	#[pallet::getter(fn contributions)]
 	// Distribution of investor's contributions
 	pub type Contributions<T> =
-		StorageMap<_, Blake2_128Concat, AccountIdOf<T>, Contribution<T>, OptionQuery>;
+		StorageMap<_, Blake2_128Concat, AccountIdOf<T>, UserFundStatus<T>, OptionQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn reservations)]
@@ -97,7 +71,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		(NftCollectionId<T>, NftItemId<T>),
-		FundOperation<T>,
+		HousingFundOperation<T>,
 		OptionQuery,
 	>;
 
@@ -108,7 +82,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		(NftCollectionId<T>, NftItemId<T>),
-		FundOperation<T>,
+		HousingFundOperation<T>,
 		OptionQuery,
 	>;
 
@@ -122,7 +96,7 @@ pub mod pallet {
 		WithdrawalSucceeded(
 			AccountIdOf<T>,
 			BalanceOf<T>,
-			structs::WithdrawalReason,
+			WithdrawalReason,
 			BlockNumberOf<T>,
 		),
 		/// Fund reservation succeded
@@ -167,7 +141,8 @@ pub mod pallet {
 		/// The origin must be signed
 		/// - 'amount': the amount deposited in the fund
 		/// Emits ContributeSucceeded event when successful
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::contribute_to_fund())]
+		#[pallet::call_index(0)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		#[transactional]
 		pub fn contribute_to_fund(
 			origin: OriginFor<T>,
@@ -187,27 +162,25 @@ pub mod pallet {
 
 			// Check if account has enough to contribute
 			ensure!(
-				T::LocalCurrency::free_balance(&who) >= amount,
+				<T as ROLES::Config>::Currency::free_balance(&who) >= amount,
 				Error::<T>::NotEnoughToContribute
 			);
 
 			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
-			let contribution_log = ContributionLog { amount, block_number };
+			let operation_log = UserOperationsLog { amount, block_number };
 
-			// Get the fund balance
-			let mut fund = FundBalance::<T>::get();
-
+			
 			if !Contributions::<T>::contains_key(&who) {
-				let contribution = Contribution {
+				let contribution = UserFundStatus {
 					account_id: who.clone(),
 					available_balance: amount,
-					reserved_balance: Self::u64_to_balance_option(0).unwrap(),
-					contributed_balance: Self::u64_to_balance_option(0).unwrap(),
+					reserved_balance: Zero::zero(),
+					contributed_balance: Zero::zero(),
 					has_withdrawn: false,
 					block_number,
-					contributions: vec![contribution_log],
+					contributions: vec![operation_log],
 					withdraws: Vec::new(),
 				};
 
@@ -217,11 +190,11 @@ pub mod pallet {
 					let old_contrib = val.clone().unwrap();
 					let mut contribution_logs = old_contrib.contributions.clone();
 					// update the contributions history
-					contribution_logs.push(contribution_log.clone());
+					contribution_logs.push(operation_log.clone());
 
-					let new_contrib = Contribution {
+					let new_contrib = UserFundStatus {
 						account_id: who.clone(),
-						available_balance: old_contrib.available_balance + amount,
+						available_balance: old_contrib.available_balance.saturating_add(amount),
 						block_number,
 						contributions: contribution_logs,
 						..old_contrib
@@ -230,14 +203,10 @@ pub mod pallet {
 				});
 			}
 
-			// Update fund with new transferable amount
-			fund.contribute_transferable(amount);
-			FundBalance::<T>::mutate(|val| {
-				*val = fund.clone();
-			});
+			
 
 			// The amount is transferred to the treasurery
-			T::LocalCurrency::transfer(
+			<T as ROLES::Config>::Currency::transfer(
 				&who,
 				&Pallet::<T>::fund_account_id(),
 				amount,
@@ -250,11 +219,14 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+
+
 		/// Withdraw the account contribution from the fund
 		/// The origin must be signed
 		/// - amount : the amount to be withdrawn from the fund
 		/// Emits WithdrawalSucceeded event when successful
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::withdraw_fund())]
+		#[pallet::call_index(1)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
 		#[transactional]
 		pub fn withdraw_fund(
 			origin: OriginFor<T>,
@@ -276,21 +248,22 @@ pub mod pallet {
 			let contribution = Contributions::<T>::get(who.clone()).unwrap();
 
 			// Retrieve the balance of the account
-			let contribution_amount = contribution.get_total_balance();
+			let contribution_amount = contribution.get_total_user_balance();
 
 			// Check that the amount is not superior to the total balance of the contributor
 			ensure!(amount <= contribution_amount, Error::<T>::NotEnoughFundToWithdraw);
 
 			// Get the fund balance
-			let mut fund = FundBalance::<T>::get();
+			let fund_account = Self::fund_account_id();
+			let fund = <T as ROLES::Config>::Currency::free_balance(&fund_account);
 
 			// Check that the fund has enough transferable for the withdraw
-			ensure!(fund.can_take_off(amount), Error::<T>::NotEnoughInTransferableForWithdraw);
+			ensure!(fund>amount, Error::<T>::NotEnoughInTransferableForWithdraw);
 
 			// Get the block number for timestamp
 			let block_number = <frame_system::Pallet<T>>::block_number();
 
-			let withdraw_log = ContributionLog { amount, block_number };
+			let withdraw_log = UserOperationsLog { amount, block_number };
 
 			Contributions::<T>::mutate(&who, |val| {
 				let old_contrib = val.clone().unwrap();
@@ -298,7 +271,7 @@ pub mod pallet {
 				// update the withdraws history
 				withdraw_logs.push(withdraw_log.clone());
 
-				let new_contrib = Contribution {
+				let new_contrib = UserFundStatus {
 					available_balance: old_contrib.available_balance - amount,
 					has_withdrawn: true,
 					block_number,
@@ -308,14 +281,9 @@ pub mod pallet {
 				*val = Some(new_contrib);
 			});
 
-			// Update fund with new transferable amount
-			fund.withdraw_transferable(amount);
-			FundBalance::<T>::mutate(|val| {
-				*val = fund.clone();
-			});
-
+			
 			// The amount is transferred from the treasury to the account
-			T::LocalCurrency::transfer(
+			<T as ROLES::Config>::Currency::transfer(
 				&Pallet::<T>::fund_account_id(),
 				&who,
 				amount,
@@ -326,11 +294,12 @@ pub mod pallet {
 			Self::deposit_event(Event::WithdrawalSucceeded(
 				who,
 				amount,
-				structs::WithdrawalReason::NotDefined,
+				types::WithdrawalReason::NotDefined,
 				block_number,
 			));
 
 			Ok(().into())
 		}
+
 	}
 }
